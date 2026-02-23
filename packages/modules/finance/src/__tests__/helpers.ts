@@ -39,6 +39,12 @@ import type { IIcSettlementRepo } from "../slices/ic/ports/ic-settlement-repo.js
 import type { IClassificationRuleRepo } from "../slices/hub/ports/classification-rule-repo.js";
 import type { IFxRateApprovalRepo } from "../slices/fx/ports/fx-rate-approval-repo.js";
 import type { IRevenueContractRepo } from "../slices/hub/ports/revenue-contract-repo.js";
+import type { ApInvoice, ApInvoiceLine } from "../slices/ap/entities/ap-invoice.js";
+import type { PaymentRun, PaymentRunItem } from "../slices/ap/entities/payment-run.js";
+import type { PaymentTerms } from "../slices/ap/entities/payment-terms.js";
+import type { IApInvoiceRepo, CreateApInvoiceInput } from "../slices/ap/ports/ap-invoice-repo.js";
+import type { IPaymentTermsRepo } from "../slices/ap/ports/payment-terms-repo.js";
+import type { IApPaymentRunRepo, CreatePaymentRunInput, AddPaymentRunItemInput } from "../slices/ap/ports/payment-run-repo.js";
 
 // ─── Domain Factories ───────────────────────────────────────────────────────
 
@@ -591,5 +597,275 @@ export function mockRevenueContractRepo(): IRevenueContractRepo {
     async findAll() { return ok({ data: [], total: 0, page: 1, limit: 20 }); },
     async updateRecognized() { return err(new NotFoundError("RevenueContract", "stub")); },
     async findMilestones() { return ok([]); },
+  };
+}
+
+// ─── AP Factories ──────────────────────────────────────────────────────────
+
+export const AP_IDS = {
+  invoice: "00000000-0000-4000-8000-000000000d01",
+  invoice2: "00000000-0000-4000-8000-000000000d02",
+  supplier: "00000000-0000-4000-8000-000000000d10",
+  paymentRun: "00000000-0000-4000-8000-000000000d20",
+  paymentTerms: "00000000-0000-4000-8000-000000000d30",
+  apAccount: "00000000-0000-4000-8000-000000000d40",
+  expenseAccount: "00000000-0000-4000-8000-000000000d50",
+} as const;
+
+export function makeApInvoiceLine(overrides: Partial<ApInvoiceLine> = {}): ApInvoiceLine {
+  return {
+    id: "line-1",
+    invoiceId: AP_IDS.invoice,
+    lineNumber: 1,
+    accountId: AP_IDS.expenseAccount,
+    description: "Office supplies",
+    quantity: 1,
+    unitPrice: money(10000n, "USD"),
+    amount: money(10000n, "USD"),
+    taxAmount: money(0n, "USD"),
+    ...overrides,
+  };
+}
+
+export function makeApInvoice(overrides: Partial<ApInvoice> = {}): ApInvoice {
+  return {
+    id: AP_IDS.invoice,
+    tenantId: "t1",
+    companyId: companyId(IDS.company),
+    supplierId: AP_IDS.supplier,
+    ledgerId: ledgerId(IDS.ledger),
+    invoiceNumber: "INV-001",
+    supplierRef: null,
+    invoiceDate: new Date("2025-01-15"),
+    dueDate: new Date("2025-02-14"),
+    totalAmount: money(10000n, "USD"),
+    paidAmount: money(0n, "USD"),
+    status: "DRAFT",
+    description: "Test AP invoice",
+    poRef: null,
+    receiptRef: null,
+    paymentTermsId: null,
+    journalId: null,
+    lines: [makeApInvoiceLine()],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function makePaymentRunItem(overrides: Partial<PaymentRunItem> = {}): PaymentRunItem {
+  return {
+    id: "pri-1",
+    paymentRunId: AP_IDS.paymentRun,
+    invoiceId: AP_IDS.invoice,
+    supplierId: AP_IDS.supplier,
+    amount: money(10000n, "USD"),
+    discountAmount: money(0n, "USD"),
+    netAmount: money(10000n, "USD"),
+    journalId: null,
+    ...overrides,
+  };
+}
+
+export function makePaymentRun(overrides: Partial<PaymentRun> = {}): PaymentRun {
+  return {
+    id: AP_IDS.paymentRun,
+    tenantId: "t1",
+    companyId: IDS.company,
+    runNumber: "PR-001",
+    runDate: new Date("2025-03-01"),
+    cutoffDate: new Date("2025-02-28"),
+    currencyCode: "USD",
+    totalAmount: money(10000n, "USD"),
+    status: "DRAFT",
+    items: [makePaymentRunItem()],
+    executedAt: null,
+    executedBy: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function makePaymentTerms(overrides: Partial<PaymentTerms> = {}): PaymentTerms {
+  return {
+    id: AP_IDS.paymentTerms,
+    tenantId: "t1",
+    code: "NET30",
+    name: "Net 30",
+    netDays: 30,
+    discountPercent: 0,
+    discountDays: 0,
+    isActive: true,
+    ...overrides,
+  };
+}
+
+// ─── AP Mock Repos ─────────────────────────────────────────────────────────
+
+export function mockApInvoiceRepo(
+  invoices: Map<string, ApInvoice> = new Map(),
+): IApInvoiceRepo & { invoices: Map<string, ApInvoice> } {
+  return {
+    invoices,
+    async create(input: CreateApInvoiceInput) {
+      const id = `inv-${Date.now()}`;
+      const inv = makeApInvoice({
+        id,
+        tenantId: input.tenantId,
+        companyId: companyId(input.companyId),
+        supplierId: input.supplierId,
+        ledgerId: ledgerId(input.ledgerId),
+        invoiceNumber: input.invoiceNumber,
+        supplierRef: input.supplierRef,
+        invoiceDate: input.invoiceDate,
+        dueDate: input.dueDate,
+        description: input.description,
+        poRef: input.poRef,
+        receiptRef: input.receiptRef,
+        paymentTermsId: input.paymentTermsId,
+        totalAmount: money(input.lines.reduce((s, l) => s + l.amount + l.taxAmount, 0n), input.currencyCode),
+        lines: input.lines.map((l, i) => makeApInvoiceLine({
+          id: `line-${i}`,
+          invoiceId: id,
+          lineNumber: i + 1,
+          accountId: l.accountId,
+          description: l.description,
+          quantity: l.quantity,
+          unitPrice: money(l.unitPrice, input.currencyCode),
+          amount: money(l.amount, input.currencyCode),
+          taxAmount: money(l.taxAmount, input.currencyCode),
+        })),
+      });
+      invoices.set(id, inv);
+      return ok(inv);
+    },
+    async findById(id: string) {
+      const inv = invoices.get(id);
+      return inv ? ok(inv) : err(new NotFoundError("ApInvoice", id));
+    },
+    async findBySupplier(supplierId: string, params?: PaginationParams) {
+      const all = [...invoices.values()].filter((i) => i.supplierId === supplierId);
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async findByStatus(status: string, params?: PaginationParams) {
+      const all = [...invoices.values()].filter((i) => i.status === status);
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async findAll(params?: PaginationParams) {
+      const all = [...invoices.values()];
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async findUnpaid() {
+      return [...invoices.values()].filter((i) => i.status !== "PAID" && i.status !== "CANCELLED");
+    },
+    async updateStatus(id: string, status: string, journalId?: string) {
+      const inv = invoices.get(id);
+      if (!inv) return err(new NotFoundError("ApInvoice", id));
+      const updated = { ...inv, status: status as ApInvoice["status"], journalId: journalId ?? inv.journalId, updatedAt: new Date() };
+      invoices.set(id, updated);
+      return ok(updated);
+    },
+    async recordPayment(id: string, amount: bigint) {
+      const inv = invoices.get(id);
+      if (!inv) return err(new NotFoundError("ApInvoice", id));
+      const newPaid = money(inv.paidAmount.amount + amount, inv.paidAmount.currency);
+      const newStatus = newPaid.amount >= inv.totalAmount.amount ? "PAID" : "PARTIALLY_PAID";
+      const updated = { ...inv, paidAmount: newPaid, status: newStatus as ApInvoice["status"], updatedAt: new Date() };
+      invoices.set(id, updated);
+      return ok(updated);
+    },
+  };
+}
+
+export function mockPaymentTermsRepo(
+  terms: PaymentTerms[] = [makePaymentTerms()],
+): IPaymentTermsRepo {
+  return {
+    async findById(id: string) {
+      const t = terms.find((pt) => pt.id === id);
+      return t ? ok(t) : err(new NotFoundError("PaymentTerms", id));
+    },
+    async findByCode(code: string) {
+      const t = terms.find((pt) => pt.code === code);
+      return t ? ok(t) : err(new NotFoundError("PaymentTerms", code));
+    },
+    async findAll() {
+      return terms.filter((t) => t.isActive);
+    },
+  };
+}
+
+export function mockApPaymentRunRepo(
+  runs: Map<string, PaymentRun> = new Map(),
+): IApPaymentRunRepo & { runs: Map<string, PaymentRun> } {
+  return {
+    runs,
+    async create(input: CreatePaymentRunInput) {
+      const id = `pr-${Date.now()}`;
+      const run = makePaymentRun({
+        id,
+        tenantId: input.tenantId,
+        companyId: input.companyId,
+        runDate: input.runDate,
+        cutoffDate: input.cutoffDate,
+        currencyCode: input.currencyCode,
+        totalAmount: money(0n, input.currencyCode),
+        items: [],
+      });
+      runs.set(id, run);
+      return ok(run);
+    },
+    async findById(id: string) {
+      const r = runs.get(id);
+      return r ? ok(r) : err(new NotFoundError("PaymentRun", id));
+    },
+    async findAll(params?: PaginationParams) {
+      const all = [...runs.values()];
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async addItem(runId: string, item: AddPaymentRunItemInput) {
+      const run = runs.get(runId);
+      if (!run) return err(new NotFoundError("PaymentRun", runId));
+      const pri: PaymentRunItem = {
+        id: `pri-${Date.now()}`,
+        paymentRunId: runId,
+        invoiceId: item.invoiceId,
+        supplierId: item.supplierId,
+        amount: money(item.amount, run.currencyCode),
+        discountAmount: money(item.discountAmount, run.currencyCode),
+        netAmount: money(item.netAmount, run.currencyCode),
+        journalId: null,
+      };
+      const updated = {
+        ...run,
+        items: [...run.items, pri],
+        totalAmount: money(run.totalAmount.amount + item.netAmount, run.currencyCode),
+      };
+      runs.set(runId, updated);
+      return ok(pri);
+    },
+    async updateStatus(id: string, status: string) {
+      const run = runs.get(id);
+      if (!run) return err(new NotFoundError("PaymentRun", id));
+      const updated = { ...run, status: status as PaymentRun["status"], updatedAt: new Date() };
+      runs.set(id, updated);
+      return ok(updated);
+    },
+    async execute(id: string, userId: string) {
+      const run = runs.get(id);
+      if (!run) return err(new NotFoundError("PaymentRun", id));
+      const updated = { ...run, status: "EXECUTED" as const, executedAt: new Date(), executedBy: userId, updatedAt: new Date() };
+      runs.set(id, updated);
+      return ok(updated);
+    },
   };
 }
