@@ -2,7 +2,7 @@ import { eq, and, count, asc, sql } from "drizzle-orm";
 import type { TenantTx } from "@afenda/db";
 import { budgetEntries, accounts } from "@afenda/db";
 import type { PaginationParams, PaginatedResult } from "@afenda/core";
-import type { BudgetEntry } from "../../../domain/index.js";
+import type { BudgetEntry } from "../entities/budget.js";
 import type { IBudgetRepo, UpsertBudgetEntryInput } from "../../../slices/hub/ports/budget-repo.js";
 
 function mapRow(

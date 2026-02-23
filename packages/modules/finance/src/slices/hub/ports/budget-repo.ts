@@ -1,5 +1,5 @@
 import type { PaginatedResult, PaginationParams } from "@afenda/core";
-import type { BudgetEntry } from "../../../domain/index.js";
+import type { BudgetEntry } from "../entities/budget.js";
 
 export interface UpsertBudgetEntryInput {
   readonly tenantId: string;

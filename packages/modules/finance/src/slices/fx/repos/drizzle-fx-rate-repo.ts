@@ -2,7 +2,7 @@ import { and, eq, lte, desc } from "drizzle-orm";
 import type { TenantTx } from "@afenda/db";
 import { fxRates, currencies } from "@afenda/db";
 import { ok, err, NotFoundError, type Result } from "@afenda/core";
-import type { FxRate } from "../../../domain/index.js";
+import type { FxRate } from "../entities/fx-rate.js";
 import type { IFxRateRepo } from "../../../slices/fx/ports/fx-rate-repo.js";
 
 export class DrizzleFxRateRepo implements IFxRateRepo {

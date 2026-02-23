@@ -3,7 +3,8 @@ import { ok, money } from "@afenda/core";
 import type { Result, CompanyId, LedgerId } from "@afenda/core";
 import type { TenantTx } from "@afenda/db";
 import { glBalances, ledgers } from "@afenda/db";
-import type { TrialBalance, TrialBalanceRow, AccountType } from "../../../domain/index.js";
+import type { TrialBalance, TrialBalanceRow } from "../entities/gl-balance.js";
+import type { AccountType } from "../entities/account.js";
 import type { IGlBalanceRepo, BalanceUpsertLine } from "../../../slices/gl/ports/gl-balance-repo.js";
 
 export class DrizzleBalanceRepo implements IGlBalanceRepo {

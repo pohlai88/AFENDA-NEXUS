@@ -1,5 +1,5 @@
 import type { Result } from "@afenda/core";
-import type { FxRate } from "../../../domain/index.js";
+import type { FxRate } from "../entities/fx-rate.js";
 
 export interface IFxRateRepo {
   findRate(

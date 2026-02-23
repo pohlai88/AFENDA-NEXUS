@@ -1,5 +1,5 @@
 import { companyId, dateRange } from "@afenda/core";
-import type { FiscalPeriod, PeriodStatus } from "../../domain/index.js";
+import type { FiscalPeriod, PeriodStatus } from "../../slices/gl/entities/fiscal-period.js";
 import type { FiscalPeriod as DbFiscalPeriod } from "@afenda/db";
 
 export function mapPeriodToDomain(row: DbFiscalPeriod): FiscalPeriod {

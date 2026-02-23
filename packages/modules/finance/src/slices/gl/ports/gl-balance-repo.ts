@@ -1,5 +1,5 @@
 import type { Result } from "@afenda/core";
-import type { TrialBalance } from "../../../domain/index.js";
+import type { TrialBalance } from "../entities/gl-balance.js";
 
 export interface BalanceUpsertLine {
   readonly accountId: string;

@@ -1,5 +1,5 @@
 import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { FiscalPeriod } from "../../../domain/index.js";
+import type { FiscalPeriod } from "../entities/fiscal-period.js";
 
 export interface IFiscalPeriodRepo {
   findById(id: string): Promise<Result<FiscalPeriod>>;

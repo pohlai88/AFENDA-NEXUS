@@ -1,5 +1,5 @@
 import type { Result } from "@afenda/core";
-import type { TrialBalance } from "../../../domain/index.js";
+import type { TrialBalance } from "../entities/gl-balance.js";
 import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
 

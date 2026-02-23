@@ -3,7 +3,7 @@ import { ok, err, NotFoundError } from "@afenda/core";
 import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
 import type { TenantTx } from "@afenda/db";
 import { glJournals, glJournalLines } from "@afenda/db";
-import type { Journal } from "../../../domain/index.js";
+import type { Journal } from "../entities/journal.js";
 import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";
 import { mapJournalToDomain } from "../../../shared/mappers/journal-mapper.js";
 import type { JournalRowWithLines } from "../../../shared/mappers/journal-mapper.js";

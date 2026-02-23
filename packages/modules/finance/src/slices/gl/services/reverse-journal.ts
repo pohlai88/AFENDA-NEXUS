@@ -1,6 +1,6 @@
 import type { Result } from "@afenda/core";
 import { err, AppError } from "@afenda/core";
-import type { Journal } from "../../../domain/index.js";
+import type { Journal } from "../entities/journal.js";
 import type { IJournalRepo } from "../../../slices/gl/ports/journal-repo.js";
 import type { IFiscalPeriodRepo } from "../../../slices/gl/ports/fiscal-period-repo.js";
 import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";

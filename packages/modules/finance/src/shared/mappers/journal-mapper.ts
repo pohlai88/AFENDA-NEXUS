@@ -1,5 +1,5 @@
 import { companyId, ledgerId, money } from "@afenda/core";
-import type { Journal, JournalLine } from "../../domain/index.js";
+import type { Journal, JournalLine } from "../../slices/gl/entities/journal.js";
 import type { GlJournal, GlJournalLine } from "@afenda/db";
 
 export interface JournalRowWithLines extends GlJournal {

@@ -2,7 +2,7 @@ import { eq, and, lte, count, asc } from "drizzle-orm";
 import type { TenantTx } from "@afenda/db";
 import { recurringTemplates } from "@afenda/db";
 import type { PaginationParams, PaginatedResult } from "@afenda/core";
-import type { RecurringTemplate, RecurringTemplateLine } from "../../../domain/index.js";
+import type { RecurringTemplate, RecurringTemplateLine } from "../entities/recurring-template.js";
 import type { IRecurringTemplateRepo, CreateRecurringTemplateInput } from "../../../slices/hub/ports/recurring-template-repo.js";
 
 function mapRow(row: typeof recurringTemplates.$inferSelect): RecurringTemplate {

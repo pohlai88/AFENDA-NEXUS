@@ -2,7 +2,7 @@ import { eq, and, count } from "drizzle-orm";
 import type { TenantTx } from "@afenda/db";
 import { icAgreements, icTransactions, icTransactionLegs, currencies } from "@afenda/db";
 import { ok, err, NotFoundError, type Result, type PaginationParams, type PaginatedResult } from "@afenda/core";
-import type { IntercompanyRelationship, IntercompanyDocument } from "../../../domain/index.js";
+import type { IntercompanyRelationship, IntercompanyDocument } from "../entities/intercompany.js";
 import type { IIcAgreementRepo, IIcTransactionRepo, CreateIcDocumentInput } from "../../../slices/ic/ports/ic-repo.js";
 
 export class DrizzleIcAgreementRepo implements IIcAgreementRepo {

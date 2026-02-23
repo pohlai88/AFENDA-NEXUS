@@ -1,5 +1,5 @@
 import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { Journal } from "../../../domain/index.js";
+import type { Journal } from "../entities/journal.js";
 
 export interface CreateJournalInput {
   readonly tenantId: string;

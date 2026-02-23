@@ -1,6 +1,6 @@
 import type { Result } from "@afenda/core";
 import { err, AppError } from "@afenda/core";
-import type { FiscalPeriod } from "../../../domain/index.js";
+import type { FiscalPeriod } from "../entities/fiscal-period.js";
 import type { IFiscalPeriodRepo } from "../../../slices/gl/ports/fiscal-period-repo.js";
 import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
 import type { IPeriodAuditRepo } from "../../../slices/gl/ports/period-audit-repo.js";

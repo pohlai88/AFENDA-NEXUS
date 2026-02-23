@@ -1,7 +1,7 @@
 import type { Result } from "@afenda/core";
 import { ok } from "@afenda/core";
-import type { IncomeStatement } from "../../../domain/index.js";
-import { classifyIncomeStatement } from "../../../domain/index.js";
+import type { IncomeStatement } from "../entities/financial-reports.js";
+import { classifyIncomeStatement } from "../calculators/report-classifier.js";
 import type { ClassifiableRow } from "../../reporting/calculators/report-classifier.js";
 import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
 import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";

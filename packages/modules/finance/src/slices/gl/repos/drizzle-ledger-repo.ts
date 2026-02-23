@@ -2,7 +2,7 @@ import { eq, count } from "drizzle-orm";
 import type { TenantTx } from "@afenda/db";
 import { ledgers, currencies } from "@afenda/db";
 import { ok, err, NotFoundError, type Result, type PaginationParams, type PaginatedResult } from "@afenda/core";
-import type { Ledger } from "../../../domain/index.js";
+import type { Ledger } from "../entities/ledger.js";
 import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";
 
 export class DrizzleLedgerRepo implements ILedgerRepo {

@@ -30,8 +30,8 @@ export type { IIdempotencyStore, IdempotencyClaimInput, IdempotencyResult } from
 export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js";
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
-// ─── Finance runtime (stays in app/ports shim for now) ──────────────────────
-export type { FinanceRuntime, FinanceDeps } from "./app/ports/finance-runtime.js";
+// ─── Finance runtime + per-slice deps ────────────────────────────────────────
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";

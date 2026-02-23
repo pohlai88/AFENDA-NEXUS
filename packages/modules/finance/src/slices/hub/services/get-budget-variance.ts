@@ -1,6 +1,6 @@
 import type { Result } from "@afenda/core";
 import { ok, err, AppError, money } from "@afenda/core";
-import type { BudgetVarianceReport, BudgetVarianceRow } from "../../../domain/index.js";
+import type { BudgetVarianceReport, BudgetVarianceRow } from "../entities/budget.js";
 import type { IBudgetRepo } from "../../../slices/hub/ports/budget-repo.js";
 import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
 import type { IAccountRepo } from "../../../slices/gl/ports/account-repo.js";

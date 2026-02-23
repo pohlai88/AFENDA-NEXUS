@@ -1,5 +1,5 @@
 import type { PaginatedResult, PaginationParams } from "@afenda/core";
-import type { RecurringTemplate } from "../../../domain/index.js";
+import type { RecurringTemplate } from "../entities/recurring-template.js";
 
 export interface CreateRecurringTemplateInput {
   readonly tenantId: string;

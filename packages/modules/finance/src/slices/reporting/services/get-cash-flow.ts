@@ -1,7 +1,7 @@
 import type { Result } from "@afenda/core";
 import { ok } from "@afenda/core";
-import type { CashFlowStatement } from "../../../domain/index.js";
-import { classifyCashFlow } from "../../../domain/index.js";
+import type { CashFlowStatement } from "../entities/financial-reports.js";
+import { classifyCashFlow } from "../calculators/report-classifier.js";
 import type { ClassifiableRow } from "../../reporting/calculators/report-classifier.js";
 import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
 import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";

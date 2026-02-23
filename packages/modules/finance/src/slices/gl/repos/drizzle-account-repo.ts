@@ -3,7 +3,7 @@ import { ok, err, NotFoundError } from "@afenda/core";
 import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
 import type { TenantTx } from "@afenda/db";
 import { accounts } from "@afenda/db";
-import type { Account } from "../../../domain/index.js";
+import type { Account } from "../entities/account.js";
 import type { IAccountRepo } from "../../../slices/gl/ports/account-repo.js";
 import { mapAccountToDomain } from "../../../shared/mappers/account-mapper.js";
 

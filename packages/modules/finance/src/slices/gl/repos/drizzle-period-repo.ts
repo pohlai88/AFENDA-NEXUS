@@ -3,7 +3,7 @@ import { ok, err, NotFoundError } from "@afenda/core";
 import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
 import type { TenantTx } from "@afenda/db";
 import { fiscalPeriods } from "@afenda/db";
-import type { FiscalPeriod } from "../../../domain/index.js";
+import type { FiscalPeriod } from "../entities/fiscal-period.js";
 import type { IFiscalPeriodRepo } from "../../../slices/gl/ports/fiscal-period-repo.js";
 import { mapPeriodToDomain } from "../../../shared/mappers/period-mapper.js";
 

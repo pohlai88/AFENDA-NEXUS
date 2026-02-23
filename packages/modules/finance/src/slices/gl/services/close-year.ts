@@ -14,7 +14,8 @@
  */
 import type { Result } from "@afenda/core";
 import { ok, err, AppError } from "@afenda/core";
-import type { FiscalPeriod, Journal } from "../../../domain/index.js";
+import type { FiscalPeriod } from "../entities/fiscal-period.js";
+import type { Journal } from "../entities/journal.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
 import { FinanceEventType } from "../../../shared/events.js";
 import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";

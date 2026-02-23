@@ -1,5 +1,5 @@
 import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { IntercompanyRelationship, IntercompanyDocument } from "../../../domain/index.js";
+import type { IntercompanyRelationship, IntercompanyDocument } from "../entities/intercompany.js";
 
 export interface IIcAgreementRepo {
   findById(id: string): Promise<Result<IntercompanyRelationship>>;

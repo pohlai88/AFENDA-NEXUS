@@ -1,5 +1,5 @@
 import { companyId } from "@afenda/core";
-import type { Account, AccountType } from "../../domain/index.js";
+import type { Account, AccountType } from "../../slices/gl/entities/account.js";
 import { normalBalanceFor } from "../../slices/gl/entities/account.js";
 import type { Account as DbAccount } from "@afenda/db";
 

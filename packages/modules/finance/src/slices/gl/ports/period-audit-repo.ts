@@ -1,4 +1,4 @@
-import type { FiscalPeriod } from "../../../domain/index.js";
+import type { FiscalPeriod } from "../entities/fiscal-period.js";
 
 export interface PeriodAuditLogInput {
   readonly tenantId: string;

@@ -3,7 +3,7 @@ import { ok } from "@afenda/core";
 import type { Result } from "@afenda/core";
 import type { TenantTx } from "@afenda/db";
 import { auditLogs } from "@afenda/db";
-import type { JournalAuditEntry } from "../../../domain/index.js";
+import type { JournalAuditEntry } from "../entities/journal-audit.js";
 import type { IJournalAuditRepo, AuditLogInput } from "../../../slices/gl/ports/journal-audit-repo.js";
 
 export class DrizzleJournalAuditRepo implements IJournalAuditRepo {

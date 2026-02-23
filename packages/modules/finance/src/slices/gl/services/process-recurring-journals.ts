@@ -1,6 +1,7 @@
 import type { Result } from "@afenda/core";
 import { ok } from "@afenda/core";
-import type { Journal, RecurringTemplate } from "../../../domain/index.js";
+import type { Journal } from "../entities/journal.js";
+import type { RecurringTemplate } from "../../hub/entities/recurring-template.js";
 import type { IRecurringTemplateRepo } from "../../../slices/hub/ports/recurring-template-repo.js";
 import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";
 import type { IAccountRepo } from "../../../slices/gl/ports/account-repo.js";

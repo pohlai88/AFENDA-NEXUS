@@ -1,7 +1,10 @@
 import type { Result } from "@afenda/core";
 import { err, AppError } from "@afenda/core";
-import type { Journal, FxRate } from "../../../domain/index.js";
-import { convertAmount, validateJournalBalance, isBalanceDirectionValid } from "../../../domain/index.js";
+import type { Journal } from "../entities/journal.js";
+import type { FxRate } from "../../fx/entities/fx-rate.js";
+import { convertAmount } from "../../fx/entities/fx-rate.js";
+import { validateJournalBalance } from "../calculators/journal-balance.js";
+import { isBalanceDirectionValid } from "../entities/account.js";
 import type { IAccountRepo } from "../../../slices/gl/ports/account-repo.js";
 import type { IJournalRepo } from "../../../slices/gl/ports/journal-repo.js";
 import type { IFiscalPeriodRepo } from "../../../slices/gl/ports/fiscal-period-repo.js";

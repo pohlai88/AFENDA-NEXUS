@@ -1,5 +1,6 @@
 import type { Result } from "@afenda/core";
-import type { Journal, JournalAuditEntry } from "../../../domain/index.js";
+import type { Journal } from "../entities/journal.js";
+import type { JournalAuditEntry } from "../entities/journal-audit.js";
 
 export interface AuditLogInput {
   readonly tenantId: string;

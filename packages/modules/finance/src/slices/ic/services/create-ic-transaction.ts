@@ -1,6 +1,6 @@
 import type { Result } from "@afenda/core";
 import { err, AppError } from "@afenda/core";
-import type { IntercompanyDocument } from "../../../domain/index.js";
+import type { IntercompanyDocument } from "../entities/intercompany.js";
 import type { IIcAgreementRepo, IIcTransactionRepo } from "../../../slices/ic/ports/ic-repo.js";
 import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";
 import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";

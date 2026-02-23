@@ -11,16 +11,16 @@
  */
 import type { Result } from "@afenda/core";
 import { ok, err, AppError } from "@afenda/core";
-import type { TrialBalance, EliminationEntry } from "../../../domain/index.js";
-import {
-  translateTrialBalance,
-  computeEliminations,
-} from "../../../domain/index.js";
+import type { TrialBalance } from "../../gl/entities/gl-balance.js";
+import { translateTrialBalance } from "../../fx/calculators/fx-translation.js";
+import type { EliminationEntry } from "../../ic/calculators/ic-elimination.js";
+import { computeEliminations } from "../../ic/calculators/ic-elimination.js";
 import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
 import type { IFxRateRepo } from "../../../slices/fx/ports/fx-rate-repo.js";
 import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
-import type { IntercompanyBalance, TranslatedEntry } from "../../../domain/index.js";
+import type { IntercompanyBalance } from "../../ic/calculators/ic-elimination.js";
+import type { TranslatedEntry } from "../../fx/calculators/fx-translation.js";
 
 export interface ConsolidationInput {
   readonly tenantId: string;
