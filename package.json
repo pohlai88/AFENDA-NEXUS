@@ -24,6 +24,7 @@
     "gen:endpoint": "node tools/generators/src/gen-endpoint.mjs",
     "gen:outbox-event": "node tools/generators/src/gen-outbox-event.mjs",
     "arch:guard": "node tools/drift-check/src/arch-guard.mjs",
+    "web:drift": "node tools/scripts/web-drift-check.mjs",
     "audit:ais": "node tools/scripts/audit-ais.mjs",
     "audit:sox": "node tools/scripts/audit-sox.mjs",
     "audit:pack": "node tools/scripts/generate-evidence-pack.mjs",

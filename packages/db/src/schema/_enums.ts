@@ -247,3 +247,34 @@ export const expenseCategoryEnum = pgEnum("expense_category", [
   "ENTERTAINMENT",
   "OTHER",
 ]);
+
+export const projectStatusEnum = pgEnum("project_status", [
+  "PLANNING",
+  "ACTIVE",
+  "ON_HOLD",
+  "COMPLETED",
+  "CANCELLED",
+]);
+
+export const billingTypeEnum = pgEnum("billing_type", [
+  "FIXED_FEE",
+  "TIME_AND_MATERIALS",
+  "MILESTONE",
+  "COST_PLUS",
+]);
+
+export const costCategoryEnum = pgEnum("cost_category", [
+  "LABOR",
+  "MATERIALS",
+  "SUBCONTRACT",
+  "TRAVEL",
+  "EQUIPMENT",
+  "OVERHEAD",
+  "OTHER",
+]);
+
+export const billingStatusEnum = pgEnum("billing_status", [
+  "DRAFT",
+  "INVOICED",
+  "PAID",
+]);

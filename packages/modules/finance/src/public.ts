@@ -31,7 +31,7 @@ export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
 // ─── Finance runtime + per-slice deps ────────────────────────────────────────
-export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, CreditDeps, ExpenseDeps, SharedDeps } from "./app/ports/finance-runtime.js";
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, CreditDeps, ExpenseDeps, ProjectDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";
@@ -256,6 +256,22 @@ export { computePerDiem, computeMileage, type PerDiemInput, type PerDiemResult, 
 
 // ─── Expense route registrars ─────────────────────────────────────────────
 export { registerExpenseRoutes } from "./slices/expense/routes/expense-routes.js";
+
+// ─── Project ports ────────────────────────────────────────────────────────
+export type { IProjectRepo, CreateProjectInput, CreateProjectCostLineInput, CreateProjectBillingInput } from "./slices/project/ports/project-repo.js";
+
+// ─── Project entities ─────────────────────────────────────────────────────
+export type { Project, ProjectStatus, BillingType } from "./slices/project/entities/project.js";
+export type { ProjectCostLine, CostCategory } from "./slices/project/entities/project-cost-line.js";
+export type { ProjectBilling, BillingStatus } from "./slices/project/entities/project-billing.js";
+
+// ─── Project calculators ──────────────────────────────────────────────────
+export { computeEarnedValue, type EarnedValueInput, type EarnedValueResult } from "./slices/project/calculators/earned-value.js";
+export { computePctCompletion, type PctCompletionInput, type PctCompletionResult } from "./slices/project/calculators/pct-completion.js";
+export { computeProjectProfitability, type ProfitabilityInput, type ProfitabilityResult } from "./slices/project/calculators/project-profitability.js";
+
+// ─── Project route registrars ─────────────────────────────────────────────
+export { registerProjectRoutes } from "./slices/project/routes/project-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";

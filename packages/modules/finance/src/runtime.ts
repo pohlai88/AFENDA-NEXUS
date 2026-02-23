@@ -38,6 +38,7 @@ import { DrizzleCreditLimitRepo } from "./slices/credit/repos/drizzle-credit-lim
 import { DrizzleCreditReviewRepo } from "./slices/credit/repos/drizzle-credit-review-repo.js";
 import { DrizzleExpenseClaimRepo } from "./slices/expense/repos/drizzle-expense-claim-repo.js";
 import { DrizzleExpensePolicyRepo } from "./slices/expense/repos/drizzle-expense-policy-repo.js";
+import { DrizzleProjectRepo } from "./slices/project/repos/drizzle-project-repo.js";
 
 /**
  * Composition-root adapter that wires all Drizzle repos into a FinanceRuntime.
@@ -91,6 +92,7 @@ export function createFinanceRuntime(session: DbSession): FinanceRuntime {
           creditReviewRepo: new DrizzleCreditReviewRepo(tx),
           expenseClaimRepo: new DrizzleExpenseClaimRepo(tx),
           expensePolicyRepo: new DrizzleExpensePolicyRepo(tx),
+          projectRepo: new DrizzleProjectRepo(tx),
         };
         return fn(deps);
       });

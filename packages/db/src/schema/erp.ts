@@ -49,6 +49,10 @@ import {
   reviewOutcomeEnum,
   expenseClaimStatusEnum,
   expenseCategoryEnum,
+  projectStatusEnum,
+  billingTypeEnum,
+  costCategoryEnum,
+  billingStatusEnum,
 } from "./_enums";
 import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
 
@@ -1188,5 +1192,83 @@ export const expensePolicies = erpSchema.table(
   },
   (t) => [
     index("idx_expense_policy_company_tenant").on(t.tenantId, t.companyId),
+  ],
+);
+
+// ─── erp.project ───────────────────────────────────────────────────────────
+
+export const projects = erpSchema.table(
+  "project",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    projectCode: varchar("project_code", { length: 30 }).notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    customerId: uuid("customer_id"),
+    managerId: uuid("manager_id").notNull(),
+    status: projectStatusEnum("status").notNull().default("PLANNING"),
+    billingType: billingTypeEnum("billing_type").notNull(),
+    budgetAmount: moneyBigint("budget_amount").notNull(),
+    actualCost: moneyBigint("actual_cost").notNull().default(sql`0`),
+    billedAmount: moneyBigint("billed_amount").notNull().default(sql`0`),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    completionPct: smallint("completion_pct").notNull().default(0),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_project_code_tenant").on(t.tenantId, t.projectCode),
+    index("idx_project_company_tenant").on(t.tenantId, t.companyId),
+    index("idx_project_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.project_cost_line ─────────────────────────────────────────────────
+
+export const projectCostLines = erpSchema.table(
+  "project_cost_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    projectId: uuid("project_id").notNull(),
+    lineNumber: smallint("line_number").notNull(),
+    costDate: timestamp("cost_date", { withTimezone: true }).notNull(),
+    category: costCategoryEnum("category").notNull(),
+    description: text("description").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    glAccountId: uuid("gl_account_id").notNull(),
+    journalId: uuid("journal_id"),
+    employeeId: uuid("employee_id"),
+    isBillable: boolean("is_billable").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_project_cost_project_tenant").on(t.tenantId, t.projectId),
+  ],
+);
+
+// ─── erp.project_billing ──────────────────────────────────────────────────
+
+export const projectBillings = erpSchema.table(
+  "project_billing",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    projectId: uuid("project_id").notNull(),
+    billingDate: timestamp("billing_date", { withTimezone: true }).notNull(),
+    description: text("description").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    status: billingStatusEnum("status").notNull().default("DRAFT"),
+    milestoneRef: varchar("milestone_ref", { length: 100 }),
+    arInvoiceId: uuid("ar_invoice_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_project_billing_project_tenant").on(t.tenantId, t.projectId),
   ],
 );

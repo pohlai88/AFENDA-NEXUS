@@ -36,6 +36,10 @@ export {
   reviewOutcomeEnum,
   expenseClaimStatusEnum,
   expenseCategoryEnum,
+  projectStatusEnum,
+  billingTypeEnum,
+  costCategoryEnum,
+  billingStatusEnum,
 } from "./_enums";
 export { tenants, companies, users } from "./platform";
 export {
@@ -87,6 +91,9 @@ export {
   expenseClaims,
   expenseClaimLines,
   expensePolicies,
+  projects,
+  projectCostLines,
+  projectBillings,
 } from "./erp";
 export { auditLogs } from "./audit";
 export { outbox } from "./outbox-table";
