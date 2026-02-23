@@ -33,6 +33,10 @@ import {
   settlementStatusEnum,
   arInvoiceStatusEnum,
   dunningRunStatusEnum,
+  taxRateTypeEnum,
+  jurisdictionLevelEnum,
+  taxReturnStatusEnum,
+  whtCertificateStatusEnum,
 } from "./_enums";
 import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
 
@@ -724,5 +728,113 @@ export const dunningLetters = erpSchema.table(
   (t) => [
     index("idx_dunning_letter_run_tenant").on(t.tenantId, t.dunningRunId),
     index("idx_dunning_letter_customer_tenant").on(t.tenantId, t.customerId),
+  ],
+);
+
+// ─── erp.tax_code ──────────────────────────────────────────────────────────
+
+export const taxCodes = erpSchema.table(
+  "tax_code",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    code: varchar("code", { length: 20 }).notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    jurisdictionLevel: jurisdictionLevelEnum("jurisdiction_level").notNull(),
+    countryCode: varchar("country_code", { length: 2 }).notNull(),
+    stateCode: varchar("state_code", { length: 10 }),
+    cityCode: varchar("city_code", { length: 20 }),
+    parentId: uuid("parent_id"),
+    isCompound: boolean("is_compound").notNull().default(false),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_tax_code_tenant_code").on(t.tenantId, t.code),
+    index("idx_tax_code_country_tenant").on(t.tenantId, t.countryCode),
+  ],
+);
+
+// ─── erp.tax_rate ──────────────────────────────────────────────────────────
+
+export const taxRates = erpSchema.table(
+  "tax_rate",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    taxCodeId: uuid("tax_code_id").notNull(),
+    name: text("name").notNull(),
+    ratePercent: smallint("rate_percent").notNull(),
+    type: taxRateTypeEnum("type").notNull(),
+    jurisdictionCode: varchar("jurisdiction_code", { length: 20 }).notNull(),
+    effectiveFrom: timestamp("effective_from", { withTimezone: true }).notNull(),
+    effectiveTo: timestamp("effective_to", { withTimezone: true }),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_tax_rate_code_tenant").on(t.tenantId, t.taxCodeId),
+    index("idx_tax_rate_jurisdiction_tenant").on(t.tenantId, t.jurisdictionCode),
+  ],
+);
+
+// ─── erp.tax_return_period ─────────────────────────────────────────────────
+
+export const taxReturnPeriods = erpSchema.table(
+  "tax_return_period",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    taxType: varchar("tax_type", { length: 20 }).notNull(),
+    jurisdictionCode: varchar("jurisdiction_code", { length: 20 }).notNull(),
+    periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+    periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+    outputTax: moneyBigint("output_tax").notNull().default(sql`0`),
+    inputTax: moneyBigint("input_tax").notNull().default(sql`0`),
+    netPayable: moneyBigint("net_payable").notNull().default(sql`0`),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    status: taxReturnStatusEnum("status").notNull().default("DRAFT"),
+    filedAt: timestamp("filed_at", { withTimezone: true }),
+    filedBy: uuid("filed_by"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_tax_return_jurisdiction_tenant").on(t.tenantId, t.jurisdictionCode),
+    index("idx_tax_return_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.wht_certificate ──────────────────────────────────────────────────
+
+export const whtCertificates = erpSchema.table(
+  "wht_certificate",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    payeeId: uuid("payee_id").notNull(),
+    payeeName: text("payee_name").notNull(),
+    payeeType: varchar("payee_type", { length: 20 }).notNull(),
+    countryCode: varchar("country_code", { length: 2 }).notNull(),
+    incomeType: varchar("income_type", { length: 50 }).notNull(),
+    grossAmount: moneyBigint("gross_amount").notNull(),
+    whtAmount: moneyBigint("wht_amount").notNull(),
+    netAmount: moneyBigint("net_amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    rateApplied: smallint("rate_applied").notNull(),
+    treatyRate: smallint("treaty_rate"),
+    certificateNumber: varchar("certificate_number", { length: 50 }).notNull(),
+    issueDate: timestamp("issue_date", { withTimezone: true }).notNull(),
+    taxPeriodStart: timestamp("tax_period_start", { withTimezone: true }).notNull(),
+    taxPeriodEnd: timestamp("tax_period_end", { withTimezone: true }).notNull(),
+    relatedInvoiceId: uuid("related_invoice_id"),
+    relatedPaymentId: uuid("related_payment_id"),
+    status: whtCertificateStatusEnum("status").notNull().default("DRAFT"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_wht_cert_number_tenant").on(t.tenantId, t.certificateNumber),
+    index("idx_wht_cert_payee_tenant").on(t.tenantId, t.payeeId),
+    index("idx_wht_cert_status_tenant").on(t.tenantId, t.status),
   ],
 );

@@ -31,7 +31,7 @@ export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
 // ─── Finance runtime + per-slice deps ────────────────────────────────────────
-export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, SharedDeps } from "./app/ports/finance-runtime.js";
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";
@@ -137,6 +137,38 @@ export { registerArInvoiceRoutes } from "./slices/ar/routes/ar-invoice-routes.js
 export { registerArPaymentRoutes } from "./slices/ar/routes/ar-payment-routes.js";
 export { registerArAgingRoutes } from "./slices/ar/routes/ar-aging-routes.js";
 export { registerArDunningRoutes } from "./slices/ar/routes/ar-dunning-routes.js";
+
+// ─── Tax ports ─────────────────────────────────────────────────────────────
+export type { ITaxRateRepo, CreateTaxRateInput } from "./slices/tax/ports/tax-rate-repo.js";
+export type { ITaxCodeRepo, CreateTaxCodeInput as CreateTaxCodeRepoInput } from "./slices/tax/ports/tax-code-repo.js";
+export type { ITaxReturnRepo, CreateTaxReturnInput } from "./slices/tax/ports/tax-return-repo.js";
+export type { IWhtCertificateRepo, CreateWhtCertificateInput } from "./slices/tax/ports/wht-certificate-repo.js";
+
+// ─── Tax entities ──────────────────────────────────────────────────────────
+export type { TaxRate, TaxRateType } from "./slices/tax/entities/tax-rate.js";
+export type { TaxCode, JurisdictionLevel } from "./slices/tax/entities/tax-code.js";
+export type { TaxReturnPeriod, TaxReturnStatus } from "./slices/tax/entities/tax-return.js";
+export type { WhtCertificate, WhtCertificateStatus } from "./slices/tax/entities/wht-certificate.js";
+
+// ─── Tax services ──────────────────────────────────────────────────────────
+export { aggregateTaxReturn, type AggregateTaxReturnInput } from "./slices/tax/services/aggregate-tax-return.js";
+export { issueWhtCertificate, type IssueWhtCertificateInput } from "./slices/tax/services/issue-wht-certificate.js";
+
+// ─── Tax calculators ───────────────────────────────────────────────────────
+export { lookupTaxCode, computeCompoundTax, type TaxLookupAddress, type TaxLookupResult, type CompoundTaxResult } from "./slices/tax/calculators/tax-code-hierarchy.js";
+export { computeVatNetting, type TaxEntry, type VatNettingResult, type VatNettingSummary } from "./slices/tax/calculators/vat-netting.js";
+export { buildSaftFile, validateSaftFile, type SaftFile, type SaftHeader, type SaftTransaction, type SaftValidationResult } from "./slices/tax/calculators/saft-export.js";
+export { computeWhtWithTreaty, computeBatchWht, type TreatyRate, type WhtTreatyInput, type WhtTreatyResult } from "./slices/tax/calculators/wht-treaty.js";
+export { computeDeferredTax, type TemporaryDifference, type DeferredTaxResult, type DeferredTaxItem } from "./slices/tax/calculators/deferred-tax.js";
+export { computeTaxProvision, type TaxProvisionInput, type TaxProvisionResult } from "./slices/tax/calculators/tax-provision.js";
+export { formatTaxReturn, formatMySst, formatSgGst, formatGenericVat, type FormattedTaxReturn, type TaxReturnData, type CountryFormatType } from "./slices/tax/calculators/country-formats.js";
+export { validateTransferPrice, validateBatchTransferPrices, type TransferPricingInput, type TransferPricingResult, type TransferPricingMethod } from "./slices/tax/calculators/transfer-pricing.js";
+
+// ─── Tax route registrars ──────────────────────────────────────────────────
+export { registerTaxCodeRoutes } from "./slices/tax/routes/tax-code-routes.js";
+export { registerTaxRateRoutes } from "./slices/tax/routes/tax-rate-routes.js";
+export { registerTaxReturnRoutes } from "./slices/tax/routes/tax-return-routes.js";
+export { registerWhtCertificateRoutes } from "./slices/tax/routes/wht-certificate-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";

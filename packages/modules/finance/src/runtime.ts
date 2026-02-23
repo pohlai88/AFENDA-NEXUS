@@ -24,6 +24,10 @@ import { DrizzleApPaymentRunRepo } from "./slices/ap/repos/drizzle-ap-payment-ru
 import { DrizzleArInvoiceRepo } from "./slices/ar/repos/drizzle-ar-invoice-repo.js";
 import { DrizzleArPaymentAllocationRepo } from "./slices/ar/repos/drizzle-ar-payment-allocation-repo.js";
 import { DrizzleDunningRepo } from "./slices/ar/repos/drizzle-dunning-repo.js";
+import { DrizzleTaxCodeRepo } from "./slices/tax/repos/drizzle-tax-code-repo.js";
+import { DrizzleTaxRateRepo } from "./slices/tax/repos/drizzle-tax-rate-repo.js";
+import { DrizzleTaxReturnRepo } from "./slices/tax/repos/drizzle-tax-return-repo.js";
+import { DrizzleWhtCertificateRepo } from "./slices/tax/repos/drizzle-wht-certificate-repo.js";
 
 /**
  * Composition-root adapter that wires all Drizzle repos into a FinanceRuntime.
@@ -63,6 +67,10 @@ export function createFinanceRuntime(session: DbSession): FinanceRuntime {
           arInvoiceRepo: new DrizzleArInvoiceRepo(tx),
           arPaymentAllocationRepo: new DrizzleArPaymentAllocationRepo(tx),
           dunningRepo: new DrizzleDunningRepo(tx),
+          taxCodeRepo: new DrizzleTaxCodeRepo(tx),
+          taxRateRepo: new DrizzleTaxRateRepo(tx),
+          taxReturnRepo: new DrizzleTaxReturnRepo(tx),
+          whtCertificateRepo: new DrizzleWhtCertificateRepo(tx),
         };
         return fn(deps);
       });

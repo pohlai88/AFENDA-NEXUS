@@ -127,3 +127,32 @@ export const dunningRunStatusEnum = pgEnum("dunning_run_status", [
   "SENT",
   "CANCELLED",
 ]);
+
+export const taxRateTypeEnum = pgEnum("tax_rate_type", [
+  "VAT",
+  "GST",
+  "SALES_TAX",
+  "WHT",
+  "EXCISE",
+  "CUSTOM",
+]);
+
+export const jurisdictionLevelEnum = pgEnum("jurisdiction_level", [
+  "COUNTRY",
+  "STATE",
+  "CITY",
+  "SPECIAL",
+]);
+
+export const taxReturnStatusEnum = pgEnum("tax_return_status", [
+  "DRAFT",
+  "CALCULATED",
+  "FILED",
+  "AMENDED",
+]);
+
+export const whtCertificateStatusEnum = pgEnum("wht_certificate_status", [
+  "DRAFT",
+  "ISSUED",
+  "CANCELLED",
+]);

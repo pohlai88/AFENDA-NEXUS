@@ -20,6 +20,10 @@ export {
   paymentRunStatusEnum,
   arInvoiceStatusEnum,
   dunningRunStatusEnum,
+  taxRateTypeEnum,
+  jurisdictionLevelEnum,
+  taxReturnStatusEnum,
+  whtCertificateStatusEnum,
 } from "./_enums";
 export { tenants, companies, users } from "./platform";
 export {
@@ -55,6 +59,10 @@ export {
   arAllocationItems,
   dunningRuns,
   dunningLetters,
+  taxCodes,
+  taxRates,
+  taxReturnPeriods,
+  whtCertificates,
 } from "./erp";
 export { auditLogs } from "./audit";
 export { outbox } from "./outbox-table";
