@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
+  },
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/contracts" },
+    { "path": "./packages/authz" },
+    { "path": "./packages/db" },
+    { "path": "./packages/platform" },
+    { "path": "./packages/modules/finance" },
+    { "path": "./packages/industry/fnb" },
+    { "path": "./packages/industry/manufacturing" },
+    { "path": "./packages/industry/agriculture" }
+  ],
+  "files": []
+}

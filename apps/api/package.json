@@ -1,0 +1,35 @@
+{
+  "name": "@afenda/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@afenda/core": "workspace:*",
+    "@afenda/contracts": "workspace:*",
+    "@afenda/authz": "workspace:*",
+    "@afenda/db": "workspace:*",
+    "@afenda/platform": "workspace:*",
+    "@afenda/finance": "workspace:*",
+    "fastify": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@afenda/typescript-config": "workspace:*",
+    "@afenda/eslint-config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

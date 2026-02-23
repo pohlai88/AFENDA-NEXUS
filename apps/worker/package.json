@@ -1,0 +1,32 @@
+{
+  "name": "@afenda/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@afenda/core": "workspace:*",
+    "@afenda/db": "workspace:*",
+    "@afenda/platform": "workspace:*",
+    "graphile-worker": "catalog:",
+    "postgres": "^3.4.8"
+  },
+  "devDependencies": {
+    "@afenda/eslint-config": "workspace:*",
+    "@afenda/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

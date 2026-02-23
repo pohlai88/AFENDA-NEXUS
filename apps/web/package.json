@@ -1,0 +1,28 @@
+{
+  "name": "@afenda/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --turbopack",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@afenda/core": "workspace:*",
+    "@afenda/contracts": "workspace:*",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tailwindcss": "catalog:"
+  },
+  "devDependencies": {
+    "@afenda/typescript-config": "workspace:*",
+    "@afenda/eslint-config": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "typescript": "catalog:"
+  }
+}

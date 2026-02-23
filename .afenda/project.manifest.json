@@ -1,0 +1,106 @@
+{
+  "$schema": "./manifest.schema.json",
+  "workspace_globs": [
+    "apps/*",
+    "packages/*",
+    "packages/modules/*",
+    "packages/industry/*",
+    "tools/*"
+  ],
+  "packages": {
+    "packages/core": {
+      "name": "@afenda/core",
+      "type": "library",
+      "layer": "domain-primitives"
+    },
+    "packages/contracts": {
+      "name": "@afenda/contracts",
+      "type": "library",
+      "layer": "contracts"
+    },
+    "packages/authz": {
+      "name": "@afenda/authz",
+      "type": "library",
+      "layer": "authorization"
+    },
+    "packages/db": {
+      "name": "@afenda/db",
+      "type": "library",
+      "layer": "infrastructure"
+    },
+    "packages/platform": {
+      "name": "@afenda/platform",
+      "type": "library",
+      "layer": "platform"
+    },
+    "packages/modules/finance": {
+      "name": "@afenda/finance",
+      "type": "library",
+      "layer": "module"
+    },
+    "packages/industry/fnb": {
+      "name": "@afenda/industry-fnb",
+      "type": "library",
+      "layer": "industry-overlay"
+    },
+    "packages/industry/manufacturing": {
+      "name": "@afenda/industry-manufacturing",
+      "type": "library",
+      "layer": "industry-overlay"
+    },
+    "packages/industry/agriculture": {
+      "name": "@afenda/industry-agriculture",
+      "type": "library",
+      "layer": "industry-overlay"
+    },
+    "packages/typescript-config": {
+      "name": "@afenda/typescript-config",
+      "type": "config",
+      "layer": null
+    },
+    "packages/eslint-config": {
+      "name": "@afenda/eslint-config",
+      "type": "config",
+      "layer": null
+    },
+    "apps/web": {
+      "name": "@afenda/web",
+      "type": "app",
+      "layer": "app"
+    },
+    "apps/api": {
+      "name": "@afenda/api",
+      "type": "app",
+      "layer": "app"
+    },
+    "apps/worker": {
+      "name": "@afenda/worker",
+      "type": "app",
+      "layer": "app"
+    },
+    "tools/generators": {
+      "name": "@afenda/generators",
+      "type": "tool",
+      "layer": "tool"
+    },
+    "tools/drift-check": {
+      "name": "@afenda/drift-check",
+      "type": "tool",
+      "layer": "tool"
+    },
+    "tools/scripts": {
+      "name": null,
+      "type": "unmanaged",
+      "layer": null
+    }
+  },
+  "special_rules": {
+    "apps_not_in_root_references": true,
+    "tools_not_in_root_references": true,
+    "config_packages_no_runtime": true,
+    "db_never_imports_modules": true,
+    "db_never_imports_platform": true,
+    "modules_export_only_via_public_ts": true,
+    "catalog_enforcement": true
+  }
+}

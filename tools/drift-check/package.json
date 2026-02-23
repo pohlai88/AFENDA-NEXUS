@@ -1,0 +1,12 @@
+{
+  "name": "@afenda/drift-check",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "drift-check": "./src/index.mjs"
+  },
+  "scripts": {
+    "start": "node src/index.mjs"
+  }
+}

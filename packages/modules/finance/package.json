@@ -1,0 +1,54 @@
+{
+  "name": "@afenda/finance",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/public.ts",
+  "types": "./src/public.ts",
+  "exports": {
+    ".": {
+      "source": "./src/public.ts",
+      "import": "./dist/public.js",
+      "types": "./dist/public.d.ts",
+      "default": "./src/public.ts"
+    },
+    "./infra": {
+      "source": "./src/infra.ts",
+      "import": "./dist/infra.js",
+      "types": "./dist/infra.d.ts",
+      "default": "./src/infra.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "ARCHITECTURE.@afenda-modules-finance.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:property": "vitest run --reporter=verbose src/__tests__/invariants-pure.property.test.ts src/__tests__/invariants-db.property.test.ts",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@afenda/authz": "workspace:*",
+    "@afenda/contracts": "workspace:*",
+    "@afenda/core": "workspace:*",
+    "@afenda/db": "workspace:*",
+    "@afenda/platform": "workspace:*",
+    "drizzle-orm": "catalog:",
+    "fastify": "catalog:"
+  },
+  "devDependencies": {
+    "@afenda/eslint-config": "workspace:*",
+    "@afenda/typescript-config": "workspace:*",
+    "fast-check": "^4.5.3",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@afenda/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "*.js",
+    "ARCHITECTURE.@afenda-eslint-config.md"
+  ],
+  "devDependencies": {
+    "eslint": "catalog:",
+    "typescript-eslint": "catalog:"
+  }
+}

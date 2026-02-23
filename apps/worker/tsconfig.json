@@ -1,0 +1,12 @@
+{
+  "extends": "@afenda/typescript-config/fastify.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": true,
+    "declaration": false,
+    "noEmit": false,
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*", "*.config.*"]
+}

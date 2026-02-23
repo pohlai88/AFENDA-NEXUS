@@ -1,0 +1,482 @@
+import { sql } from "drizzle-orm";
+import {
+  boolean,
+  check,
+  index,
+  integer,
+  jsonb,
+  primaryKey,
+  smallint,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
+import { erpSchema } from "./_schemas";
+import {
+  accountTypeEnum,
+  contractStatusEnum,
+  counterpartyTypeEnum,
+  documentTypeEnum,
+  icLegSideEnum,
+  icPricingEnum,
+  icSettlementStatusEnum,
+  journalStatusEnum,
+  periodStatusEnum,
+  recognitionMethodEnum,
+  recurringFrequencyEnum,
+  reportingStandardEnum,
+  settlementMethodEnum,
+  settlementStatusEnum,
+} from "./_enums";
+import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
+
+// ─── erp.currency ───────────────────────────────────────────────────────────
+
+export const currencies = erpSchema.table(
+  "currency",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    code: varchar("code", { length: 3 }).notNull(),
+    name: text("name").notNull(),
+    symbol: varchar("symbol", { length: 5 }).notNull(),
+    decimalPlaces: smallint("decimal_places").notNull().default(2),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_currency_code_tenant").on(t.tenantId, t.code),
+    check("chk_currency_decimal_places", sql`${t.decimalPlaces} >= 0 AND ${t.decimalPlaces} <= 4`),
+  ],
+);
+
+// ─── erp.fiscal_year ────────────────────────────────────────────────────────
+
+export const fiscalYears = erpSchema.table(
+  "fiscal_year",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    name: varchar("name", { length: 50 }).notNull(),
+    startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+    endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+    isClosed: boolean("is_closed").notNull().default(false),
+    ...timestamps(),
+  },
+  (t) => [uniqueIndex("uq_fiscal_year_name_tenant").on(t.tenantId, t.name)],
+);
+
+// ─── erp.fiscal_period ──────────────────────────────────────────────────────
+
+export const fiscalPeriods = erpSchema.table(
+  "fiscal_period",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    fiscalYearId: uuid("fiscal_year_id").notNull(),
+    name: varchar("name", { length: 50 }).notNull(),
+    periodNumber: smallint("period_number").notNull(),
+    startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+    endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+    status: periodStatusEnum("status").notNull().default("OPEN"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_fiscal_period_year_num_tenant").on(t.tenantId, t.fiscalYearId, t.periodNumber),
+  ],
+);
+
+// ─── erp.account ────────────────────────────────────────────────────────────
+
+export const accounts = erpSchema.table(
+  "account",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    code: varchar("code", { length: 20 }).notNull(),
+    name: text("name").notNull(),
+    accountType: accountTypeEnum("account_type").notNull(),
+    parentId: uuid("parent_id"),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_account_code_tenant").on(t.tenantId, t.code),
+    index("idx_account_type_tenant").on(t.tenantId, t.accountType),
+  ],
+);
+
+// ─── erp.ledger ─────────────────────────────────────────────────────────────
+
+export const ledgers = erpSchema.table(
+  "ledger",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    name: text("name").notNull(),
+    currencyId: uuid("currency_id").notNull(),
+    isDefault: boolean("is_default").notNull().default(false),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ledger_name_company_tenant").on(t.tenantId, t.companyId, t.name),
+  ],
+);
+
+// ─── erp.gl_journal ─────────────────────────────────────────────────────────
+
+export const glJournals = erpSchema.table(
+  "gl_journal",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    ledgerId: uuid("ledger_id").notNull(),
+    fiscalPeriodId: uuid("fiscal_period_id").notNull(),
+    journalNumber: varchar("journal_number", { length: 30 }).notNull(),
+    documentType: documentTypeEnum("document_type").notNull().default("JOURNAL"),
+    status: journalStatusEnum("status").notNull().default("DRAFT"),
+    description: text("description"),
+    postingDate: timestamp("posting_date", { withTimezone: true }).notNull(),
+    reversalOfId: uuid("reversal_of_id"),
+    reversedById: uuid("reversed_by_id"),
+    postedAt: timestamp("posted_at", { withTimezone: true }),
+    postedBy: uuid("posted_by"),
+    metadata: jsonb("metadata").notNull().default({}),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_journal_number_ledger_tenant").on(t.tenantId, t.ledgerId, t.journalNumber),
+    index("idx_journal_status_tenant").on(t.tenantId, t.status),
+    index("idx_journal_posting_date_tenant").on(t.tenantId, t.postingDate),
+    index("idx_journal_period_tenant").on(t.tenantId, t.fiscalPeriodId),
+  ],
+);
+
+// ─── erp.gl_journal_line ────────────────────────────────────────────────────
+
+export const glJournalLines = erpSchema.table(
+  "gl_journal_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    journalId: uuid("journal_id").notNull(),
+    lineNumber: smallint("line_number").notNull(),
+    accountId: uuid("account_id").notNull(),
+    description: text("description"),
+    debit: moneyBigint("debit").notNull().default(sql`0`),
+    credit: moneyBigint("credit").notNull().default(sql`0`),
+    currencyCode: varchar("currency_code", { length: 3 }),
+    baseCurrencyDebit: moneyBigint("base_currency_debit").notNull().default(sql`0`),
+    baseCurrencyCredit: moneyBigint("base_currency_credit").notNull().default(sql`0`),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_journal_line_num_tenant").on(t.tenantId, t.journalId, t.lineNumber),
+    index("idx_journal_line_account_tenant").on(t.tenantId, t.accountId),
+    check("chk_journal_line_debit_credit", sql`(${t.debit} = 0) <> (${t.credit} = 0)`),
+  ],
+);
+
+// ─── erp.gl_balance (composite PK — no surrogate) ──────────────────────────
+
+export const glBalances = erpSchema.table(
+  "gl_balance",
+  {
+    tenantId: uuid("tenant_id").notNull(),
+    ledgerId: uuid("ledger_id").notNull(),
+    accountId: uuid("account_id").notNull(),
+    fiscalYear: varchar("fiscal_year", { length: 10 }).notNull(),
+    fiscalPeriod: smallint("fiscal_period").notNull(),
+    debitBalance: moneyBigint("debit_balance").notNull().default(sql`0`),
+    creditBalance: moneyBigint("credit_balance").notNull().default(sql`0`),
+    ...timestamps(),
+  },
+  (t) => [
+    primaryKey({
+      columns: [t.tenantId, t.ledgerId, t.accountId, t.fiscalYear, t.fiscalPeriod],
+    }),
+    index("idx_gl_balance_account_tenant").on(t.tenantId, t.accountId),
+  ],
+);
+
+// ─── erp.fx_rate ───────────────────────────────────────────────────────────
+
+export const fxRates = erpSchema.table(
+  "fx_rate",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    fromCurrencyId: uuid("from_currency_id").notNull(),
+    toCurrencyId: uuid("to_currency_id").notNull(),
+    rate: text("rate").notNull(),
+    effectiveDate: timestamp("effective_date", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    source: varchar("source", { length: 50 }).notNull().default("MANUAL"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_fx_rate_pair_date_tenant").on(
+      t.tenantId,
+      t.fromCurrencyId,
+      t.toCurrencyId,
+      t.effectiveDate,
+    ),
+    index("idx_fx_rate_effective_tenant").on(t.tenantId, t.effectiveDate),
+  ],
+);
+
+// ─── erp.counterparty ───────────────────────────────────────────────────────
+
+export const counterparties = erpSchema.table(
+  "counterparty",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    code: varchar("code", { length: 20 }).notNull(),
+    name: text("name").notNull(),
+    counterpartyType: counterpartyTypeEnum("counterparty_type").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [uniqueIndex("uq_counterparty_code_tenant").on(t.tenantId, t.code)],
+);
+
+// ─── erp.ic_agreement ───────────────────────────────────────────────────────
+
+export const icAgreements = erpSchema.table(
+  "ic_agreement",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    sellerCompanyId: uuid("seller_company_id").notNull(),
+    buyerCompanyId: uuid("buyer_company_id").notNull(),
+    pricing: icPricingEnum("pricing").notNull().default("COST"),
+    markupPercent: smallint("markup_percent"),
+    currencyId: uuid("currency_id").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ic_agreement_pair_tenant").on(t.tenantId, t.sellerCompanyId, t.buyerCompanyId),
+  ],
+);
+
+// ─── erp.ic_transaction ─────────────────────────────────────────────────────
+
+export const icTransactions = erpSchema.table(
+  "ic_transaction",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    agreementId: uuid("agreement_id").notNull(),
+    transactionDate: timestamp("transaction_date", { withTimezone: true }).notNull(),
+    amount: moneyBigint("amount").notNull(),
+    currencyId: uuid("currency_id").notNull(),
+    settlementStatus: icSettlementStatusEnum("settlement_status").notNull().default("PENDING"),
+    description: text("description"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_ic_tx_agreement_tenant").on(t.tenantId, t.agreementId),
+    index("idx_ic_tx_status_tenant").on(t.tenantId, t.settlementStatus),
+  ],
+);
+
+// ─── erp.ic_transaction_leg ─────────────────────────────────────────────────
+
+export const icTransactionLegs = erpSchema.table(
+  "ic_transaction_leg",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    transactionId: uuid("transaction_id").notNull(),
+    companyId: uuid("company_id").notNull(),
+    side: icLegSideEnum("side").notNull(),
+    journalId: uuid("journal_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ic_leg_tx_side_tenant").on(t.tenantId, t.transactionId, t.side),
+  ],
+);
+
+// ─── erp.recurring_template ────────────────────────────────────────────────
+
+export const recurringTemplates = erpSchema.table(
+  "recurring_template",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    ledgerId: uuid("ledger_id").notNull(),
+    description: text("description").notNull(),
+    lineTemplate: jsonb("line_template").notNull(),
+    frequency: recurringFrequencyEnum("frequency").notNull(),
+    nextRunDate: timestamp("next_run_date", { withTimezone: true }).notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_recurring_template_tenant_active").on(t.tenantId, t.isActive),
+    index("idx_recurring_template_next_run").on(t.tenantId, t.nextRunDate).where(sql`is_active = true`),
+  ],
+);
+
+// ─── erp.budget_entry ──────────────────────────────────────────────────────
+
+export const budgetEntries = erpSchema.table(
+  "budget_entry",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    ledgerId: uuid("ledger_id").notNull(),
+    accountId: uuid("account_id").notNull(),
+    periodId: uuid("period_id").notNull(),
+    budgetAmount: moneyBigint("budget_amount").notNull(),
+    version: integer("version").notNull().default(1),
+    versionNote: text("version_note"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_budget_entry_tenant_ledger_account_period").on(
+      t.tenantId, t.ledgerId, t.accountId, t.periodId,
+    ),
+  ],
+);
+
+// ─── erp.ic_settlement (A-22) ────────────────────────────────────────────────
+
+export const icSettlements = erpSchema.table(
+  "ic_settlement",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    settlementNumber: varchar("settlement_number", { length: 30 }).notNull(),
+    agreementId: uuid("agreement_id").notNull(),
+    method: settlementMethodEnum("method").notNull(),
+    status: settlementStatusEnum("status").notNull().default("DRAFT"),
+    settlementDate: timestamp("settlement_date", { withTimezone: true }).notNull(),
+    totalAmount: moneyBigint("total_amount").notNull(),
+    currencyId: uuid("currency_id").notNull(),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    confirmedBy: uuid("confirmed_by"),
+    metadata: jsonb("metadata").notNull().default({}),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ic_settlement_number_tenant").on(t.tenantId, t.settlementNumber),
+    index("idx_ic_settlement_agreement_tenant").on(t.tenantId, t.agreementId),
+    index("idx_ic_settlement_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.ic_settlement_line (links settlement to IC transactions) ───────────
+
+export const icSettlementLines = erpSchema.table(
+  "ic_settlement_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    settlementId: uuid("settlement_id").notNull(),
+    transactionId: uuid("transaction_id").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ic_settlement_line_tx_tenant").on(t.tenantId, t.settlementId, t.transactionId),
+    index("idx_ic_settlement_line_settlement").on(t.tenantId, t.settlementId),
+  ],
+);
+
+// ─── erp.revenue_contract (A-24) ────────────────────────────────────────────
+
+export const revenueContracts = erpSchema.table(
+  "revenue_contract",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    contractNumber: varchar("contract_number", { length: 50 }).notNull(),
+    customerName: text("customer_name").notNull(),
+    totalAmount: moneyBigint("total_amount").notNull(),
+    currencyId: uuid("currency_id").notNull(),
+    recognitionMethod: recognitionMethodEnum("recognition_method").notNull(),
+    startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+    endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+    deferredAccountId: uuid("deferred_account_id").notNull(),
+    revenueAccountId: uuid("revenue_account_id").notNull(),
+    status: contractStatusEnum("status").notNull().default("ACTIVE"),
+    recognizedToDate: moneyBigint("recognized_to_date").notNull().default(sql`0`),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_revenue_contract_number_tenant").on(t.tenantId, t.contractNumber),
+    index("idx_revenue_contract_company_tenant").on(t.tenantId, t.companyId),
+    index("idx_revenue_contract_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.recognition_milestone ──────────────────────────────────────────────
+
+export const recognitionMilestones = erpSchema.table(
+  "recognition_milestone",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    contractId: uuid("contract_id").notNull(),
+    description: text("description").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    targetDate: timestamp("target_date", { withTimezone: true }).notNull(),
+    completedDate: timestamp("completed_date", { withTimezone: true }),
+    isCompleted: boolean("is_completed").notNull().default(false),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_recognition_milestone_contract_tenant").on(t.tenantId, t.contractId),
+  ],
+);
+
+// ─── erp.classification_rule_set (A-18) ─────────────────────────────────────
+
+export const classificationRuleSets = erpSchema.table(
+  "classification_rule_set",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    standard: reportingStandardEnum("standard").notNull(),
+    version: integer("version").notNull().default(1),
+    name: varchar("name", { length: 100 }).notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_classification_rule_set_tenant_standard_version").on(
+      t.tenantId, t.standard, t.version,
+    ),
+  ],
+);
+
+// ─── erp.classification_rule ────────────────────────────────────────────────
+
+export const classificationRules = erpSchema.table(
+  "classification_rule",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    ruleSetId: uuid("rule_set_id").notNull(),
+    accountType: accountTypeEnum("account_type").notNull(),
+    pattern: varchar("pattern", { length: 100 }).notNull(),
+    category: varchar("category", { length: 100 }).notNull(),
+    priority: smallint("priority").notNull().default(0),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_classification_rule_set_tenant").on(t.tenantId, t.ruleSetId),
+    index("idx_classification_rule_type_tenant").on(t.tenantId, t.accountType),
+  ],
+);

@@ -1,0 +1,282 @@
+/**
+ * @afenda/contracts — Zod DTOs shared between frontend and backend.
+ *
+ * Pure schema definitions. No DB, no HTTP handlers, no OpenAPI generation (that lives in tools/).
+ */
+import { z } from "zod";
+
+// ─── Common Schemas ─────────────────────────────────────────────────────────
+
+export const PaginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+export type Pagination = z.infer<typeof PaginationSchema>;
+
+export const IdParamSchema = z.object({
+  id: z.string().uuid(),
+});
+export type IdParam = z.infer<typeof IdParamSchema>;
+
+// ─── Finance Schemas (P0) ───────────────────────────────────────────────────
+
+export const JournalStatusSchema = z.enum([
+  "DRAFT",
+  "POSTED",
+  "REVERSED",
+  "VOIDED",
+]);
+export type JournalStatus = z.infer<typeof JournalStatusSchema>;
+
+export const CreateJournalSchema = z.object({
+  companyId: z.string().uuid(),
+  ledgerId: z.string().uuid(),
+  description: z.string().min(1).max(500),
+  date: z.string().date(),
+  lines: z
+    .array(
+      z.object({
+        accountCode: z.string().min(1),
+        debit: z.coerce.number().nonnegative(),
+        credit: z.coerce.number().nonnegative(),
+        currency: z.string().length(3),
+        description: z.string().optional(),
+      }),
+    )
+    .min(2),
+});
+export type CreateJournal = z.infer<typeof CreateJournalSchema>;
+
+export const PostJournalSchema = z.object({
+  journalId: z.string().uuid(),
+  idempotencyKey: z.string().uuid(),
+});
+export type PostJournal = z.infer<typeof PostJournalSchema>;
+
+export const JournalListQuerySchema = PaginationSchema.extend({
+  periodId: z.string().uuid(),
+  status: JournalStatusSchema.optional(),
+});
+export type JournalListQuery = z.infer<typeof JournalListQuerySchema>;
+
+// ─── Recurring Template Schemas (P3) ────────────────────────────────────────
+
+export const RecurringFrequencySchema = z.enum(["MONTHLY", "QUARTERLY", "YEARLY"]);
+export type RecurringFrequency = z.infer<typeof RecurringFrequencySchema>;
+
+export const CreateRecurringTemplateSchema = z.object({
+  companyId: z.string().uuid(),
+  ledgerId: z.string().uuid(),
+  description: z.string().min(1).max(500),
+  lines: z
+    .array(
+      z.object({
+        accountCode: z.string().min(1),
+        debit: z.coerce.number().nonnegative(),
+        credit: z.coerce.number().nonnegative(),
+        description: z.string().optional(),
+      }),
+    )
+    .min(2),
+  frequency: RecurringFrequencySchema,
+  nextRunDate: z.coerce.date(),
+});
+export type CreateRecurringTemplate = z.infer<typeof CreateRecurringTemplateSchema>;
+
+// ─── Budget Schemas (P3) ────────────────────────────────────────────────────
+
+export const UpsertBudgetEntrySchema = z.object({
+  companyId: z.string().uuid(),
+  ledgerId: z.string().uuid(),
+  accountId: z.string().uuid(),
+  periodId: z.string().uuid(),
+  budgetAmount: z.coerce.number().nonnegative(),
+});
+export type UpsertBudgetEntry = z.infer<typeof UpsertBudgetEntrySchema>;
+
+// ─── Reason Body Schema (AIS A-09) ─────────────────────────────────────────
+
+export const ReasonBodySchema = z.object({
+  reason: z.string().min(1, "reason is required").max(1000),
+});
+export type ReasonBody = z.infer<typeof ReasonBodySchema>;
+
+export const OptionalReasonBodySchema = z.object({
+  reason: z.string().max(1000).optional(),
+});
+export type OptionalReasonBody = z.infer<typeof OptionalReasonBodySchema>;
+
+export const BudgetVarianceQuerySchema = z.object({
+  ledgerId: z.string().uuid(),
+  periodId: z.string().uuid(),
+});
+export type BudgetVarianceQuery = z.infer<typeof BudgetVarianceQuerySchema>;
+
+// ─── IC Transaction Schemas (GAP-07) ────────────────────────────────────────
+
+const JournalLineInputSchema = z.object({
+  accountId: z.string().uuid(),
+  debit: z.string().regex(/^\d+$/, "debit must be a non-negative integer string"),
+  credit: z.string().regex(/^\d+$/, "credit must be a non-negative integer string"),
+});
+
+export const CreateIcTransactionSchema = z.object({
+  agreementId: z.string().uuid(),
+  sourceLedgerId: z.string().uuid(),
+  mirrorLedgerId: z.string().uuid(),
+  fiscalPeriodId: z.string().uuid(),
+  description: z.string().min(1).max(500),
+  postingDate: z.string().date(),
+  currency: z.string().length(3),
+  sourceLines: z.array(JournalLineInputSchema).min(1),
+  mirrorLines: z.array(JournalLineInputSchema).min(1),
+});
+export type CreateIcTransaction = z.infer<typeof CreateIcTransactionSchema>;
+
+// ─── IC Settlement Schemas (GAP-07) ─────────────────────────────────────────
+
+export const SettlementMethodSchema = z.enum(["NETTING", "CASH", "JOURNAL"]);
+
+export const CreateIcSettlementSchema = z.object({
+  sellerCompanyId: z.string().uuid(),
+  buyerCompanyId: z.string().uuid(),
+  documentIds: z.array(z.string().uuid()).min(1),
+  settlementMethod: SettlementMethodSchema,
+  settlementAmount: z.string().regex(/^\d+$/, "settlementAmount must be a non-negative integer string"),
+  currency: z.string().length(3),
+  fxGainLoss: z.string().regex(/^-?\d+$/, "fxGainLoss must be an integer string"),
+  reason: z.string().max(1000).optional(),
+});
+export type CreateIcSettlement = z.infer<typeof CreateIcSettlementSchema>;
+
+// ─── Revenue Contract Schemas (GAP-07) ──────────────────────────────────────
+
+export const RecognitionMethodSchema = z.enum(["STRAIGHT_LINE", "MILESTONE", "PERCENTAGE_OF_COMPLETION"]);
+
+export const CreateRevenueContractSchema = z.object({
+  companyId: z.string().uuid(),
+  contractNumber: z.string().min(1).max(50),
+  customerName: z.string().min(1).max(200),
+  totalAmount: z.string().regex(/^\d+$/, "totalAmount must be a non-negative integer string"),
+  currency: z.string().length(3),
+  recognitionMethod: RecognitionMethodSchema,
+  startDate: z.string().date(),
+  endDate: z.string().date(),
+  deferredAccountId: z.string().uuid(),
+  revenueAccountId: z.string().uuid(),
+});
+export type CreateRevenueContract = z.infer<typeof CreateRevenueContractSchema>;
+
+export const RecognizeRevenueSchema = z.object({
+  periodId: z.string().uuid(),
+  ledgerId: z.string().uuid(),
+});
+export type RecognizeRevenue = z.infer<typeof RecognizeRevenueSchema>;
+
+// ─── Year-End Close Schema (GAP-07) ─────────────────────────────────────────
+
+export const CloseYearSchema = z.object({
+  ledgerId: z.string().uuid(),
+  fiscalYear: z.string().min(4).max(4),
+  retainedEarningsAccountId: z.string().uuid(),
+  periodIds: z.array(z.string().uuid()).min(1),
+});
+export type CloseYear = z.infer<typeof CloseYearSchema>;
+
+// ─── Report Query Schemas (GAP-07) ──────────────────────────────────────────
+
+export const BalanceSheetQuerySchema = z.object({
+  ledgerId: z.string().uuid(),
+  periodId: z.string().uuid(),
+});
+export type BalanceSheetQuery = z.infer<typeof BalanceSheetQuerySchema>;
+
+export const IncomeStatementQuerySchema = z.object({
+  ledgerId: z.string().uuid(),
+  fromPeriodId: z.string().uuid(),
+  toPeriodId: z.string().uuid(),
+});
+export type IncomeStatementQuery = z.infer<typeof IncomeStatementQuerySchema>;
+
+export const CashFlowQuerySchema = z.object({
+  ledgerId: z.string().uuid(),
+  fromPeriodId: z.string().uuid(),
+  toPeriodId: z.string().uuid(),
+});
+export type CashFlowQuery = z.infer<typeof CashFlowQuerySchema>;
+
+export const VarianceAlertsQuerySchema = z.object({
+  ledgerId: z.string().uuid(),
+  periodId: z.string().uuid(),
+  warningPct: z.coerce.number().nonnegative().default(10),
+  criticalPct: z.coerce.number().nonnegative().default(25),
+});
+export type VarianceAlertsQuery = z.infer<typeof VarianceAlertsQuerySchema>;
+
+export const ComparativeBalanceSheetQuerySchema = z.object({
+  ledgerId: z.string().uuid(),
+  currentPeriodId: z.string().uuid(),
+  priorPeriodId: z.string().uuid(),
+});
+export type ComparativeBalanceSheetQuery = z.infer<typeof ComparativeBalanceSheetQuerySchema>;
+
+export const ComparativeIncomeStatementQuerySchema = z.object({
+  ledgerId: z.string().uuid(),
+  currentFromPeriodId: z.string().uuid(),
+  currentToPeriodId: z.string().uuid(),
+  priorFromPeriodId: z.string().uuid(),
+  priorToPeriodId: z.string().uuid(),
+});
+export type ComparativeIncomeStatementQuery = z.infer<typeof ComparativeIncomeStatementQuerySchema>;
+
+export const IcAgingQuerySchema = z.object({
+  currency: z.string().length(3).default("USD"),
+  asOfDate: z.string().date().optional(),
+});
+export type IcAgingQuery = z.infer<typeof IcAgingQuerySchema>;
+
+// ─── Trial Balance Query Schema (GAP-07) ────────────────────────────────────
+
+export const TrialBalanceQuerySchema = z.object({
+  ledgerId: z.string().uuid(),
+  year: z.string().min(4).max(4),
+  period: z.coerce.number().int().min(1).max(13).optional(),
+});
+export type TrialBalanceQuery = z.infer<typeof TrialBalanceQuerySchema>;
+
+// ─── FX Rate Query Schema (GAP-07) ──────────────────────────────────────────
+
+export const FxRateQuerySchema = z.object({
+  from: z.string().length(3),
+  to: z.string().length(3),
+  date: z.string().date(),
+});
+export type FxRateQuery = z.infer<typeof FxRateQuerySchema>;
+
+// ─── Classification Rule Query Schema (GAP-07) ─────────────────────────────
+
+export const ReportingStandardSchema = z.enum(["IFRS", "US_GAAP", "LOCAL"]);
+
+export const ClassificationRuleQuerySchema = z.object({
+  standard: ReportingStandardSchema.optional(),
+  version: z.coerce.number().int().positive().optional(),
+});
+export type ClassificationRuleQuery = z.infer<typeof ClassificationRuleQuerySchema>;
+
+// ─── Budget Entry List Query Schema (GAP-07) ────────────────────────────────
+
+export const BudgetEntryListQuerySchema = PaginationSchema.extend({
+  ledgerId: z.string().uuid(),
+  periodId: z.string().uuid(),
+});
+export type BudgetEntryListQuery = z.infer<typeof BudgetEntryListQuerySchema>;
+
+// ─── Consolidation Schema (GAP-11) ─────────────────────────────────────────
+
+export const ConsolidationQuerySchema = z.object({
+  groupLedgerId: z.string().uuid(),
+  subsidiaryLedgerIds: z.array(z.string().uuid()).min(1),
+  fiscalYear: z.string().min(4).max(4),
+  fiscalPeriod: z.coerce.number().int().min(1).max(13).optional(),
+  asOfDate: z.string().date(),
+});

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AFENDA Project Manifest",
+  "description": "Machine-enforceable inventory of the AFENDA-NEXUS monorepo. Read by tools/drift-check.",
+  "type": "object",
+  "required": ["workspace_globs", "packages", "special_rules"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "workspace_globs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Glob patterns for pnpm-workspace.yaml packages field"
+    },
+    "packages": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/PackageEntry"
+      },
+      "description": "Map of relative directory path → package metadata"
+    },
+    "special_rules": {
+      "$ref": "#/$defs/SpecialRules"
+    }
+  },
+  "$defs": {
+    "PackageEntry": {
+      "type": "object",
+      "required": ["name", "type", "layer"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": ["string", "null"],
+          "description": "npm package name, or null for unmanaged directories"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["library", "app", "tool", "config", "unmanaged"],
+          "description": "Package category — determines build pipeline and drift rules"
+        },
+        "layer": {
+          "type": ["string", "null"],
+          "enum": ["domain-primitives", "contracts", "authorization", "infrastructure", "platform", "module", "industry-overlay", "app", "tool", null],
+          "description": "Architectural layer — null for config/unmanaged"
+        }
+      }
+    },
+    "SpecialRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apps_not_in_root_references": { "type": "boolean" },
+        "tools_not_in_root_references": { "type": "boolean" },
+        "config_packages_no_runtime": { "type": "boolean" },
+        "db_never_imports_modules": { "type": "boolean" },
+        "db_never_imports_platform": { "type": "boolean" },
+        "modules_export_only_via_public_ts": { "type": "boolean" },
+        "catalog_enforcement": { "type": "boolean" }
+      }
+    }
+  }
+}

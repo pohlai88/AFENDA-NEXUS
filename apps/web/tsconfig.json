@@ -1,0 +1,23 @@
+{
+  "extends": "@afenda/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": true,
+    "declaration": false,
+    "noEmit": false,
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*", "next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".next",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "*.config.*"
+  ]
+}
