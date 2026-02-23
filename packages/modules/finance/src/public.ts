@@ -31,7 +31,7 @@ export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
 // ─── Finance runtime + per-slice deps ────────────────────────────────────────
-export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, SharedDeps } from "./app/ports/finance-runtime.js";
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";
@@ -71,6 +71,27 @@ export { getComparativeIncomeStatement, type GetComparativeIncomeStatementInput 
 
 // OBS-01: Infra adapters moved to "@afenda/finance/infra" subpath.
 // Import from "@afenda/finance/infra" for Drizzle repos, route registrars, and runtime.
+
+// ─── AP ports ──────────────────────────────────────────────────────────────
+export type { IApInvoiceRepo, CreateApInvoiceInput } from "./slices/ap/ports/ap-invoice-repo.js";
+export type { IPaymentTermsRepo } from "./slices/ap/ports/payment-terms-repo.js";
+export type { IApPaymentRunRepo, CreatePaymentRunInput, AddPaymentRunItemInput } from "./slices/ap/ports/payment-run-repo.js";
+
+// ─── AP entities ───────────────────────────────────────────────────────────
+export type { ApInvoice, ApInvoiceLine, ApInvoiceStatus } from "./slices/ap/entities/ap-invoice.js";
+export type { PaymentTerms } from "./slices/ap/entities/payment-terms.js";
+export type { PaymentRun, PaymentRunItem, PaymentRunStatus } from "./slices/ap/entities/payment-run.js";
+
+// ─── AP services ───────────────────────────────────────────────────────────
+export { postApInvoice, type PostApInvoiceInput } from "./slices/ap/services/post-ap-invoice.js";
+export { executePaymentRun, type ExecutePaymentRunInput } from "./slices/ap/services/execute-payment-run.js";
+export { createDebitMemo, type CreateDebitMemoInput } from "./slices/ap/services/create-debit-memo.js";
+export { getApAging, type GetApAgingInput } from "./slices/ap/services/get-ap-aging.js";
+
+// ─── AP route registrars ───────────────────────────────────────────────────
+export { registerApInvoiceRoutes } from "./slices/ap/routes/ap-invoice-routes.js";
+export { registerApPaymentRunRoutes } from "./slices/ap/routes/ap-payment-run-routes.js";
+export { registerApAgingRoutes } from "./slices/ap/routes/ap-aging-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";

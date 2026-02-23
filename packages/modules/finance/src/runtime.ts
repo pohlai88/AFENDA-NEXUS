@@ -18,6 +18,9 @@ import { DrizzleClassificationRuleRepo } from "./slices/hub/repos/drizzle-classi
 import { DrizzleFxRateApprovalRepo } from "./slices/fx/repos/drizzle-fx-rate-approval-repo.js";
 import { DrizzleRevenueContractRepo } from "./slices/hub/repos/drizzle-revenue-contract-repo.js";
 import { DrizzleDocumentNumberGenerator } from "./slices/gl/repos/drizzle-document-number-generator.js";
+import { DrizzleApInvoiceRepo } from "./slices/ap/repos/drizzle-ap-invoice-repo.js";
+import { DrizzlePaymentTermsRepo } from "./slices/ap/repos/drizzle-payment-terms-repo.js";
+import { DrizzleApPaymentRunRepo } from "./slices/ap/repos/drizzle-ap-payment-run-repo.js";
 
 /**
  * Composition-root adapter that wires all Drizzle repos into a FinanceRuntime.
@@ -51,6 +54,9 @@ export function createFinanceRuntime(session: DbSession): FinanceRuntime {
           fxRateApprovalRepo: new DrizzleFxRateApprovalRepo(tx),
           revenueContractRepo: new DrizzleRevenueContractRepo(tx),
           documentNumberGenerator: new DrizzleDocumentNumberGenerator(tx),
+          apInvoiceRepo: new DrizzleApInvoiceRepo(tx),
+          paymentTermsRepo: new DrizzlePaymentTermsRepo(tx),
+          apPaymentRunRepo: new DrizzleApPaymentRunRepo(tx),
         };
         return fn(deps);
       });

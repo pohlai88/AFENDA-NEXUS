@@ -280,3 +280,95 @@ export const ConsolidationQuerySchema = z.object({
   fiscalPeriod: z.coerce.number().int().min(1).max(13).optional(),
   asOfDate: z.string().date(),
 });
+
+// ─── AP Schemas (Phase 1a) ─────────────────────────────────────────────────
+
+export const ApInvoiceStatusSchema = z.enum([
+  "DRAFT",
+  "PENDING_APPROVAL",
+  "APPROVED",
+  "POSTED",
+  "PAID",
+  "PARTIALLY_PAID",
+  "CANCELLED",
+]);
+export type ApInvoiceStatus = z.infer<typeof ApInvoiceStatusSchema>;
+
+export const CreateApInvoiceLineSchema = z.object({
+  accountId: z.string().uuid(),
+  description: z.string().max(500).nullable().optional(),
+  quantity: z.coerce.number().int().positive().default(1),
+  unitPrice: z.coerce.number().nonnegative(),
+  amount: z.coerce.number().nonnegative(),
+  taxAmount: z.coerce.number().nonnegative().default(0),
+});
+
+export const CreateApInvoiceSchema = z.object({
+  companyId: z.string().uuid(),
+  supplierId: z.string().uuid(),
+  ledgerId: z.string().uuid(),
+  invoiceNumber: z.string().min(1).max(50),
+  supplierRef: z.string().max(100).nullable().optional(),
+  invoiceDate: z.string().date(),
+  dueDate: z.string().date(),
+  currencyCode: z.string().length(3),
+  description: z.string().max(500).nullable().optional(),
+  poRef: z.string().max(50).nullable().optional(),
+  receiptRef: z.string().max(50).nullable().optional(),
+  paymentTermsId: z.string().uuid().nullable().optional(),
+  lines: z.array(CreateApInvoiceLineSchema).min(1),
+});
+export type CreateApInvoice = z.infer<typeof CreateApInvoiceSchema>;
+
+export const PostApInvoiceSchema = z.object({
+  fiscalPeriodId: z.string().uuid(),
+  apAccountId: z.string().uuid(),
+});
+export type PostApInvoice = z.infer<typeof PostApInvoiceSchema>;
+
+export const ApInvoiceListQuerySchema = PaginationSchema.extend({
+  status: ApInvoiceStatusSchema.optional(),
+  supplierId: z.string().uuid().optional(),
+});
+export type ApInvoiceListQuery = z.infer<typeof ApInvoiceListQuerySchema>;
+
+export const ApAgingQuerySchema = z.object({
+  asOfDate: z.string().date().optional(),
+});
+export type ApAgingQuery = z.infer<typeof ApAgingQuerySchema>;
+
+export const CreateDebitMemoSchema = z.object({
+  originalInvoiceId: z.string().uuid(),
+  reason: z.string().min(1).max(500),
+});
+export type CreateDebitMemo = z.infer<typeof CreateDebitMemoSchema>;
+
+export const PaymentRunStatusSchema = z.enum([
+  "DRAFT",
+  "APPROVED",
+  "EXECUTED",
+  "CANCELLED",
+]);
+export type PaymentRunStatus = z.infer<typeof PaymentRunStatusSchema>;
+
+export const CreatePaymentRunSchema = z.object({
+  companyId: z.string().uuid(),
+  runDate: z.string().date(),
+  cutoffDate: z.string().date(),
+  currencyCode: z.string().length(3),
+});
+export type CreatePaymentRun = z.infer<typeof CreatePaymentRunSchema>;
+
+export const AddPaymentRunItemSchema = z.object({
+  invoiceId: z.string().uuid(),
+  supplierId: z.string().uuid(),
+  amount: z.coerce.number().nonnegative(),
+  discountAmount: z.coerce.number().nonnegative().default(0),
+  netAmount: z.coerce.number().nonnegative(),
+});
+export type AddPaymentRunItem = z.infer<typeof AddPaymentRunItemSchema>;
+
+export const PaymentRunListQuerySchema = PaginationSchema.extend({
+  status: PaymentRunStatusSchema.optional(),
+});
+export type PaymentRunListQuery = z.infer<typeof PaymentRunListQuerySchema>;
