@@ -34,6 +34,8 @@ export {
   reconciliationStatusEnum,
   creditStatusEnum,
   reviewOutcomeEnum,
+  expenseClaimStatusEnum,
+  expenseCategoryEnum,
 } from "./_enums";
 export { tenants, companies, users } from "./platform";
 export {
@@ -82,6 +84,9 @@ export {
   bankReconciliations,
   creditLimits,
   creditReviews,
+  expenseClaims,
+  expenseClaimLines,
+  expensePolicies,
 } from "./erp";
 export { auditLogs } from "./audit";
 export { outbox } from "./outbox-table";

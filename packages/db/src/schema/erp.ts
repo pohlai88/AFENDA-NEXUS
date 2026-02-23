@@ -47,6 +47,8 @@ import {
   reconciliationStatusEnum,
   creditStatusEnum,
   reviewOutcomeEnum,
+  expenseClaimStatusEnum,
+  expenseCategoryEnum,
 } from "./_enums";
 import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
 
@@ -1102,5 +1104,89 @@ export const creditReviews = erpSchema.table(
   (t) => [
     index("idx_credit_review_limit_tenant").on(t.tenantId, t.creditLimitId),
     index("idx_credit_review_customer_tenant").on(t.tenantId, t.customerId),
+  ],
+);
+
+// ─── erp.expense_claim ─────────────────────────────────────────────────────
+
+export const expenseClaims = erpSchema.table(
+  "expense_claim",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    employeeId: uuid("employee_id").notNull(),
+    claimNumber: varchar("claim_number", { length: 50 }).notNull(),
+    description: text("description").notNull(),
+    claimDate: timestamp("claim_date", { withTimezone: true }).notNull(),
+    totalAmount: moneyBigint("total_amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    baseCurrencyAmount: moneyBigint("base_currency_amount").notNull(),
+    status: expenseClaimStatusEnum("status").notNull().default("DRAFT"),
+    submittedAt: timestamp("submitted_at", { withTimezone: true }),
+    approvedBy: uuid("approved_by"),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    rejectionReason: text("rejection_reason"),
+    reimbursedAt: timestamp("reimbursed_at", { withTimezone: true }),
+    apInvoiceId: uuid("ap_invoice_id"),
+    lineCount: smallint("line_count").notNull().default(0),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_expense_claim_number_tenant").on(t.tenantId, t.claimNumber),
+    index("idx_expense_claim_employee_tenant").on(t.tenantId, t.employeeId),
+    index("idx_expense_claim_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.expense_claim_line ────────────────────────────────────────────────
+
+export const expenseClaimLines = erpSchema.table(
+  "expense_claim_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    claimId: uuid("claim_id").notNull(),
+    lineNumber: smallint("line_number").notNull(),
+    expenseDate: timestamp("expense_date", { withTimezone: true }).notNull(),
+    category: expenseCategoryEnum("category").notNull(),
+    description: text("description").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    baseCurrencyAmount: moneyBigint("base_currency_amount").notNull(),
+    receiptRef: varchar("receipt_ref", { length: 200 }),
+    glAccountId: uuid("gl_account_id").notNull(),
+    costCenterId: uuid("cost_center_id"),
+    projectId: uuid("project_id"),
+    isBillable: boolean("is_billable").notNull().default(false),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_expense_line_claim_tenant").on(t.tenantId, t.claimId),
+  ],
+);
+
+// ─── erp.expense_policy ────────────────────────────────────────────────────
+
+export const expensePolicies = erpSchema.table(
+  "expense_policy",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    name: text("name").notNull(),
+    category: varchar("category", { length: 30 }).notNull(),
+    maxAmountPerItem: moneyBigint("max_amount_per_item").notNull(),
+    maxAmountPerClaim: moneyBigint("max_amount_per_claim").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    requiresReceipt: boolean("requires_receipt").notNull().default(true),
+    requiresApproval: boolean("requires_approval").notNull().default(true),
+    perDiemRate: moneyBigint("per_diem_rate"),
+    mileageRateBps: smallint("mileage_rate_bps"),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_expense_policy_company_tenant").on(t.tenantId, t.companyId),
   ],
 );

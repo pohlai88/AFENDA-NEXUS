@@ -227,3 +227,23 @@ export const reviewOutcomeEnum = pgEnum("review_outcome", [
   "SUSPENDED",
   "UNCHANGED",
 ]);
+
+export const expenseClaimStatusEnum = pgEnum("expense_claim_status", [
+  "DRAFT",
+  "SUBMITTED",
+  "APPROVED",
+  "REJECTED",
+  "REIMBURSED",
+  "CANCELLED",
+]);
+
+export const expenseCategoryEnum = pgEnum("expense_category", [
+  "TRAVEL",
+  "MEALS",
+  "ACCOMMODATION",
+  "TRANSPORT",
+  "SUPPLIES",
+  "COMMUNICATION",
+  "ENTERTAINMENT",
+  "OTHER",
+]);

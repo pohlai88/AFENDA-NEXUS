@@ -31,7 +31,7 @@ export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
 // ─── Finance runtime + per-slice deps ────────────────────────────────────────
-export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, CreditDeps, SharedDeps } from "./app/ports/finance-runtime.js";
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, CreditDeps, ExpenseDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";
@@ -237,6 +237,25 @@ export { computeEcl as computeCmEcl, type EclInput as CmEclInput, type EclResult
 
 // ─── Credit route registrars ───────────────────────────────────────────────
 export { registerCreditRoutes } from "./slices/credit/routes/credit-routes.js";
+
+// ─── Expense ports ────────────────────────────────────────────────────────
+export type { IExpenseClaimRepo, CreateExpenseClaimInput, CreateExpenseClaimLineInput } from "./slices/expense/ports/expense-claim-repo.js";
+export type { IExpensePolicyRepo, CreateExpensePolicyInput } from "./slices/expense/ports/expense-policy-repo.js";
+
+// ─── Expense entities ─────────────────────────────────────────────────────
+export type { ExpenseClaim, ClaimStatus } from "./slices/expense/entities/expense-claim.js";
+export type { ExpenseClaimLine, ExpenseCategory } from "./slices/expense/entities/expense-claim-line.js";
+export type { ExpensePolicy } from "./slices/expense/entities/expense-policy.js";
+
+// ─── Expense services ─────────────────────────────────────────────────────
+export { submitExpenseClaim, type SubmitExpenseClaimInput } from "./slices/expense/services/submit-expense-claim.js";
+
+// ─── Expense calculators ──────────────────────────────────────────────────
+export { enforceExpensePolicy, type PolicyCheckLine, type PolicyViolation, type PolicyCheckResult } from "./slices/expense/calculators/policy-enforcement.js";
+export { computePerDiem, computeMileage, type PerDiemInput, type PerDiemResult, type MileageInput, type MileageResult } from "./slices/expense/calculators/per-diem-mileage.js";
+
+// ─── Expense route registrars ─────────────────────────────────────────────
+export { registerExpenseRoutes } from "./slices/expense/routes/expense-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";
