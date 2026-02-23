@@ -372,3 +372,83 @@ export const PaymentRunListQuerySchema = PaginationSchema.extend({
   status: PaymentRunStatusSchema.optional(),
 });
 export type PaymentRunListQuery = z.infer<typeof PaymentRunListQuerySchema>;
+
+// ─── AR Schemas ─────────────────────────────────────────────────────────────
+
+export const ArInvoiceStatusSchema = z.enum([
+  "DRAFT",
+  "PENDING_APPROVAL",
+  "APPROVED",
+  "POSTED",
+  "PAID",
+  "PARTIALLY_PAID",
+  "WRITTEN_OFF",
+  "CANCELLED",
+]);
+export type ArInvoiceStatus = z.infer<typeof ArInvoiceStatusSchema>;
+
+export const CreateArInvoiceLineSchema = z.object({
+  accountId: z.string().uuid(),
+  description: z.string().max(500).nullable().optional(),
+  quantity: z.coerce.number().int().positive().default(1),
+  unitPrice: z.coerce.number().nonnegative(),
+  amount: z.coerce.number().nonnegative(),
+  taxAmount: z.coerce.number().nonnegative().default(0),
+});
+
+export const CreateArInvoiceSchema = z.object({
+  companyId: z.string().uuid(),
+  customerId: z.string().uuid(),
+  ledgerId: z.string().uuid(),
+  invoiceNumber: z.string().min(1).max(50),
+  customerRef: z.string().max(100).nullable().optional(),
+  invoiceDate: z.string().date(),
+  dueDate: z.string().date(),
+  currencyCode: z.string().length(3),
+  description: z.string().max(500).nullable().optional(),
+  paymentTermsId: z.string().uuid().nullable().optional(),
+  lines: z.array(CreateArInvoiceLineSchema).min(1),
+});
+export type CreateArInvoice = z.infer<typeof CreateArInvoiceSchema>;
+
+export const PostArInvoiceSchema = z.object({
+  fiscalPeriodId: z.string().uuid(),
+  arAccountId: z.string().uuid(),
+});
+export type PostArInvoice = z.infer<typeof PostArInvoiceSchema>;
+
+export const ArInvoiceListQuerySchema = PaginationSchema.extend({
+  status: ArInvoiceStatusSchema.optional(),
+  customerId: z.string().uuid().optional(),
+});
+export type ArInvoiceListQuery = z.infer<typeof ArInvoiceListQuerySchema>;
+
+export const ArAgingQuerySchema = z.object({
+  asOfDate: z.string().date().optional(),
+});
+export type ArAgingQuery = z.infer<typeof ArAgingQuerySchema>;
+
+export const CreateCreditNoteSchema = z.object({
+  originalInvoiceId: z.string().uuid(),
+  reason: z.string().min(1).max(500),
+});
+export type CreateCreditNote = z.infer<typeof CreateCreditNoteSchema>;
+
+export const WriteOffInvoiceSchema = z.object({
+  reason: z.string().min(1).max(500),
+});
+export type WriteOffInvoice = z.infer<typeof WriteOffInvoiceSchema>;
+
+export const AllocatePaymentSchema = z.object({
+  customerId: z.string().uuid(),
+  paymentDate: z.string().date(),
+  paymentRef: z.string().min(1).max(100),
+  paymentAmount: z.coerce.number().positive(),
+  currencyCode: z.string().length(3),
+});
+export type AllocatePayment = z.infer<typeof AllocatePaymentSchema>;
+
+export const RunDunningSchema = z.object({
+  runDate: z.string().date(),
+});
+export type RunDunning = z.infer<typeof RunDunningSchema>;

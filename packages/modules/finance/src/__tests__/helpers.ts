@@ -45,6 +45,12 @@ import type { PaymentTerms } from "../slices/ap/entities/payment-terms.js";
 import type { IApInvoiceRepo, CreateApInvoiceInput } from "../slices/ap/ports/ap-invoice-repo.js";
 import type { IPaymentTermsRepo } from "../slices/ap/ports/payment-terms-repo.js";
 import type { IApPaymentRunRepo, CreatePaymentRunInput, AddPaymentRunItemInput } from "../slices/ap/ports/payment-run-repo.js";
+import type { ArInvoice, ArInvoiceLine } from "../slices/ar/entities/ar-invoice.js";
+import type { ArPaymentAllocation, AllocationItem } from "../slices/ar/entities/ar-payment-allocation.js";
+import type { DunningRun, DunningLetter } from "../slices/ar/entities/dunning.js";
+import type { IArInvoiceRepo, CreateArInvoiceInput } from "../slices/ar/ports/ar-invoice-repo.js";
+import type { IArPaymentAllocationRepo, CreatePaymentAllocationInput, AddAllocationItemInput } from "../slices/ar/ports/ar-payment-allocation-repo.js";
+import type { IDunningRepo, CreateDunningRunInput, AddDunningLetterInput } from "../slices/ar/ports/dunning-repo.js";
 
 // ─── Domain Factories ───────────────────────────────────────────────────────
 
@@ -864,6 +870,281 @@ export function mockApPaymentRunRepo(
       const run = runs.get(id);
       if (!run) return err(new NotFoundError("PaymentRun", id));
       const updated = { ...run, status: "EXECUTED" as const, executedAt: new Date(), executedBy: userId, updatedAt: new Date() };
+      runs.set(id, updated);
+      return ok(updated);
+    },
+  };
+}
+
+// ─── AR Factories ──────────────────────────────────────────────────────────
+
+export const AR_IDS = {
+  invoice: "00000000-0000-4000-8000-000000000e01",
+  invoice2: "00000000-0000-4000-8000-000000000e02",
+  invoice3: "00000000-0000-4000-8000-000000000e03",
+  customer: "00000000-0000-4000-8000-000000000e10",
+  customer2: "00000000-0000-4000-8000-000000000e11",
+  arAccount: "00000000-0000-4000-8000-000000000e40",
+  revenueAccount: "00000000-0000-4000-8000-000000000e50",
+  allocation: "00000000-0000-4000-8000-000000000e60",
+  dunningRun: "00000000-0000-4000-8000-000000000e70",
+} as const;
+
+export function makeArInvoiceLine(overrides: Partial<ArInvoiceLine> = {}): ArInvoiceLine {
+  return {
+    id: "ar-line-1",
+    invoiceId: AR_IDS.invoice,
+    lineNumber: 1,
+    accountId: AR_IDS.revenueAccount,
+    description: "Consulting services",
+    quantity: 1,
+    unitPrice: money(50000n, "USD"),
+    amount: money(50000n, "USD"),
+    taxAmount: money(0n, "USD"),
+    ...overrides,
+  };
+}
+
+export function makeArInvoice(overrides: Partial<ArInvoice> = {}): ArInvoice {
+  return {
+    id: AR_IDS.invoice,
+    tenantId: "t1",
+    companyId: companyId(IDS.company),
+    customerId: AR_IDS.customer,
+    ledgerId: ledgerId(IDS.ledger),
+    invoiceNumber: "AR-001",
+    customerRef: null,
+    invoiceDate: new Date("2025-01-15"),
+    dueDate: new Date("2025-02-14"),
+    totalAmount: money(50000n, "USD"),
+    paidAmount: money(0n, "USD"),
+    status: "DRAFT",
+    description: "Test AR invoice",
+    paymentTermsId: null,
+    journalId: null,
+    lines: [makeArInvoiceLine()],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function makeArPaymentAllocation(overrides: Partial<ArPaymentAllocation> = {}): ArPaymentAllocation {
+  return {
+    id: AR_IDS.allocation,
+    tenantId: "t1",
+    customerId: AR_IDS.customer,
+    paymentDate: new Date("2025-03-01"),
+    paymentRef: "PAY-001",
+    totalAmount: money(50000n, "USD"),
+    allocations: [],
+    createdAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function makeDunningRun(overrides: Partial<DunningRun> = {}): DunningRun {
+  return {
+    id: AR_IDS.dunningRun,
+    tenantId: "t1",
+    runDate: new Date("2025-04-01"),
+    status: "DRAFT",
+    letters: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+// ─── AR Mock Repos ─────────────────────────────────────────────────────────
+
+export function mockArInvoiceRepo(
+  invoices: Map<string, ArInvoice> = new Map(),
+): IArInvoiceRepo & { invoices: Map<string, ArInvoice> } {
+  return {
+    invoices,
+    async create(input: CreateArInvoiceInput) {
+      const id = `ar-inv-${Date.now()}`;
+      const inv = makeArInvoice({
+        id,
+        tenantId: input.tenantId,
+        companyId: companyId(input.companyId),
+        customerId: input.customerId,
+        ledgerId: ledgerId(input.ledgerId),
+        invoiceNumber: input.invoiceNumber,
+        customerRef: input.customerRef,
+        invoiceDate: input.invoiceDate,
+        dueDate: input.dueDate,
+        description: input.description,
+        paymentTermsId: input.paymentTermsId,
+        totalAmount: money(input.lines.reduce((s, l) => s + l.amount + l.taxAmount, 0n), input.currencyCode),
+        lines: input.lines.map((l, i) => makeArInvoiceLine({
+          id: `ar-line-${i}`,
+          invoiceId: id,
+          lineNumber: i + 1,
+          accountId: l.accountId,
+          description: l.description,
+          quantity: l.quantity,
+          unitPrice: money(l.unitPrice, input.currencyCode),
+          amount: money(l.amount, input.currencyCode),
+          taxAmount: money(l.taxAmount, input.currencyCode),
+        })),
+      });
+      invoices.set(id, inv);
+      return ok(inv);
+    },
+    async findById(id: string) {
+      const inv = invoices.get(id);
+      return inv ? ok(inv) : err(new NotFoundError("ArInvoice", id));
+    },
+    async findByCustomer(customerId: string, params?: PaginationParams) {
+      const all = [...invoices.values()].filter((i) => i.customerId === customerId);
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async findByStatus(status: string, params?: PaginationParams) {
+      const all = [...invoices.values()].filter((i) => i.status === status);
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async findAll(params?: PaginationParams) {
+      const all = [...invoices.values()];
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async findUnpaid() {
+      return [...invoices.values()].filter((i) =>
+        i.status !== "PAID" && i.status !== "CANCELLED" && i.status !== "WRITTEN_OFF",
+      );
+    },
+    async updateStatus(id: string, status: string, journalId?: string) {
+      const inv = invoices.get(id);
+      if (!inv) return err(new NotFoundError("ArInvoice", id));
+      const updated = { ...inv, status: status as ArInvoice["status"], journalId: journalId ?? inv.journalId, updatedAt: new Date() };
+      invoices.set(id, updated);
+      return ok(updated);
+    },
+    async recordPayment(id: string, amount: bigint) {
+      const inv = invoices.get(id);
+      if (!inv) return err(new NotFoundError("ArInvoice", id));
+      const newPaid = money(inv.paidAmount.amount + amount, inv.paidAmount.currency);
+      const newStatus = newPaid.amount >= inv.totalAmount.amount ? "PAID" : "PARTIALLY_PAID";
+      const updated = { ...inv, paidAmount: newPaid, status: newStatus as ArInvoice["status"], updatedAt: new Date() };
+      invoices.set(id, updated);
+      return ok(updated);
+    },
+    async writeOff(id: string) {
+      const inv = invoices.get(id);
+      if (!inv) return err(new NotFoundError("ArInvoice", id));
+      const updated = { ...inv, status: "WRITTEN_OFF" as const, updatedAt: new Date() };
+      invoices.set(id, updated);
+      return ok(updated);
+    },
+  };
+}
+
+export function mockArPaymentAllocationRepo(
+  allocations: Map<string, ArPaymentAllocation> = new Map(),
+): IArPaymentAllocationRepo & { allocations: Map<string, ArPaymentAllocation> } {
+  return {
+    allocations,
+    async create(input: CreatePaymentAllocationInput) {
+      const id = `alloc-${Date.now()}`;
+      const alloc = makeArPaymentAllocation({
+        id,
+        tenantId: input.tenantId,
+        customerId: input.customerId,
+        paymentDate: input.paymentDate,
+        paymentRef: input.paymentRef,
+        totalAmount: money(input.totalAmount, input.currencyCode),
+        allocations: [],
+      });
+      allocations.set(id, alloc);
+      return ok(alloc);
+    },
+    async findById(id: string) {
+      const a = allocations.get(id);
+      return a ? ok(a) : err(new NotFoundError("ArPaymentAllocation", id));
+    },
+    async findByCustomer(customerId: string, params?: PaginationParams) {
+      const all = [...allocations.values()].filter((a) => a.customerId === customerId);
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async findAll(params?: PaginationParams) {
+      const all = [...allocations.values()];
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async addItem(allocationId: string, item: AddAllocationItemInput) {
+      const alloc = allocations.get(allocationId);
+      if (!alloc) return err(new NotFoundError("ArPaymentAllocation", allocationId));
+      const ai: AllocationItem = {
+        id: `ai-${Date.now()}`,
+        paymentAllocationId: allocationId,
+        invoiceId: item.invoiceId,
+        allocatedAmount: money(item.allocatedAmount, alloc.totalAmount.currency),
+        journalId: null,
+      };
+      const updated = { ...alloc, allocations: [...alloc.allocations, ai] };
+      allocations.set(allocationId, updated);
+      return ok(ai);
+    },
+  };
+}
+
+export function mockDunningRepo(
+  runs: Map<string, DunningRun> = new Map(),
+): IDunningRepo & { runs: Map<string, DunningRun> } {
+  return {
+    runs,
+    async create(input: CreateDunningRunInput) {
+      const id = `dr-${Date.now()}`;
+      const run = makeDunningRun({
+        id,
+        tenantId: input.tenantId,
+        runDate: input.runDate,
+        letters: [],
+      });
+      runs.set(id, run);
+      return ok(run);
+    },
+    async findById(id: string) {
+      const r = runs.get(id);
+      return r ? ok(r) : err(new NotFoundError("DunningRun", id));
+    },
+    async findAll(params?: PaginationParams) {
+      const all = [...runs.values()];
+      const page = params?.page ?? 1;
+      const limit = params?.limit ?? 20;
+      return { data: all.slice((page - 1) * limit, page * limit), total: all.length, page, limit };
+    },
+    async addLetter(runId: string, letter: AddDunningLetterInput) {
+      const run = runs.get(runId);
+      if (!run) return err(new NotFoundError("DunningRun", runId));
+      const dl: DunningLetter = {
+        id: `dl-${Date.now()}`,
+        dunningRunId: runId,
+        customerId: letter.customerId,
+        level: letter.level,
+        invoiceIds: letter.invoiceIds,
+        totalOverdue: letter.totalOverdue,
+        currencyCode: letter.currencyCode,
+        sentAt: null,
+      };
+      const updated = { ...run, letters: [...run.letters, dl] };
+      runs.set(runId, updated);
+      return ok(dl);
+    },
+    async updateStatus(id: string, status: string) {
+      const run = runs.get(id);
+      if (!run) return err(new NotFoundError("DunningRun", id));
+      const updated = { ...run, status: status as DunningRun["status"], updatedAt: new Date() };
       runs.set(id, updated);
       return ok(updated);
     },

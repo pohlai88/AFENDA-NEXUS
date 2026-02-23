@@ -18,6 +18,8 @@ export {
   reportingStandardEnum,
   apInvoiceStatusEnum,
   paymentRunStatusEnum,
+  arInvoiceStatusEnum,
+  dunningRunStatusEnum,
 } from "./_enums";
 export { tenants, companies, users } from "./platform";
 export {
@@ -47,6 +49,12 @@ export {
   apInvoiceLines,
   apPaymentRuns,
   apPaymentRunItems,
+  arInvoices,
+  arInvoiceLines,
+  arPaymentAllocations,
+  arAllocationItems,
+  dunningRuns,
+  dunningLetters,
 } from "./erp";
 export { auditLogs } from "./audit";
 export { outbox } from "./outbox-table";

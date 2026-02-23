@@ -26,6 +26,8 @@ export const FinanceEventType = {
   AR_INVOICE_PAID: "AR_INVOICE_PAID",
   AR_PAYMENT_ALLOCATED: "AR_PAYMENT_ALLOCATED",
   AR_WRITE_OFF_APPROVED: "AR_WRITE_OFF_APPROVED",
+  AR_CREDIT_NOTE_CREATED: "AR_CREDIT_NOTE_CREATED",
+  AR_DUNNING_RUN_CREATED: "AR_DUNNING_RUN_CREATED",
 } as const;
 
 export type FinanceEventType = (typeof FinanceEventType)[keyof typeof FinanceEventType];

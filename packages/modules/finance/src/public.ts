@@ -31,7 +31,7 @@ export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
 // ─── Finance runtime + per-slice deps ────────────────────────────────────────
-export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, SharedDeps } from "./app/ports/finance-runtime.js";
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";
@@ -92,6 +92,38 @@ export { getApAging, type GetApAgingInput } from "./slices/ap/services/get-ap-ag
 export { registerApInvoiceRoutes } from "./slices/ap/routes/ap-invoice-routes.js";
 export { registerApPaymentRunRoutes } from "./slices/ap/routes/ap-payment-run-routes.js";
 export { registerApAgingRoutes } from "./slices/ap/routes/ap-aging-routes.js";
+
+// ─── AR ports ──────────────────────────────────────────────────────────────
+export type { IArInvoiceRepo, CreateArInvoiceInput as CreateArInvoiceRepoInput } from "./slices/ar/ports/ar-invoice-repo.js";
+export type { IArPaymentAllocationRepo, CreatePaymentAllocationInput, AddAllocationItemInput } from "./slices/ar/ports/ar-payment-allocation-repo.js";
+export type { IDunningRepo, CreateDunningRunInput, AddDunningLetterInput } from "./slices/ar/ports/dunning-repo.js";
+
+// ─── AR entities ───────────────────────────────────────────────────────────
+export type { ArInvoice, ArInvoiceLine, ArInvoiceStatus } from "./slices/ar/entities/ar-invoice.js";
+export type { ArPaymentAllocation, AllocationItem, AllocationMethod } from "./slices/ar/entities/ar-payment-allocation.js";
+export type { DunningRun, DunningLetter, DunningRunStatus, DunningLevel } from "./slices/ar/entities/dunning.js";
+
+// ─── AR services ───────────────────────────────────────────────────────────
+export { postArInvoice, type PostArInvoiceInput } from "./slices/ar/services/post-ar-invoice.js";
+export { allocatePayment, type AllocatePaymentInput } from "./slices/ar/services/allocate-payment.js";
+export { writeOffInvoice, type WriteOffInvoiceInput } from "./slices/ar/services/write-off-invoice.js";
+export { createCreditNote, type CreateCreditNoteInput } from "./slices/ar/services/create-credit-note.js";
+export { getArAging, type GetArAgingInput } from "./slices/ar/services/get-ar-aging.js";
+export { runDunning, type RunDunningInput } from "./slices/ar/services/run-dunning.js";
+
+// ─── AR calculators ────────────────────────────────────────────────────────
+export { computeArAging, type ArAgingReport, type ArAgingRow } from "./slices/ar/calculators/ar-aging.js";
+export { computeLateFee, computeLateFees, type LateFeeInput, type LateFeeResult } from "./slices/ar/calculators/late-fee.js";
+export { computeDunningScore, computeDunningScores, computeDunningLevel } from "./slices/ar/calculators/dunning-score.js";
+export { computeEclProvision, DEFAULT_ECL_MATRIX, type EclInput, type EclResult } from "./slices/ar/calculators/ecl-provision.js";
+export { allocatePaymentFifo, allocatePaymentSpecific, type AllocationResult } from "./slices/ar/calculators/payment-allocation.js";
+export { checkCreditLimit, type CreditLimitInput, type CreditLimitResult } from "./slices/ar/calculators/credit-limit.js";
+
+// ─── AR route registrars ───────────────────────────────────────────────────
+export { registerArInvoiceRoutes } from "./slices/ar/routes/ar-invoice-routes.js";
+export { registerArPaymentRoutes } from "./slices/ar/routes/ar-payment-routes.js";
+export { registerArAgingRoutes } from "./slices/ar/routes/ar-aging-routes.js";
+export { registerArDunningRoutes } from "./slices/ar/routes/ar-dunning-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";

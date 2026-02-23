@@ -109,3 +109,21 @@ export const paymentRunStatusEnum = pgEnum("payment_run_status", [
   "EXECUTED",
   "CANCELLED",
 ]);
+
+export const arInvoiceStatusEnum = pgEnum("ar_invoice_status", [
+  "DRAFT",
+  "PENDING_APPROVAL",
+  "APPROVED",
+  "POSTED",
+  "PAID",
+  "PARTIALLY_PAID",
+  "WRITTEN_OFF",
+  "CANCELLED",
+]);
+
+export const dunningRunStatusEnum = pgEnum("dunning_run_status", [
+  "DRAFT",
+  "APPROVED",
+  "SENT",
+  "CANCELLED",
+]);

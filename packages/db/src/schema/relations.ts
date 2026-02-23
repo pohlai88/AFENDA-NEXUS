@@ -24,6 +24,12 @@ import {
   apInvoiceLines,
   apPaymentRuns,
   apPaymentRunItems,
+  arInvoices,
+  arInvoiceLines,
+  arPaymentAllocations,
+  arAllocationItems,
+  dunningRuns,
+  dunningLetters,
 } from "./erp";
 import { outbox } from "./outbox-table";
 
@@ -211,6 +217,44 @@ export const apPaymentRunItemsRelations = relations(apPaymentRunItems, ({ one })
   tenant: one(tenants, { fields: [apPaymentRunItems.tenantId], references: [tenants.id] }),
   paymentRun: one(apPaymentRuns, { fields: [apPaymentRunItems.paymentRunId], references: [apPaymentRuns.id] }),
   invoice: one(apInvoices, { fields: [apPaymentRunItems.invoiceId], references: [apInvoices.id] }),
+}));
+
+// ─── AR Relations ──────────────────────────────────────────────────────────
+
+export const arInvoicesRelations = relations(arInvoices, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [arInvoices.tenantId], references: [tenants.id] }),
+  company: one(companies, { fields: [arInvoices.companyId], references: [companies.id] }),
+  ledger: one(ledgers, { fields: [arInvoices.ledgerId], references: [ledgers.id] }),
+  paymentTerms: one(paymentTermsTemplates, { fields: [arInvoices.paymentTermsId], references: [paymentTermsTemplates.id] }),
+  journal: one(glJournals, { fields: [arInvoices.journalId], references: [glJournals.id] }),
+  lines: many(arInvoiceLines),
+}));
+
+export const arInvoiceLinesRelations = relations(arInvoiceLines, ({ one }) => ({
+  tenant: one(tenants, { fields: [arInvoiceLines.tenantId], references: [tenants.id] }),
+  invoice: one(arInvoices, { fields: [arInvoiceLines.invoiceId], references: [arInvoices.id] }),
+  account: one(accounts, { fields: [arInvoiceLines.accountId], references: [accounts.id] }),
+}));
+
+export const arPaymentAllocationsRelations = relations(arPaymentAllocations, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [arPaymentAllocations.tenantId], references: [tenants.id] }),
+  items: many(arAllocationItems),
+}));
+
+export const arAllocationItemsRelations = relations(arAllocationItems, ({ one }) => ({
+  tenant: one(tenants, { fields: [arAllocationItems.tenantId], references: [tenants.id] }),
+  paymentAllocation: one(arPaymentAllocations, { fields: [arAllocationItems.paymentAllocationId], references: [arPaymentAllocations.id] }),
+  invoice: one(arInvoices, { fields: [arAllocationItems.invoiceId], references: [arInvoices.id] }),
+}));
+
+export const dunningRunsRelations = relations(dunningRuns, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [dunningRuns.tenantId], references: [tenants.id] }),
+  letters: many(dunningLetters),
+}));
+
+export const dunningLettersRelations = relations(dunningLetters, ({ one }) => ({
+  tenant: one(tenants, { fields: [dunningLetters.tenantId], references: [tenants.id] }),
+  dunningRun: one(dunningRuns, { fields: [dunningLetters.dunningRunId], references: [dunningRuns.id] }),
 }));
 
 // ─── Outbox Relations ───────────────────────────────────────────────────────

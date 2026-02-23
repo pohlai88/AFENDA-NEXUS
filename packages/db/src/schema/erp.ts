@@ -31,6 +31,8 @@ import {
   reportingStandardEnum,
   settlementMethodEnum,
   settlementStatusEnum,
+  arInvoiceStatusEnum,
+  dunningRunStatusEnum,
 } from "./_enums";
 import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
 
@@ -602,5 +604,125 @@ export const apPaymentRunItems = erpSchema.table(
   (t) => [
     uniqueIndex("uq_ap_payment_run_item_invoice_tenant").on(t.tenantId, t.paymentRunId, t.invoiceId),
     index("idx_ap_payment_run_item_run_tenant").on(t.tenantId, t.paymentRunId),
+  ],
+);
+
+// ─── AR Sub-Ledger ─────────────────────────────────────────────────────────
+
+export const arInvoices = erpSchema.table(
+  "ar_invoice",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    customerId: uuid("customer_id").notNull(),
+    ledgerId: uuid("ledger_id").notNull(),
+    invoiceNumber: varchar("invoice_number", { length: 50 }).notNull(),
+    customerRef: varchar("customer_ref", { length: 100 }),
+    invoiceDate: timestamp("invoice_date", { withTimezone: true }).notNull(),
+    dueDate: timestamp("due_date", { withTimezone: true }).notNull(),
+    totalAmount: moneyBigint("total_amount").notNull().default(sql`0`),
+    paidAmount: moneyBigint("paid_amount").notNull().default(sql`0`),
+    status: arInvoiceStatusEnum("status").notNull().default("DRAFT"),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    description: text("description"),
+    paymentTermsId: uuid("payment_terms_id"),
+    journalId: uuid("journal_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ar_invoice_number_tenant").on(t.tenantId, t.invoiceNumber),
+    index("idx_ar_invoice_customer_tenant").on(t.tenantId, t.customerId),
+    index("idx_ar_invoice_status_tenant").on(t.tenantId, t.status),
+    index("idx_ar_invoice_due_date_tenant").on(t.tenantId, t.dueDate),
+  ],
+);
+
+export const arInvoiceLines = erpSchema.table(
+  "ar_invoice_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    invoiceId: uuid("invoice_id").notNull(),
+    lineNumber: smallint("line_number").notNull(),
+    accountId: uuid("account_id").notNull(),
+    description: text("description"),
+    quantity: integer("quantity").notNull().default(1),
+    unitPrice: moneyBigint("unit_price").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    taxAmount: moneyBigint("tax_amount").notNull().default(sql`0`),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ar_invoice_line_tenant").on(t.tenantId, t.invoiceId, t.lineNumber),
+    index("idx_ar_invoice_line_invoice_tenant").on(t.tenantId, t.invoiceId),
+  ],
+);
+
+export const arPaymentAllocations = erpSchema.table(
+  "ar_payment_allocation",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    customerId: uuid("customer_id").notNull(),
+    paymentDate: timestamp("payment_date", { withTimezone: true }).notNull(),
+    paymentRef: varchar("payment_ref", { length: 100 }).notNull(),
+    totalAmount: moneyBigint("total_amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_ar_payment_allocation_customer_tenant").on(t.tenantId, t.customerId),
+  ],
+);
+
+export const arAllocationItems = erpSchema.table(
+  "ar_allocation_item",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    paymentAllocationId: uuid("payment_allocation_id").notNull(),
+    invoiceId: uuid("invoice_id").notNull(),
+    allocatedAmount: moneyBigint("allocated_amount").notNull(),
+    journalId: uuid("journal_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ar_allocation_item_tenant").on(t.tenantId, t.paymentAllocationId, t.invoiceId),
+    index("idx_ar_allocation_item_alloc_tenant").on(t.tenantId, t.paymentAllocationId),
+  ],
+);
+
+export const dunningRuns = erpSchema.table(
+  "dunning_run",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    runDate: timestamp("run_date", { withTimezone: true }).notNull(),
+    status: dunningRunStatusEnum("status").notNull().default("DRAFT"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_dunning_run_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+export const dunningLetters = erpSchema.table(
+  "dunning_letter",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    dunningRunId: uuid("dunning_run_id").notNull(),
+    customerId: uuid("customer_id").notNull(),
+    level: smallint("level").notNull(),
+    invoiceIds: jsonb("invoice_ids").notNull().default(sql`'[]'::jsonb`),
+    totalOverdue: moneyBigint("total_overdue").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_dunning_letter_run_tenant").on(t.tenantId, t.dunningRunId),
+    index("idx_dunning_letter_customer_tenant").on(t.tenantId, t.customerId),
   ],
 );
