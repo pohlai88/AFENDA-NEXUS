@@ -37,6 +37,9 @@ import {
   jurisdictionLevelEnum,
   taxReturnStatusEnum,
   whtCertificateStatusEnum,
+  assetStatusEnum,
+  depreciationMethodEnum,
+  assetMovementTypeEnum,
 } from "./_enums";
 import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
 
@@ -836,5 +839,92 @@ export const whtCertificates = erpSchema.table(
     uniqueIndex("idx_wht_cert_number_tenant").on(t.tenantId, t.certificateNumber),
     index("idx_wht_cert_payee_tenant").on(t.tenantId, t.payeeId),
     index("idx_wht_cert_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.asset ─────────────────────────────────────────────────────────────
+
+export const assets = erpSchema.table(
+  "asset",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    assetNumber: varchar("asset_number", { length: 50 }).notNull(),
+    name: text("name").notNull(),
+    description: text("description"),
+    categoryCode: varchar("category_code", { length: 20 }).notNull(),
+    acquisitionDate: timestamp("acquisition_date", { withTimezone: true }).notNull(),
+    acquisitionCost: moneyBigint("acquisition_cost").notNull(),
+    residualValue: moneyBigint("residual_value").notNull(),
+    usefulLifeMonths: smallint("useful_life_months").notNull(),
+    depreciationMethod: depreciationMethodEnum("depreciation_method").notNull(),
+    accumulatedDepreciation: moneyBigint("accumulated_depreciation").notNull().default(sql`0`),
+    netBookValue: moneyBigint("net_book_value").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    locationCode: varchar("location_code", { length: 20 }),
+    costCenterId: uuid("cost_center_id"),
+    glAccountId: uuid("gl_account_id").notNull(),
+    depreciationAccountId: uuid("depreciation_account_id").notNull(),
+    accumulatedDepreciationAccountId: uuid("accumulated_depreciation_account_id").notNull(),
+    status: assetStatusEnum("status").notNull().default("ACTIVE"),
+    disposedAt: timestamp("disposed_at", { withTimezone: true }),
+    disposalProceeds: moneyBigint("disposal_proceeds"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_asset_number_tenant").on(t.tenantId, t.assetNumber),
+    index("idx_asset_company_tenant").on(t.tenantId, t.companyId),
+    index("idx_asset_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.depreciation_schedule ─────────────────────────────────────────────
+
+export const depreciationSchedules = erpSchema.table(
+  "depreciation_schedule",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    assetId: uuid("asset_id").notNull(),
+    componentId: uuid("component_id"),
+    periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+    periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+    depreciationAmount: moneyBigint("depreciation_amount").notNull(),
+    accumulatedDepreciation: moneyBigint("accumulated_depreciation").notNull(),
+    netBookValue: moneyBigint("net_book_value").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    journalId: uuid("journal_id"),
+    isPosted: boolean("is_posted").notNull().default(false),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_depr_schedule_asset_tenant").on(t.tenantId, t.assetId),
+    index("idx_depr_schedule_posted_tenant").on(t.tenantId, t.isPosted),
+  ],
+);
+
+// ─── erp.asset_movement ────────────────────────────────────────────────────
+
+export const assetMovements = erpSchema.table(
+  "asset_movement",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    assetId: uuid("asset_id").notNull(),
+    movementType: assetMovementTypeEnum("movement_type").notNull(),
+    movementDate: timestamp("movement_date", { withTimezone: true }).notNull(),
+    amount: moneyBigint("amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    description: text("description"),
+    fromCompanyId: uuid("from_company_id"),
+    toCompanyId: uuid("to_company_id"),
+    journalId: uuid("journal_id"),
+    createdBy: uuid("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_asset_movement_asset_tenant").on(t.tenantId, t.assetId),
+    index("idx_asset_movement_type_tenant").on(t.tenantId, t.movementType),
   ],
 );

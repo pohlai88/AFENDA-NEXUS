@@ -24,6 +24,9 @@ export {
   jurisdictionLevelEnum,
   taxReturnStatusEnum,
   whtCertificateStatusEnum,
+  assetStatusEnum,
+  depreciationMethodEnum,
+  assetMovementTypeEnum,
 } from "./_enums";
 export { tenants, companies, users } from "./platform";
 export {
@@ -63,6 +66,9 @@ export {
   taxRates,
   taxReturnPeriods,
   whtCertificates,
+  assets,
+  depreciationSchedules,
+  assetMovements,
 } from "./erp";
 export { auditLogs } from "./audit";
 export { outbox } from "./outbox-table";

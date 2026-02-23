@@ -156,3 +156,27 @@ export const whtCertificateStatusEnum = pgEnum("wht_certificate_status", [
   "ISSUED",
   "CANCELLED",
 ]);
+
+export const assetStatusEnum = pgEnum("asset_status", [
+  "ACTIVE",
+  "DISPOSED",
+  "FULLY_DEPRECIATED",
+  "IMPAIRED",
+  "CWIP",
+]);
+
+export const depreciationMethodEnum = pgEnum("depreciation_method", [
+  "STRAIGHT_LINE",
+  "DECLINING_BALANCE",
+  "UNITS_OF_PRODUCTION",
+]);
+
+export const assetMovementTypeEnum = pgEnum("asset_movement_type", [
+  "ACQUISITION",
+  "DEPRECIATION",
+  "REVALUATION",
+  "IMPAIRMENT",
+  "DISPOSAL",
+  "TRANSFER",
+  "CAPITALIZATION",
+]);

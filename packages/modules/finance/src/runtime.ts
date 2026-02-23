@@ -28,6 +28,9 @@ import { DrizzleTaxCodeRepo } from "./slices/tax/repos/drizzle-tax-code-repo.js"
 import { DrizzleTaxRateRepo } from "./slices/tax/repos/drizzle-tax-rate-repo.js";
 import { DrizzleTaxReturnRepo } from "./slices/tax/repos/drizzle-tax-return-repo.js";
 import { DrizzleWhtCertificateRepo } from "./slices/tax/repos/drizzle-wht-certificate-repo.js";
+import { DrizzleAssetRepo } from "./slices/fixed-assets/repos/drizzle-asset-repo.js";
+import { DrizzleDepreciationScheduleRepo } from "./slices/fixed-assets/repos/drizzle-depreciation-schedule-repo.js";
+import { DrizzleAssetMovementRepo } from "./slices/fixed-assets/repos/drizzle-asset-movement-repo.js";
 
 /**
  * Composition-root adapter that wires all Drizzle repos into a FinanceRuntime.
@@ -71,6 +74,9 @@ export function createFinanceRuntime(session: DbSession): FinanceRuntime {
           taxRateRepo: new DrizzleTaxRateRepo(tx),
           taxReturnRepo: new DrizzleTaxReturnRepo(tx),
           whtCertificateRepo: new DrizzleWhtCertificateRepo(tx),
+          assetRepo: new DrizzleAssetRepo(tx),
+          depreciationScheduleRepo: new DrizzleDepreciationScheduleRepo(tx),
+          assetMovementRepo: new DrizzleAssetMovementRepo(tx),
         };
         return fn(deps);
       });

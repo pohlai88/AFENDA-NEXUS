@@ -31,7 +31,7 @@ export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
 // ─── Finance runtime + per-slice deps ────────────────────────────────────────
-export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, SharedDeps } from "./app/ports/finance-runtime.js";
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";
@@ -169,6 +169,31 @@ export { registerTaxCodeRoutes } from "./slices/tax/routes/tax-code-routes.js";
 export { registerTaxRateRoutes } from "./slices/tax/routes/tax-rate-routes.js";
 export { registerTaxReturnRoutes } from "./slices/tax/routes/tax-return-routes.js";
 export { registerWhtCertificateRoutes } from "./slices/tax/routes/wht-certificate-routes.js";
+
+// ─── FA ports ──────────────────────────────────────────────────────────────
+export type { IAssetRepo, CreateAssetInput } from "./slices/fixed-assets/ports/asset-repo.js";
+export type { IDepreciationScheduleRepo, CreateDepreciationEntryInput } from "./slices/fixed-assets/ports/depreciation-schedule-repo.js";
+export type { IAssetMovementRepo, CreateAssetMovementInput } from "./slices/fixed-assets/ports/asset-movement-repo.js";
+
+// ─── FA entities ───────────────────────────────────────────────────────────
+export type { Asset, AssetStatus, DepreciationMethod } from "./slices/fixed-assets/entities/asset.js";
+export type { AssetComponent } from "./slices/fixed-assets/entities/asset-component.js";
+export type { DepreciationScheduleEntry } from "./slices/fixed-assets/entities/depreciation-schedule.js";
+export type { AssetMovement, MovementType } from "./slices/fixed-assets/entities/asset-movement.js";
+
+// ─── FA services ───────────────────────────────────────────────────────────
+export { runDepreciation, type RunDepreciationInput, type RunDepreciationResult } from "./slices/fixed-assets/services/run-depreciation.js";
+export { disposeAsset, type DisposeAssetInput } from "./slices/fixed-assets/services/dispose-asset.js";
+
+// ─── FA calculators ────────────────────────────────────────────────────────
+export { computeDepreciation, computeBatchDepreciation, type DepreciationInput, type DepreciationResult } from "./slices/fixed-assets/calculators/depreciation.js";
+export { splitAssetComponents, type ComponentSplit, type ComponentSplitInput, type ComponentSplitResult } from "./slices/fixed-assets/calculators/component-accounting.js";
+export { computeRevaluation, type RevaluationInput, type RevaluationResult, type RevaluationEffect } from "./slices/fixed-assets/calculators/revaluation.js";
+export { computeImpairment, type ImpairmentInput, type ImpairmentResult } from "./slices/fixed-assets/calculators/impairment.js";
+export { computeDisposal, type DisposalInput, type DisposalResult } from "./slices/fixed-assets/calculators/disposal.js";
+
+// ─── FA route registrars ───────────────────────────────────────────────────
+export { registerAssetRoutes } from "./slices/fixed-assets/routes/asset-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";
