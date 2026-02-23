@@ -213,3 +213,17 @@ export const reconciliationStatusEnum = pgEnum("reconciliation_status", [
   "COMPLETED",
   "SIGNED_OFF",
 ]);
+
+export const creditStatusEnum = pgEnum("credit_status", [
+  "ACTIVE",
+  "ON_HOLD",
+  "SUSPENDED",
+  "CLOSED",
+]);
+
+export const reviewOutcomeEnum = pgEnum("review_outcome", [
+  "APPROVED",
+  "REDUCED",
+  "SUSPENDED",
+  "UNCHANGED",
+]);

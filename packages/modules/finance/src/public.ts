@@ -31,7 +31,7 @@ export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
 // ─── Finance runtime + per-slice deps ────────────────────────────────────────
-export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, SharedDeps } from "./app/ports/finance-runtime.js";
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, CreditDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";
@@ -218,6 +218,25 @@ export { computeMultiCurrencyRecon, type MultiCurrencyReconInput, type MultiCurr
 
 // ─── Bank route registrars ─────────────────────────────────────────────────
 export { registerBankRoutes } from "./slices/bank/routes/bank-routes.js";
+
+// ─── Credit ports ──────────────────────────────────────────────────────────
+export type { ICreditLimitRepo, CreateCreditLimitInput } from "./slices/credit/ports/credit-limit-repo.js";
+export type { ICreditReviewRepo, CreateCreditReviewInput } from "./slices/credit/ports/credit-review-repo.js";
+
+// ─── Credit entities ───────────────────────────────────────────────────────
+export type { CreditLimit, CreditStatus } from "./slices/credit/entities/credit-limit.js";
+export type { CreditReview, ReviewOutcome } from "./slices/credit/entities/credit-review.js";
+
+// ─── Credit services ───────────────────────────────────────────────────────
+export { placeCreditHold, releaseCreditHold, type CreditHoldInput, type CreditReleaseInput } from "./slices/credit/services/credit-hold-release.js";
+
+// ─── Credit calculators ────────────────────────────────────────────────────
+export { checkCreditLimit as checkCmCreditLimit, type CreditCheckInput, type CreditCheckResult, type CreditDecision } from "./slices/credit/calculators/credit-check.js";
+export { computeCreditExposure, type CreditExposureInput, type CreditExposureResult, type ExposureItem } from "./slices/credit/calculators/credit-exposure.js";
+export { computeEcl as computeCmEcl, type EclInput as CmEclInput, type EclResult as CmEclResult, type AgingBucket as CmAgingBucket, type EclBucketResult } from "./slices/credit/calculators/ecl-calculator.js";
+
+// ─── Credit route registrars ───────────────────────────────────────────────
+export { registerCreditRoutes } from "./slices/credit/routes/credit-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";

@@ -32,6 +32,8 @@ export {
   bankMatchTypeEnum,
   bankMatchConfidenceEnum,
   reconciliationStatusEnum,
+  creditStatusEnum,
+  reviewOutcomeEnum,
 } from "./_enums";
 export { tenants, companies, users } from "./platform";
 export {
@@ -78,6 +80,8 @@ export {
   bankStatementLines,
   bankMatches,
   bankReconciliations,
+  creditLimits,
+  creditReviews,
 } from "./erp";
 export { auditLogs } from "./audit";
 export { outbox } from "./outbox-table";

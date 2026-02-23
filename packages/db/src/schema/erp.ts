@@ -45,6 +45,8 @@ import {
   bankMatchTypeEnum,
   bankMatchConfidenceEnum,
   reconciliationStatusEnum,
+  creditStatusEnum,
+  reviewOutcomeEnum,
 } from "./_enums";
 import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
 
@@ -1043,5 +1045,62 @@ export const bankReconciliations = erpSchema.table(
   (t) => [
     index("idx_bank_recon_account_tenant").on(t.tenantId, t.bankAccountId),
     index("idx_bank_recon_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.credit_limit ──────────────────────────────────────────────────────
+
+export const creditLimits = erpSchema.table(
+  "credit_limit",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    customerId: uuid("customer_id").notNull(),
+    companyId: uuid("company_id").notNull(),
+    creditLimit: moneyBigint("credit_limit").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    currentExposure: moneyBigint("current_exposure").notNull().default(sql`0`),
+    availableCredit: moneyBigint("available_credit").notNull().default(sql`0`),
+    status: creditStatusEnum("status").notNull().default("ACTIVE"),
+    approvedBy: uuid("approved_by"),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    effectiveFrom: timestamp("effective_from", { withTimezone: true }).notNull(),
+    effectiveTo: timestamp("effective_to", { withTimezone: true }),
+    lastReviewDate: timestamp("last_review_date", { withTimezone: true }),
+    nextReviewDate: timestamp("next_review_date", { withTimezone: true }),
+    riskRating: varchar("risk_rating", { length: 10 }),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_credit_limit_customer_tenant").on(t.tenantId, t.customerId),
+    index("idx_credit_limit_company_tenant").on(t.tenantId, t.companyId),
+    index("idx_credit_limit_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.credit_review ─────────────────────────────────────────────────────
+
+export const creditReviews = erpSchema.table(
+  "credit_review",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    creditLimitId: uuid("credit_limit_id").notNull(),
+    customerId: uuid("customer_id").notNull(),
+    reviewDate: timestamp("review_date", { withTimezone: true }).notNull(),
+    previousLimit: moneyBigint("previous_limit").notNull(),
+    proposedLimit: moneyBigint("proposed_limit").notNull(),
+    approvedLimit: moneyBigint("approved_limit").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    outcome: reviewOutcomeEnum("outcome").notNull(),
+    riskRating: varchar("risk_rating", { length: 10 }),
+    notes: text("notes"),
+    reviewedBy: uuid("reviewed_by").notNull(),
+    approvedBy: uuid("approved_by"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_credit_review_limit_tenant").on(t.tenantId, t.creditLimitId),
+    index("idx_credit_review_customer_tenant").on(t.tenantId, t.customerId),
   ],
 );
