@@ -31,7 +31,7 @@ export type { IOutboxWriter, OutboxEvent } from "./shared/ports/outbox-writer.js
 export type { IAuthorizationPolicy, FinancePermission, SoDViolation } from "./shared/ports/authorization.js";
 
 // ─── Finance runtime + per-slice deps ────────────────────────────────────────
-export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, SharedDeps } from "./app/ports/finance-runtime.js";
+export type { FinanceRuntime, FinanceDeps, GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, SharedDeps } from "./app/ports/finance-runtime.js";
 
 // ─── FX ports ───────────────────────────────────────────────────────────────
 export type { IFxRateRepo } from "./slices/fx/ports/fx-rate-repo.js";
@@ -194,6 +194,30 @@ export { computeDisposal, type DisposalInput, type DisposalResult } from "./slic
 
 // ─── FA route registrars ───────────────────────────────────────────────────
 export { registerAssetRoutes } from "./slices/fixed-assets/routes/asset-routes.js";
+
+// ─── Bank ports ────────────────────────────────────────────────────────────
+export type { IBankStatementRepo, CreateBankStatementInput, CreateStatementLineInput } from "./slices/bank/ports/bank-statement-repo.js";
+export type { IBankMatchRepo, CreateBankMatchInput } from "./slices/bank/ports/bank-match-repo.js";
+export type { IBankReconciliationRepo, CreateBankReconciliationInput } from "./slices/bank/ports/bank-reconciliation-repo.js";
+
+// ─── Bank entities ─────────────────────────────────────────────────────────
+export type { BankStatement, StatementFormat } from "./slices/bank/entities/bank-statement.js";
+export type { BankStatementLine, TransactionType, MatchStatus } from "./slices/bank/entities/bank-statement-line.js";
+export type { BankMatch, MatchType, MatchConfidence } from "./slices/bank/entities/bank-match.js";
+export type { BankReconciliation, ReconciliationStatus } from "./slices/bank/entities/bank-reconciliation.js";
+
+// ─── Bank services ─────────────────────────────────────────────────────────
+export { signOffReconciliation, type SignOffReconciliationInput } from "./slices/bank/services/sign-off-reconciliation.js";
+
+// ─── Bank calculators ──────────────────────────────────────────────────────
+export { parseOfx, parseCsv, type ParsedStatement, type ParsedStatementLine, type ParseResult } from "./slices/bank/calculators/statement-parser.js";
+export { autoMatchLines, type GlCandidate, type MatchCandidate, type AutoMatchResult, type AutoMatchConfig } from "./slices/bank/calculators/auto-match.js";
+export { computeOutstandingItems, type OutstandingItem, type OutstandingItemsResult } from "./slices/bank/calculators/outstanding-items.js";
+export { classifyBankCharges, type ChargeRule, type ClassifiedCharge, type ChargeClassificationResult, type ChargeCategory } from "./slices/bank/calculators/bank-charges.js";
+export { computeMultiCurrencyRecon, type MultiCurrencyReconInput, type MultiCurrencyReconResult, type FxRateEntry } from "./slices/bank/calculators/multi-currency-recon.js";
+
+// ─── Bank route registrars ─────────────────────────────────────────────────
+export { registerBankRoutes } from "./slices/bank/routes/bank-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";

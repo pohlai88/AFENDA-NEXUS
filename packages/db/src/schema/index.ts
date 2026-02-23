@@ -27,6 +27,11 @@ export {
   assetStatusEnum,
   depreciationMethodEnum,
   assetMovementTypeEnum,
+  statementFormatEnum,
+  bankLineMatchStatusEnum,
+  bankMatchTypeEnum,
+  bankMatchConfidenceEnum,
+  reconciliationStatusEnum,
 } from "./_enums";
 export { tenants, companies, users } from "./platform";
 export {
@@ -69,6 +74,10 @@ export {
   assets,
   depreciationSchedules,
   assetMovements,
+  bankStatements,
+  bankStatementLines,
+  bankMatches,
+  bankReconciliations,
 } from "./erp";
 export { auditLogs } from "./audit";
 export { outbox } from "./outbox-table";

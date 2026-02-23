@@ -40,6 +40,11 @@ import {
   assetStatusEnum,
   depreciationMethodEnum,
   assetMovementTypeEnum,
+  statementFormatEnum,
+  bankLineMatchStatusEnum,
+  bankMatchTypeEnum,
+  bankMatchConfidenceEnum,
+  reconciliationStatusEnum,
 } from "./_enums";
 import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
 
@@ -926,5 +931,117 @@ export const assetMovements = erpSchema.table(
   (t) => [
     index("idx_asset_movement_asset_tenant").on(t.tenantId, t.assetId),
     index("idx_asset_movement_type_tenant").on(t.tenantId, t.movementType),
+  ],
+);
+
+// ─── erp.bank_statement ────────────────────────────────────────────────────
+
+export const bankStatements = erpSchema.table(
+  "bank_statement",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    bankAccountId: uuid("bank_account_id").notNull(),
+    bankAccountName: text("bank_account_name").notNull(),
+    statementDate: timestamp("statement_date", { withTimezone: true }).notNull(),
+    periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+    periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+    openingBalance: moneyBigint("opening_balance").notNull(),
+    closingBalance: moneyBigint("closing_balance").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    format: statementFormatEnum("format").notNull(),
+    lineCount: smallint("line_count").notNull().default(0),
+    importedAt: timestamp("imported_at", { withTimezone: true }).notNull().defaultNow(),
+    importedBy: uuid("imported_by").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_bank_stmt_account_tenant").on(t.tenantId, t.bankAccountId),
+  ],
+);
+
+// ─── erp.bank_statement_line ───────────────────────────────────────────────
+
+export const bankStatementLines = erpSchema.table(
+  "bank_statement_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    statementId: uuid("statement_id").notNull(),
+    lineNumber: smallint("line_number").notNull(),
+    transactionDate: timestamp("transaction_date", { withTimezone: true }).notNull(),
+    valueDate: timestamp("value_date", { withTimezone: true }),
+    transactionType: varchar("transaction_type", { length: 10 }).notNull(),
+    amount: moneyBigint("amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    reference: varchar("reference", { length: 100 }),
+    description: text("description").notNull(),
+    payeeOrPayer: text("payee_or_payer"),
+    bankReference: varchar("bank_reference", { length: 100 }),
+    matchStatus: bankLineMatchStatusEnum("match_status").notNull().default("UNMATCHED"),
+    matchId: uuid("match_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_bank_line_stmt_tenant").on(t.tenantId, t.statementId),
+    index("idx_bank_line_status_tenant").on(t.tenantId, t.matchStatus),
+  ],
+);
+
+// ─── erp.bank_match ────────────────────────────────────────────────────────
+
+export const bankMatches = erpSchema.table(
+  "bank_match",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    statementLineId: uuid("statement_line_id").notNull(),
+    journalId: uuid("journal_id"),
+    sourceDocumentId: uuid("source_document_id"),
+    sourceDocumentType: varchar("source_document_type", { length: 30 }),
+    matchType: bankMatchTypeEnum("match_type").notNull(),
+    confidence: bankMatchConfidenceEnum("confidence").notNull(),
+    confidenceScore: smallint("confidence_score").notNull(),
+    matchedAmount: moneyBigint("matched_amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    matchedAt: timestamp("matched_at", { withTimezone: true }).notNull().defaultNow(),
+    matchedBy: uuid("matched_by"),
+    confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+    confirmedBy: uuid("confirmed_by"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("idx_bank_match_line_tenant").on(t.tenantId, t.statementLineId),
+  ],
+);
+
+// ─── erp.bank_reconciliation ───────────────────────────────────────────────
+
+export const bankReconciliations = erpSchema.table(
+  "bank_reconciliation",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    bankAccountId: uuid("bank_account_id").notNull(),
+    periodStart: timestamp("period_start", { withTimezone: true }).notNull(),
+    periodEnd: timestamp("period_end", { withTimezone: true }).notNull(),
+    statementBalance: moneyBigint("statement_balance").notNull(),
+    glBalance: moneyBigint("gl_balance").notNull(),
+    adjustedStatementBalance: moneyBigint("adjusted_statement_balance").notNull(),
+    adjustedGlBalance: moneyBigint("adjusted_gl_balance").notNull(),
+    outstandingChecks: moneyBigint("outstanding_checks").notNull().default(sql`0`),
+    depositsInTransit: moneyBigint("deposits_in_transit").notNull().default(sql`0`),
+    difference: moneyBigint("difference").notNull().default(sql`0`),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    status: reconciliationStatusEnum("status").notNull().default("IN_PROGRESS"),
+    matchedCount: smallint("matched_count").notNull().default(0),
+    unmatchedCount: smallint("unmatched_count").notNull().default(0),
+    signedOffAt: timestamp("signed_off_at", { withTimezone: true }),
+    signedOffBy: uuid("signed_off_by"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_bank_recon_account_tenant").on(t.tenantId, t.bankAccountId),
+    index("idx_bank_recon_status_tenant").on(t.tenantId, t.status),
   ],
 );

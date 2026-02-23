@@ -31,6 +31,9 @@ import { DrizzleWhtCertificateRepo } from "./slices/tax/repos/drizzle-wht-certif
 import { DrizzleAssetRepo } from "./slices/fixed-assets/repos/drizzle-asset-repo.js";
 import { DrizzleDepreciationScheduleRepo } from "./slices/fixed-assets/repos/drizzle-depreciation-schedule-repo.js";
 import { DrizzleAssetMovementRepo } from "./slices/fixed-assets/repos/drizzle-asset-movement-repo.js";
+import { DrizzleBankStatementRepo } from "./slices/bank/repos/drizzle-bank-statement-repo.js";
+import { DrizzleBankMatchRepo } from "./slices/bank/repos/drizzle-bank-match-repo.js";
+import { DrizzleBankReconciliationRepo } from "./slices/bank/repos/drizzle-bank-reconciliation-repo.js";
 
 /**
  * Composition-root adapter that wires all Drizzle repos into a FinanceRuntime.
@@ -77,6 +80,9 @@ export function createFinanceRuntime(session: DbSession): FinanceRuntime {
           assetRepo: new DrizzleAssetRepo(tx),
           depreciationScheduleRepo: new DrizzleDepreciationScheduleRepo(tx),
           assetMovementRepo: new DrizzleAssetMovementRepo(tx),
+          bankStatementRepo: new DrizzleBankStatementRepo(tx),
+          bankMatchRepo: new DrizzleBankMatchRepo(tx),
+          bankReconciliationRepo: new DrizzleBankReconciliationRepo(tx),
         };
         return fn(deps);
       });

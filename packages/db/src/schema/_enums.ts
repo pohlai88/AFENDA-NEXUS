@@ -180,3 +180,36 @@ export const assetMovementTypeEnum = pgEnum("asset_movement_type", [
   "TRANSFER",
   "CAPITALIZATION",
 ]);
+
+export const statementFormatEnum = pgEnum("statement_format", [
+  "OFX",
+  "MT940",
+  "CAMT053",
+  "CSV",
+  "MANUAL",
+]);
+
+export const bankLineMatchStatusEnum = pgEnum("bank_line_match_status", [
+  "UNMATCHED",
+  "AUTO_MATCHED",
+  "MANUAL_MATCHED",
+  "CONFIRMED",
+  "INVESTIGATING",
+]);
+
+export const bankMatchTypeEnum = pgEnum("bank_match_type", [
+  "AUTO",
+  "MANUAL",
+]);
+
+export const bankMatchConfidenceEnum = pgEnum("bank_match_confidence", [
+  "HIGH",
+  "MEDIUM",
+  "LOW",
+]);
+
+export const reconciliationStatusEnum = pgEnum("reconciliation_status", [
+  "IN_PROGRESS",
+  "COMPLETED",
+  "SIGNED_OFF",
+]);

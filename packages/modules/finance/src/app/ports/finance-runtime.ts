@@ -13,11 +13,12 @@ import type { ApDeps } from "../../slices/ap/ports/ap-deps.js";
 import type { ArDeps } from "../../slices/ar/ports/ar-deps.js";
 import type { TaxDeps } from "../../slices/tax/ports/tax-deps.js";
 import type { FaDeps } from "../../slices/fixed-assets/ports/fa-deps.js";
+import type { BankDeps } from "../../slices/bank/ports/bank-deps.js";
 import type { SharedDeps } from "../../shared/ports/shared-deps.js";
 
-export interface FinanceDeps extends GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, SharedDeps { }
+export interface FinanceDeps extends GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, SharedDeps { }
 
-export type { GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, SharedDeps };
+export type { GlDeps, FxDeps, IcDeps, HubDeps, ApDeps, ArDeps, TaxDeps, FaDeps, BankDeps, SharedDeps };
 
 export interface FinanceRuntime {
   withTenant<T>(
