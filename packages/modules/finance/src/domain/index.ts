@@ -1,37 +1,52 @@
-export type { Journal, JournalLine } from "./entities/journal.js";
-export type { Account, AccountType, NormalBalance } from "./entities/account.js";
-export { normalBalanceFor, isBalanceDirectionValid } from "./entities/account.js";
-export type { FiscalPeriod, PeriodStatus } from "./entities/fiscal-period.js";
-export type { Ledger } from "./entities/ledger.js";
-export type { FxRate } from "./entities/fx-rate.js";
-export { convertAmount } from "./entities/fx-rate.js";
-export type { GlBalance, TrialBalanceRow, TrialBalance } from "./entities/gl-balance.js";
-export type { JournalAuditEntry } from "./entities/journal-audit.js";
-export type { IntercompanyRelationship, IntercompanyDocument } from "./entities/intercompany.js";
-export type { IcSettlement, SettlementMethod, SettlementStatus } from "./entities/ic-settlement.js";
+/**
+ * SHIM — Phase 0 Strangler Fig.
+ * Re-exports from new slice locations so existing import paths still resolve.
+ * TODO: Remove this file once all consumers import from slices/ directly.
+ */
+
+// ─── GL slice entities ──────────────────────────────────────────────────────
+export type { Journal, JournalLine } from "../slices/gl/entities/journal.js";
+export type { Account, AccountType, NormalBalance } from "../slices/gl/entities/account.js";
+export { normalBalanceFor, isBalanceDirectionValid } from "../slices/gl/entities/account.js";
+export type { FiscalPeriod, PeriodStatus } from "../slices/gl/entities/fiscal-period.js";
+export type { Ledger } from "../slices/gl/entities/ledger.js";
+export type { GlBalance, TrialBalanceRow, TrialBalance } from "../slices/gl/entities/gl-balance.js";
+export type { JournalAuditEntry } from "../slices/gl/entities/journal-audit.js";
+
+// ─── FX slice entities ──────────────────────────────────────────────────────
+export type { FxRate } from "../slices/fx/entities/fx-rate.js";
+export { convertAmount } from "../slices/fx/entities/fx-rate.js";
+export type {
+    RateSource, ApprovalStatus, FxRateApproval, RateApprovalPolicy,
+} from "../slices/fx/entities/fx-rate-approval.js";
+export {
+    requiresApproval, validateRateForPosting, validateRateSpread, DEFAULT_RATE_APPROVAL_POLICY,
+} from "../slices/fx/entities/fx-rate-approval.js";
+
+// ─── IC slice entities ──────────────────────────────────────────────────────
+export type { IntercompanyRelationship, IntercompanyDocument } from "../slices/ic/entities/intercompany.js";
+export type { IcSettlement, SettlementMethod, SettlementStatus } from "../slices/ic/entities/ic-settlement.js";
+
+// ─── Hub slice entities ─────────────────────────────────────────────────────
 export type {
     RevenueContract, RecognitionMethod, ContractStatus,
     RecognitionMilestone, RecognitionScheduleEntry,
-} from "./entities/revenue-recognition.js";
-export type { RecurringTemplate, RecurringTemplateLine, RecurringFrequency } from "./entities/recurring-template.js";
-export type { BudgetEntry, BudgetVarianceRow, BudgetVarianceReport } from "./entities/budget.js";
+} from "../slices/hub/entities/revenue-recognition.js";
+export type { RecurringTemplate, RecurringTemplateLine, RecurringFrequency } from "../slices/hub/entities/recurring-template.js";
+export type { BudgetEntry, BudgetVarianceRow, BudgetVarianceReport } from "../slices/hub/entities/budget.js";
 export type {
     ReportingStandard, StatementCategory, ClassificationRule, ClassificationRuleSet,
-} from "./entities/classification-rule.js";
-export { resolveCategory, defaultIfrsRules } from "./entities/classification-rule.js";
-export type {
-    RateSource, ApprovalStatus, FxRateApproval, RateApprovalPolicy,
-} from "./entities/fx-rate-approval.js";
-export {
-    requiresApproval, validateRateForPosting, validateRateSpread, DEFAULT_RATE_APPROVAL_POLICY,
-} from "./entities/fx-rate-approval.js";
+} from "../slices/hub/entities/classification-rule.js";
+export { resolveCategory, defaultIfrsRules } from "../slices/hub/entities/classification-rule.js";
+
+// ─── Reporting slice entities ───────────────────────────────────────────────
 export type {
     BalanceSheet, IncomeStatement, CashFlowStatement, ReportSection, ReportRow,
     ComparativeBalanceSheet, ComparativeIncomeStatement,
     ComparativeReportSection, ComparativeReportRow,
-} from "./entities/financial-reports.js";
+} from "../slices/reporting/entities/financial-reports.js";
 
-// Pure calculators — no I/O, no side effects
+// ─── Calculators (via calculators/index.ts shim) ────────────────────────────
 export type { CalculatorResult } from "./calculators/index.js";
 export { validateJournalBalance } from "./calculators/index.js";
 export { computeTrialBalance, classifyByAccountType } from "./calculators/index.js";
@@ -74,14 +89,10 @@ export type {
     MilestoneInput, MilestoneScheduleResult,
 } from "./calculators/index.js";
 
-// Currency precision registry (GAP-10)
-export type { CurrencyConfig } from "./currency-config.js";
-export { getCurrencyConfig, getMinorUnitMultiplier } from "./currency-config.js";
-
-// Domain event type registry
-export { FinanceEventType } from "./events.js";
-export type { FinanceEventType as FinanceEventTypeValue } from "./events.js";
-
-// Finance context — multi-tenant, multi-company, multi-currency
-export type { FinanceContext, FinanceActor } from "./finance-context.js";
-export { createFinanceContext } from "./finance-context.js";
+// ─── Shared ─────────────────────────────────────────────────────────────────
+export type { CurrencyConfig } from "../shared/currency-config.js";
+export { getCurrencyConfig, getMinorUnitMultiplier } from "../shared/currency-config.js";
+export { FinanceEventType } from "../shared/events.js";
+export type { FinanceEventType as FinanceEventTypeValue } from "../shared/events.js";
+export type { FinanceContext, FinanceActor } from "../shared/finance-context.js";
+export { createFinanceContext } from "../shared/finance-context.js";

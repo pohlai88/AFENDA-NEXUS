@@ -5,9 +5,9 @@ import {
   auditRateSources,
   computeAccruals,
 } from "../domain/calculators/index.js";
-import type { TrialBalanceMovement } from "../domain/calculators/cash-flow-indirect.js";
-import type { RateEntry } from "../domain/calculators/fx-triangulation.js";
-import type { AccrualSchedule } from "../domain/calculators/accrual-engine.js";
+import type { TrialBalanceMovement } from "../slices/reporting/calculators/cash-flow-indirect.js";
+import type { RateEntry } from "../slices/fx/calculators/fx-triangulation.js";
+import type { AccrualSchedule } from "../slices/hub/calculators/accrual-engine.js";
 
 // ── Cash Flow Indirect ──────────────────────────────────────────────
 

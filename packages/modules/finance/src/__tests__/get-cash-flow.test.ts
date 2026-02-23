@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { ok, money } from "@afenda/core";
 import type { AccountType } from "../domain/index.js";
-import { getCashFlow } from "../app/services/get-cash-flow.js";
+import { getCashFlow } from "../slices/reporting/services/get-cash-flow.js";
 
 const LEDGER_ID = "ledger-1";
 const FROM_PERIOD = "period-1";

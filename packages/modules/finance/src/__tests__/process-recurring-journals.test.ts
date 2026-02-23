@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { processRecurringJournals } from "../app/services/process-recurring-journals.js";
+import { processRecurringJournals } from "../slices/gl/services/process-recurring-journals.js";
 import { money } from "@afenda/core";
 import {
   makeRecurringTemplate,

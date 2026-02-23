@@ -11,8 +11,8 @@
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import { money } from "@afenda/core";
-import { validateJournalBalance } from "../domain/calculators/journal-balance.js";
-import { convertAmountPrecise } from "../domain/calculators/fx-convert.js";
+import { validateJournalBalance } from "../slices/gl/calculators/journal-balance.js";
+import { convertAmountPrecise } from "../slices/fx/calculators/fx-convert.js";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 

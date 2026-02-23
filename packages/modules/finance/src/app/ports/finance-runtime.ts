@@ -1,21 +1,26 @@
-import type { IJournalRepo } from "./journal-repo.js";
-import type { IAccountRepo } from "./account-repo.js";
-import type { IFiscalPeriodRepo } from "./fiscal-period-repo.js";
-import type { IGlBalanceRepo } from "./gl-balance-repo.js";
-import type { IIdempotencyStore } from "./idempotency-store.js";
-import type { IOutboxWriter } from "./outbox-writer.js";
-import type { IJournalAuditRepo } from "./journal-audit-repo.js";
-import type { IPeriodAuditRepo } from "./period-audit-repo.js";
-import type { IFxRateRepo } from "./fx-rate-repo.js";
-import type { ILedgerRepo } from "./ledger-repo.js";
-import type { IIcAgreementRepo, IIcTransactionRepo } from "./ic-repo.js";
-import type { IRecurringTemplateRepo } from "./recurring-template-repo.js";
-import type { IBudgetRepo } from "./budget-repo.js";
-import type { IIcSettlementRepo } from "./ic-settlement-repo.js";
-import type { IClassificationRuleRepo } from "./classification-rule-repo.js";
-import type { IFxRateApprovalRepo } from "./fx-rate-approval-repo.js";
-import type { IRevenueContractRepo } from "./revenue-contract-repo.js";
-import type { IDocumentNumberGenerator } from "./document-number-generator.js";
+/**
+ * SHIM — Phase 0 Strangler Fig.
+ * Re-exports FinanceDeps from new slice port locations.
+ * TODO: Remove once all consumers import from slices/ directly.
+ */
+import type { IJournalRepo } from "../../slices/gl/ports/journal-repo.js";
+import type { IAccountRepo } from "../../slices/gl/ports/account-repo.js";
+import type { IFiscalPeriodRepo } from "../../slices/gl/ports/fiscal-period-repo.js";
+import type { IGlBalanceRepo } from "../../slices/gl/ports/gl-balance-repo.js";
+import type { IJournalAuditRepo } from "../../slices/gl/ports/journal-audit-repo.js";
+import type { IPeriodAuditRepo } from "../../slices/gl/ports/period-audit-repo.js";
+import type { ILedgerRepo } from "../../slices/gl/ports/ledger-repo.js";
+import type { IDocumentNumberGenerator } from "../../slices/gl/ports/document-number-generator.js";
+import type { IIdempotencyStore } from "../../shared/ports/idempotency-store.js";
+import type { IOutboxWriter } from "../../shared/ports/outbox-writer.js";
+import type { IFxRateRepo } from "../../slices/fx/ports/fx-rate-repo.js";
+import type { IFxRateApprovalRepo } from "../../slices/fx/ports/fx-rate-approval-repo.js";
+import type { IIcAgreementRepo, IIcTransactionRepo } from "../../slices/ic/ports/ic-repo.js";
+import type { IIcSettlementRepo } from "../../slices/ic/ports/ic-settlement-repo.js";
+import type { IRecurringTemplateRepo } from "../../slices/hub/ports/recurring-template-repo.js";
+import type { IBudgetRepo } from "../../slices/hub/ports/budget-repo.js";
+import type { IClassificationRuleRepo } from "../../slices/hub/ports/classification-rule-repo.js";
+import type { IRevenueContractRepo } from "../../slices/hub/ports/revenue-contract-repo.js";
 
 export interface FinanceDeps {
   readonly journalRepo: IJournalRepo;

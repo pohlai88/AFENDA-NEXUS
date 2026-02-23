@@ -5,9 +5,9 @@ import {
   getAncestors,
   validateDimensions,
 } from "../domain/calculators/index.js";
-import { createFinanceContext } from "../domain/finance-context.js";
-import type { AccountNode } from "../domain/calculators/coa-hierarchy.js";
-import type { DimensionValue, JournalLineDimensions } from "../domain/calculators/segment-dimension.js";
+import { createFinanceContext } from "../shared/finance-context.js";
+import type { AccountNode } from "../slices/gl/calculators/coa-hierarchy.js";
+import type { DimensionValue, JournalLineDimensions } from "../slices/gl/calculators/segment-dimension.js";
 
 function makeNode(overrides: Partial<AccountNode> = {}): AccountNode {
   return {

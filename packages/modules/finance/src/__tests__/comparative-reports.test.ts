@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { money } from "@afenda/core";
-import { buildComparativeSection } from "../domain/calculators/comparative-report.js";
-import { getComparativeBalanceSheet } from "../app/services/get-comparative-balance-sheet.js";
-import { getComparativeIncomeStatement } from "../app/services/get-comparative-income-statement.js";
-import type { ReportSection } from "../domain/entities/financial-reports.js";
+import { buildComparativeSection } from "../slices/reporting/calculators/comparative-report.js";
+import { getComparativeBalanceSheet } from "../slices/reporting/services/get-comparative-balance-sheet.js";
+import { getComparativeIncomeStatement } from "../slices/reporting/services/get-comparative-income-statement.js";
+import type { ReportSection } from "../slices/reporting/entities/financial-reports.js";
 import { IDS, mockBalanceRepo, mockLedgerRepo } from "./helpers.js";
 
 // ─── Calculator Tests ────────────────────────────────────────────────────────

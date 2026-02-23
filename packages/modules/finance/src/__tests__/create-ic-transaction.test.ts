@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ok, err, NotFoundError, companyId } from "@afenda/core";
 import type { Result } from "@afenda/core";
-import { createIcTransaction } from "../app/services/create-ic-transaction.js";
+import { createIcTransaction } from "../slices/ic/services/create-ic-transaction.js";
 import type { IntercompanyRelationship, IntercompanyDocument } from "../domain/index.js";
 import type { IIcAgreementRepo, IIcTransactionRepo, CreateIcDocumentInput } from "../app/ports/ic-repo.js";
 import { IDS, mockJournalRepo, mockOutboxWriter } from "./helpers.js";

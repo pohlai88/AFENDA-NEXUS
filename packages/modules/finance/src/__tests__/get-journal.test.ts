@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getJournal } from "../app/services/get-journal.js";
+import { getJournal } from "../slices/gl/services/get-journal.js";
 import { IDS, makeJournal, mockJournalRepo } from "./helpers.js";
 
 describe("getJournal()", () => {

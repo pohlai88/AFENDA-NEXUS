@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getTrialBalance } from "../app/services/get-trial-balance.js";
+import { getTrialBalance } from "../slices/gl/services/get-trial-balance.js";
 import { mockBalanceRepo } from "./helpers.js";
 
 describe("getTrialBalance()", () => {

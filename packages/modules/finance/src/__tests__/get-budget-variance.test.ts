@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { money } from "@afenda/core";
-import { getBudgetVariance } from "../app/services/get-budget-variance.js";
+import { getBudgetVariance } from "../slices/hub/services/get-budget-variance.js";
 import {
   IDS,
   makeBudgetEntry,

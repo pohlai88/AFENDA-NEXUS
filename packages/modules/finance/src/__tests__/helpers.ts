@@ -20,25 +20,25 @@ export const IDS = {
 } as const;
 import type { Result } from "@afenda/core";
 import type { Journal, JournalLine, Account, FiscalPeriod, TrialBalance, JournalAuditEntry } from "../domain/index.js";
-import type { IJournalRepo, CreateJournalInput } from "../app/ports/journal-repo.js";
-import type { IAccountRepo } from "../app/ports/account-repo.js";
-import type { IFiscalPeriodRepo } from "../app/ports/fiscal-period-repo.js";
-import type { IGlBalanceRepo, BalanceUpsertLine } from "../app/ports/gl-balance-repo.js";
-import type { IIdempotencyStore, IdempotencyClaimInput } from "../app/ports/idempotency-store.js";
-import type { IOutboxWriter, OutboxEvent } from "../app/ports/outbox-writer.js";
-import type { IJournalAuditRepo, AuditLogInput } from "../app/ports/journal-audit-repo.js";
-import type { IFxRateRepo } from "../app/ports/fx-rate-repo.js";
-import type { ILedgerRepo } from "../app/ports/ledger-repo.js";
-import type { IIcAgreementRepo, IIcTransactionRepo, CreateIcDocumentInput } from "../app/ports/ic-repo.js";
+import type { IJournalRepo, CreateJournalInput } from "../slices/gl/ports/journal-repo.js";
+import type { IAccountRepo } from "../slices/gl/ports/account-repo.js";
+import type { IFiscalPeriodRepo } from "../slices/gl/ports/fiscal-period-repo.js";
+import type { IGlBalanceRepo, BalanceUpsertLine } from "../slices/gl/ports/gl-balance-repo.js";
+import type { IIdempotencyStore, IdempotencyClaimInput } from "../shared/ports/idempotency-store.js";
+import type { IOutboxWriter, OutboxEvent } from "../shared/ports/outbox-writer.js";
+import type { IJournalAuditRepo, AuditLogInput } from "../slices/gl/ports/journal-audit-repo.js";
+import type { IFxRateRepo } from "../slices/fx/ports/fx-rate-repo.js";
+import type { ILedgerRepo } from "../slices/gl/ports/ledger-repo.js";
+import type { IIcAgreementRepo, IIcTransactionRepo, CreateIcDocumentInput } from "../slices/ic/ports/ic-repo.js";
 import type { FxRate, Ledger, IntercompanyRelationship, IntercompanyDocument, RecurringTemplate, BudgetEntry } from "../domain/index.js";
-import type { IRecurringTemplateRepo, CreateRecurringTemplateInput } from "../app/ports/recurring-template-repo.js";
-import type { IBudgetRepo, UpsertBudgetEntryInput } from "../app/ports/budget-repo.js";
-import type { IDocumentNumberGenerator } from "../app/ports/document-number-generator.js";
-import type { IPeriodAuditRepo } from "../app/ports/period-audit-repo.js";
-import type { IIcSettlementRepo } from "../app/ports/ic-settlement-repo.js";
-import type { IClassificationRuleRepo } from "../app/ports/classification-rule-repo.js";
-import type { IFxRateApprovalRepo } from "../app/ports/fx-rate-approval-repo.js";
-import type { IRevenueContractRepo } from "../app/ports/revenue-contract-repo.js";
+import type { IRecurringTemplateRepo, CreateRecurringTemplateInput } from "../slices/hub/ports/recurring-template-repo.js";
+import type { IBudgetRepo, UpsertBudgetEntryInput } from "../slices/hub/ports/budget-repo.js";
+import type { IDocumentNumberGenerator } from "../slices/gl/ports/document-number-generator.js";
+import type { IPeriodAuditRepo } from "../slices/gl/ports/period-audit-repo.js";
+import type { IIcSettlementRepo } from "../slices/ic/ports/ic-settlement-repo.js";
+import type { IClassificationRuleRepo } from "../slices/hub/ports/classification-rule-repo.js";
+import type { IFxRateApprovalRepo } from "../slices/fx/ports/fx-rate-approval-repo.js";
+import type { IRevenueContractRepo } from "../slices/hub/ports/revenue-contract-repo.js";
 
 // ─── Domain Factories ───────────────────────────────────────────────────────
 

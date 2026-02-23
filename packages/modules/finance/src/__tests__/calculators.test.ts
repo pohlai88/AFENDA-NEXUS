@@ -10,7 +10,7 @@ import {
   classifyIncomeStatement,
   classifyCashFlow,
 } from "../domain/calculators/index.js";
-import { normalBalanceFor } from "../domain/entities/account.js";
+import { normalBalanceFor } from "../slices/gl/entities/account.js";
 
 describe("validateJournalBalance", () => {
   it("returns balanced=true when debits equal credits", () => {

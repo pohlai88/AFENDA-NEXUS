@@ -27,9 +27,14 @@
     "audit:ais": "node tools/scripts/audit-ais.mjs",
     "audit:sox": "node tools/scripts/audit-sox.mjs",
     "audit:pack": "node tools/scripts/generate-evidence-pack.mjs",
-    "audit:export": "node tools/scripts/export-audit-evidence.mjs"
+    "audit:export": "node tools/scripts/export-audit-evidence.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:yaml": "prettier --write '*.{yaml,yml}'",
+    "format:md": "prettier --write '*.{md,markdown}'"
   },
   "devDependencies": {
+    "prettier": "^3.8.1",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

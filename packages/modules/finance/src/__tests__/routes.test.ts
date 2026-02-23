@@ -1,19 +1,19 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import Fastify, { type FastifyInstance } from "fastify";
 import type { FinanceRuntime, FinanceDeps } from "../app/ports/finance-runtime.js";
-import { registerJournalRoutes } from "../infra/routes/journal-routes.js";
-import { registerAccountRoutes } from "../infra/routes/account-routes.js";
-import { registerPeriodRoutes } from "../infra/routes/period-routes.js";
-import { registerBalanceRoutes } from "../infra/routes/balance-routes.js";
-import { registerIcRoutes } from "../infra/routes/ic-routes.js";
-import { registerIcAgreementRoutes } from "../infra/routes/ic-agreement-routes.js";
-import { registerLedgerRoutes } from "../infra/routes/ledger-routes.js";
-import { registerFxRateRoutes } from "../infra/routes/fx-rate-routes.js";
-import { registerRecurringTemplateRoutes } from "../infra/routes/recurring-template-routes.js";
-import { registerBudgetRoutes } from "../infra/routes/budget-routes.js";
-import { registerReportRoutes } from "../infra/routes/report-routes.js";
-import { registerErrorHandler } from "../infra/routes/fastify-plugins.js";
-import { registerBigIntSerializer } from "../infra/routes/fastify-plugins.js";
+import { registerJournalRoutes } from "../slices/gl/routes/journal-routes.js";
+import { registerAccountRoutes } from "../slices/gl/routes/account-routes.js";
+import { registerPeriodRoutes } from "../slices/gl/routes/period-routes.js";
+import { registerBalanceRoutes } from "../slices/gl/routes/balance-routes.js";
+import { registerIcRoutes } from "../slices/ic/routes/ic-routes.js";
+import { registerIcAgreementRoutes } from "../slices/ic/routes/ic-agreement-routes.js";
+import { registerLedgerRoutes } from "../slices/gl/routes/ledger-routes.js";
+import { registerFxRateRoutes } from "../slices/fx/routes/fx-rate-routes.js";
+import { registerRecurringTemplateRoutes } from "../slices/hub/routes/recurring-template-routes.js";
+import { registerBudgetRoutes } from "../slices/hub/routes/budget-routes.js";
+import { registerReportRoutes } from "../slices/reporting/routes/report-routes.js";
+import { registerErrorHandler } from "../shared/routes/fastify-plugins.js";
+import { registerBigIntSerializer } from "../shared/routes/fastify-plugins.js";
 import {
   IDS,
   makeJournal,

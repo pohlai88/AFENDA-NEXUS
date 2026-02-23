@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+.next/
+.turbo/
+
+# Generated files
+*.generated.ts
+*.generated.js
+
+# Config files that shouldn't be reformatted
+*.lock
+package-lock.json
+yarn.lock
+
+# Documentation that might have specific formatting
+CHANGELOG.md
+
+# Test fixtures
+**/__fixtures__/
+**/*.snap
+
+# Database migrations (preserve formatting)
+packages/db/drizzle/migrations/
+
+# Git files
+.git/
+COMMIT_EDITMSG
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Missing files that cause errors
+packages/modules/finance/src/infra/repositories/drizzle-fx-rate-repo.ts
+packages/modules/finance/src/infra/repositories/drizzle-fx-rate-approval-repo.ts
+packages/modules/finance/src/infra/routes/fx-rate-approval-routes.ts
+packages/modules/finance/src/infra/routes/fx-rate-routes.ts

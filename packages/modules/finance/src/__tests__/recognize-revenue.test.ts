@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { ok, err, AppError } from "@afenda/core";
-import { recognizeRevenue } from "../app/services/recognize-revenue.js";
+import { recognizeRevenue } from "../slices/hub/services/recognize-revenue.js";
 import type { IRevenueContractRepo } from "../app/ports/revenue-contract-repo.js";
-import type { RevenueContract } from "../domain/entities/revenue-recognition.js";
+import type { RevenueContract } from "../slices/hub/entities/revenue-recognition.js";
 import type { TenantId, CompanyId } from "@afenda/core";
 import {
   IDS,

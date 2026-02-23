@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createJournal } from "../app/services/create-journal.js";
+import { createJournal } from "../slices/gl/services/create-journal.js";
 import {
   makeAccount,
   makePeriod,
@@ -131,7 +131,7 @@ describe("createJournal()", () => {
 
   it("rejects cross-company account lines when FinanceContext is provided (A-05)", async () => {
     const { companyId } = await import("@afenda/core");
-    const { createFinanceContext } = await import("../domain/finance-context.js");
+    const { createFinanceContext } = await import("../shared/finance-context.js");
     const otherCompany = "00000000-0000-4000-8000-000000000099";
     const deps = makeDeps({
       accountRepo: mockAccountRepo([

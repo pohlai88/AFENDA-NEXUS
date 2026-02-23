@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { reopenPeriod } from "../app/services/reopen-period.js";
+import { reopenPeriod } from "../slices/gl/services/reopen-period.js";
 import { IDS, makePeriod, mockPeriodRepo, mockOutboxWriter } from "./helpers.js";
 
 function makeDeps(overrides: Record<string, unknown> = {}) {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { money } from "@afenda/core";
-import { postJournal } from "../app/services/post-journal.js";
+import { postJournal } from "../slices/gl/services/post-journal.js";
 import {
   IDS,
   makeJournal,

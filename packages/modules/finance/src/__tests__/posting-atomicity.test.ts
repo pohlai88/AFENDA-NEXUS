@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { AppError, err } from "@afenda/core";
-import { postJournal } from "../app/services/post-journal.js";
+import { postJournal } from "../slices/gl/services/post-journal.js";
 import {
   IDS,
   makeJournal,

@@ -12,10 +12,10 @@ import {
   ledgers,
 } from "@afenda/db";
 import { eq, sql } from "drizzle-orm";
-import { DrizzleJournalRepo } from "../infra/repositories/drizzle-journal-repo.js";
-import { DrizzleAccountRepo } from "../infra/repositories/drizzle-account-repo.js";
-import { DrizzlePeriodRepo } from "../infra/repositories/drizzle-period-repo.js";
-import { DrizzleIdempotencyStore } from "../infra/repositories/drizzle-idempotency.js";
+import { DrizzleJournalRepo } from "../slices/gl/repos/drizzle-journal-repo.js";
+import { DrizzleAccountRepo } from "../slices/gl/repos/drizzle-account-repo.js";
+import { DrizzlePeriodRepo } from "../slices/gl/repos/drizzle-period-repo.js";
+import { DrizzleIdempotencyStore } from "../shared/repos/drizzle-idempotency.js";
 
 /**
  * Integration tests for Drizzle repositories against a real Neon DB.

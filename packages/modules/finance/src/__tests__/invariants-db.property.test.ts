@@ -30,9 +30,9 @@ import {
   makeAccount,
   IDS,
 } from "./helpers.js";
-import { postJournal } from "../app/services/post-journal.js";
-import { reverseJournal } from "../app/services/reverse-journal.js";
-import { voidJournal } from "../app/services/void-journal.js";
+import { postJournal } from "../slices/gl/services/post-journal.js";
+import { reverseJournal } from "../slices/gl/services/reverse-journal.js";
+import { voidJournal } from "../slices/gl/services/void-journal.js";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 

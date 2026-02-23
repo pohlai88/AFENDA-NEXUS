@@ -4,9 +4,9 @@ import {
   derivePostings,
   allocateByDriver,
 } from "../domain/calculators/index.js";
-import type { MonetaryBalance } from "../domain/calculators/fx-revaluation.js";
-import type { DerivationRule, SourceTransaction } from "../domain/calculators/derivation-engine.js";
-import type { AllocationDriver } from "../domain/calculators/derivation-engine.js";
+import type { MonetaryBalance } from "../slices/fx/calculators/fx-revaluation.js";
+import type { DerivationRule, SourceTransaction } from "../slices/hub/calculators/derivation-engine.js";
+import type { AllocationDriver } from "../slices/hub/calculators/derivation-engine.js";
 
 // ── FX Revaluation ──────────────────────────────────────────────────
 

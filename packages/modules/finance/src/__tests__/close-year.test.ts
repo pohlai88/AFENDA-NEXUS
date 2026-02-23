@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { closeYear } from "../app/services/close-year.js";
-import type { CloseYearDeps, CloseYearInput } from "../app/services/close-year.js";
+import { closeYear } from "../slices/gl/services/close-year.js";
+import type { CloseYearDeps, CloseYearInput } from "../slices/gl/services/close-year.js";
 import {
   IDS,
   makePeriod,
@@ -217,7 +217,7 @@ describe("closeYear()", () => {
   it("uses ctx.tenantId when FinanceContext provided", async () => {
     const outbox = mockOutboxWriter();
     const deps = makeDeps({ outboxWriter: outbox });
-    const { createFinanceContext } = await import("../domain/finance-context.js");
+    const { createFinanceContext } = await import("../shared/finance-context.js");
     const ctx = createFinanceContext({ tenantId: "ctx-tenant", userId: "u1", companyId: IDS.company });
     await closeYear(makeInput(), deps, ctx);
     expect(outbox.events[0].tenantId).toBe("ctx-tenant");

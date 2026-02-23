@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { closePeriod } from "../app/services/close-period.js";
+import { closePeriod } from "../slices/gl/services/close-period.js";
 import {
   IDS,
   makeJournal,

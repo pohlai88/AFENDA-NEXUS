@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { createDbSession } from "@afenda/db";
 import { createPooledClient } from "@afenda/db/client";
 import type { DbClient } from "@afenda/db";
-import { createFinanceRuntime } from "../infra/drizzle-finance-runtime.js";
+import { createFinanceRuntime } from "../runtime.js";
 
 /**
  * A-01: Cross-Tenant Test Matrix

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getBalanceSheet } from "../app/services/get-balance-sheet.js";
+import { getBalanceSheet } from "../slices/reporting/services/get-balance-sheet.js";
 import {
   IDS,
   mockBalanceRepo,

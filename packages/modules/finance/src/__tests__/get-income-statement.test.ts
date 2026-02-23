@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getIncomeStatement } from "../app/services/get-income-statement.js";
+import { getIncomeStatement } from "../slices/reporting/services/get-income-statement.js";
 import {
   IDS,
   mockBalanceRepo,

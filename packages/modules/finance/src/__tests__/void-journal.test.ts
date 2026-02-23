@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { voidJournal } from "../app/services/void-journal.js";
+import { voidJournal } from "../slices/gl/services/void-journal.js";
 import { IDS, makeJournal, mockJournalRepo, mockJournalAuditRepo, mockFxRateRepo } from "./helpers.js";
 
 function makeDeps(overrides: Record<string, unknown> = {}) {

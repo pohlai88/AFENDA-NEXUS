@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { ok, err, AppError } from "@afenda/core";
-import { settleIcDocuments } from "../app/services/settle-ic-documents.js";
+import { settleIcDocuments } from "../slices/ic/services/settle-ic-documents.js";
 import type { IIcSettlementRepo } from "../app/ports/ic-settlement-repo.js";
 import type { IIcTransactionRepo } from "../app/ports/ic-repo.js";
 import type { IOutboxWriter } from "../app/ports/outbox-writer.js";
