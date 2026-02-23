@@ -88,6 +88,16 @@ export { executePaymentRun, type ExecutePaymentRunInput } from "./slices/ap/serv
 export { createDebitMemo, type CreateDebitMemoInput } from "./slices/ap/services/create-debit-memo.js";
 export { getApAging, type GetApAgingInput } from "./slices/ap/services/get-ap-aging.js";
 
+// ─── AP calculators ────────────────────────────────────────────────────────
+export { threeWayMatch, type MatchInput, type MatchResult } from "./slices/ap/calculators/three-way-match.js";
+export { computeApAging, type AgingReport, type AgingBucket, type SupplierAgingRow } from "./slices/ap/calculators/ap-aging.js";
+export { computeEarlyPaymentDiscount, type DiscountResult } from "./slices/ap/calculators/early-payment-discount.js";
+export { buildPain001, type PaymentInstruction, type Pain001Output } from "./slices/ap/calculators/payment-file-builder.js";
+export { computeWht, type WhtRate, type WhtResult } from "./slices/ap/calculators/wht-calculator.js";
+export { detectDuplicates, type InvoiceFingerprint, type DuplicateGroup } from "./slices/ap/calculators/duplicate-detection.js";
+export { computeAccruedLiabilities, type UninvoicedReceipt, type AccrualEntry } from "./slices/ap/calculators/accrued-liabilities.js";
+export { reconcileSupplierStatement, type SupplierStatementLine, type ApLedgerEntry, type ReconMatch, type ReconResult } from "./slices/ap/calculators/supplier-statement-recon.js";
+
 // ─── AP route registrars ───────────────────────────────────────────────────
 export { registerApInvoiceRoutes } from "./slices/ap/routes/ap-invoice-routes.js";
 export { registerApPaymentRunRoutes } from "./slices/ap/routes/ap-payment-run-routes.js";
@@ -118,6 +128,9 @@ export { computeDunningScore, computeDunningScores, computeDunningLevel } from "
 export { computeEclProvision, DEFAULT_ECL_MATRIX, type EclInput, type EclResult } from "./slices/ar/calculators/ecl-provision.js";
 export { allocatePaymentFifo, allocatePaymentSpecific, type AllocationResult } from "./slices/ar/calculators/payment-allocation.js";
 export { checkCreditLimit, type CreditLimitInput, type CreditLimitResult } from "./slices/ar/calculators/credit-limit.js";
+export { matchIcReceivables, type IcReceivable, type IcPayable, type IcMatchResult, type IcMatchingSummary } from "./slices/ar/calculators/ic-receivable-matching.js";
+export { computeInvoiceDiscounting, computeBatchDiscounting, type FactoringInput, type FactoringResult } from "./slices/ar/calculators/invoice-discounting.js";
+export { computeRevenueRecognition, computeBatchRevenueRecognition, type RevenueRecognitionInput, type RevenueRecognitionResult, type RecognitionMethod } from "./slices/ar/calculators/revenue-recognition-hook.js";
 
 // ─── AR route registrars ───────────────────────────────────────────────────
 export { registerArInvoiceRoutes } from "./slices/ar/routes/ar-invoice-routes.js";
