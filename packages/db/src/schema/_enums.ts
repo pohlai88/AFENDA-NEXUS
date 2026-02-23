@@ -92,3 +92,20 @@ export const reportingStandardEnum = pgEnum("reporting_standard", [
   "US_GAAP",
   "LOCAL",
 ]);
+
+export const apInvoiceStatusEnum = pgEnum("ap_invoice_status", [
+  "DRAFT",
+  "PENDING_APPROVAL",
+  "APPROVED",
+  "POSTED",
+  "PAID",
+  "PARTIALLY_PAID",
+  "CANCELLED",
+]);
+
+export const paymentRunStatusEnum = pgEnum("payment_run_status", [
+  "DRAFT",
+  "APPROVED",
+  "EXECUTED",
+  "CANCELLED",
+]);

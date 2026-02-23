@@ -19,6 +19,11 @@ import {
   recognitionMilestones,
   classificationRuleSets,
   classificationRules,
+  paymentTermsTemplates,
+  apInvoices,
+  apInvoiceLines,
+  apPaymentRuns,
+  apPaymentRunItems,
 } from "./erp";
 import { outbox } from "./outbox-table";
 
@@ -171,6 +176,41 @@ export const classificationRuleSetsRelations = relations(classificationRuleSets,
 export const classificationRulesRelations = relations(classificationRules, ({ one }) => ({
   tenant: one(tenants, { fields: [classificationRules.tenantId], references: [tenants.id] }),
   ruleSet: one(classificationRuleSets, { fields: [classificationRules.ruleSetId], references: [classificationRuleSets.id] }),
+}));
+
+// ─── AP Relations ──────────────────────────────────────────────────────────
+
+export const paymentTermsTemplatesRelations = relations(paymentTermsTemplates, ({ one }) => ({
+  tenant: one(tenants, { fields: [paymentTermsTemplates.tenantId], references: [tenants.id] }),
+}));
+
+export const apInvoicesRelations = relations(apInvoices, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [apInvoices.tenantId], references: [tenants.id] }),
+  company: one(companies, { fields: [apInvoices.companyId], references: [companies.id] }),
+  ledger: one(ledgers, { fields: [apInvoices.ledgerId], references: [ledgers.id] }),
+  currency: one(currencies, { fields: [apInvoices.currencyId], references: [currencies.id] }),
+  journal: one(glJournals, { fields: [apInvoices.journalId], references: [glJournals.id] }),
+  paymentTerms: one(paymentTermsTemplates, { fields: [apInvoices.paymentTermsId], references: [paymentTermsTemplates.id] }),
+  lines: many(apInvoiceLines),
+}));
+
+export const apInvoiceLinesRelations = relations(apInvoiceLines, ({ one }) => ({
+  tenant: one(tenants, { fields: [apInvoiceLines.tenantId], references: [tenants.id] }),
+  invoice: one(apInvoices, { fields: [apInvoiceLines.invoiceId], references: [apInvoices.id] }),
+  account: one(accounts, { fields: [apInvoiceLines.accountId], references: [accounts.id] }),
+}));
+
+export const apPaymentRunsRelations = relations(apPaymentRuns, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [apPaymentRuns.tenantId], references: [tenants.id] }),
+  company: one(companies, { fields: [apPaymentRuns.companyId], references: [companies.id] }),
+  currency: one(currencies, { fields: [apPaymentRuns.currencyId], references: [currencies.id] }),
+  items: many(apPaymentRunItems),
+}));
+
+export const apPaymentRunItemsRelations = relations(apPaymentRunItems, ({ one }) => ({
+  tenant: one(tenants, { fields: [apPaymentRunItems.tenantId], references: [tenants.id] }),
+  paymentRun: one(apPaymentRuns, { fields: [apPaymentRunItems.paymentRunId], references: [apPaymentRuns.id] }),
+  invoice: one(apInvoices, { fields: [apPaymentRunItems.invoiceId], references: [apInvoices.id] }),
 }));
 
 // ─── Outbox Relations ───────────────────────────────────────────────────────

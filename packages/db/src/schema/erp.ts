@@ -16,6 +16,7 @@ import {
 import { erpSchema } from "./_schemas";
 import {
   accountTypeEnum,
+  apInvoiceStatusEnum,
   contractStatusEnum,
   counterpartyTypeEnum,
   documentTypeEnum,
@@ -23,6 +24,7 @@ import {
   icPricingEnum,
   icSettlementStatusEnum,
   journalStatusEnum,
+  paymentRunStatusEnum,
   periodStatusEnum,
   recognitionMethodEnum,
   recurringFrequencyEnum,
@@ -478,5 +480,127 @@ export const classificationRules = erpSchema.table(
   (t) => [
     index("idx_classification_rule_set_tenant").on(t.tenantId, t.ruleSetId),
     index("idx_classification_rule_type_tenant").on(t.tenantId, t.accountType),
+  ],
+);
+
+// ─── erp.payment_terms_template ──────────────────────────────────────────────
+
+export const paymentTermsTemplates = erpSchema.table(
+  "payment_terms_template",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    code: varchar("code", { length: 20 }).notNull(),
+    name: text("name").notNull(),
+    netDays: smallint("net_days").notNull(),
+    discountPercent: smallint("discount_percent").notNull().default(0),
+    discountDays: smallint("discount_days").notNull().default(0),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_payment_terms_code_tenant").on(t.tenantId, t.code),
+  ],
+);
+
+// ─── erp.ap_invoice ──────────────────────────────────────────────────────────
+
+export const apInvoices = erpSchema.table(
+  "ap_invoice",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    supplierId: uuid("supplier_id").notNull(),
+    ledgerId: uuid("ledger_id").notNull(),
+    invoiceNumber: varchar("invoice_number", { length: 50 }).notNull(),
+    supplierRef: varchar("supplier_ref", { length: 100 }),
+    invoiceDate: timestamp("invoice_date", { withTimezone: true }).notNull(),
+    dueDate: timestamp("due_date", { withTimezone: true }).notNull(),
+    currencyId: uuid("currency_id").notNull(),
+    totalAmount: moneyBigint("total_amount").notNull(),
+    paidAmount: moneyBigint("paid_amount").notNull().default(sql`0`),
+    status: apInvoiceStatusEnum("status").notNull().default("DRAFT"),
+    description: text("description"),
+    poRef: varchar("po_ref", { length: 50 }),
+    receiptRef: varchar("receipt_ref", { length: 50 }),
+    paymentTermsId: uuid("payment_terms_id"),
+    journalId: uuid("journal_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ap_invoice_number_tenant").on(t.tenantId, t.companyId, t.invoiceNumber),
+    index("idx_ap_invoice_supplier_tenant").on(t.tenantId, t.supplierId),
+    index("idx_ap_invoice_status_tenant").on(t.tenantId, t.status),
+    index("idx_ap_invoice_due_date_tenant").on(t.tenantId, t.dueDate),
+  ],
+);
+
+// ─── erp.ap_invoice_line ─────────────────────────────────────────────────────
+
+export const apInvoiceLines = erpSchema.table(
+  "ap_invoice_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    invoiceId: uuid("invoice_id").notNull(),
+    lineNumber: smallint("line_number").notNull(),
+    accountId: uuid("account_id").notNull(),
+    description: text("description"),
+    quantity: integer("quantity").notNull().default(1),
+    unitPrice: moneyBigint("unit_price").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    taxAmount: moneyBigint("tax_amount").notNull().default(sql`0`),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ap_invoice_line_num_tenant").on(t.tenantId, t.invoiceId, t.lineNumber),
+    index("idx_ap_invoice_line_account_tenant").on(t.tenantId, t.accountId),
+  ],
+);
+
+// ─── erp.ap_payment_run ──────────────────────────────────────────────────────
+
+export const apPaymentRuns = erpSchema.table(
+  "ap_payment_run",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    runNumber: varchar("run_number", { length: 30 }).notNull(),
+    runDate: timestamp("run_date", { withTimezone: true }).notNull(),
+    cutoffDate: timestamp("cutoff_date", { withTimezone: true }).notNull(),
+    currencyId: uuid("currency_id").notNull(),
+    totalAmount: moneyBigint("total_amount").notNull().default(sql`0`),
+    status: paymentRunStatusEnum("status").notNull().default("DRAFT"),
+    executedAt: timestamp("executed_at", { withTimezone: true }),
+    executedBy: uuid("executed_by"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ap_payment_run_number_tenant").on(t.tenantId, t.companyId, t.runNumber),
+    index("idx_ap_payment_run_status_tenant").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.ap_payment_run_item ─────────────────────────────────────────────────
+
+export const apPaymentRunItems = erpSchema.table(
+  "ap_payment_run_item",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    paymentRunId: uuid("payment_run_id").notNull(),
+    invoiceId: uuid("invoice_id").notNull(),
+    supplierId: uuid("supplier_id").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    discountAmount: moneyBigint("discount_amount").notNull().default(sql`0`),
+    netAmount: moneyBigint("net_amount").notNull(),
+    journalId: uuid("journal_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("uq_ap_payment_run_item_invoice_tenant").on(t.tenantId, t.paymentRunId, t.invoiceId),
+    index("idx_ap_payment_run_item_run_tenant").on(t.tenantId, t.paymentRunId),
   ],
 );

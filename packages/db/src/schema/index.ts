@@ -16,6 +16,8 @@ export {
   recognitionMethodEnum,
   contractStatusEnum,
   reportingStandardEnum,
+  apInvoiceStatusEnum,
+  paymentRunStatusEnum,
 } from "./_enums";
 export { tenants, companies, users } from "./platform";
 export {
@@ -40,6 +42,11 @@ export {
   recognitionMilestones,
   classificationRuleSets,
   classificationRules,
+  paymentTermsTemplates,
+  apInvoices,
+  apInvoiceLines,
+  apPaymentRuns,
+  apPaymentRunItems,
 } from "./erp";
 export { auditLogs } from "./audit";
 export { outbox } from "./outbox-table";
