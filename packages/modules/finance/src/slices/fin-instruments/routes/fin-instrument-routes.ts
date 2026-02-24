@@ -1,0 +1,40 @@
+import type { FastifyInstance } from "fastify";
+import type { FinanceRuntime } from "../../../app/ports/finance-runtime.js";
+
+export function registerFinInstrumentRoutes(app: FastifyInstance, runtime: FinanceRuntime): void {
+  app.get("/fin-instruments", async (req) => {
+    const tenantId = (req.headers as Record<string, string>)["x-tenant-id"]!;
+    const userId = (req.headers as Record<string, string>)["x-user-id"]!;
+    return runtime.withTenant({ tenantId, userId }, async (deps) => {
+      const list = await deps.finInstrumentRepo.findAll();
+      return { data: list };
+    });
+  });
+
+  app.get<{ Params: { id: string } }>("/fin-instruments/:id", async (req, reply) => {
+    const tenantId = (req.headers as Record<string, string>)["x-tenant-id"]!;
+    const userId = (req.headers as Record<string, string>)["x-user-id"]!;
+    return runtime.withTenant({ tenantId, userId }, async (deps) => {
+      const instrument = await deps.finInstrumentRepo.findById(req.params.id);
+      if (!instrument) return reply.status(404).send({ error: "Financial instrument not found" });
+      return instrument;
+    });
+  });
+
+  app.post("/fin-instruments", async (req) => {
+    const tenantId = (req.headers as Record<string, string>)["x-tenant-id"]!;
+    const userId = (req.headers as Record<string, string>)["x-user-id"]!;
+    const body = req.body as Record<string, unknown>;
+    return runtime.withTenant({ tenantId, userId }, async (deps) => {
+      return deps.finInstrumentRepo.create(tenantId, body as never);
+    });
+  });
+
+  app.get<{ Params: { id: string } }>("/fin-instruments/:id/fair-values", async (req) => {
+    const tenantId = (req.headers as Record<string, string>)["x-tenant-id"]!;
+    const userId = (req.headers as Record<string, string>)["x-user-id"]!;
+    return runtime.withTenant({ tenantId, userId }, async (deps) => {
+      return deps.fairValueMeasurementRepo.findByInstrument(req.params.id);
+    });
+  });
+}

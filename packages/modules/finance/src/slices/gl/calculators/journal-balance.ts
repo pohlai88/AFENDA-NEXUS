@@ -7,6 +7,9 @@
  */
 import type { Money } from "@afenda/core";
 
+export type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from "../../../shared/types.js";
+
 export interface JournalBalanceLine {
   readonly debit: Money;
   readonly credit: Money;
@@ -16,12 +19,6 @@ export interface JournalBalanceResult {
   readonly totalDebits: bigint;
   readonly totalCredits: bigint;
   readonly balanced: boolean;
-}
-
-export interface CalculatorResult<T> {
-  readonly result: T;
-  readonly inputs: Record<string, unknown>;
-  readonly explanation: string;
 }
 
 export function validateJournalBalance(

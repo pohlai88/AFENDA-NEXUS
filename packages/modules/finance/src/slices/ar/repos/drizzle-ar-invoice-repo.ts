@@ -111,7 +111,7 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
     const limit = params?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.arInvoices.findMany({
         where: eq(arInvoices.customerId, customerId),
         limit,
@@ -119,6 +119,7 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
       }),
       this.tx.select({ total: count() }).from(arInvoices).where(eq(arInvoices.customerId, customerId)),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     const data = await Promise.all(rows.map(async (r) => {
       const lines = await this.tx.query.arInvoiceLines.findMany({ where: eq(arInvoiceLines.invoiceId, r.id) });
@@ -133,7 +134,7 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
     const limit = params?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.arInvoices.findMany({
         where: eq(arInvoices.status, status as typeof arInvoices.$inferSelect.status),
         limit,
@@ -141,6 +142,7 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
       }),
       this.tx.select({ total: count() }).from(arInvoices).where(eq(arInvoices.status, status as typeof arInvoices.$inferSelect.status)),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     const data = await Promise.all(rows.map(async (r) => {
       const lines = await this.tx.query.arInvoiceLines.findMany({ where: eq(arInvoiceLines.invoiceId, r.id) });
@@ -155,10 +157,11 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
     const limit = params?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.arInvoices.findMany({ limit, offset }),
       this.tx.select({ total: count() }).from(arInvoices),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     const data = await Promise.all(rows.map(async (r) => {
       const lines = await this.tx.query.arInvoiceLines.findMany({ where: eq(arInvoiceLines.invoiceId, r.id) });

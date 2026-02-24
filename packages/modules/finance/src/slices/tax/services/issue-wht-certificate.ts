@@ -6,7 +6,7 @@ import type { Result } from "@afenda/core";
 import type { WhtCertificate } from "../entities/wht-certificate.js";
 import type { IWhtCertificateRepo } from "../ports/wht-certificate-repo.js";
 import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { IDocumentNumberGenerator } from "../../../slices/gl/ports/document-number-generator.js";
+import type { IDocumentNumberGenerator } from "../../../shared/ports/journal-posting-port.js";
 import { FinanceEventType } from "../../../shared/events.js";
 
 export interface IssueWhtCertificateInput {

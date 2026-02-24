@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { resolveCategory, defaultIfrsRules } from "../domain/index.js";
-import type { ClassificationRuleSet, ClassificationRule, ReportingStandard } from "../domain/index.js";
+import { resolveCategory, defaultIfrsRules } from "../slices/hub/entities/classification-rule.js";
+import type { ClassificationRuleSet, ClassificationRule, ReportingStandard } from "../slices/hub/entities/classification-rule.js";
 
 describe("resolveCategory (A-18)", () => {
   const ifrs = defaultIfrsRules();

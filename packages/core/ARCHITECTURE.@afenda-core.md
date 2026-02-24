@@ -10,7 +10,7 @@ exports_map:
   ".": { source: "./src/index.ts", import: "./dist/index.js", types: "./dist/index.d.ts", default: "./src/index.ts" }
 dependency_kinds:
   allowed_runtime: []
-  allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "tsup", "typescript"]
+  allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "tsup", "typescript", "vitest"]
   allowed_peer: []
 enforced_structure:
   required_files: ["src/index.ts", "package.json", "tsconfig.json", "tsconfig.build.json", "tsup.config.ts"]

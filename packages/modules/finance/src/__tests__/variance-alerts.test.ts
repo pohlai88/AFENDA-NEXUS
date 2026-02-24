@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { money } from "@afenda/core";
-import { evaluateVarianceAlerts, DEFAULT_THRESHOLD } from "../domain/index.js";
-import type { BudgetVarianceRow } from "../domain/index.js";
+import { evaluateVarianceAlerts, DEFAULT_THRESHOLD } from "../slices/hub/calculators/variance-alerts.js";
+import type { BudgetVarianceRow } from "../slices/hub/entities/budget.js";
 
 function makeRow(overrides: Partial<BudgetVarianceRow> & { code: string; budget: bigint; actual: bigint }): BudgetVarianceRow {
   const variance = overrides.actual - overrides.budget;

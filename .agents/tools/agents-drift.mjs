@@ -159,7 +159,7 @@ function checkFinanceSpine() {
     if (existsSync(entityPath)) {
       pass(section, `Finance entity "${file}" exists (${desc})`);
     } else {
-      fail(section, `Finance entity "${file}" missing — ${desc} (required per §9)`);
+      fail(section, `Finance entity "${file}" missing -- ${desc} (required per S9)`);
     }
   }
 
@@ -168,7 +168,7 @@ function checkFinanceSpine() {
   if (existsSync(postJournal)) {
     pass(section, "postJournal service exists");
   } else {
-    fail(section, "postJournal service missing (required per §9: journal draft → validate → post)");
+    fail(section, "postJournal service missing (required per S9: journal draft -> validate -> post)");
   }
 }
 
@@ -235,7 +235,7 @@ function checkAutomationCommands() {
 
   const rootPkg = loadJson(join(REPO_ROOT, "package.json"));
   if (!rootPkg) {
-    warn(section, "No root package.json found — cannot verify automation commands");
+    warn(section, "No root package.json found -- cannot verify automation commands");
     return;
   }
 
@@ -286,7 +286,7 @@ function checkHealthEndpoints() {
   // Simple heuristic: grep for /health in the api source
   const apiSrc = join(REPO_ROOT, "apps", "api", "src");
   if (!existsSync(apiSrc)) {
-    warn(section, "apps/api/src not found — cannot verify health endpoints");
+    warn(section, "apps/api/src not found -- cannot verify health endpoints");
     return;
   }
 
@@ -364,7 +364,7 @@ function checkSkillsAlignment() {
     if (section17Text.toLowerCase().includes(mention.toLowerCase())) {
       pass(section, `§17 mentions "${mention}"`);
     } else {
-      warn(section, `§17 does not mention "${mention}" — consider updating PROJECT.md`);
+      warn(section, `S17 does not mention "${mention}" -- consider updating PROJECT.md`);
     }
   }
 }
@@ -387,7 +387,7 @@ function checkAgentsInternal() {
     return;
   }
 
-  pass(section, `Registry loaded — ${registry.skills.length} skills`);
+  pass(section, `Registry loaded -- ${registry.skills.length} skills`);
 
   // Cross-check registry ↔ disk
   const registryNames = new Set(registry.skills.map((s) => s.name));
@@ -405,7 +405,7 @@ function checkAgentsInternal() {
 
   for (const dir of diskDirs) {
     if (!registryNames.has(dir)) {
-      fail(section, `Disk directory "${dir}" is NOT in registry — add it or remove the directory`);
+      fail(section, `Disk directory "${dir}" is NOT in registry -- add it or remove the directory`);
     }
     const skillMd = join(SKILLS_DIR, dir, "SKILL.md");
     if (!existsSync(skillMd)) {
@@ -418,14 +418,14 @@ function checkAgentsInternal() {
     ? readFileSync(join(AGENTS_ROOT, "INDEX.md"), "utf-8")
     : "";
   if (!indexMd.includes("AUTO-GENERATED")) {
-    warn(section, "INDEX.md is not auto-generated — run `node .agents/tools/agents-gen.mjs`");
+    warn(section, "INDEX.md is not auto-generated -- run `node .agents/tools/agents-gen.mjs`");
   }
 
   const installedMd = existsSync(join(SKILLS_DIR, "INSTALLED-SKILLS.md"))
     ? readFileSync(join(SKILLS_DIR, "INSTALLED-SKILLS.md"), "utf-8")
     : "";
   if (!installedMd.includes("AUTO-GENERATED")) {
-    warn(section, "INSTALLED-SKILLS.md is not auto-generated — run `node .agents/tools/agents-gen.mjs`");
+    warn(section, "INSTALLED-SKILLS.md is not auto-generated -- run `node .agents/tools/agents-gen.mjs`");
   }
 
   // README.md must exist
@@ -514,7 +514,7 @@ function checkConventions() {
   if (existsSync(outboxSchema)) {
     pass(section, "Outbox schema exists in packages/db (§2.6)");
   } else {
-    warn(section, "Outbox schema not found in packages/db/src/schema/outbox.ts (§2.6: async is outbox → worker)");
+    warn(section, "Outbox schema not found in packages/db/src/schema/outbox.ts (S2.6: async is outbox -> worker)");
   }
 }
 
@@ -526,7 +526,7 @@ function checkTechStack() {
 
   const rootPkg = loadJson(join(REPO_ROOT, "package.json"));
   if (!rootPkg) {
-    warn(section, "No root package.json — cannot verify tech stack");
+    warn(section, "No root package.json -- cannot verify tech stack");
     return;
   }
 

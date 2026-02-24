@@ -12,8 +12,8 @@
  *   + Financing activities (Δ debt, Δ equity, dividends)
  *   = Net Cash Flow
  */
-import type { AccountType } from "../../gl/entities/account.js";
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { AccountType } from "../../../shared/types.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export interface TrialBalanceMovement {
   readonly accountId: string;
@@ -141,7 +141,7 @@ export function deriveCashFlowIndirect(
     throw new Error("At least one trial balance movement required");
   }
 
-  const currency = movements[0].currency;
+  const currency = movements[0]!.currency;
 
   // Net income = revenue - expenses (all P&L accounts)
   let netIncome = 0n;

@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   computeStraightLineSchedule,
   computeMilestoneRecognition,
-} from "../domain/index.js";
-import type { MilestoneInput } from "../domain/index.js";
+} from "../slices/hub/calculators/revenue-recognition.js";
+import type { MilestoneInput } from "../slices/hub/calculators/revenue-recognition.js";
 
 describe("computeStraightLineSchedule (A-24)", () => {
   it("distributes amount evenly across periods", () => {

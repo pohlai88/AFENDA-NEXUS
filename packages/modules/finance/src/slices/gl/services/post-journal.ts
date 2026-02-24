@@ -1,8 +1,8 @@
 import type { Result } from "@afenda/core";
 import { err, AppError } from "@afenda/core";
 import type { Journal } from "../entities/journal.js";
-import type { FxRate } from "../../fx/entities/fx-rate.js";
-import { convertAmount } from "../../fx/entities/fx-rate.js";
+import type { FxRate } from "../../../shared/ports/fx-port.js";
+import { convertAmount } from "../../../shared/ports/fx-port.js";
 import { validateJournalBalance } from "../calculators/journal-balance.js";
 import { isBalanceDirectionValid } from "../entities/account.js";
 import type { IAccountRepo } from "../../../slices/gl/ports/account-repo.js";
@@ -12,7 +12,7 @@ import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js
 import type { IIdempotencyStore } from "../../../shared/ports/idempotency-store.js";
 import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
 import type { IJournalAuditRepo } from "../../../slices/gl/ports/journal-audit-repo.js";
-import type { IFxRateRepo } from "../../../slices/fx/ports/fx-rate-repo.js";
+import type { IFxRateRepo } from "../../../shared/ports/fx-port.js";
 import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
 import { FinanceEventType } from "../../../shared/events.js";

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { IdParamSchema, PaginationSchema, CreateRecurringTemplateSchema } from "@afenda/contracts";
 import type { FinanceRuntime } from "../../../app/ports/finance-runtime.js";
-import { processRecurringJournals } from "../../gl/services/process-recurring-journals.js";
+import { processRecurringJournals } from "../../../shared/ports/recurring-journal-hook.js";
 
 export function registerRecurringTemplateRoutes(
   app: FastifyInstance,

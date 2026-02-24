@@ -18,7 +18,7 @@
     "@afenda/db": "workspace:*",
     "@afenda/platform": "workspace:*",
     "graphile-worker": "catalog:",
-    "postgres": "^3.4.8"
+    "postgres": "catalog:"
   },
   "devDependencies": {
     "@afenda/eslint-config": "workspace:*",

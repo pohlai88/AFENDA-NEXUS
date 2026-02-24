@@ -9,7 +9,7 @@ public_api: null
 exports_map: null
 dependency_kinds:
   allowed_runtime: ["@afenda/core", "@afenda/contracts", "@afenda/authz", "@afenda/db", "@afenda/platform", "@afenda/finance", "fastify", "zod"]
-  allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "@types/node", "tsup", "tsx", "typescript"]
+  allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "@types/node", "tsup", "tsx", "typescript", "vitest"]
   allowed_peer: []
 enforced_structure:
   required_files: ["src/index.ts", "package.json", "tsconfig.json"]

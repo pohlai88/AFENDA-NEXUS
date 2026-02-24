@@ -14,7 +14,6 @@ dependency_kinds:
     - 'next'
     - 'react'
     - 'react-dom'
-    - 'tailwindcss'
     - '@hookform/resolvers'
     - 'react-hook-form'
     - 'lucide-react'
@@ -23,18 +22,9 @@ dependency_kinds:
     - 'class-variance-authority'
     - 'sonner'
     - 'nuqs'
-    - '@radix-ui/react-dialog'
-    - '@radix-ui/react-dropdown-menu'
-    - '@radix-ui/react-label'
-    - '@radix-ui/react-popover'
-    - '@radix-ui/react-select'
-    - '@radix-ui/react-separator'
-    - '@radix-ui/react-slot'
-    - '@radix-ui/react-tabs'
-    - '@radix-ui/react-tooltip'
-    - '@radix-ui/react-scroll-area'
-    - '@radix-ui/react-avatar'
-    - '@radix-ui/react-switch'
+    - 'radix-ui'
+    - 'next-themes'
+    - 'zod'
     - 'cmdk'
   allowed_dev:
     - '@afenda/typescript-config'
@@ -45,6 +35,14 @@ dependency_kinds:
     - 'vitest'
     - '@testing-library/react'
     - '@testing-library/jest-dom'
+    - '@testing-library/user-event'
+    - 'jsdom'
+    - 'msw'
+    - 'jest-axe'
+    - '@tailwindcss/postcss'
+    - '@vitejs/plugin-react'
+    - 'tailwindcss'
+    - 'eslint-plugin-jsx-a11y'
   allowed_peer: []
 enforced_structure:
   required_files:
@@ -56,6 +54,7 @@ enforced_structure:
     - 'package.json'
     - 'tsconfig.json'
     - 'next.config.ts'
+    - 'postcss.config.mjs'
     - 'components.json'
   required_directories:
     - 'src/app'
@@ -72,7 +71,6 @@ boundary_rules:
     - '@afenda/contracts'
     - 'next'
     - 'react'
-    - 'tailwindcss'
     - 'lucide-react'
     - 'clsx'
     - 'tailwind-merge'
@@ -587,7 +585,8 @@ These generators enforce the patterns defined in this document.
 | -------------------------- | ------------------------------------------- | -------- |
 | `next`                     | Framework (App Router, RSC, Server Actions) | Runtime  |
 | `react` / `react-dom`      | UI library                                  | Runtime  |
-| `tailwindcss`              | Styling (v4, CSS-first)                     | Runtime  |
+| `tailwindcss`              | Styling (v4, CSS-first)                     | Dev      |
+| `@tailwindcss/postcss`     | PostCSS plugin for Tailwind v4 (Next.js)    | Dev      |
 | `@afenda/contracts`        | Zod schemas (shared validation)             | Runtime  |
 | `@afenda/core`             | Branded IDs, Money, Result, errors          | Runtime  |
 | `react-hook-form`          | Form state management                       | Runtime  |

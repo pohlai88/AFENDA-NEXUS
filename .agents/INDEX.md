@@ -3,8 +3,8 @@
 
 Quick reference guide to agent resources in this workspace.
 
-**Generated:** 2026-02-23  
-**Total Skills:** 23
+**Generated:** 2026-02-24  
+**Total Skills:** 32
 
 ---
 
@@ -12,14 +12,16 @@ Quick reference guide to agent resources in this workspace.
 
 | Category | Skills |
 | -------- | ------ |
-| **Next.js** | [next-best-practices](#next-best-practices), [nextjs-16-complete-guide](#nextjs-16-complete-guide), [optimized-nextjs-typescript](#optimized-nextjs-typescript) |
+| **Next.js** | [next-best-practices](#next-best-practices), [nextjs-16-complete-guide](#nextjs-16-complete-guide), [optimized-nextjs-typescript](#optimized-nextjs-typescript), [nextjs-app-router-patterns](#nextjs-app-router-patterns) |
 | **Monorepo & pnpm** | [monorepo-management](#monorepo-management), [pnpm](#pnpm) |
 | **Database & ORM** | [drizzle](#drizzle), [neon-postgres](#neon-postgres) |
 | **Infrastructure & Logging** | [pino-logging-setup](#pino-logging-setup) |
 | **Validation & Forms** | [form-builder](#form-builder), [zod](#zod) |
-| **UI** | [accessibility](#accessibility), [shadcn-ui](#shadcn-ui) |
+| **UI** | [accessibility](#accessibility), [shadcn-ui](#shadcn-ui), [tailwind-v4-shadcn](#tailwind-v4-shadcn) |
+| **Testing** | [react-testing-patterns](#react-testing-patterns), [vitest](#vitest) |
 | **Tools & Meta** | [create-rule](#create-rule), [find-skills](#find-skills), [typescript-advanced-types](#typescript-advanced-types) |
 | **Security (ClawSec)** | [claw-release](#claw-release), [clawsec-clawhub-checker](#clawsec-clawhub-checker), [clawsec-feed](#clawsec-feed), [clawsec-suite](#clawsec-suite), [clawtributor](#clawtributor), [openclaw-audit-watchdog](#openclaw-audit-watchdog), [prompt-agent](#prompt-agent), [soul-guardian](#soul-guardian) |
+| **Authentication (Better Auth)** | [better-auth-best-practices](#better-auth-best-practices), [organization-best-practices](#organization-best-practices), [email-and-password-best-practices](#email-and-password-best-practices), [better-auth-security-best-practices](#better-auth-security-best-practices), [two-factor-authentication-best-practices](#two-factor-authentication-best-practices) |
 
 ---
 
@@ -30,6 +32,7 @@ Quick reference guide to agent resources in this workspace.
 - **next-best-practices** – Vercel Next.js patterns — RSC, data fetching, metadata, error handling
 - **nextjs-16-complete-guide** – Next.js 16 features, migration from v15, Turbopack, Cache Components
 - **optimized-nextjs-typescript** – TypeScript + Next.js — performance, security, clean architecture
+- **nextjs-app-router-patterns** – Next.js App Router — Server Components, streaming, parallel routes, Server Actions, data fetching
 
 ### Monorepo & pnpm
 
@@ -54,6 +57,12 @@ Quick reference guide to agent resources in this workspace.
 
 - **accessibility** – WCAG compliance & a11y patterns
 - **shadcn-ui** – shadcn/ui components — Radix UI + Tailwind CSS, theming, forms, charts
+- **tailwind-v4-shadcn** – Tailwind CSS v4 + shadcn/ui — @theme inline, CSS variables, dark mode, component composition
+
+### Testing
+
+- **react-testing-patterns** – React component/hook testing — Testing Library, MSW, jest-axe, async patterns, Vitest
+- **vitest** – Vitest testing framework — config, CLI, mocking, coverage, snapshots, concurrency, type testing
 
 ### Tools & Meta
 
@@ -71,6 +80,14 @@ Quick reference guide to agent resources in this workspace.
 - **openclaw-audit-watchdog** – Automated daily security audits with email reporting
 - **prompt-agent** – Security audit enforcement and prompt security analysis
 - **soul-guardian** – Drift detection + baseline integrity guard for agent workspace files
+
+### Authentication (Better Auth)
+
+- **better-auth-best-practices** – Better Auth core best practices — setup, configuration, Drizzle adapter, framework integration
+- **organization-best-practices** – Better Auth organization plugin — multi-tenancy, teams, roles, invitations
+- **email-and-password-best-practices** – Better Auth email/password — sign-up, sign-in, password reset, email verification
+- **better-auth-security-best-practices** – Better Auth security — rate limiting, CSRF, session management, trusted origins
+- **two-factor-authentication-best-practices** – Better Auth 2FA — TOTP, backup codes, enforcement, recovery flows
 
 ---
 

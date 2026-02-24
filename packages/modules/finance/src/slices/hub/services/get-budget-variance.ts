@@ -2,9 +2,9 @@ import type { Result } from "@afenda/core";
 import { ok, err, AppError, money } from "@afenda/core";
 import type { BudgetVarianceReport, BudgetVarianceRow } from "../entities/budget.js";
 import type { IBudgetRepo } from "../../../slices/hub/ports/budget-repo.js";
-import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
-import type { IAccountRepo } from "../../../slices/gl/ports/account-repo.js";
-import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";
+import type { IGlBalanceRepo } from "../../../shared/ports/gl-read-ports.js";
+import type { IAccountRepo } from "../../../shared/ports/gl-read-ports.js";
+import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
 
 export interface GetBudgetVarianceInput {

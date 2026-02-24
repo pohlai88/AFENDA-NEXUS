@@ -1,15 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { money } from "@afenda/core";
-import {
-  validateJournalBalance,
-  computeTrialBalance,
-  classifyByAccountType,
-  convertAmountPrecise,
-  computeGainLoss,
-  classifyBalanceSheet,
-  classifyIncomeStatement,
-  classifyCashFlow,
-} from "../domain/calculators/index.js";
+import { validateJournalBalance } from "../slices/gl/calculators/journal-balance.js";
+import { computeTrialBalance, classifyByAccountType } from "../slices/gl/calculators/trial-balance.js";
+import { convertAmountPrecise, computeGainLoss } from "../slices/fx/calculators/fx-convert.js";
+import { classifyBalanceSheet, classifyIncomeStatement, classifyCashFlow } from "../slices/reporting/calculators/report-classifier.js";
 import { normalBalanceFor } from "../slices/gl/entities/account.js";
 
 describe("validateJournalBalance", () => {

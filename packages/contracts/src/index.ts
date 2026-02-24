@@ -452,3 +452,176 @@ export const RunDunningSchema = z.object({
   runDate: z.string().date(),
 });
 export type RunDunning = z.infer<typeof RunDunningSchema>;
+
+// ─── Phase 7: Financial Instruments (IFRS 9) ───────────────────────────────
+export const InstrumentTypeSchema = z.enum([
+  "DEBT_HELD",
+  "DEBT_ISSUED",
+  "EQUITY_INVESTMENT",
+  "DERIVATIVE",
+  "LOAN_RECEIVABLE",
+  "TRADE_RECEIVABLE",
+]);
+export type InstrumentType = z.infer<typeof InstrumentTypeSchema>;
+
+export const InstrumentClassificationSchema = z.enum([
+  "AMORTIZED_COST",
+  "FVOCI",
+  "FVTPL",
+]);
+export type InstrumentClassification = z.infer<typeof InstrumentClassificationSchema>;
+
+export const FairValueLevelSchema = z.enum(["LEVEL_1", "LEVEL_2", "LEVEL_3"]);
+export type FairValueLevel = z.infer<typeof FairValueLevelSchema>;
+
+export const CreateFinancialInstrumentSchema = z.object({
+  companyId: z.string().uuid(),
+  instrumentType: InstrumentTypeSchema,
+  classification: InstrumentClassificationSchema,
+  fairValueLevel: FairValueLevelSchema.nullable().optional(),
+  nominalAmount: z.string().regex(/^\d+$/, "nominalAmount must be a non-negative integer string"),
+  carryingAmount: z.string().regex(/^\d+$/, "carryingAmount must be a non-negative integer string"),
+  fairValue: z.string().regex(/^-?\d+$/, "fairValue must be an integer string").nullable().optional(),
+  effectiveInterestRateBps: z.coerce.number().int().nonnegative(),
+  contractualRateBps: z.coerce.number().int().nonnegative(),
+  currencyCode: z.string().length(3),
+  maturityDate: z.string().date().nullable().optional(),
+  counterpartyId: z.string().uuid(),
+  glAccountId: z.string().uuid(),
+});
+export type CreateFinancialInstrument = z.infer<typeof CreateFinancialInstrumentSchema>;
+
+export const FinInstrumentListQuerySchema = PaginationSchema.extend({
+  classification: InstrumentClassificationSchema.optional(),
+  companyId: z.string().uuid().optional(),
+});
+export type FinInstrumentListQuery = z.infer<typeof FinInstrumentListQuerySchema>;
+
+// ─── Phase 7: Hedge Accounting (IFRS 9 §6) ─────────────────────────────────
+export const HedgeTypeSchema = z.enum(["FAIR_VALUE", "CASH_FLOW", "NET_INVESTMENT"]);
+export type HedgeType = z.infer<typeof HedgeTypeSchema>;
+
+export const HedgeStatusSchema = z.enum(["DESIGNATED", "ACTIVE", "DISCONTINUED", "REBALANCED"]);
+export type HedgeStatus = z.infer<typeof HedgeStatusSchema>;
+
+export const CreateHedgeRelationshipSchema = z.object({
+  companyId: z.string().uuid(),
+  hedgeType: HedgeTypeSchema,
+  hedgingInstrumentId: z.string().uuid(),
+  hedgedItemId: z.string().uuid(),
+  hedgedRisk: z.string().min(1).max(100),
+  hedgeRatio: z.coerce.number().int().positive().default(10000),
+  designationDate: z.string().date(),
+  ociReserveBalance: z.string().regex(/^-?\d+$/, "ociReserveBalance must be an integer string").default("0"),
+  currencyCode: z.string().length(3),
+});
+export type CreateHedgeRelationship = z.infer<typeof CreateHedgeRelationshipSchema>;
+
+export const HedgeTestMethodSchema = z.enum(["DOLLAR_OFFSET", "REGRESSION", "CRITICAL_TERMS"]);
+export type HedgeTestMethod = z.infer<typeof HedgeTestMethodSchema>;
+
+export const HedgeTestResultSchema = z.enum(["HIGHLY_EFFECTIVE", "EFFECTIVE", "INEFFECTIVE"]);
+export type HedgeTestResult = z.infer<typeof HedgeTestResultSchema>;
+
+export const CreateHedgeEffectivenessTestSchema = z.object({
+  testDate: z.string().date(),
+  testMethod: HedgeTestMethodSchema,
+  result: HedgeTestResultSchema,
+  effectivenessRatioBps: z.coerce.number().int().nonnegative(),
+  hedgedItemFairValueChange: z.string().regex(/^-?\d+$/, "hedgedItemFairValueChange must be an integer string"),
+  hedgingInstrumentFairValueChange: z.string().regex(/^-?\d+$/, "hedgingInstrumentFairValueChange must be an integer string"),
+  ineffectivePortionAmount: z.string().regex(/^-?\d+$/, "ineffectivePortionAmount must be an integer string").default("0"),
+  currencyCode: z.string().length(3),
+  notes: z.string().max(2000).nullable().optional(),
+  journalId: z.string().uuid().nullable().optional(),
+});
+export type CreateHedgeEffectivenessTest = z.infer<typeof CreateHedgeEffectivenessTestSchema>;
+
+// ─── Phase 7: Intangible Assets (IAS 38) ────────────────────────────────────
+export const IntangibleCategorySchema = z.enum([
+  "SOFTWARE",
+  "PATENT",
+  "TRADEMARK",
+  "COPYRIGHT",
+  "LICENCE",
+  "CUSTOMER_RELATIONSHIP",
+  "GOODWILL_RELATED",
+  "DEVELOPMENT_COST",
+  "OTHER",
+]);
+export type IntangibleCategory = z.infer<typeof IntangibleCategorySchema>;
+
+export const IntangibleAssetStatusSchema = z.enum([
+  "ACTIVE",
+  "DISPOSED",
+  "FULLY_AMORTIZED",
+  "IMPAIRED",
+  "IN_DEVELOPMENT",
+]);
+export type IntangibleAssetStatus = z.infer<typeof IntangibleAssetStatusSchema>;
+
+export const UsefulLifeTypeSchema = z.enum(["FINITE", "INDEFINITE"]);
+export type UsefulLifeType = z.infer<typeof UsefulLifeTypeSchema>;
+
+export const CreateIntangibleAssetSchema = z.object({
+  companyId: z.string().uuid(),
+  assetNumber: z.string().min(1).max(30),
+  name: z.string().min(1).max(200),
+  description: z.string().max(2000).nullable().optional(),
+  category: IntangibleCategorySchema,
+  usefulLifeType: UsefulLifeTypeSchema,
+  acquisitionDate: z.string().date(),
+  acquisitionCost: z.string().regex(/^\d+$/, "acquisitionCost must be a non-negative integer string"),
+  residualValue: z.string().regex(/^\d+$/, "residualValue must be a non-negative integer string").default("0"),
+  usefulLifeMonths: z.coerce.number().int().positive().nullable().optional(),
+  netBookValue: z.string().regex(/^\d+$/, "netBookValue must be a non-negative integer string"),
+  currencyCode: z.string().length(3),
+  glAccountId: z.string().uuid(),
+  amortizationAccountId: z.string().uuid(),
+  accumulatedAmortizationAccountId: z.string().uuid(),
+  isInternallyGenerated: z.boolean().default(false),
+});
+export type CreateIntangibleAsset = z.infer<typeof CreateIntangibleAssetSchema>;
+
+// ─── Phase 7: Deferred Tax (IAS 12) ────────────────────────────────────────
+export const CreateDeferredTaxItemSchema = z.object({
+  companyId: z.string().uuid(),
+  itemName: z.string().min(1).max(200),
+  origin: z.string().min(1).max(50),
+  carryingAmount: z.string().regex(/^-?\d+$/, "carryingAmount must be an integer string"),
+  taxBase: z.string().regex(/^-?\d+$/, "taxBase must be an integer string"),
+  temporaryDifference: z.string().regex(/^-?\d+$/, "temporaryDifference must be an integer string"),
+  taxRateBps: z.coerce.number().int().nonnegative(),
+  deferredTaxAsset: z.string().regex(/^\d+$/, "deferredTaxAsset must be a non-negative integer string").default("0"),
+  deferredTaxLiability: z.string().regex(/^\d+$/, "deferredTaxLiability must be a non-negative integer string").default("0"),
+  isRecognized: z.boolean().default(true),
+  currencyCode: z.string().length(3),
+  periodId: z.string().uuid(),
+});
+export type CreateDeferredTaxItem = z.infer<typeof CreateDeferredTaxItemSchema>;
+
+// ─── Phase 7: Transfer Pricing (OECD Guidelines) ───────────────────────────
+export const TpMethodSchema = z.enum(["CUP", "RESALE_PRICE", "COST_PLUS", "TNMM", "PROFIT_SPLIT"]);
+export type TpMethodContract = z.infer<typeof TpMethodSchema>;
+
+export const CreateTpPolicySchema = z.object({
+  companyId: z.string().uuid(),
+  policyName: z.string().min(1).max(200),
+  method: z.string().min(1).max(30),
+  benchmarkLowBps: z.coerce.number().int().nonnegative(),
+  benchmarkMedianBps: z.coerce.number().int().nonnegative(),
+  benchmarkHighBps: z.coerce.number().int().nonnegative(),
+});
+export type CreateTpPolicy = z.infer<typeof CreateTpPolicySchema>;
+
+export const CreateTpBenchmarkSchema = z.object({
+  benchmarkYear: z.coerce.number().int().min(1900).max(2200),
+  method: TpMethodSchema,
+  comparableCount: z.coerce.number().int().nonnegative(),
+  interquartileRangeLowBps: z.coerce.number().int().nonnegative(),
+  interquartileRangeMedianBps: z.coerce.number().int().nonnegative(),
+  interquartileRangeHighBps: z.coerce.number().int().nonnegative(),
+  dataSource: z.string().max(200).nullable().optional(),
+  notes: z.string().max(2000).nullable().optional(),
+});
+export type CreateTpBenchmark = z.infer<typeof CreateTpBenchmarkSchema>;

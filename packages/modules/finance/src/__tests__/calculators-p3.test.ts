@@ -1,10 +1,7 @@
 import { describe, it, expect } from "vitest";
-import {
-  computeEliminations,
-  translateTrialBalance,
-  resolveCloseReadiness,
-  sequenceMultiCompanyClose,
-} from "../domain/calculators/index.js";
+import { computeEliminations } from "../slices/ic/calculators/ic-elimination.js";
+import { translateTrialBalance } from "../slices/fx/calculators/fx-translation.js";
+import { resolveCloseReadiness, sequenceMultiCompanyClose } from "../slices/reporting/calculators/close-checklist.js";
 import type { IntercompanyBalance } from "../slices/ic/calculators/ic-elimination.js";
 import type { TrialBalanceEntry, TranslationRates } from "../slices/fx/calculators/fx-translation.js";
 import type { CloseTask, MultiCompanyCloseOrder } from "../slices/reporting/calculators/close-checklist.js";

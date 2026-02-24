@@ -10,9 +10,9 @@
  */
 import type { Money } from "@afenda/core";
 import { money } from "@afenda/core";
-import type { AccountType } from "../../gl/entities/account.js";
+import type { AccountType } from "../../../shared/types.js";
 import type { ReportRow, ReportSection } from "../entities/financial-reports.js";
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export interface ClassifiableRow {
   readonly accountCode: string;

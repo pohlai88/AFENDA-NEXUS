@@ -23,6 +23,33 @@ import {
   registerClassificationRuleRoutes,
   registerFxRateApprovalRoutes,
   registerRevenueRoutes,
+  registerApInvoiceRoutes,
+  registerApPaymentRunRoutes,
+  registerApAgingRoutes,
+  registerArInvoiceRoutes,
+  registerArPaymentRoutes,
+  registerArDunningRoutes,
+  registerArAgingRoutes,
+  registerTaxCodeRoutes,
+  registerTaxRateRoutes,
+  registerTaxReturnRoutes,
+  registerWhtCertificateRoutes,
+  registerAssetRoutes,
+  registerBankRoutes,
+  registerCreditRoutes,
+  registerExpenseRoutes,
+  registerProjectRoutes,
+  registerLeaseRoutes,
+  registerProvisionRoutes,
+  registerTreasuryRoutes,
+  registerConsolidationRoutes,
+  registerConsolidationExtRoutes,
+  registerCostAccountingRoutes,
+  registerFinInstrumentRoutes,
+  registerHedgeRoutes,
+  registerIntangibleRoutes,
+  registerDeferredTaxRoutes,
+  registerTransferPricingRoutes,
   registerErrorHandler,
   registerBigIntSerializer,
 } from "@afenda/finance/infra";
@@ -73,6 +100,43 @@ async function main(): Promise<void> {
   registerClassificationRuleRoutes(app, financeRuntime);
   registerFxRateApprovalRoutes(app, financeRuntime);
   registerRevenueRoutes(app, financeRuntime);
+
+  // Phase 2: AP / AR / Tax / Fixed Assets / Bank
+  registerApInvoiceRoutes(app, financeRuntime);
+  registerApPaymentRunRoutes(app, financeRuntime);
+  registerApAgingRoutes(app, financeRuntime);
+  registerArInvoiceRoutes(app, financeRuntime);
+  registerArPaymentRoutes(app, financeRuntime);
+  registerArDunningRoutes(app, financeRuntime);
+  registerArAgingRoutes(app, financeRuntime);
+  registerTaxCodeRoutes(app, financeRuntime);
+  registerTaxRateRoutes(app, financeRuntime);
+  registerTaxReturnRoutes(app, financeRuntime);
+  registerWhtCertificateRoutes(app, financeRuntime);
+  registerAssetRoutes(app, financeRuntime);
+  registerBankRoutes(app, financeRuntime);
+
+  // Phase 3: Credit / Expense / Project
+  registerCreditRoutes(app, financeRuntime);
+  registerExpenseRoutes(app, financeRuntime);
+  registerProjectRoutes(app, financeRuntime);
+
+  // Phase 4: Lease / Provision / Treasury
+  registerLeaseRoutes(app, financeRuntime);
+  registerProvisionRoutes(app, financeRuntime);
+  registerTreasuryRoutes(app, financeRuntime);
+
+  // Phase 5: Consolidation / Cost Accounting
+  registerConsolidationRoutes(app, financeRuntime);
+  registerConsolidationExtRoutes(app, financeRuntime);
+  registerCostAccountingRoutes(app, financeRuntime);
+
+  // Phase 7: Fin-Instruments / Hedge / Intangibles / Deferred Tax / Transfer Pricing
+  registerFinInstrumentRoutes(app, financeRuntime);
+  registerHedgeRoutes(app, financeRuntime);
+  registerIntangibleRoutes(app, financeRuntime);
+  registerDeferredTaxRoutes(app, financeRuntime);
+  registerTransferPricingRoutes(app, financeRuntime);
 
   // 7. Start server
   const address = await app.listen({ port: config.PORT_API, host: "0.0.0.0" });

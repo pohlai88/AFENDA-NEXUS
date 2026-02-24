@@ -88,7 +88,7 @@ export class DrizzleJournalRepo implements IJournalRepo {
     }
     const where = and(...conditions);
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.glJournals.findMany({
         where,
         limit,
@@ -100,6 +100,7 @@ export class DrizzleJournalRepo implements IJournalRepo {
       }),
       this.tx.select({ total: count() }).from(glJournals).where(where),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     return ok({
       data: rows.map((r) => mapJournalToDomain(r as unknown as JournalRowWithLines)),

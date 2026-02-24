@@ -8,7 +8,7 @@
  */
 import type { Money } from "@afenda/core";
 import type { BudgetVarianceRow } from "../entities/budget.js";
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export type AlertSeverity = "WARNING" | "CRITICAL";
 

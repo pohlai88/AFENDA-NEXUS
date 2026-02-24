@@ -19,7 +19,11 @@ export const IDS = {
   icDoc: "00000000-0000-4000-8000-0000000000a1",
 } as const;
 import type { Result } from "@afenda/core";
-import type { Journal, JournalLine, Account, FiscalPeriod, TrialBalance, JournalAuditEntry } from "../domain/index.js";
+import type { Journal, JournalLine } from "../slices/gl/entities/journal.js";
+import type { Account } from "../slices/gl/entities/account.js";
+import type { FiscalPeriod } from "../slices/gl/entities/fiscal-period.js";
+import type { TrialBalance } from "../slices/gl/entities/gl-balance.js";
+import type { JournalAuditEntry } from "../slices/gl/entities/journal-audit.js";
 import type { IJournalRepo, CreateJournalInput } from "../slices/gl/ports/journal-repo.js";
 import type { IAccountRepo } from "../slices/gl/ports/account-repo.js";
 import type { IFiscalPeriodRepo } from "../slices/gl/ports/fiscal-period-repo.js";
@@ -30,7 +34,11 @@ import type { IJournalAuditRepo, AuditLogInput } from "../slices/gl/ports/journa
 import type { IFxRateRepo } from "../slices/fx/ports/fx-rate-repo.js";
 import type { ILedgerRepo } from "../slices/gl/ports/ledger-repo.js";
 import type { IIcAgreementRepo, IIcTransactionRepo, CreateIcDocumentInput } from "../slices/ic/ports/ic-repo.js";
-import type { FxRate, Ledger, IntercompanyRelationship, IntercompanyDocument, RecurringTemplate, BudgetEntry } from "../domain/index.js";
+import type { FxRate } from "../slices/fx/entities/fx-rate.js";
+import type { Ledger } from "../slices/gl/entities/ledger.js";
+import type { IntercompanyRelationship, IntercompanyDocument } from "../slices/ic/entities/intercompany.js";
+import type { RecurringTemplate } from "../slices/hub/entities/recurring-template.js";
+import type { BudgetEntry } from "../slices/hub/entities/budget.js";
 import type { IRecurringTemplateRepo, CreateRecurringTemplateInput } from "../slices/hub/ports/recurring-template-repo.js";
 import type { IBudgetRepo, UpsertBudgetEntryInput } from "../slices/hub/ports/budget-repo.js";
 import type { IDocumentNumberGenerator } from "../slices/gl/ports/document-number-generator.js";

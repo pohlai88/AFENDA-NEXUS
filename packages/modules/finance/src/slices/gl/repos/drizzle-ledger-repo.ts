@@ -55,7 +55,8 @@ export class DrizzleLedgerRepo implements ILedgerRepo {
       .limit(limit)
       .offset(offset);
 
-    const [{ total }] = await this.tx.select({ total: count() }).from(ledgers);
+    const countRows = await this.tx.select({ total: count() }).from(ledgers);
+    const total = countRows[0]?.total ?? 0;
 
     return ok({
       data: rows.map((row) => ({

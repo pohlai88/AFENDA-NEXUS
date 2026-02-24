@@ -39,6 +39,28 @@ import { DrizzleCreditReviewRepo } from "./slices/credit/repos/drizzle-credit-re
 import { DrizzleExpenseClaimRepo } from "./slices/expense/repos/drizzle-expense-claim-repo.js";
 import { DrizzleExpensePolicyRepo } from "./slices/expense/repos/drizzle-expense-policy-repo.js";
 import { DrizzleProjectRepo } from "./slices/project/repos/drizzle-project-repo.js";
+import { DrizzleLeaseContractRepo } from "./slices/lease/repos/drizzle-lease-contract-repo.js";
+import { DrizzleLeaseScheduleRepo } from "./slices/lease/repos/drizzle-lease-schedule-repo.js";
+import { DrizzleLeaseModificationRepo } from "./slices/lease/repos/drizzle-lease-modification-repo.js";
+import { DrizzleProvisionRepo } from "./slices/provision/repos/drizzle-provision-repo.js";
+import { DrizzleProvisionMovementRepo } from "./slices/provision/repos/drizzle-provision-movement-repo.js";
+import { DrizzleCashForecastRepo } from "./slices/treasury/repos/drizzle-cash-forecast-repo.js";
+import { DrizzleCovenantRepo } from "./slices/treasury/repos/drizzle-covenant-repo.js";
+import { DrizzleIcLoanRepo } from "./slices/treasury/repos/drizzle-ic-loan-repo.js";
+import { DrizzleCostCenterRepo } from "./slices/cost-accounting/repos/drizzle-cost-center-repo.js";
+import { DrizzleCostDriverRepo } from "./slices/cost-accounting/repos/drizzle-cost-driver-repo.js";
+import { DrizzleCostAllocationRunRepo } from "./slices/cost-accounting/repos/drizzle-cost-allocation-run-repo.js";
+import { DrizzleGroupEntityRepo } from "./slices/consolidation/repos/drizzle-group-entity-repo.js";
+import { DrizzleOwnershipRecordRepo } from "./slices/consolidation/repos/drizzle-ownership-record-repo.js";
+import { DrizzleGoodwillRepo } from "./slices/consolidation/repos/drizzle-goodwill-repo.js";
+import { DrizzleFinInstrumentRepo } from "./slices/fin-instruments/repos/drizzle-fin-instrument-repo.js";
+import { DrizzleFairValueMeasurementRepo } from "./slices/fin-instruments/repos/drizzle-fair-value-measurement-repo.js";
+import { DrizzleHedgeRelationshipRepo } from "./slices/hedge/repos/drizzle-hedge-relationship-repo.js";
+import { DrizzleHedgeEffectivenessTestRepo } from "./slices/hedge/repos/drizzle-hedge-effectiveness-test-repo.js";
+import { DrizzleIntangibleAssetRepo } from "./slices/intangibles/repos/drizzle-intangible-asset-repo.js";
+import { DrizzleDeferredTaxItemRepo } from "./slices/deferred-tax/repos/drizzle-deferred-tax-item-repo.js";
+import { DrizzleTpPolicyRepo } from "./slices/transfer-pricing/repos/drizzle-tp-policy-repo.js";
+import { DrizzleTpBenchmarkRepo } from "./slices/transfer-pricing/repos/drizzle-tp-benchmark-repo.js";
 
 /**
  * Composition-root adapter that wires all Drizzle repos into a FinanceRuntime.
@@ -93,6 +115,28 @@ export function createFinanceRuntime(session: DbSession): FinanceRuntime {
           expenseClaimRepo: new DrizzleExpenseClaimRepo(tx),
           expensePolicyRepo: new DrizzleExpensePolicyRepo(tx),
           projectRepo: new DrizzleProjectRepo(tx),
+          leaseContractRepo: new DrizzleLeaseContractRepo(tx),
+          leaseScheduleRepo: new DrizzleLeaseScheduleRepo(tx),
+          leaseModificationRepo: new DrizzleLeaseModificationRepo(tx),
+          provisionRepo: new DrizzleProvisionRepo(tx),
+          provisionMovementRepo: new DrizzleProvisionMovementRepo(tx),
+          cashForecastRepo: new DrizzleCashForecastRepo(tx),
+          covenantRepo: new DrizzleCovenantRepo(tx),
+          icLoanRepo: new DrizzleIcLoanRepo(tx),
+          costCenterRepo: new DrizzleCostCenterRepo(tx),
+          costDriverRepo: new DrizzleCostDriverRepo(tx),
+          costAllocationRunRepo: new DrizzleCostAllocationRunRepo(tx),
+          groupEntityRepo: new DrizzleGroupEntityRepo(tx),
+          ownershipRecordRepo: new DrizzleOwnershipRecordRepo(tx),
+          goodwillRepo: new DrizzleGoodwillRepo(tx),
+          finInstrumentRepo: new DrizzleFinInstrumentRepo(tx),
+          fairValueMeasurementRepo: new DrizzleFairValueMeasurementRepo(tx),
+          hedgeRelationshipRepo: new DrizzleHedgeRelationshipRepo(tx),
+          hedgeEffectivenessTestRepo: new DrizzleHedgeEffectivenessTestRepo(tx),
+          intangibleAssetRepo: new DrizzleIntangibleAssetRepo(tx),
+          deferredTaxItemRepo: new DrizzleDeferredTaxItemRepo(tx),
+          tpPolicyRepo: new DrizzleTpPolicyRepo(tx),
+          tpBenchmarkRepo: new DrizzleTpBenchmarkRepo(tx),
         };
         return fn(deps);
       });

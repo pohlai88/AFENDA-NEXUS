@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { computeDeferredRevenueRollForward } from "../domain/index.js";
-import type { DeferredRevenueEntry } from "../domain/index.js";
+import { computeDeferredRevenueRollForward } from "../slices/hub/calculators/deferred-revenue.js";
+import type { DeferredRevenueEntry } from "../slices/hub/calculators/deferred-revenue.js";
 
 describe("computeDeferredRevenueRollForward (A-25)", () => {
   it("returns empty roll-forward for no entries", () => {

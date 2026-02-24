@@ -5,7 +5,7 @@ import type { IIcSettlementRepo } from "../app/ports/ic-settlement-repo.js";
 import type { IIcTransactionRepo } from "../app/ports/ic-repo.js";
 import type { IOutboxWriter } from "../app/ports/outbox-writer.js";
 import type { IcSettlement } from "../domain/entities/ic-settlement.js";
-import type { IntercompanyDocument } from "../domain/index.js";
+import type { IntercompanyDocument } from "../slices/ic/entities/intercompany.js";
 import type { CompanyId, TenantId } from "@afenda/core";
 
 function makeDocument(overrides: Partial<IntercompanyDocument> = {}): IntercompanyDocument {

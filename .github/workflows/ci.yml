@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9.15.4'
+
+jobs:
+  # ─── Quality Gates ─────────────────────────────────────────────────────────
+  quality:
+    name: Build · Type · Lint · Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm turbo build
+
+      - name: Typecheck
+        run: pnpm turbo typecheck
+
+      - name: Lint
+        run: pnpm turbo lint
+
+      - name: Format check
+        run: pnpm format:check
+
+  # ─── Tests ─────────────────────────────────────────────────────────────────
+  test:
+    name: Test · Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Build first — tests may depend on built packages
+      - name: Build
+        run: pnpm turbo build
+
+      - name: Unit & Integration tests (with coverage)
+        run: pnpm turbo test:coverage
+        env:
+          CI: true
+
+      - name: Property-based tests
+        run: pnpm turbo test:property
+        env:
+          CI: true
+
+  # ─── Architecture & Drift Guards ──────────────────────────────────────────
+  guards:
+    name: Arch · Drift · DB · SOX
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Architecture guard (E1–E16)
+        run: pnpm arch:guard
+
+      - name: Monorepo drift check
+        run: pnpm drift
+
+      - name: Web drift check (W01–W15)
+        run: pnpm web:drift
+
+      - name: DB schema drift check
+        run: pnpm db:ci
+
+      - name: AIS benchmark audit
+        run: pnpm audit:ais
+
+      - name: SOX ITGC audit (strict)
+        run: pnpm audit:sox --fail

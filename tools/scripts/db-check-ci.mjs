@@ -26,21 +26,21 @@ const before = new Set(
 );
 
 // 1. drizzle-kit check — validates snapshot consistency
-console.log("▶ drizzle-kit check (snapshot consistency)...");
+console.log("> drizzle-kit check (snapshot consistency)...");
 try {
   execSync("npx drizzle-kit check --config=drizzle.config.ts", {
     cwd: DB_PKG,
     stdio: "pipe",
   });
-  console.log("  ✅ Snapshots consistent");
+  console.log("  [PASS] Snapshots consistent");
 } catch (e) {
-  console.error("  ❌ Snapshot inconsistency detected");
+  console.error("  [FAIL] Snapshot inconsistency detected");
   console.error(e.stderr?.toString() || e.message);
   process.exit(1);
 }
 
 // 2. drizzle-kit generate — should produce no new files if schema is in sync
-console.log("▶ drizzle-kit generate --name=ci_check (dry run)...");
+console.log("> drizzle-kit generate --name=ci_check (dry run)...");
 try {
   const output = execSync(
     "npx drizzle-kit generate --config=drizzle.config.ts --name=ci_check",
@@ -70,27 +70,27 @@ try {
       }
     }
 
-    console.error("  ❌ Schema has pending changes not captured in migrations:");
-    for (const f of newFiles) console.error(`     → ${f}`);
+    console.error("  [FAIL] Schema has pending changes not captured in migrations:");
+    for (const f of newFiles) console.error(`     - ${f}`);
     console.error("");
     console.error("  Fix: run `pnpm --filter @afenda/db db:generate` and commit the result.");
     process.exit(1);
   }
 
   if (output.includes("No schema changes")) {
-    console.log("  ✅ No pending schema changes");
+    console.log("  [PASS] No pending schema changes");
   } else {
-    console.log("  ✅ Schema and migrations in sync");
+    console.log("  [PASS] Schema and migrations in sync");
   }
 } catch (e) {
   const msg = e.stderr?.toString() || e.stdout?.toString() || e.message;
   if (msg.includes("No schema changes")) {
-    console.log("  ✅ No pending schema changes");
+    console.log("  [PASS] No pending schema changes");
   } else {
-    console.error("  ❌ drizzle-kit generate failed:");
+    console.error("  [FAIL] drizzle-kit generate failed:");
     console.error(msg);
     process.exit(1);
   }
 }
 
-console.log("\n✅ DB CI gate passed — schema ↔ migrations in sync");
+console.log("\n[PASS] DB CI gate passed -- schema <-> migrations in sync");

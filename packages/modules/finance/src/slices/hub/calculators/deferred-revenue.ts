@@ -8,7 +8,7 @@
  */
 import type { Money } from "@afenda/core";
 import { money } from "@afenda/core";
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export interface DeferredRevenueEntry {
   readonly contractId: string;

@@ -3,10 +3,10 @@ import { money } from "@afenda/core";
 import { computeArAging } from "../slices/ar/calculators/ar-aging.js";
 import { computeLateFee, computeLateFees } from "../slices/ar/calculators/late-fee.js";
 import { computeDunningScore, computeDunningScores, computeDunningLevel } from "../slices/ar/calculators/dunning-score.js";
-import { computeEclProvision, DEFAULT_ECL_MATRIX } from "../slices/ar/calculators/ecl-provision.js";
+import { computeEclProvision } from "../slices/ar/calculators/ecl-provision.js";
 import { allocatePaymentFifo, allocatePaymentSpecific } from "../slices/ar/calculators/payment-allocation.js";
 import { checkCreditLimit } from "../slices/ar/calculators/credit-limit.js";
-import { makeArInvoice, AR_IDS } from "./helpers.js";
+import { makeArInvoice } from "./helpers.js";
 
 // ─── AR Aging ──────────────────────────────────────────────────────────────
 

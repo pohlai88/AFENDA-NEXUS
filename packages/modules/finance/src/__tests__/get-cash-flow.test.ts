@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { ok, money } from "@afenda/core";
-import type { AccountType } from "../domain/index.js";
+import type { AccountType } from "../slices/gl/entities/account.js";
 import { getCashFlow } from "../slices/reporting/services/get-cash-flow.js";
 
 const LEDGER_ID = "ledger-1";

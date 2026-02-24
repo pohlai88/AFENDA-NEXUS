@@ -21,6 +21,7 @@
  *   E13 No circular package dependencies (global)
  *   E14 Public API surface stability (exports in public_api file)
  *   E15 Port-implementation parity (every I*Repo port has a Drizzle* impl)
+ *   E16 Slice isolation (no direct cross-slice imports; must go through shared/)
  *
  * Usage:
  *   node tools/drift-check/src/arch-guard.mjs
@@ -91,16 +92,37 @@ function parseFrontmatter(content) {
     // Array item
     if (trimmed.startsWith("- ")) {
       const val = trimmed.slice(2).trim();
-      if (currentKey && Array.isArray(currentObj[currentKey])) {
+
+      // Resolve the owner of currentKey — it may be the current stack frame or
+      // a parent frame (when the parser pushed an empty {} for a block-list key
+      // like `allowed_runtime:` and we are now inside that empty object).
+      let listOwner = currentObj;
+      if (currentKey && !(currentKey in currentObj)) {
+        // Walk up the stack to find the object that actually owns currentKey
+        for (let i = stack.length - 2; i >= 0; i--) {
+          if (currentKey in stack[i].obj) {
+            listOwner = stack[i].obj;
+            break;
+          }
+        }
+      }
+
+      // Promote empty object to array when first list item arrives
+      if (currentKey && typeof listOwner[currentKey] === "object" && !Array.isArray(listOwner[currentKey]) && Object.keys(listOwner[currentKey]).length === 0) {
+        listOwner[currentKey] = [];
+      }
+      if (currentKey && Array.isArray(listOwner[currentKey])) {
         // Parse inline object { from: "x", forbid: ["y"] }
         if (val.startsWith("{")) {
           try {
-            currentObj[currentKey].push(JSON.parse(val.replace(/'/g, '"')));
+            // YAML allows unquoted keys — quote them for JSON.parse
+            const jsonified = val.replace(/'/g, '"').replace(/(\{|,)\s*([a-zA-Z_]\w*)\s*:/g, '$1 "$2":');
+            listOwner[currentKey].push(JSON.parse(jsonified));
           } catch {
-            currentObj[currentKey].push(val);
+            listOwner[currentKey].push(val);
           }
         } else {
-          currentObj[currentKey].push(parseValue(val));
+          listOwner[currentKey].push(parseValue(val));
         }
       }
       continue;
@@ -166,6 +188,12 @@ function parseValue(val) {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+/** Safely coerce a parsed YAML value to an array (handles objects from block-list parse) */
+function toArray(val) {
+  if (Array.isArray(val)) return val;
+  return [];
+}
+
 function loadJson(path) {
   try {
     return JSON.parse(readFileSync(path, "utf-8"));
@@ -227,18 +255,29 @@ function getPackageFromImport(imp) {
 }
 
 function matchesGlob(filePath, pattern) {
-  // Simple glob: "src/infra/routes/**" matches "src/infra/routes/foo.ts"
+  // Glob matching: supports *, ** wildcards in any position.
+  // * matches a single path segment, ** matches zero or more segments.
   const normalized = filePath.replace(/\\/g, "/");
-  if (pattern.endsWith("/**")) {
-    const prefix = pattern.slice(0, -3);
-    return normalized.startsWith(prefix + "/") || normalized === prefix;
+  const patParts = pattern.split("/");
+  const fileParts = normalized.split("/");
+
+  function match(pi, fi) {
+    if (pi === patParts.length && fi === fileParts.length) return true;
+    if (pi === patParts.length) return false;
+    const seg = patParts[pi];
+    if (seg === "**") {
+      // ** matches zero or more path segments
+      if (pi === patParts.length - 1) return true; // trailing **
+      for (let skip = fi; skip <= fileParts.length; skip++) {
+        if (match(pi + 1, skip)) return true;
+      }
+      return false;
+    }
+    if (fi === fileParts.length) return false;
+    if (seg === "*") return match(pi + 1, fi + 1); // * matches exactly one segment
+    return seg === fileParts[fi] && match(pi + 1, fi + 1);
   }
-  if (pattern.endsWith("/*")) {
-    const prefix = pattern.slice(0, -2);
-    const rest = normalized.slice(prefix.length + 1);
-    return normalized.startsWith(prefix + "/") && !rest.includes("/");
-  }
-  return normalized === pattern;
+  return match(0, 0);
 }
 
 function isRelativeImportCrossLayer(imp, sourceRelPath, rules) {
@@ -310,7 +349,8 @@ function checkPackage(pkgPath, manifestEntry) {
   }
 
   // E4: required_files
-  const requiredFiles = fm.enforced_structure?.required_files || [];
+  const requiredFilesRaw = fm.enforced_structure?.required_files;
+  const requiredFiles = Array.isArray(requiredFilesRaw) ? requiredFilesRaw : [];
   for (const f of requiredFiles) {
     const filePath = join(pkgDir, f);
     if (existsSync(filePath)) {
@@ -321,7 +361,8 @@ function checkPackage(pkgPath, manifestEntry) {
   }
 
   // E5: required_directories
-  const requiredDirs = fm.enforced_structure?.required_directories || [];
+  const requiredDirsRaw = fm.enforced_structure?.required_directories;
+  const requiredDirs = Array.isArray(requiredDirsRaw) ? requiredDirsRaw : [];
   for (const d of requiredDirs) {
     const dirPath = join(pkgDir, d);
     if (existsSync(dirPath) && statSync(dirPath).isDirectory()) {
@@ -335,33 +376,33 @@ function checkPackage(pkgPath, manifestEntry) {
   }
 
   // E6: dependencies ⊆ allowed_runtime
-  const allowedRuntime = fm.dependency_kinds?.allowed_runtime || [];
+  const allowedRuntime = toArray(fm.dependency_kinds?.allowed_runtime);
   const deps = pkgJson?.dependencies || {};
   for (const dep of Object.keys(deps)) {
     if (deps[dep] === "workspace:*" || deps[dep]?.startsWith("workspace:")) continue; // workspace deps always OK
     if (allowedRuntime.includes(dep)) {
       pass(pkgName, "E6", `Dep "${dep}" is in allowed_runtime`);
     } else {
-      fail(pkgName, "E6", `Dep "${dep}" NOT in allowed_runtime — add to ARCHITECTURE.md or remove`);
+      fail(pkgName, "E6", `Dep "${dep}" NOT in allowed_runtime -- add to ARCHITECTURE.md or remove`);
     }
   }
 
   // E7: devDependencies ⊆ allowed_dev
-  const allowedDev = fm.dependency_kinds?.allowed_dev || [];
+  const allowedDev = toArray(fm.dependency_kinds?.allowed_dev);
   const devDeps = pkgJson?.devDependencies || {};
   for (const dep of Object.keys(devDeps)) {
     if (devDeps[dep] === "workspace:*" || devDeps[dep]?.startsWith("workspace:")) continue;
     if (allowedDev.includes(dep)) {
       pass(pkgName, "E7", `DevDep "${dep}" is in allowed_dev`);
     } else {
-      fail(pkgName, "E7", `DevDep "${dep}" NOT in allowed_dev — add to ARCHITECTURE.md or remove`);
+      fail(pkgName, "E7", `DevDep "${dep}" NOT in allowed_dev -- add to ARCHITECTURE.md or remove`);
     }
   }
 
   // E8/E9/E10: Import boundary checks
-  const forbiddenImports = fm.boundary_rules?.forbidden_imports || [];
+  const forbiddenImports = toArray(fm.boundary_rules?.forbidden_imports);
   const allowByPath = fm.boundary_rules?.allow_imports_by_path || {};
-  const crossLayerRules = fm.boundary_rules?.forbid_cross_layer_imports || [];
+  const crossLayerRules = toArray(fm.boundary_rules?.forbid_cross_layer_imports);
 
   if (forbiddenImports.length > 0 || crossLayerRules.length > 0) {
     const sourceFiles = collectSourceFiles(join(pkgDir, "src"));
@@ -394,7 +435,7 @@ function checkPackage(pkgPath, manifestEntry) {
         if (imp.startsWith(".") && crossLayerRules.length > 0) {
           const violation = isRelativeImportCrossLayer(imp, relPath, crossLayerRules);
           if (violation) {
-            fail(pkgName, "E10", `Cross-layer: "${violation.source}" imports "${violation.target}" (${violation.from} → ${violation.forbid})`);
+            fail(pkgName, "E10", `Cross-layer: "${violation.source}" imports "${violation.target}" (${violation.from} -> ${violation.forbid})`);
           }
         }
       }
@@ -482,7 +523,7 @@ function checkCircularDeps(manifest) {
     pass("*", "E13", "No circular package dependencies detected");
   } else {
     for (const cycle of cycles) {
-      fail("*", "E13", `Circular dependency: ${cycle.join(" → ")}`);
+      fail("*", "E13", `Circular dependency: ${cycle.join(" -> ")}`);
     }
   }
 }
@@ -520,7 +561,7 @@ function checkPublicApiSurface(pkgPath, pkgName, fm) {
   }
 
   if (exportedSymbols.size === 0) {
-    warn(pkgName, "E14", `No exports found in "${publicApiFile}" — cannot verify API surface`);
+    warn(pkgName, "E14", `No exports found in "${publicApiFile}" -- cannot verify API surface`);
     return;
   }
 
@@ -531,7 +572,7 @@ function checkPublicApiSurface(pkgPath, pkgName, fm) {
 
 function checkPortImplParity(pkgPath, pkgName, fm) {
   // Only check packages with hexagonal architecture (ports + repositories)
-  const requiredDirs = fm.enforced_structure?.required_directories || [];
+  const requiredDirs = toArray(fm.enforced_structure?.required_directories);
   const hasPorts = requiredDirs.some((d) => d.includes("ports"));
   const hasRepos = requiredDirs.some((d) => d.includes("repositories"));
   if (!hasPorts || !hasRepos) return;
@@ -577,6 +618,84 @@ function checkPortImplParity(pkgPath, pkgName, fm) {
     } else {
       warn(pkgName, "E15", `Port "${port.name}" (${port.file}) has no implementation in infra/repositories`);
     }
+  }
+}
+
+// ─── E16: Slice Isolation ────────────────────────────────────────────────────
+
+/**
+ * For packages declaring `slice_isolation: true` in ARCHITECTURE frontmatter,
+ * ensures files inside `src/slices/<slug>/` never directly import from another
+ * slice (`../../<other>/` or `../../../slices/<other>/`).
+ *
+ * Allowed cross-slice paths:
+ *   - `../../../shared/` — shared types, ports, hooks
+ *   - same-slice `../../../slices/<same>/` — intra-slice long-path
+ *
+ * The `shared/` folder is the mediation layer; all cross-slice communication
+ * must be routed through shared port facades or hook files.
+ */
+function checkSliceIsolation(pkgPath, pkgName, fm) {
+  if (!fm.slice_isolation) return;
+
+  const pkgDir = join(REPO_ROOT, pkgPath);
+  const slicesDir = join(pkgDir, "src", "slices");
+  if (!existsSync(slicesDir)) {
+    warn(pkgName, "E16", `slice_isolation=true but src/slices/ dir not found`);
+    return;
+  }
+
+  // Discover slice slugs (top-level directories under src/slices/)
+  const sliceSlugs = readdirSync(slicesDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
+
+  const slugSet = new Set(sliceSlugs);
+  let violations = 0;
+
+  for (const slug of sliceSlugs) {
+    const sliceDir = join(slicesDir, slug);
+    const sourceFiles = collectSourceFiles(sliceDir);
+
+    for (const sourceFile of sourceFiles) {
+      const content = readFileSync(sourceFile, "utf-8");
+      const imports = extractImports(content);
+      const relToSlice = relative(sliceDir, sourceFile).replace(/\\/g, "/");
+
+      for (const imp of imports) {
+        if (!imp.startsWith(".")) continue; // skip bare/package imports
+
+        // Normalize import path relative to the file
+        const fileDir = dirname(relative(pkgDir, sourceFile)).replace(/\\/g, "/");
+        const resolved = posix.normalize(posix.join(fileDir, imp));
+
+        // Pattern 1: imports ../../<otherSlice>/ (short relative from calculators/services depth)
+        const shortCross = imp.match(/^\.\.\/\.\.\/([a-z][a-z0-9-]*)\//);
+        if (shortCross) {
+          const targetSlug = shortCross[1];
+          if (slugSet.has(targetSlug) && targetSlug !== slug) {
+            fail(pkgName, "E16", `Slice "${slug}" imports from slice "${targetSlug}" in ${relToSlice} → ${imp} (use shared/ port instead)`);
+            violations++;
+            continue;
+          }
+        }
+
+        // Pattern 2: imports ../../../slices/<otherSlice>/
+        const longCross = imp.match(/slices\/([a-z][a-z0-9-]*)\//);
+        if (longCross) {
+          const targetSlug = longCross[1];
+          if (slugSet.has(targetSlug) && targetSlug !== slug) {
+            fail(pkgName, "E16", `Slice "${slug}" imports from slice "${targetSlug}" in ${relToSlice} → ${imp} (use shared/ port instead)`);
+            violations++;
+            continue;
+          }
+        }
+      }
+    }
+  }
+
+  if (violations === 0) {
+    pass(pkgName, "E16", `Slice isolation: ${sliceSlugs.length} slices, 0 cross-slice violations`);
   }
 }
 
@@ -644,7 +763,7 @@ function main() {
     checkCircularDeps(manifest);
   }
 
-  // E14 + E15: Per-package checks that need frontmatter
+  // E14 + E15 + E16: Per-package checks that need frontmatter
   for (const [pkgPath, entry] of Object.entries(manifest.packages)) {
     if (entry.type === "unmanaged") continue;
     if (PKG_FILTER && entry.name !== PKG_FILTER) continue;
@@ -656,6 +775,7 @@ function main() {
     if (!fm) continue;
     checkPublicApiSurface(pkgPath, entry.name, fm);
     checkPortImplParity(pkgPath, entry.name, fm);
+    checkSliceIsolation(pkgPath, entry.name, fm);
   }
 
   printReport();

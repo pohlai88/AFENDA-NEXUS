@@ -6,7 +6,7 @@
  * Computes cross rates by triangulating through a common base currency
  * when a direct rate is unavailable.
  */
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export interface RateEntry {
   readonly fromCurrency: string;
@@ -214,7 +214,7 @@ export function auditRateSources(
   for (const [pairKey, entries] of pairMap) {
     if (entries.length > 1) {
       issues.push({
-        rateEntry: entries[1],
+        rateEntry: entries[1]!,
         issue: "duplicate",
         detail: `${pairKey} has ${entries.length} entries`,
       });
@@ -227,7 +227,7 @@ export function auditRateSources(
         const spreadPct = ((maxRate - minRate) / minRate) * 100;
         if (spreadPct > maxSpreadPct) {
           issues.push({
-            rateEntry: entries[0],
+            rateEntry: entries[0]!,
             issue: "wide_spread",
             detail: `${pairKey} spread is ${spreadPct.toFixed(2)}% (max: ${maxSpreadPct}%)`,
           });

@@ -32,10 +32,11 @@ export class DrizzleAccountRepo implements IAccountRepo {
     const limit = pagination?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.accounts.findMany({ limit, offset }),
       this.tx.select({ total: count() }).from(accounts),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     return ok({ data: rows.map(mapAccountToDomain), total, page, limit });
   }

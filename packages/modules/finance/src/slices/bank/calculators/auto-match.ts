@@ -106,6 +106,7 @@ export function autoMatchLines(
     matched,
     unmatched,
     totalLines,
+    // eslint-disable-next-line no-restricted-syntax -- CIG-02 bridge: matchRate is a non-monetary percentage, not an FX conversion
     matchRate: totalLines > 0 ? Math.round((matched.length / totalLines) * 100) : 0,
   };
 }

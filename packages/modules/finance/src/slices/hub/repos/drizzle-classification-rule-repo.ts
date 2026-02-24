@@ -3,7 +3,7 @@ import type { TenantTx } from "@afenda/db";
 import { classificationRuleSets, classificationRules } from "@afenda/db";
 import { ok, err, NotFoundError, type Result, type PaginationParams, type PaginatedResult } from "@afenda/core";
 import type { ClassificationRule, ClassificationRuleSet, ReportingStandard, StatementCategory } from "../../hub/entities/classification-rule.js";
-import type { AccountType } from "../../gl/entities/account.js";
+import type { AccountType } from "../../../shared/types.js";
 import type { IClassificationRuleRepo } from "../../../slices/hub/ports/classification-rule-repo.js";
 
 export class DrizzleClassificationRuleRepo implements IClassificationRuleRepo {

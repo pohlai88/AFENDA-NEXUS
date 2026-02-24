@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { money } from "@afenda/core";
-import { computeIcAging } from "../domain/index.js";
-import type { IcOpenItem } from "../domain/index.js";
+import { computeIcAging } from "../slices/ic/calculators/ic-aging.js";
+import type { IcOpenItem } from "../slices/ic/calculators/ic-aging.js";
 
 function makeItem(overrides: Partial<IcOpenItem> & { daysAgo: number; amt: bigint }): IcOpenItem {
   const asOf = new Date("2025-06-01");

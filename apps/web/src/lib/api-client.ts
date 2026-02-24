@@ -101,3 +101,17 @@ export function createApiClient(ctx: RequestContext) {
 }
 
 export type ApiClient = ReturnType<typeof createApiClient>;
+
+// ─── Error Handling Helpers ──────────────────────────────────────────────────
+
+export function isUnauthorized(result: ApiResult<unknown>): boolean {
+  return !result.ok && result.error.statusCode === 401;
+}
+
+export function isForbidden(result: ApiResult<unknown>): boolean {
+  return !result.ok && result.error.statusCode === 403;
+}
+
+export function isServerError(result: ApiResult<unknown>): boolean {
+  return !result.ok && result.error.statusCode >= 500;
+}

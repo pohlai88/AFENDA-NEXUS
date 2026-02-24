@@ -69,6 +69,7 @@ export function computeEclProvision(
 
 function computeBucket(bucket: string, grossAmount: bigint, lossRate: number): EclBucketResult {
   // (grossAmount * lossRate) / 100, using integer math
+  // eslint-disable-next-line no-restricted-syntax -- CIG-02 bridge: lossRate float scaled to integer for BigInt fixed-point arithmetic
   const provisionAmount = (grossAmount * BigInt(Math.round(lossRate * 100))) / 10000n;
   return { bucket, grossAmount, lossRate, provisionAmount };
 }

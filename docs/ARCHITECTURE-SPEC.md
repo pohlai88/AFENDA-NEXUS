@@ -169,6 +169,7 @@ The `arch-guard` tool validates each package against its frontmatter. Checks are
 | E13 | No circular `@afenda/*` package dependencies (global DFS) | `package.json` deps | **FAIL** | No |
 | E14 | `public_api` file exists and has exports (symbol count logged) | `public_api` | **FAIL** / info | No |
 | E15 | Every port interface (`I*Repo`, `I*Store`, etc.) has an `implements` class in `infra/` | `enforced_structure` | **WARN** | No |
+| E16 | No file in a slice imports from another slice directly (must go through `shared/`) | `slice_isolation` | **FAIL** | No |
 
 ### Import Scanning (E8, E9, E10)
 
@@ -224,6 +225,18 @@ For packages with hexagonal architecture (both `ports` and `repositories` in `re
 2. All `implements I*` clauses in `.ts` files under `src/infra/` subdirectories (excluding `routes/` and `mappers/`)
 
 A port without a matching implementation is a **WARN** (not FAIL), since some ports may be implemented by external packages or test mocks.
+
+### Slice Isolation (E16)
+
+For packages with `slice_isolation: true` in frontmatter, E16 enforces that files inside `src/slices/<slug>/` **never** import directly from another slice via relative paths such as `../../<other>/` or `../../../slices/<other>/`. Cross-slice coupling must go through the `src/shared/` mediation layer.
+
+**Allowed:**
+- Imports within the same slice (`./` or `../` staying within `src/slices/<slug>/`)
+- Imports from `../../../shared/` or deeper shared sub-paths
+
+**Forbidden:**
+- `../../<other-slug>/...` (direct peer-slice import)
+- `../../../slices/<other-slug>/...` (absolute-style cross-slice import)
 
 ---
 
@@ -309,6 +322,6 @@ Generators for other package types (`gen:table`, `gen:endpoint`) do not create A
 ---
 
 *Ratified: 2026-02-22 — v1.0*  
-*Updated: 2026-02-23 — v1.1 (E13 circular deps, E14 public API surface, E15 port-impl parity, CIG-03 unsafe casts)*
+*Updated: 2026-02-23 — v1.2 (E13 circular deps, E14 public API surface, E15 port-impl parity, E16 slice isolation, CIG-03 unsafe casts)*
 *Updated: 2026-02-24 — v1.2 (CIG-04 no DB imports in routes/handlers/pages, enforced in @afenda/eslint-config)*
 *Updated: 2026-02-24 — v1.3 (ERP benchmarking: evidence schema, property-based invariant tests, AIS 41-item audit with evidence levels, SOX ITGC 12-control audit, evidence pack generator)*

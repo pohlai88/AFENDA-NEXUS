@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { TenantProvider } from "@/providers/tenant-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,9 +21,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider defaultTheme="system">
-          <TenantProvider>
+          <TooltipProvider delayDuration={300}>
             {children}
-          </TenantProvider>
+            <Toaster richColors closeButton position="bottom-right" />
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -5,11 +5,11 @@ import {
   computeStraightLineSchedule,
 } from "../calculators/revenue-recognition.js";
 import type { IRevenueContractRepo } from "../../../slices/hub/ports/revenue-contract-repo.js";
-import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";
-import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";
+import type { IJournalRepo, CreateJournalInput } from "../../../shared/ports/journal-posting-port.js";
+import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
 import type { IIdempotencyStore } from "../../../shared/ports/idempotency-store.js";
 import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { IJournalAuditRepo } from "../../../slices/gl/ports/journal-audit-repo.js";
+import type { IJournalAuditRepo } from "../../../shared/ports/journal-posting-port.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
 import { FinanceEventType } from "../../../shared/events.js";
 

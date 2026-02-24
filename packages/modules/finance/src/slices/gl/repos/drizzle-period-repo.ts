@@ -66,10 +66,11 @@ export class DrizzlePeriodRepo implements IFiscalPeriodRepo {
     const limit = pagination?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.fiscalPeriods.findMany({ limit, offset }),
       this.tx.select({ total: count() }).from(fiscalPeriods),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     return ok({ data: rows.map(mapPeriodToDomain), total, page, limit });
   }

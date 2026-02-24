@@ -23,10 +23,10 @@ import type { IFiscalPeriodRepo } from "../../../slices/gl/ports/fiscal-period-r
 import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
 import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";
 import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import { classifyIncomeStatement } from "../../reporting/calculators/report-classifier.js";
-import type { ClassifiableRow } from "../../reporting/calculators/report-classifier.js";
-import { resolveCloseReadiness } from "../../reporting/calculators/close-checklist.js";
-import type { CloseTask } from "../../reporting/calculators/close-checklist.js";
+import { classifyIncomeStatement } from "../../../shared/ports/close-readiness-hook.js";
+import type { ClassifiableRow } from "../../../shared/ports/close-readiness-hook.js";
+import { resolveCloseReadiness } from "../../../shared/ports/close-readiness-hook.js";
+import type { CloseTask } from "../../../shared/ports/close-readiness-hook.js";
 
 export interface CloseYearInput {
   readonly tenantId: string;
@@ -93,7 +93,7 @@ export async function closeYear(
     id: p.id,
     name: p.name,
     status: p.status === "CLOSED" || p.status === "LOCKED" ? "completed" as const : "pending" as const,
-    dependsOn: i > 0 ? [periods[i - 1].id] : [],
+    dependsOn: i > 0 ? [periods[i - 1]!.id] : [],
     companyId: String(p.companyId),
   }));
 
@@ -229,7 +229,7 @@ export async function closeYear(
       });
     }
 
-    const lastPeriodId = input.periodIds[input.periodIds.length - 1];
+    const lastPeriodId = input.periodIds[input.periodIds.length - 1]!;
     const closingJournalResult = await deps.journalRepo.create({
       tenantId,
       ledgerId: input.ledgerId,

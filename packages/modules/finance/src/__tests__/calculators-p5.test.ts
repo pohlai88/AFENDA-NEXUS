@@ -1,10 +1,7 @@
 import { describe, it, expect } from "vitest";
-import {
-  deriveCashFlowIndirect,
-  triangulateRate,
-  auditRateSources,
-  computeAccruals,
-} from "../domain/calculators/index.js";
+import { deriveCashFlowIndirect } from "../slices/reporting/calculators/cash-flow-indirect.js";
+import { triangulateRate, auditRateSources } from "../slices/fx/calculators/fx-triangulation.js";
+import { computeAccruals } from "../slices/hub/calculators/accrual-engine.js";
 import type { TrialBalanceMovement } from "../slices/reporting/calculators/cash-flow-indirect.js";
 import type { RateEntry } from "../slices/fx/calculators/fx-triangulation.js";
 import type { AccrualSchedule } from "../slices/hub/calculators/accrual-engine.js";

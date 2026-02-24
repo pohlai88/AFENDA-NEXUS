@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createDbSession } from "@afenda/db";
-import { createPooledClient } from "@afenda/db/client";
+import { createDbSession, createPooledClient } from "@afenda/db";
 import type { DbClient } from "@afenda/db";
 import { createFinanceRuntime } from "../runtime.js";
 

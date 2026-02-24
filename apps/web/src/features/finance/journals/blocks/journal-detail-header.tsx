@@ -44,7 +44,7 @@ export function JournalDetailHeader({ journal }: JournalDetailHeaderProps) {
       </div>
 
       {journal.reversedById && (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950">
+        <div className="rounded-md border border-border bg-muted p-3 text-sm">
           <strong>Reversed</strong> by journal{" "}
           <span className="font-mono">{journal.reversedById}</span>
         </div>

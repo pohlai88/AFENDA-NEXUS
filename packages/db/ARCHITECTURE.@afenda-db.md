@@ -10,7 +10,7 @@ exports_map:
   ".": { source: "./src/index.ts", import: "./dist/index.js", types: "./dist/index.d.ts", default: "./src/index.ts" }
 dependency_kinds:
   allowed_runtime: ["drizzle-orm", "postgres", "@neondatabase/api-client"]
-  allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "@types/node", "drizzle-kit", "tsup", "tsx", "typescript"]
+  allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "@types/node", "drizzle-kit", "tsup", "tsx", "typescript", "vitest"]
   allowed_peer: []
 enforced_structure:
   required_files: ["src/index.ts", "src/client.ts", "src/session.ts", "src/migrate.ts", "src/types.ts", "src/prepared.ts", "src/seed.ts", "src/schema/index.ts", "src/schema/_common.ts", "src/schema/_enums.ts", "src/schema/_schemas.ts", "src/schema/platform.ts", "src/schema/erp.ts", "src/schema/audit.ts", "src/schema/outbox-table.ts", "src/schema/outbox.ts", "src/schema/relations.ts", "drizzle.config.ts", "package.json", "tsconfig.json", "tsconfig.build.json", "tsup.config.ts"]

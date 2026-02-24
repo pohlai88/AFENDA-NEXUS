@@ -7,7 +7,7 @@
  * Manages financial close checklist: task dependencies, sequencing,
  * and readiness validation.
  */
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export type CloseTaskStatus = "pending" | "in_progress" | "completed" | "blocked" | "skipped";
 

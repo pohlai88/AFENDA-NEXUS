@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  computeRevaluation,
-  derivePostings,
-  allocateByDriver,
-} from "../domain/calculators/index.js";
+import { computeRevaluation } from "../slices/fx/calculators/fx-revaluation.js";
+import { derivePostings, allocateByDriver } from "../slices/hub/calculators/derivation-engine.js";
 import type { MonetaryBalance } from "../slices/fx/calculators/fx-revaluation.js";
 import type { DerivationRule, SourceTransaction } from "../slices/hub/calculators/derivation-engine.js";
 import type { AllocationDriver } from "../slices/hub/calculators/derivation-engine.js";

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { money, companyId, ledgerId } from "@afenda/core";
+import { describe, it, expect } from "vitest";
+import { money } from "@afenda/core";
 import { postArInvoice } from "../slices/ar/services/post-ar-invoice.js";
 import { allocatePayment } from "../slices/ar/services/allocate-payment.js";
 import { writeOffInvoice } from "../slices/ar/services/write-off-invoice.js";

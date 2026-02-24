@@ -1,10 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  validateCoaIntegrity,
-  getSubtree,
-  getAncestors,
-  validateDimensions,
-} from "../domain/calculators/index.js";
+import { validateCoaIntegrity, getSubtree, getAncestors } from "../slices/gl/calculators/coa-hierarchy.js";
+import { validateDimensions } from "../slices/gl/calculators/segment-dimension.js";
 import { createFinanceContext } from "../shared/finance-context.js";
 import type { AccountNode } from "../slices/gl/calculators/coa-hierarchy.js";
 import type { DimensionValue, JournalLineDimensions } from "../slices/gl/calculators/segment-dimension.js";

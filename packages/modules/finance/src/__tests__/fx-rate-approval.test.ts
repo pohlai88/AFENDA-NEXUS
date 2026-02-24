@@ -4,8 +4,8 @@ import {
   validateRateForPosting,
   validateRateSpread,
   DEFAULT_RATE_APPROVAL_POLICY,
-} from "../domain/index.js";
-import type { FxRateApproval, RateApprovalPolicy } from "../domain/index.js";
+} from "../slices/fx/entities/fx-rate-approval.js";
+import type { FxRateApproval, RateApprovalPolicy } from "../slices/fx/entities/fx-rate-approval.js";
 
 describe("requiresApproval (A-21)", () => {
   it("FEED rates never require approval", () => {

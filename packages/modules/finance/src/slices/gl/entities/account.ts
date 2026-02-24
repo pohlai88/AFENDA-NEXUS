@@ -1,26 +1,11 @@
 import type { CompanyId } from "@afenda/core";
 
-export type AccountType = "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE";
-
-export type NormalBalance = "DEBIT" | "CREDIT";
-
-/**
- * @see GL-02 — Account type enforcement (debit-normal vs credit-normal)
- *
- * Derives the normal balance side from the account type.
- * Assets and Expenses are debit-normal; Liabilities, Equity, and Revenue are credit-normal.
- */
-export function normalBalanceFor(type: AccountType): NormalBalance {
-  switch (type) {
-    case "ASSET":
-    case "EXPENSE":
-      return "DEBIT";
-    case "LIABILITY":
-    case "EQUITY":
-    case "REVENUE":
-      return "CREDIT";
-  }
-}
+// Re-export from shared for backward compatibility
+export { normalBalanceFor } from "../../../shared/types.js";
+export type { AccountType, NormalBalance } from "../../../shared/types.js";
+import type { AccountType } from "../../../shared/types.js";
+import type { NormalBalance } from "../../../shared/types.js";
+import { normalBalanceFor } from "../../../shared/types.js";
 
 /**
  * GAP-13: Validates that an account's net balance is on the expected side.

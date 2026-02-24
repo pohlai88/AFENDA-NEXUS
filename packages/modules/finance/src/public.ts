@@ -4,17 +4,19 @@
  * This is the ONLY entrypoint consumers should import from.
  */
 
-// ─── Domain types (via domain/index.ts shim) ────────────────────────────────
-export type { Journal, JournalLine, Account, AccountType, FiscalPeriod, PeriodStatus } from "./domain/index.js";
-export type { Ledger } from "./domain/index.js";
-export type { FxRate } from "./domain/index.js";
-export { convertAmount } from "./domain/index.js";
-export type { GlBalance, TrialBalanceRow, TrialBalance } from "./domain/index.js";
-export type { JournalAuditEntry } from "./domain/index.js";
-export type { IntercompanyRelationship, IntercompanyDocument } from "./domain/index.js";
-export type { RecurringTemplate, RecurringTemplateLine, RecurringFrequency } from "./domain/index.js";
-export type { BudgetEntry, BudgetVarianceRow, BudgetVarianceReport } from "./domain/index.js";
-export type { BalanceSheet, IncomeStatement, CashFlowStatement, ReportSection, ReportRow } from "./domain/index.js";
+// ─── Domain types (direct slice imports) ─────────────────────────────────────
+export type { Journal, JournalLine } from "./slices/gl/entities/journal.js";
+export type { Account, AccountType } from "./slices/gl/entities/account.js";
+export type { FiscalPeriod, PeriodStatus } from "./slices/gl/entities/fiscal-period.js";
+export type { Ledger } from "./slices/gl/entities/ledger.js";
+export type { FxRate } from "./slices/fx/entities/fx-rate.js";
+export { convertAmount } from "./slices/fx/entities/fx-rate.js";
+export type { GlBalance, TrialBalanceRow, TrialBalance } from "./slices/gl/entities/gl-balance.js";
+export type { JournalAuditEntry } from "./slices/gl/entities/journal-audit.js";
+export type { IntercompanyRelationship, IntercompanyDocument } from "./slices/ic/entities/intercompany.js";
+export type { RecurringTemplate, RecurringTemplateLine, RecurringFrequency } from "./slices/hub/entities/recurring-template.js";
+export type { BudgetEntry, BudgetVarianceRow, BudgetVarianceReport } from "./slices/hub/entities/budget.js";
+export type { BalanceSheet, IncomeStatement, CashFlowStatement, ReportSection, ReportRow } from "./slices/reporting/entities/financial-reports.js";
 
 // ─── GL ports ───────────────────────────────────────────────────────────────
 export type { IJournalRepo, CreateJournalInput } from "./slices/gl/ports/journal-repo.js";
@@ -208,6 +210,9 @@ export type { BankReconciliation, ReconciliationStatus } from "./slices/bank/ent
 
 // ─── Bank services ─────────────────────────────────────────────────────────
 export { signOffReconciliation, type SignOffReconciliationInput } from "./slices/bank/services/sign-off-reconciliation.js";
+export { confirmManualMatch, type ManualMatchInput } from "./slices/bank/services/confirm-manual-match.js";
+export { autoPostMatches, type AutoPostMatchesInput, type AutoPostResult } from "./slices/bank/services/auto-post-matches.js";
+export { investigateUnmatched, type InvestigateUnmatchedInput } from "./slices/bank/services/investigate-unmatched.js";
 
 // ─── Bank calculators ──────────────────────────────────────────────────────
 export { parseOfx, parseCsv, type ParsedStatement, type ParsedStatementLine, type ParseResult } from "./slices/bank/calculators/statement-parser.js";
@@ -215,6 +220,7 @@ export { autoMatchLines, type GlCandidate, type MatchCandidate, type AutoMatchRe
 export { computeOutstandingItems, type OutstandingItem, type OutstandingItemsResult } from "./slices/bank/calculators/outstanding-items.js";
 export { classifyBankCharges, type ChargeRule, type ClassifiedCharge, type ChargeClassificationResult, type ChargeCategory } from "./slices/bank/calculators/bank-charges.js";
 export { computeMultiCurrencyRecon, type MultiCurrencyReconInput, type MultiCurrencyReconResult, type FxRateEntry } from "./slices/bank/calculators/multi-currency-recon.js";
+export { computeIntradayBalance, type IntradayTransaction, type IntradayBalancePoint, type IntradayBalanceResult } from "./slices/bank/calculators/intraday-balance.js";
 
 // ─── Bank route registrars ─────────────────────────────────────────────────
 export { registerBankRoutes } from "./slices/bank/routes/bank-routes.js";
@@ -229,6 +235,7 @@ export type { CreditReview, ReviewOutcome } from "./slices/credit/entities/credi
 
 // ─── Credit services ───────────────────────────────────────────────────────
 export { placeCreditHold, releaseCreditHold, type CreditHoldInput, type CreditReleaseInput } from "./slices/credit/services/credit-hold-release.js";
+export { writeOffBadDebt, type BadDebtWriteOffInput, type BadDebtWriteOffResult } from "./slices/credit/services/bad-debt-write-off.js";
 
 // ─── Credit calculators ────────────────────────────────────────────────────
 export { checkCreditLimit as checkCmCreditLimit, type CreditCheckInput, type CreditCheckResult, type CreditDecision } from "./slices/credit/calculators/credit-check.js";
@@ -249,10 +256,12 @@ export type { ExpensePolicy } from "./slices/expense/entities/expense-policy.js"
 
 // ─── Expense services ─────────────────────────────────────────────────────
 export { submitExpenseClaim, type SubmitExpenseClaimInput } from "./slices/expense/services/submit-expense-claim.js";
+export { reimburseExpenseClaim, type ReimburseExpenseClaimInput, type ReimburseExpenseClaimResult } from "./slices/expense/services/reimburse-expense-claim.js";
 
 // ─── Expense calculators ──────────────────────────────────────────────────
 export { enforceExpensePolicy, type PolicyCheckLine, type PolicyViolation, type PolicyCheckResult } from "./slices/expense/calculators/policy-enforcement.js";
 export { computePerDiem, computeMileage, type PerDiemInput, type PerDiemResult, type MileageInput, type MileageResult } from "./slices/expense/calculators/per-diem-mileage.js";
+export { computeFxReimbursement, type FxReimbursementInput, type FxReimbursementResult } from "./slices/expense/calculators/fx-reimbursement.js";
 
 // ─── Expense route registrars ─────────────────────────────────────────────
 export { registerExpenseRoutes } from "./slices/expense/routes/expense-routes.js";
@@ -265,6 +274,10 @@ export type { Project, ProjectStatus, BillingType } from "./slices/project/entit
 export type { ProjectCostLine, CostCategory } from "./slices/project/entities/project-cost-line.js";
 export type { ProjectBilling, BillingStatus } from "./slices/project/entities/project-billing.js";
 
+// ─── Project services ────────────────────────────────────────────────────
+export { transferWipToRevenue, type TransferWipToRevenueInput, type TransferWipToRevenueResult } from "./slices/project/services/transfer-wip-to-revenue.js";
+export { billProject, type BillProjectInput } from "./slices/project/services/bill-project.js";
+
 // ─── Project calculators ──────────────────────────────────────────────────
 export { computeEarnedValue, type EarnedValueInput, type EarnedValueResult } from "./slices/project/calculators/earned-value.js";
 export { computePctCompletion, type PctCompletionInput, type PctCompletionResult } from "./slices/project/calculators/pct-completion.js";
@@ -272,6 +285,176 @@ export { computeProjectProfitability, type ProfitabilityInput, type Profitabilit
 
 // ─── Project route registrars ─────────────────────────────────────────────
 export { registerProjectRoutes } from "./slices/project/routes/project-routes.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 4: Lease Accounting (IFRS 16)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Lease entities ──────────────────────────────────────────────────────
+export type { LeaseContract, LeaseType, LeaseStatus } from "./slices/lease/entities/lease-contract.js";
+export type { LeaseSchedule } from "./slices/lease/entities/lease-schedule.js";
+export type { LeaseModification, ModificationType } from "./slices/lease/entities/lease-modification.js";
+
+// ─── Lease ports ─────────────────────────────────────────────────────────
+export type { ILeaseContractRepo, CreateLeaseContractInput } from "./slices/lease/ports/lease-contract-repo.js";
+export type { ILeaseScheduleRepo, CreateLeaseScheduleInput } from "./slices/lease/ports/lease-schedule-repo.js";
+export type { ILeaseModificationRepo, CreateLeaseModificationInput } from "./slices/lease/ports/lease-modification-repo.js";
+
+// ─── Lease calculators ───────────────────────────────────────────────────
+export { computeLeaseRecognition, type LeaseRecognitionInput, type LeaseRecognitionResult } from "./slices/lease/calculators/lease-recognition.js";
+export { computeAmortizationSchedule, type AmortizationScheduleInput, type AmortizationLine, type AmortizationScheduleResult } from "./slices/lease/calculators/amortization-schedule.js";
+export { computeLeaseModification, type LeaseModificationCalcInput, type LeaseModificationCalcResult } from "./slices/lease/calculators/lease-modification-calc.js";
+export { checkLeaseExemptions, type LeaseExemptionInput, type LeaseExemptionResult } from "./slices/lease/calculators/lease-exemptions.js";
+export { computeSaleLeaseback, type SaleLeasebackInput, type SaleLeasebackResult } from "./slices/lease/calculators/sale-leaseback.js";
+export { classifyLessorLease, type LessorClassificationInput, type LessorClassificationResult, type LessorLeaseType } from "./slices/lease/calculators/lessor-classification.js";
+
+// ─── Lease services ──────────────────────────────────────────────────────
+export { modifyLease, type ModifyLeaseInput } from "./slices/lease/services/modify-lease.js";
+
+// ─── Lease route registrars ──────────────────────────────────────────────
+export { registerLeaseRoutes } from "./slices/lease/routes/lease-routes.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 4: Provisions (IAS 37)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Provision entities ──────────────────────────────────────────────────
+export type { Provision, ProvisionType, ProvisionStatus } from "./slices/provision/entities/provision.js";
+export type { ProvisionMovement, ProvisionMovementType } from "./slices/provision/entities/provision-movement.js";
+
+// ─── Provision ports ─────────────────────────────────────────────────────
+export type { IProvisionRepo, CreateProvisionInput } from "./slices/provision/ports/provision-repo.js";
+export type { IProvisionMovementRepo, CreateProvisionMovementInput } from "./slices/provision/ports/provision-movement-repo.js";
+
+// ─── Provision calculators ───────────────────────────────────────────────
+export { checkRecognitionCriteria, type RecognitionCriteriaInput, type RecognitionCriteriaResult } from "./slices/provision/calculators/recognition-criteria.js";
+export { computeDiscountUnwind, type DiscountUnwindInput, type DiscountUnwindResult } from "./slices/provision/calculators/discount-unwind.js";
+export { computeOnerousContract, type OnerousContractInput, type OnerousContractResult } from "./slices/provision/calculators/onerous-contract.js";
+
+// ─── Provision services ──────────────────────────────────────────────────
+export { utiliseProvision, type UtiliseProvisionInput } from "./slices/provision/services/utilise-provision.js";
+
+// ─── Provision route registrars ──────────────────────────────────────────
+export { registerProvisionRoutes } from "./slices/provision/routes/provision-routes.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 4: Treasury & Cash Management
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Treasury entities ───────────────────────────────────────────────────
+export type { CashForecast, ForecastType } from "./slices/treasury/entities/cash-forecast.js";
+export type { Covenant, CovenantType, CovenantStatus } from "./slices/treasury/entities/covenant.js";
+export type { IcLoan, IcLoanStatus } from "./slices/treasury/entities/ic-loan.js";
+
+// ─── Treasury ports ──────────────────────────────────────────────────────
+export type { ICashForecastRepo, CreateCashForecastInput } from "./slices/treasury/ports/cash-forecast-repo.js";
+export type { ICovenantRepo, CreateCovenantInput } from "./slices/treasury/ports/covenant-repo.js";
+export type { IIcLoanRepo, CreateIcLoanInput } from "./slices/treasury/ports/ic-loan-repo.js";
+
+// ─── Treasury calculators ────────────────────────────────────────────────
+export { computeCashFlowForecast, type ForecastItem, type ForecastPeriod, type CashFlowForecastResult } from "./slices/treasury/calculators/cash-flow-forecast.js";
+export { computeCashPooling, type PoolAccount, type CashPoolingResult } from "./slices/treasury/calculators/cash-pooling.js";
+export { testCovenant, type CovenantTestInput, type CovenantTestResult, type CovenantComplianceStatus } from "./slices/treasury/calculators/covenant-monitor.js";
+export { computeFxExposure, type FxExposureItem, type CurrencyExposure, type FxExposureResult } from "./slices/treasury/calculators/fx-exposure.js";
+
+// ─── Treasury route registrars ───────────────────────────────────────────
+export { registerTreasuryRoutes } from "./slices/treasury/routes/treasury-routes.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 7: Financial Instruments (IFRS 9)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Fin-Instruments entities ────────────────────────────────────────────
+export type { FinancialInstrument, InstrumentClassification, InstrumentType, FairValueLevel } from "./slices/fin-instruments/entities/financial-instrument.js";
+
+// ─── Fin-Instruments ports ───────────────────────────────────────────────
+export type { IFinInstrumentRepo, CreateFinInstrumentInput } from "./slices/fin-instruments/ports/fin-instrument-repo.js";
+export type { IFairValueMeasurementRepo, FairValueMeasurement, CreateFairValueMeasurementInput } from "./slices/fin-instruments/ports/fair-value-measurement-repo.js";
+
+// ─── Fin-Instruments calculators ─────────────────────────────────────────
+export { classifyInstruments, type BusinessModel, type ClassificationInput, type ClassificationResult } from "./slices/fin-instruments/calculators/classification.js";
+export { evaluateDerecognition, type DerecognitionInput, type DerecognitionOutcome, type DerecognitionResult } from "./slices/fin-instruments/calculators/derecognition.js";
+export { computeEcl as computeFinEcl, type EclStage, type EclInput as FinEclInput, type EclResult as FinEclResult } from "./slices/fin-instruments/calculators/ecl.js";
+export { computeEir, type EirInput, type EirResult } from "./slices/fin-instruments/calculators/effective-interest-rate.js";
+export { computeFairValue, type FairValueInput, type FairValueResult } from "./slices/fin-instruments/calculators/fair-value.js";
+
+// ─── Fin-Instruments route registrars ────────────────────────────────────
+export { registerFinInstrumentRoutes } from "./slices/fin-instruments/routes/fin-instrument-routes.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 7: Hedge Accounting (IFRS 9)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Hedge entities ──────────────────────────────────────────────────────
+export type { HedgeRelationship, HedgeType, HedgeStatus } from "./slices/hedge/entities/hedge-relationship.js";
+
+// ─── Hedge ports ─────────────────────────────────────────────────────────
+export type { IHedgeRelationshipRepo, CreateHedgeRelationshipInput } from "./slices/hedge/ports/hedge-relationship-repo.js";
+export type { IHedgeEffectivenessTestRepo, HedgeEffectivenessTest, CreateHedgeEffectivenessTestInput, HedgeTestMethod, HedgeTestResult } from "./slices/hedge/ports/hedge-effectiveness-test-repo.js";
+
+// ─── Hedge calculators ───────────────────────────────────────────────────
+export { testEffectiveness, type EffectivenessMethod, type EffectivenessInput, type EffectivenessResult } from "./slices/hedge/calculators/effectiveness.js";
+export { computeOciReserve, type OciReserveInput, type OciReserveResult } from "./slices/hedge/calculators/oci-reserve.js";
+
+// ─── Hedge route registrars ─────────────────────────────────────────────
+export { registerHedgeRoutes } from "./slices/hedge/routes/hedge-routes.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 7: Intangible Assets (IAS 38)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Intangibles entities ────────────────────────────────────────────────
+export type { IntangibleAsset, IntangibleAssetStatus, AmortizationMethod, IntangibleCategory, UsefulLifeType } from "./slices/intangibles/entities/intangible-asset.js";
+
+// ─── Intangibles ports ──────────────────────────────────────────────────
+export type { IIntangibleAssetRepo, CreateIntangibleAssetInput } from "./slices/intangibles/ports/intangible-asset-repo.js";
+
+// ─── Intangibles calculators ────────────────────────────────────────────
+export { computeAmortization, type AmortizationInput, type AmortizationResult } from "./slices/intangibles/calculators/amortization.js";
+export { checkRecognition, type ExpenditurePhase, type RecognitionInput, type RecognitionResult } from "./slices/intangibles/calculators/recognition.js";
+export { classifySoftwareCosts, type SoftwarePhase, type SoftwareCostInput, type SoftwareCostResult } from "./slices/intangibles/calculators/software-capitalization.js";
+
+// ─── Intangibles route registrars ───────────────────────────────────────
+export { registerIntangibleRoutes } from "./slices/intangibles/routes/intangible-routes.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 7: Deferred Tax (IAS 12)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Deferred Tax entities ───────────────────────────────────────────────
+export type { DeferredTaxItem as DeferredTaxItemEntity } from "./slices/deferred-tax/entities/deferred-tax-item.js";
+
+// ─── Deferred Tax ports ─────────────────────────────────────────────────
+export type { IDeferredTaxItemRepo, CreateDeferredTaxItemInput } from "./slices/deferred-tax/ports/deferred-tax-item-repo.js";
+
+// ─── Deferred Tax calculators ───────────────────────────────────────────
+export { identifyTemporaryDifferences, type TempDiffType, type TempDiffOrigin, type TempDiffInput, type TempDiffResult } from "./slices/deferred-tax/calculators/temporary-differences.js";
+export { computeDtaDtl, type DtaInput, type DtaResult, type DtaSummary } from "./slices/deferred-tax/calculators/dta-dtl.js";
+export { computeRateChangeImpact, type RateChangeInput, type RateChangeResult, type RateChangeSummary } from "./slices/deferred-tax/calculators/rate-change-impact.js";
+export { computeMovementSchedule, type MovementType as DtMovementType, type MovementInput, type MovementRow, type MovementScheduleResult } from "./slices/deferred-tax/calculators/movement-schedule.js";
+
+// ─── Deferred Tax route registrars ──────────────────────────────────────
+export { registerDeferredTaxRoutes } from "./slices/deferred-tax/routes/deferred-tax-routes.js";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 7: Transfer Pricing
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Transfer Pricing entities ───────────────────────────────────────────
+export type { TpPolicy } from "./slices/transfer-pricing/entities/tp-policy.js";
+export type { TpBenchmark, TpBenchmarkMethod } from "./slices/transfer-pricing/entities/tp-benchmark.js";
+
+// ─── Transfer Pricing ports ─────────────────────────────────────────────
+export type { ITpPolicyRepo, CreateTpPolicyInput } from "./slices/transfer-pricing/ports/tp-policy-repo.js";
+export type { ITpBenchmarkRepo, CreateTpBenchmarkInput } from "./slices/transfer-pricing/ports/tp-benchmark-repo.js";
+
+// ─── Transfer Pricing calculators ───────────────────────────────────────
+export { validateTpMethod, type TpMethod, type TpMethodInput, type TpMethodResult } from "./slices/transfer-pricing/calculators/tp-methods.js";
+export { computeCbcr, type CbcrEntityInput, type CbcrJurisdictionRow, type CbcrResult } from "./slices/transfer-pricing/calculators/cbcr.js";
+export { testThinCapitalization, type ThinCapInput, type ThinCapResult } from "./slices/transfer-pricing/calculators/thin-capitalization.js";
+
+// ─── Transfer Pricing route registrars ──────────────────────────────────
+export { registerTransferPricingRoutes } from "./slices/transfer-pricing/routes/transfer-pricing-routes.js";
 
 // ─── Shared ─────────────────────────────────────────────────────────────────
 export { FinanceEventType } from "./shared/events.js";

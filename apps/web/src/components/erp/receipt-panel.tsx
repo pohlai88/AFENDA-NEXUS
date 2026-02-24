@@ -27,21 +27,21 @@ export function ReceiptPanel({
       role="status"
       aria-live="polite"
       className={cn(
-        "rounded-lg border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-800 dark:bg-emerald-950",
+        "rounded-lg border border-success/30 bg-success/10 p-6",
         className,
       )}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <CheckCircle className="h-5 w-5 text-emerald-600" aria-hidden="true" />
-          <h3 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+          <CheckCircle className="h-5 w-5 text-success" aria-hidden="true" />
+          <h3 className="text-sm font-semibold text-success-foreground">
             {title}
           </h3>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md p-1 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900"
+          className="rounded-md p-1 text-success hover:bg-success/20"
           aria-label="Dismiss receipt"
         >
           <X className="h-4 w-4" />
@@ -50,28 +50,28 @@ export function ReceiptPanel({
 
       <dl className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between">
-          <dt className="text-emerald-600 dark:text-emerald-400">Document</dt>
-          <dd className="font-mono text-emerald-800 dark:text-emerald-200">
+          <dt className="text-success">Document</dt>
+          <dd className="font-mono text-success-foreground">
             {receipt.resultRef}
           </dd>
         </div>
         <div className="flex justify-between">
-          <dt className="text-emerald-600 dark:text-emerald-400">Completed at</dt>
-          <dd className="text-emerald-800 dark:text-emerald-200">
+          <dt className="text-success">Completed at</dt>
+          <dd className="text-success-foreground">
             {formatDateTime(receipt.completedAt)}
           </dd>
         </div>
         {receipt.auditRef && (
           <div className="flex justify-between">
-            <dt className="text-emerald-600 dark:text-emerald-400">Audit ref</dt>
-            <dd className="font-mono text-emerald-800 dark:text-emerald-200">
+            <dt className="text-success">Audit ref</dt>
+            <dd className="font-mono text-success-foreground">
               {receipt.auditRef}
             </dd>
           </div>
         )}
         <div className="flex justify-between">
-          <dt className="text-emerald-600 dark:text-emerald-400">Idempotency key</dt>
-          <dd className="font-mono text-emerald-800 dark:text-emerald-200">
+          <dt className="text-success">Idempotency key</dt>
+          <dd className="font-mono text-success-foreground">
             {truncateId(receipt.idempotencyKey)}
           </dd>
         </div>
@@ -81,7 +81,7 @@ export function ReceiptPanel({
         {viewHref && (
           <a
             href={viewHref}
-            className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+            className="inline-flex items-center gap-1 rounded-md bg-success px-3 py-1.5 text-xs font-medium text-success-foreground hover:bg-success/90"
           >
             <ExternalLink className="h-3 w-3" />
             View Document
@@ -90,7 +90,7 @@ export function ReceiptPanel({
         {backHref && (
           <a
             href={backHref}
-            className="inline-flex items-center gap-1 rounded-md border border-emerald-300 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:text-emerald-300"
+            className="inline-flex items-center gap-1 rounded-md border border-success/30 px-3 py-1.5 text-xs font-medium text-success hover:bg-success/20"
           >
             <ArrowLeft className="h-3 w-3" />
             Back to List

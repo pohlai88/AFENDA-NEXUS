@@ -8,7 +8,7 @@
 import { money } from "@afenda/core";
 import type { ReportSection, ReportRow } from "../entities/financial-reports.js";
 import type { ComparativeReportSection, ComparativeReportRow } from "../entities/financial-reports.js";
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export interface ComparativeSectionInput {
   readonly current: ReportSection;

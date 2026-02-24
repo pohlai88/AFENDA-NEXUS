@@ -91,10 +91,11 @@ export class DrizzleApPaymentRunRepo implements IApPaymentRunRepo {
     const limit = params?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.apPaymentRuns.findMany({ limit, offset }),
       this.tx.select({ total: count() }).from(apPaymentRuns),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     const data = await Promise.all(rows.map(async (r) => {
       const items = await this.tx.query.apPaymentRunItems.findMany({ where: eq(apPaymentRunItems.paymentRunId, r.id) });

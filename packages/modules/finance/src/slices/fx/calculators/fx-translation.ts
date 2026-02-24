@@ -10,8 +10,8 @@
  *   - Revenue/Expenses → average rate
  *   - Equity → historical rate
  */
-import type { AccountType } from "../../gl/entities/account.js";
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { AccountType } from "../../../shared/types.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 const PRECISION_SCALE = 10_000_000_000n;
 

@@ -23,7 +23,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       all: true,
-      include: ["src/domain/**", "src/app/**", "src/infra/**"],
+      include: ["src/slices/**", "src/shared/**", "src/app/**"],
       exclude: ["src/**/*.test.ts", "src/__tests__/**"],
       thresholds: {
         lines: 80,

@@ -11,7 +11,7 @@ import {
   mockOutboxWriter,
 } from "./helpers.js";
 import { ok, money, companyId, ledgerId, dateRange } from "@afenda/core";
-import type { TrialBalance, TrialBalanceRow } from "../domain/index.js";
+import type { TrialBalance, TrialBalanceRow } from "../slices/gl/entities/gl-balance.js";
 import type { IGlBalanceRepo } from "../app/ports/gl-balance-repo.js";
 import type { Result } from "@afenda/core";
 

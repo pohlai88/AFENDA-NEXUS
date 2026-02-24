@@ -4,8 +4,8 @@ import type { ComparativeIncomeStatement } from "../entities/financial-reports.j
 import { classifyIncomeStatement } from "../calculators/report-classifier.js";
 import { buildComparativeSection } from "../../reporting/calculators/comparative-report.js";
 import type { ClassifiableRow } from "../../reporting/calculators/report-classifier.js";
-import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
-import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";
+import type { IGlBalanceRepo } from "../../../shared/ports/gl-read-ports.js";
+import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
 
 export interface GetComparativeIncomeStatementInput {

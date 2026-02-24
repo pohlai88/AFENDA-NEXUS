@@ -53,6 +53,36 @@ import {
   billingTypeEnum,
   costCategoryEnum,
   billingStatusEnum,
+  leaseTypeEnum,
+  leaseStatusEnum,
+  lesseeOrLessorEnum,
+  leaseModificationTypeEnum,
+  provisionTypeEnum,
+  provisionStatusEnum,
+  provisionMovementTypeEnum,
+  forecastTypeEnum,
+  covenantTypeEnum,
+  covenantStatusEnum,
+  icLoanStatusEnum,
+  costCenterStatusEnum,
+  driverTypeEnum,
+  allocationMethodEnum,
+  allocationRunStatusEnum,
+  groupEntityTypeEnum,
+  goodwillStatusEnum,
+  intangibleAssetStatusEnum,
+  intangibleCategoryEnum,
+  usefulLifeTypeEnum,
+  instrumentClassificationEnum,
+  instrumentTypeEnum,
+  fairValueLevelEnum,
+  hedgeTypeEnum,
+  hedgeStatusEnum,
+  accountingEventStatusEnum,
+  mappingRuleStatusEnum,
+  hedgeTestMethodEnum,
+  hedgeTestResultEnum,
+  tpMethodEnum,
 } from "./_enums";
 import { moneyBigint, pkId, tenantCol, timestamps } from "./_common";
 
@@ -1270,5 +1300,780 @@ export const projectBillings = erpSchema.table(
   },
   (t) => [
     index("idx_project_billing_project_tenant").on(t.tenantId, t.projectId),
+  ],
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 4: Lease Accounting (IFRS 16)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── erp.lease_contract ───────────────────────────────────────────────────
+
+export const leaseContracts = erpSchema.table(
+  "lease_contract",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    leaseNumber: varchar("lease_number", { length: 50 }).notNull(),
+    description: text("description").notNull(),
+    lesseeOrLessor: lesseeOrLessorEnum("lessee_or_lessor").notNull().default("LESSEE"),
+    leaseType: leaseTypeEnum("lease_type").notNull().default("OPERATING"),
+    status: leaseStatusEnum("status").notNull().default("DRAFT"),
+    counterpartyId: uuid("counterparty_id").notNull(),
+    counterpartyName: varchar("counterparty_name", { length: 200 }).notNull(),
+    assetDescription: text("asset_description").notNull(),
+    commencementDate: timestamp("commencement_date", { withTimezone: true }).notNull(),
+    endDate: timestamp("end_date", { withTimezone: true }).notNull(),
+    leaseTermMonths: integer("lease_term_months").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    monthlyPayment: moneyBigint("monthly_payment").notNull(),
+    annualEscalationBps: integer("annual_escalation_bps").notNull().default(0),
+    discountRateBps: integer("discount_rate_bps").notNull(),
+    rouAssetAmount: moneyBigint("rou_asset_amount").notNull().default(0n),
+    leaseLiabilityAmount: moneyBigint("lease_liability_amount").notNull().default(0n),
+    isShortTerm: boolean("is_short_term").notNull().default(false),
+    isLowValue: boolean("is_low_value").notNull().default(false),
+    createdBy: uuid("created_by").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_lease_contract_number_tenant").on(t.tenantId, t.leaseNumber),
+    index("idx_lease_contract_company_tenant").on(t.tenantId, t.companyId),
+    index("idx_lease_contract_status").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.lease_schedule ───────────────────────────────────────────────────
+
+export const leaseSchedules = erpSchema.table(
+  "lease_schedule",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    leaseContractId: uuid("lease_contract_id").notNull(),
+    periodNumber: integer("period_number").notNull(),
+    paymentDate: timestamp("payment_date", { withTimezone: true }).notNull(),
+    paymentAmount: moneyBigint("payment_amount").notNull(),
+    principalPortion: moneyBigint("principal_portion").notNull(),
+    interestPortion: moneyBigint("interest_portion").notNull(),
+    openingLiability: moneyBigint("opening_liability").notNull(),
+    closingLiability: moneyBigint("closing_liability").notNull(),
+    rouDepreciation: moneyBigint("rou_depreciation").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_lease_schedule_contract_tenant").on(t.tenantId, t.leaseContractId),
+  ],
+);
+
+// ─── erp.lease_modification ───────────────────────────────────────────────
+
+export const leaseModifications = erpSchema.table(
+  "lease_modification",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    leaseContractId: uuid("lease_contract_id").notNull(),
+    modificationDate: timestamp("modification_date", { withTimezone: true }).notNull(),
+    modificationType: leaseModificationTypeEnum("modification_type").notNull(),
+    description: text("description").notNull(),
+    previousLeaseTermMonths: integer("previous_lease_term_months").notNull(),
+    newLeaseTermMonths: integer("new_lease_term_months").notNull(),
+    previousMonthlyPayment: moneyBigint("previous_monthly_payment").notNull(),
+    newMonthlyPayment: moneyBigint("new_monthly_payment").notNull(),
+    previousDiscountRateBps: integer("previous_discount_rate_bps").notNull(),
+    newDiscountRateBps: integer("new_discount_rate_bps").notNull(),
+    liabilityAdjustment: moneyBigint("liability_adjustment").notNull(),
+    rouAssetAdjustment: moneyBigint("rou_asset_adjustment").notNull(),
+    gainLossOnModification: moneyBigint("gain_loss_on_modification").notNull().default(0n),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    modifiedBy: uuid("modified_by").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_lease_modification_contract_tenant").on(t.tenantId, t.leaseContractId),
+  ],
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 4: Provisions (IAS 37)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── erp.provision ────────────────────────────────────────────────────────
+
+export const provisions = erpSchema.table(
+  "provision",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    provisionNumber: varchar("provision_number", { length: 50 }).notNull(),
+    description: text("description").notNull(),
+    provisionType: provisionTypeEnum("provision_type").notNull(),
+    status: provisionStatusEnum("status").notNull().default("ACTIVE"),
+    recognitionDate: timestamp("recognition_date", { withTimezone: true }).notNull(),
+    expectedSettlementDate: timestamp("expected_settlement_date", { withTimezone: true }),
+    initialAmount: moneyBigint("initial_amount").notNull(),
+    currentAmount: moneyBigint("current_amount").notNull(),
+    discountRateBps: integer("discount_rate_bps").notNull().default(0),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    glAccountId: uuid("gl_account_id"),
+    isContingentLiability: boolean("is_contingent_liability").notNull().default(false),
+    contingentLiabilityNote: text("contingent_liability_note"),
+    createdBy: uuid("created_by").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_provision_number_tenant").on(t.tenantId, t.provisionNumber),
+    index("idx_provision_company_tenant").on(t.tenantId, t.companyId),
+    index("idx_provision_type_status").on(t.tenantId, t.provisionType, t.status),
+  ],
+);
+
+// ─── erp.provision_movement ───────────────────────────────────────────────
+
+export const provisionMovements = erpSchema.table(
+  "provision_movement",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    provisionId: uuid("provision_id").notNull(),
+    movementDate: timestamp("movement_date", { withTimezone: true }).notNull(),
+    movementType: provisionMovementTypeEnum("movement_type").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    balanceAfter: moneyBigint("balance_after").notNull(),
+    description: text("description").notNull(),
+    journalId: uuid("journal_id"),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    createdBy: uuid("created_by").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_provision_movement_provision_tenant").on(t.tenantId, t.provisionId),
+  ],
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Phase 4: Treasury & Cash Management
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── erp.cash_forecast ────────────────────────────────────────────────────
+
+export const cashForecasts = erpSchema.table(
+  "cash_forecast",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    forecastDate: timestamp("forecast_date", { withTimezone: true }).notNull(),
+    forecastType: forecastTypeEnum("forecast_type").notNull(),
+    description: text("description").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    probability: integer("probability").notNull().default(100),
+    sourceDocumentId: uuid("source_document_id"),
+    sourceDocumentType: varchar("source_document_type", { length: 50 }),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_cash_forecast_company_date").on(t.tenantId, t.companyId, t.forecastDate),
+    index("idx_cash_forecast_type").on(t.tenantId, t.forecastType),
+  ],
+);
+
+// ─── erp.covenant ─────────────────────────────────────────────────────────
+
+export const covenants = erpSchema.table(
+  "covenant",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    lenderId: uuid("lender_id").notNull(),
+    lenderName: varchar("lender_name", { length: 200 }).notNull(),
+    covenantType: covenantTypeEnum("covenant_type").notNull(),
+    description: text("description").notNull(),
+    thresholdValue: integer("threshold_value").notNull(),
+    currentValue: integer("current_value"),
+    status: covenantStatusEnum("status").notNull().default("COMPLIANT"),
+    testFrequency: varchar("test_frequency", { length: 20 }).notNull().default("QUARTERLY"),
+    lastTestDate: timestamp("last_test_date", { withTimezone: true }),
+    nextTestDate: timestamp("next_test_date", { withTimezone: true }),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_covenant_company_tenant").on(t.tenantId, t.companyId),
+    index("idx_covenant_status").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.ic_loan ──────────────────────────────────────────────────────────
+
+export const icLoans = erpSchema.table(
+  "ic_loan",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    lenderCompanyId: uuid("lender_company_id").notNull(),
+    borrowerCompanyId: uuid("borrower_company_id").notNull(),
+    loanNumber: varchar("loan_number", { length: 50 }).notNull(),
+    description: text("description").notNull(),
+    principalAmount: moneyBigint("principal_amount").notNull(),
+    outstandingBalance: moneyBigint("outstanding_balance").notNull(),
+    interestRateBps: integer("interest_rate_bps").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+    maturityDate: timestamp("maturity_date", { withTimezone: true }).notNull(),
+    status: icLoanStatusEnum("status").notNull().default("ACTIVE"),
+    icAgreementId: uuid("ic_agreement_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_ic_loan_number_tenant").on(t.tenantId, t.loanNumber),
+    index("idx_ic_loan_lender_tenant").on(t.tenantId, t.lenderCompanyId),
+    index("idx_ic_loan_borrower_tenant").on(t.tenantId, t.borrowerCompanyId),
+  ],
+);
+
+// ─── Phase 5: Cost Accounting ─────────────────────────────────────────────
+
+// ─── erp.cost_center ──────────────────────────────────────────────────────
+
+export const costCenters = erpSchema.table(
+  "cost_center",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    code: varchar("code", { length: 30 }).notNull(),
+    name: varchar("name", { length: 200 }).notNull(),
+    parentId: uuid("parent_id"),
+    level: smallint("level").notNull().default(0),
+    status: costCenterStatusEnum("status").notNull().default("ACTIVE"),
+    managerId: uuid("manager_id"),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    effectiveFrom: timestamp("effective_from", { withTimezone: true }).notNull(),
+    effectiveTo: timestamp("effective_to", { withTimezone: true }),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_cost_center_code_tenant").on(t.tenantId, t.companyId, t.code),
+    index("idx_cost_center_parent").on(t.tenantId, t.parentId),
+    index("idx_cost_center_company").on(t.tenantId, t.companyId),
+  ],
+);
+
+// ─── erp.cost_driver ──────────────────────────────────────────────────────
+
+export const costDrivers = erpSchema.table(
+  "cost_driver",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    code: varchar("code", { length: 30 }).notNull(),
+    name: varchar("name", { length: 200 }).notNull(),
+    driverType: driverTypeEnum("driver_type").notNull(),
+    unitOfMeasure: varchar("unit_of_measure", { length: 30 }).notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_cost_driver_code_tenant").on(t.tenantId, t.companyId, t.code),
+    index("idx_cost_driver_company").on(t.tenantId, t.companyId),
+  ],
+);
+
+// ─── erp.cost_driver_value ────────────────────────────────────────────────
+
+export const costDriverValues = erpSchema.table(
+  "cost_driver_value",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    driverId: uuid("driver_id").notNull(),
+    costCenterId: uuid("cost_center_id").notNull(),
+    periodId: uuid("period_id").notNull(),
+    quantity: moneyBigint("quantity").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_cost_driver_value_unique").on(t.tenantId, t.driverId, t.costCenterId, t.periodId),
+    index("idx_cost_driver_value_period").on(t.tenantId, t.periodId),
+  ],
+);
+
+// ─── erp.cost_allocation_run ──────────────────────────────────────────────
+
+export const costAllocationRuns = erpSchema.table(
+  "cost_allocation_run",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    periodId: uuid("period_id").notNull(),
+    method: allocationMethodEnum("method").notNull(),
+    status: allocationRunStatusEnum("status").notNull().default("DRAFT"),
+    totalAllocated: moneyBigint("total_allocated").notNull().default(0n),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    lineCount: integer("line_count").notNull().default(0),
+    executedBy: uuid("executed_by").notNull(),
+    executedAt: timestamp("executed_at", { withTimezone: true }),
+    reversedAt: timestamp("reversed_at", { withTimezone: true }),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_cost_alloc_run_period").on(t.tenantId, t.companyId, t.periodId),
+    index("idx_cost_alloc_run_status").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.cost_allocation_line ─────────────────────────────────────────────
+
+export const costAllocationLines = erpSchema.table(
+  "cost_allocation_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    runId: uuid("run_id").notNull(),
+    fromCostCenterId: uuid("from_cost_center_id").notNull(),
+    toCostCenterId: uuid("to_cost_center_id").notNull(),
+    driverId: uuid("driver_id").notNull(),
+    amount: moneyBigint("amount").notNull(),
+    driverQuantity: moneyBigint("driver_quantity").notNull(),
+    allocationRate: moneyBigint("allocation_rate").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_cost_alloc_line_run").on(t.tenantId, t.runId),
+    index("idx_cost_alloc_line_from").on(t.tenantId, t.fromCostCenterId),
+    index("idx_cost_alloc_line_to").on(t.tenantId, t.toCostCenterId),
+  ],
+);
+
+// ─── Phase 6: Consolidation ──────────────────────────────────────────────
+
+// ─── erp.group_entity ────────────────────────────────────────────────────
+
+export const groupEntities = erpSchema.table(
+  "group_entity",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    name: varchar("name", { length: 200 }).notNull(),
+    entityType: groupEntityTypeEnum("entity_type").notNull(),
+    parentEntityId: uuid("parent_entity_id"),
+    baseCurrency: varchar("base_currency", { length: 3 }).notNull(),
+    countryCode: varchar("country_code", { length: 3 }).notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_group_entity_company_tenant").on(t.tenantId, t.companyId),
+    index("idx_group_entity_parent").on(t.tenantId, t.parentEntityId),
+  ],
+);
+
+// ─── erp.ownership_record ────────────────────────────────────────────────
+
+export const ownershipRecords = erpSchema.table(
+  "ownership_record",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    parentEntityId: uuid("parent_entity_id").notNull(),
+    childEntityId: uuid("child_entity_id").notNull(),
+    ownershipPctBps: integer("ownership_pct_bps").notNull(),
+    votingPctBps: integer("voting_pct_bps").notNull(),
+    effectiveFrom: timestamp("effective_from", { withTimezone: true }).notNull(),
+    effectiveTo: timestamp("effective_to", { withTimezone: true }),
+    acquisitionDate: timestamp("acquisition_date", { withTimezone: true }).notNull(),
+    acquisitionCost: moneyBigint("acquisition_cost").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_ownership_parent_tenant").on(t.tenantId, t.parentEntityId),
+    index("idx_ownership_child_tenant").on(t.tenantId, t.childEntityId),
+    index("idx_ownership_effective").on(t.tenantId, t.effectiveFrom, t.effectiveTo),
+  ],
+);
+
+// ─── erp.goodwill ────────────────────────────────────────────────────────
+
+export const goodwills = erpSchema.table(
+  "goodwill",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    ownershipRecordId: uuid("ownership_record_id").notNull(),
+    childEntityId: uuid("child_entity_id").notNull(),
+    acquisitionDate: timestamp("acquisition_date", { withTimezone: true }).notNull(),
+    considerationPaid: moneyBigint("consideration_paid").notNull(),
+    fairValueNetAssets: moneyBigint("fair_value_net_assets").notNull(),
+    nciAtAcquisition: moneyBigint("nci_at_acquisition").notNull(),
+    goodwillAmount: moneyBigint("goodwill_amount").notNull(),
+    accumulatedImpairment: moneyBigint("accumulated_impairment").notNull().default(0n),
+    carryingAmount: moneyBigint("carrying_amount").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
+    status: goodwillStatusEnum("status").notNull().default("ACTIVE"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_goodwill_child_tenant").on(t.tenantId, t.childEntityId),
+    index("idx_goodwill_ownership").on(t.tenantId, t.ownershipRecordId),
+  ],
+);
+
+// ─── Phase 7: IFRS Specialist Modules ─────────────────────────────────────
+
+// ─── erp.intangible_asset ─────────────────────────────────────────────────
+
+export const intangibleAssets = erpSchema.table(
+  "intangible_asset",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    assetNumber: varchar("asset_number", { length: 30 }).notNull(),
+    name: varchar("name", { length: 200 }).notNull(),
+    description: text("description"),
+    category: intangibleCategoryEnum("category").notNull(),
+    usefulLifeType: usefulLifeTypeEnum("useful_life_type").notNull(),
+    acquisitionDate: timestamp("acquisition_date", { withTimezone: true }).notNull(),
+    acquisitionCost: moneyBigint("acquisition_cost").notNull(),
+    residualValue: moneyBigint("residual_value").notNull().default(0n),
+    usefulLifeMonths: integer("useful_life_months"),
+    accumulatedAmortization: moneyBigint("accumulated_amortization").notNull().default(0n),
+    netBookValue: moneyBigint("net_book_value").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
+    glAccountId: uuid("gl_account_id").notNull(),
+    amortizationAccountId: uuid("amortization_account_id").notNull(),
+    accumulatedAmortizationAccountId: uuid("accumulated_amortization_account_id").notNull(),
+    status: intangibleAssetStatusEnum("status").notNull().default("ACTIVE"),
+    isInternallyGenerated: boolean("is_internally_generated").notNull().default(false),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex("idx_intangible_asset_number").on(t.tenantId, t.companyId, t.assetNumber),
+    index("idx_intangible_company").on(t.tenantId, t.companyId),
+    index("idx_intangible_category").on(t.tenantId, t.category),
+  ],
+);
+
+// ─── erp.financial_instrument ─────────────────────────────────────────────
+
+export const financialInstruments = erpSchema.table(
+  "financial_instrument",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    instrumentType: instrumentTypeEnum("instrument_type").notNull(),
+    classification: instrumentClassificationEnum("classification").notNull(),
+    fairValueLevel: fairValueLevelEnum("fair_value_level"),
+    nominalAmount: moneyBigint("nominal_amount").notNull(),
+    carryingAmount: moneyBigint("carrying_amount").notNull(),
+    fairValue: moneyBigint("fair_value"),
+    effectiveInterestRateBps: integer("effective_interest_rate_bps").notNull(),
+    contractualRateBps: integer("contractual_rate_bps").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
+    maturityDate: timestamp("maturity_date", { withTimezone: true }),
+    counterpartyId: uuid("counterparty_id").notNull(),
+    glAccountId: uuid("gl_account_id").notNull(),
+    isDerecognized: boolean("is_derecognized").notNull().default(false),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_fin_instrument_company").on(t.tenantId, t.companyId),
+    index("idx_fin_instrument_type").on(t.tenantId, t.instrumentType),
+    index("idx_fin_instrument_classification").on(t.tenantId, t.classification),
+  ],
+);
+
+// ─── erp.hedge_relationship ───────────────────────────────────────────────
+
+export const hedgeRelationships = erpSchema.table(
+  "hedge_relationship",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    hedgeType: hedgeTypeEnum("hedge_type").notNull(),
+    hedgingInstrumentId: uuid("hedging_instrument_id").notNull(),
+    hedgedItemId: uuid("hedged_item_id").notNull(),
+    hedgedRisk: varchar("hedged_risk", { length: 100 }).notNull(),
+    hedgeRatio: integer("hedge_ratio").notNull().default(10000),
+    designationDate: timestamp("designation_date", { withTimezone: true }).notNull(),
+    status: hedgeStatusEnum("status").notNull().default("DESIGNATED"),
+    discontinuationDate: timestamp("discontinuation_date", { withTimezone: true }),
+    discontinuationReason: text("discontinuation_reason"),
+    ociReserveBalance: moneyBigint("oci_reserve_balance").notNull().default(0n),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_hedge_company").on(t.tenantId, t.companyId),
+    index("idx_hedge_instrument").on(t.tenantId, t.hedgingInstrumentId),
+    index("idx_hedge_status").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.deferred_tax_item ────────────────────────────────────────────────
+
+export const deferredTaxItems = erpSchema.table(
+  "deferred_tax_item",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    itemName: varchar("item_name", { length: 200 }).notNull(),
+    origin: varchar("origin", { length: 50 }).notNull(),
+    carryingAmount: moneyBigint("carrying_amount").notNull(),
+    taxBase: moneyBigint("tax_base").notNull(),
+    temporaryDifference: moneyBigint("temporary_difference").notNull(),
+    taxRateBps: integer("tax_rate_bps").notNull(),
+    deferredTaxAsset: moneyBigint("deferred_tax_asset").notNull().default(0n),
+    deferredTaxLiability: moneyBigint("deferred_tax_liability").notNull().default(0n),
+    isRecognized: boolean("is_recognized").notNull().default(true),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
+    periodId: uuid("period_id").notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_deferred_tax_company").on(t.tenantId, t.companyId),
+    index("idx_deferred_tax_period").on(t.tenantId, t.periodId),
+  ],
+);
+
+// ─── erp.tp_policy ────────────────────────────────────────────────────────
+
+export const tpPolicies = erpSchema.table(
+  "tp_policy",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    policyName: varchar("policy_name", { length: 200 }).notNull(),
+    method: varchar("method", { length: 30 }).notNull(),
+    benchmarkLowBps: integer("benchmark_low_bps").notNull(),
+    benchmarkMedianBps: integer("benchmark_median_bps").notNull(),
+    benchmarkHighBps: integer("benchmark_high_bps").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_tp_policy_company").on(t.tenantId, t.companyId),
+  ],
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Gap remediation tables — 0006
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── erp.payment_terms_line ───────────────────────────────────────────────
+// Multi-installment payment schedule lines (AP-05)
+
+export const paymentTermsLines = erpSchema.table(
+  "payment_terms_line",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    templateId: uuid("template_id").notNull(),
+    lineNumber: smallint("line_number").notNull(),
+    dueDays: smallint("due_days").notNull(),
+    percentageOfTotal: smallint("percentage_of_total").notNull(),
+    discountPercentBps: integer("discount_percent_bps").notNull().default(0),
+    discountDays: smallint("discount_days").notNull().default(0),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_payment_terms_line_template").on(t.tenantId, t.templateId),
+    uniqueIndex("uq_payment_terms_line_order").on(t.tenantId, t.templateId, t.lineNumber),
+  ],
+);
+
+// ─── erp.asset_component ─────────────────────────────────────────────────
+// Component accounting for fixed assets (FA-04)
+
+export const assetComponents = erpSchema.table(
+  "asset_component",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    assetId: uuid("asset_id").notNull(),
+    componentName: varchar("component_name", { length: 200 }).notNull(),
+    acquisitionCost: moneyBigint("acquisition_cost").notNull(),
+    residualValue: moneyBigint("residual_value").notNull().default(0n),
+    usefulLifeMonths: smallint("useful_life_months").notNull(),
+    depreciationMethod: depreciationMethodEnum("depreciation_method").notNull(),
+    accumulatedDepreciation: moneyBigint("accumulated_depreciation").notNull().default(0n),
+    netBookValue: moneyBigint("net_book_value").notNull(),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull().default("USD"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_asset_component_asset").on(t.tenantId, t.assetId),
+  ],
+);
+
+// ─── erp.accounting_event ────────────────────────────────────────────────
+// SLA event store (SLA-01)
+
+export const accountingEvents = erpSchema.table(
+  "accounting_event",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    eventType: varchar("event_type", { length: 100 }).notNull(),
+    sourceDocumentType: varchar("source_document_type", { length: 50 }).notNull(),
+    sourceDocumentId: uuid("source_document_id").notNull(),
+    eventDate: timestamp("event_date", { withTimezone: true }).notNull(),
+    payload: jsonb("payload").notNull(),
+    status: accountingEventStatusEnum("status").notNull().default("PENDING"),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+    errorMessage: text("error_message"),
+    journalId: uuid("journal_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_accounting_event_company").on(t.tenantId, t.companyId),
+    index("idx_accounting_event_type").on(t.tenantId, t.eventType),
+    index("idx_accounting_event_status").on(t.tenantId, t.status),
+    index("idx_accounting_event_source").on(t.tenantId, t.sourceDocumentType, t.sourceDocumentId),
+  ],
+);
+
+// ─── erp.mapping_rule ────────────────────────────────────────────────────
+// SLA mapping rules: event → journal template (SLA-02)
+
+export const mappingRules = erpSchema.table(
+  "mapping_rule",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid("company_id").notNull(),
+    ruleName: varchar("rule_name", { length: 200 }).notNull(),
+    eventType: varchar("event_type", { length: 100 }).notNull(),
+    priority: smallint("priority").notNull().default(0),
+    conditionExpression: text("condition_expression"),
+    journalTemplate: jsonb("journal_template").notNull(),
+    targetLedgerId: uuid("target_ledger_id"),
+    status: mappingRuleStatusEnum("status").notNull().default("DRAFT"),
+    versionId: uuid("version_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_mapping_rule_company").on(t.tenantId, t.companyId),
+    index("idx_mapping_rule_event").on(t.tenantId, t.eventType),
+    index("idx_mapping_rule_status").on(t.tenantId, t.status),
+  ],
+);
+
+// ─── erp.mapping_rule_version ────────────────────────────────────────────
+// Mapping version lifecycle: draft → published → deprecated (SLA-05)
+
+export const mappingRuleVersions = erpSchema.table(
+  "mapping_rule_version",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    ruleId: uuid("rule_id").notNull(),
+    versionNumber: smallint("version_number").notNull(),
+    status: mappingRuleStatusEnum("status").notNull().default("DRAFT"),
+    journalTemplate: jsonb("journal_template").notNull(),
+    conditionExpression: text("condition_expression"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    publishedBy: uuid("published_by"),
+    deprecatedAt: timestamp("deprecated_at", { withTimezone: true }),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_mapping_rule_version_rule").on(t.tenantId, t.ruleId),
+    uniqueIndex("uq_mapping_rule_version").on(t.tenantId, t.ruleId, t.versionNumber),
+  ],
+);
+
+// ─── erp.fair_value_measurement ──────────────────────────────────────────
+// Fair value hierarchy records (FI-03)
+
+export const fairValueMeasurements = erpSchema.table(
+  "fair_value_measurement",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    instrumentId: uuid("instrument_id").notNull(),
+    measurementDate: timestamp("measurement_date", { withTimezone: true }).notNull(),
+    fairValueLevel: fairValueLevelEnum("fair_value_level").notNull(),
+    fairValue: moneyBigint("fair_value").notNull(),
+    previousFairValue: moneyBigint("previous_fair_value"),
+    valuationMethod: varchar("valuation_method", { length: 100 }),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
+    gainOrLoss: moneyBigint("gain_or_loss"),
+    isRecognizedInPL: boolean("is_recognized_in_pl").notNull().default(true),
+    journalId: uuid("journal_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_fvm_instrument").on(t.tenantId, t.instrumentId),
+    index("idx_fvm_date").on(t.tenantId, t.measurementDate),
+    index("idx_fvm_level").on(t.tenantId, t.fairValueLevel),
+  ],
+);
+
+// ─── erp.hedge_effectiveness_test ────────────────────────────────────────
+// Hedge effectiveness testing records (HA-02)
+
+export const hedgeEffectivenessTests = erpSchema.table(
+  "hedge_effectiveness_test",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    hedgeRelationshipId: uuid("hedge_relationship_id").notNull(),
+    testDate: timestamp("test_date", { withTimezone: true }).notNull(),
+    testMethod: hedgeTestMethodEnum("test_method").notNull(),
+    result: hedgeTestResultEnum("result").notNull(),
+    effectivenessRatioBps: integer("effectiveness_ratio_bps").notNull(),
+    hedgedItemFairValueChange: moneyBigint("hedged_item_fv_change").notNull(),
+    hedgingInstrumentFairValueChange: moneyBigint("hedging_instrument_fv_change").notNull(),
+    ineffectivePortionAmount: moneyBigint("ineffective_portion_amount").notNull().default(0n),
+    currencyCode: varchar("currency_code", { length: 3 }).notNull(),
+    notes: text("notes"),
+    journalId: uuid("journal_id"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_hedge_test_relationship").on(t.tenantId, t.hedgeRelationshipId),
+    index("idx_hedge_test_date").on(t.tenantId, t.testDate),
+    index("idx_hedge_test_result").on(t.tenantId, t.result),
+  ],
+);
+
+// ─── erp.tp_benchmark ────────────────────────────────────────────────────
+// Transfer pricing benchmarks (TP-02)
+
+export const tpBenchmarks = erpSchema.table(
+  "tp_benchmark",
+  {
+    ...pkId(),
+    ...tenantCol(),
+    policyId: uuid("policy_id").notNull(),
+    benchmarkYear: smallint("benchmark_year").notNull(),
+    method: tpMethodEnum("method").notNull(),
+    comparableCount: smallint("comparable_count").notNull(),
+    interquartileRangeLowBps: integer("interquartile_range_low_bps").notNull(),
+    interquartileRangeMedianBps: integer("interquartile_range_median_bps").notNull(),
+    interquartileRangeHighBps: integer("interquartile_range_high_bps").notNull(),
+    dataSource: varchar("data_source", { length: 200 }),
+    notes: text("notes"),
+    ...timestamps(),
+  },
+  (t) => [
+    index("idx_tp_benchmark_policy").on(t.tenantId, t.policyId),
+    uniqueIndex("uq_tp_benchmark_year").on(t.tenantId, t.policyId, t.benchmarkYear),
   ],
 );

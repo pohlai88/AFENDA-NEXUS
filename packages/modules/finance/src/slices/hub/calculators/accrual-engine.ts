@@ -10,7 +10,7 @@
  * - Accrued expenses (recognize incurred but unpaid)
  * - Deferred revenue (release over delivery period)
  */
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export type AccrualType =
   | "prepaid_expense"

@@ -38,7 +38,7 @@ export class DrizzleRecurringTemplateRepo implements IRecurringTemplateRepo {
     const page = params.page;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx
         .select()
         .from(recurringTemplates)
@@ -47,6 +47,7 @@ export class DrizzleRecurringTemplateRepo implements IRecurringTemplateRepo {
         .offset(offset),
       this.tx.select({ total: count() }).from(recurringTemplates),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     return {
       data: rows.map(mapRow),

@@ -278,3 +278,230 @@ export const billingStatusEnum = pgEnum("billing_status", [
   "INVOICED",
   "PAID",
 ]);
+
+// ─── Phase 4: Lease enums ─────────────────────────────────────────────────
+
+export const leaseTypeEnum = pgEnum("lease_type", [
+  "FINANCE",
+  "OPERATING",
+]);
+
+export const leaseStatusEnum = pgEnum("lease_status", [
+  "DRAFT",
+  "ACTIVE",
+  "MODIFIED",
+  "TERMINATED",
+  "EXPIRED",
+]);
+
+export const lesseeOrLessorEnum = pgEnum("lessee_or_lessor", [
+  "LESSEE",
+  "LESSOR",
+]);
+
+export const leaseModificationTypeEnum = pgEnum("lease_modification_type", [
+  "TERM_EXTENSION",
+  "TERM_REDUCTION",
+  "PAYMENT_CHANGE",
+  "SCOPE_CHANGE",
+  "RATE_CHANGE",
+]);
+
+// ─── Phase 4: Provision enums ─────────────────────────────────────────────
+
+export const provisionTypeEnum = pgEnum("provision_type", [
+  "WARRANTY",
+  "RESTRUCTURING",
+  "ONEROUS_CONTRACT",
+  "DECOMMISSIONING",
+  "LEGAL",
+  "OTHER",
+]);
+
+export const provisionStatusEnum = pgEnum("provision_status", [
+  "ACTIVE",
+  "PARTIALLY_UTILISED",
+  "FULLY_UTILISED",
+  "REVERSED",
+]);
+
+export const provisionMovementTypeEnum = pgEnum("provision_movement_type", [
+  "INITIAL_RECOGNITION",
+  "UNWINDING_DISCOUNT",
+  "UTILISATION",
+  "REVERSAL",
+  "REMEASUREMENT",
+]);
+
+// ─── Phase 4: Treasury enums ──────────────────────────────────────────────
+
+export const forecastTypeEnum = pgEnum("forecast_type", [
+  "RECEIPTS",
+  "PAYMENTS",
+  "FINANCING",
+  "INVESTING",
+]);
+
+export const covenantTypeEnum = pgEnum("covenant_type", [
+  "DEBT_TO_EQUITY",
+  "INTEREST_COVERAGE",
+  "CURRENT_RATIO",
+  "DEBT_SERVICE_COVERAGE",
+  "LEVERAGE",
+  "CUSTOM",
+]);
+
+export const covenantStatusEnum = pgEnum("covenant_status", [
+  "COMPLIANT",
+  "WARNING",
+  "BREACHED",
+]);
+
+export const icLoanStatusEnum = pgEnum("ic_loan_status", [
+  "ACTIVE",
+  "REPAID",
+  "WRITTEN_OFF",
+]);
+
+// ─── Phase 5: Cost Accounting enums ───────────────────────────────────────
+
+export const costCenterStatusEnum = pgEnum("cost_center_status", [
+  "ACTIVE",
+  "INACTIVE",
+  "CLOSED",
+]);
+
+export const driverTypeEnum = pgEnum("driver_type", [
+  "HEADCOUNT",
+  "MACHINE_HOURS",
+  "DIRECT_LABOR",
+  "FLOOR_AREA",
+  "REVENUE",
+  "UNITS_PRODUCED",
+  "CUSTOM",
+]);
+
+export const allocationMethodEnum = pgEnum("allocation_method", [
+  "DIRECT",
+  "STEP_DOWN",
+  "RECIPROCAL",
+]);
+
+export const allocationRunStatusEnum = pgEnum("allocation_run_status", [
+  "DRAFT",
+  "RUNNING",
+  "COMPLETED",
+  "FAILED",
+  "REVERSED",
+]);
+
+// ─── Phase 6: Consolidation enums ────────────────────────────────────────
+
+export const groupEntityTypeEnum = pgEnum("group_entity_type", [
+  "PARENT",
+  "SUBSIDIARY",
+  "ASSOCIATE",
+  "JOINT_VENTURE",
+]);
+
+export const goodwillStatusEnum = pgEnum("goodwill_status", [
+  "ACTIVE",
+  "IMPAIRED",
+  "DERECOGNIZED",
+]);
+
+// ─── Phase 7: IFRS Specialist enums ──────────────────────────────────────
+
+export const intangibleAssetStatusEnum = pgEnum("intangible_asset_status", [
+  "ACTIVE",
+  "DISPOSED",
+  "FULLY_AMORTIZED",
+  "IMPAIRED",
+  "IN_DEVELOPMENT",
+]);
+
+export const intangibleCategoryEnum = pgEnum("intangible_category", [
+  "SOFTWARE",
+  "PATENT",
+  "TRADEMARK",
+  "COPYRIGHT",
+  "LICENCE",
+  "CUSTOMER_RELATIONSHIP",
+  "GOODWILL_RELATED",
+  "DEVELOPMENT_COST",
+  "OTHER",
+]);
+
+export const usefulLifeTypeEnum = pgEnum("useful_life_type", [
+  "FINITE",
+  "INDEFINITE",
+]);
+
+export const instrumentClassificationEnum = pgEnum("instrument_classification", [
+  "AMORTIZED_COST",
+  "FVOCI",
+  "FVTPL",
+]);
+
+export const instrumentTypeEnum = pgEnum("instrument_type", [
+  "DEBT_HELD",
+  "DEBT_ISSUED",
+  "EQUITY_INVESTMENT",
+  "DERIVATIVE",
+  "LOAN_RECEIVABLE",
+  "TRADE_RECEIVABLE",
+]);
+
+export const fairValueLevelEnum = pgEnum("fair_value_level", [
+  "LEVEL_1",
+  "LEVEL_2",
+  "LEVEL_3",
+]);
+
+export const hedgeTypeEnum = pgEnum("hedge_type", [
+  "FAIR_VALUE",
+  "CASH_FLOW",
+  "NET_INVESTMENT",
+]);
+
+export const hedgeStatusEnum = pgEnum("hedge_status", [
+  "DESIGNATED",
+  "ACTIVE",
+  "DISCONTINUED",
+  "REBALANCED",
+]);
+
+// ─── Gap remediation enums ─────────────────────────────────────────────────
+
+export const accountingEventStatusEnum = pgEnum("accounting_event_status", [
+  "PENDING",
+  "PROCESSED",
+  "FAILED",
+  "SKIPPED",
+]);
+
+export const mappingRuleStatusEnum = pgEnum("mapping_rule_status", [
+  "DRAFT",
+  "PUBLISHED",
+  "DEPRECATED",
+]);
+
+export const hedgeTestMethodEnum = pgEnum("hedge_test_method", [
+  "DOLLAR_OFFSET",
+  "REGRESSION",
+  "CRITICAL_TERMS",
+]);
+
+export const hedgeTestResultEnum = pgEnum("hedge_test_result", [
+  "HIGHLY_EFFECTIVE",
+  "EFFECTIVE",
+  "INEFFECTIVE",
+]);
+
+export const tpMethodEnum = pgEnum("tp_method", [
+  "CUP",
+  "RESALE_PRICE",
+  "COST_PLUS",
+  "TNMM",
+  "PROFIT_SPLIT",
+]);

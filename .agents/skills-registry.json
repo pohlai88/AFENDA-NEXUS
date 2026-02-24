@@ -1,6 +1,6 @@
 {
   "$comment": "SINGLE SOURCE OF TRUTH for all skills. Edit this file, then run: node .agents/tools/agents-gen.mjs to regenerate INDEX.md + INSTALLED-SKILLS.md.",
-  "generatedAt": "2026-02-23T10:59:36.972Z",
+  "generatedAt": "2026-02-24T13:02:41.316Z",
   "skills": [
     {
       "name": "accessibility",
@@ -185,6 +185,78 @@
       "description": "Zod validation — schema definition, type inference, transforms, error handling",
       "path": "skills/zod",
       "source": "leonaaardob/lb-zod-skill"
+    },
+    {
+      "name": "nextjs-app-router-patterns",
+      "category": "nextjs",
+      "priority": "high",
+      "description": "Next.js App Router — Server Components, streaming, parallel routes, Server Actions, data fetching",
+      "path": "skills/nextjs-app-router-patterns",
+      "source": "wshobson/agents@nextjs-app-router-patterns"
+    },
+    {
+      "name": "tailwind-v4-shadcn",
+      "category": "ui",
+      "priority": "high",
+      "description": "Tailwind CSS v4 + shadcn/ui — @theme inline, CSS variables, dark mode, component composition",
+      "path": "skills/tailwind-v4-shadcn",
+      "source": "secondsky/claude-skills@tailwind-v4-shadcn"
+    },
+    {
+      "name": "react-testing-patterns",
+      "category": "testing",
+      "priority": "high",
+      "description": "React component/hook testing — Testing Library, MSW, jest-axe, async patterns, Vitest",
+      "path": "skills/react-testing-patterns",
+      "source": "hieutrtr/ai1-skills@react-testing-patterns"
+    },
+    {
+      "name": "vitest",
+      "category": "testing",
+      "priority": "high",
+      "description": "Vitest testing framework — config, CLI, mocking, coverage, snapshots, concurrency, type testing",
+      "path": "skills/vitest",
+      "source": "antfu/skills@vitest"
+    },
+    {
+      "name": "better-auth-best-practices",
+      "category": "auth",
+      "priority": "high",
+      "description": "Better Auth core best practices — setup, configuration, Drizzle adapter, framework integration",
+      "path": "skills/better-auth-best-practices",
+      "source": "better-auth/skills@better-auth-best-practices"
+    },
+    {
+      "name": "organization-best-practices",
+      "category": "auth",
+      "priority": "high",
+      "description": "Better Auth organization plugin — multi-tenancy, teams, roles, invitations",
+      "path": "skills/organization-best-practices",
+      "source": "better-auth/skills@organization-best-practices"
+    },
+    {
+      "name": "email-and-password-best-practices",
+      "category": "auth",
+      "priority": "medium",
+      "description": "Better Auth email/password — sign-up, sign-in, password reset, email verification",
+      "path": "skills/email-and-password-best-practices",
+      "source": "better-auth/skills@email-and-password-best-practices"
+    },
+    {
+      "name": "better-auth-security-best-practices",
+      "category": "auth",
+      "priority": "high",
+      "description": "Better Auth security — rate limiting, CSRF, session management, trusted origins",
+      "path": "skills/better-auth-security-best-practices",
+      "source": "better-auth/skills@better-auth-security-best-practices"
+    },
+    {
+      "name": "two-factor-authentication-best-practices",
+      "category": "auth",
+      "priority": "medium",
+      "description": "Better Auth 2FA — TOTP, backup codes, enforcement, recovery flows",
+      "path": "skills/two-factor-authentication-best-practices",
+      "source": "better-auth/skills@two-factor-authentication-best-practices"
     }
   ],
   "categories": {
@@ -194,7 +266,9 @@
     "infrastructure": "Infrastructure & Logging",
     "validation": "Validation & Forms",
     "ui": "UI",
+    "testing": "Testing",
     "tools": "Tools & Meta",
-    "security": "Security (ClawSec)"
+    "security": "Security (ClawSec)",
+    "auth": "Authentication (Better Auth)"
   }
 }

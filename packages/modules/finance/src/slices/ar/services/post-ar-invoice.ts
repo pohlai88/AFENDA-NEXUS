@@ -2,9 +2,9 @@ import type { Result } from "@afenda/core";
 import { err, AppError } from "@afenda/core";
 import type { ArInvoice } from "../entities/ar-invoice.js";
 import type { IArInvoiceRepo } from "../ports/ar-invoice-repo.js";
-import type { IJournalRepo } from "../../gl/ports/journal-repo.js";
+import type { IJournalRepo } from "../../../shared/ports/journal-posting-port.js";
 import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { IDocumentNumberGenerator } from "../../gl/ports/document-number-generator.js";
+import type { IDocumentNumberGenerator } from "../../../shared/ports/journal-posting-port.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
 import { FinanceEventType } from "../../../shared/events.js";
 

@@ -120,22 +120,23 @@ function checkW01() {
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
       if (RADIX_PATTERN.test(lines[i])) {
-        fail("W01", `${rel}:${i + 1} — Direct @radix-ui import. Use @/components/ui/ wrapper instead.`);
+        fail("W01", `${rel}:${i + 1} -- Direct @radix-ui import. Use @/components/ui/ wrapper instead.`);
       }
     }
   }
 }
 
-// ─── W02: No Raw className Strings in ERP/Features/Hooks ────────────────────
-// className must be wrapped in cn() or cva(). Raw string literals are forbidden
-// in components/erp/, features/, hooks/ (but allowed in components/ui/ and app/).
+// ─── W02: className Merging Discipline ───────────────────────────────────────
+// Two rules:
+//   (a) If a component accepts a `className` prop, it MUST merge it with cn()
+//       at the root element. Failing to do so means the prop is silently ignored.
+//   (b) Conditional class logic (ternary in className) must use cn(), not
+//       string concatenation or template literals.
 //
-// Detects: className="..." where the value is a plain string literal (not a
-// function call like cn(...) or cva(...)(...)).
+// Static className="flex items-center gap-2" for internal layout is ALLOWED —
+// cn() is for merging, not for wrapping every string.
 
 function checkW02() {
-  const RAW_CLASSNAME = /className=["'][^"']+["']/;
-  const CN_OR_CVA = /className=\{/;
   const DIRS_TO_CHECK = [
     join(SRC, "components/erp"),
     join(SRC, "features"),
@@ -147,18 +148,24 @@ function checkW02() {
     for (const file of files) {
       const content = readFileSync(file, "utf-8");
       const lines = content.split("\n");
+      const rel = relPath(file);
+
+      // (a) Check: component accepts className prop but never calls cn()
+      const acceptsClassName = /className\??\s*:\s*string/.test(content);
+      const usesCn = content.includes("cn(");
+      if (acceptsClassName && !usesCn) {
+        fail("W02", `${rel} -- Accepts className prop but never calls cn(). Must merge with cn() for composability.`);
+      }
+
+      // (b) Check: template literal className (className={`...`})
       for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (RAW_CLASSNAME.test(line) && !CN_OR_CVA.test(line)) {
-          // Allow aria-* and role attributes on same line
-          // Allow single utility classes on icons (h-4 w-4 etc)
-          const match = line.match(/className=["']([^"']+)["']/);
-          if (match) {
-            const classes = match[1].trim();
-            // Allow very short utility combos (icon sizing, sr-only)
-            if (classes.split(/\s+/).length <= 2) continue;
-            fail("W02", `${relPath(file)}:${i + 1} — Raw className="${classes.slice(0, 50)}…". Wrap in cn() or cva().`);
-          }
+        const line = lines[i];
+        if (/className=\{`/.test(line)) {
+          fail("W02", `${rel}:${i + 1} -- Template literal className. Use cn() for conditional classes.`);
+        }
+        // String concatenation: className={"foo " + bar}
+        if (/className=\{["'][^"']*["']\s*\+/.test(line)) {
+          fail("W02", `${rel}:${i + 1} -- String concatenation in className. Use cn() instead.`);
         }
       }
     }
@@ -193,7 +200,7 @@ function checkW03() {
     for (const imp of imports) {
       for (const forbidden of FORBIDDEN) {
         if (imp === forbidden || imp.startsWith(forbidden + "/") || imp.startsWith(forbidden)) {
-          fail("W03", `${rel} — Forbidden import "${imp}". Frontend must not import backend packages.`);
+          fail("W03", `${rel} -- Forbidden import "${imp}". Frontend must not import backend packages.`);
         }
       }
     }
@@ -219,7 +226,7 @@ function checkW04() {
       if (SUSPECT_PATTERN.test(lines[i])) {
         const match = lines[i].match(/(?:interface|type)\s+(\w+)/);
         if (match) {
-          warn("W04", `${relPath(file)}:${i + 1} — "${match[1]}" looks like a hand-written payload type. Use @afenda/contracts schemas.`);
+          warn("W04", `${relPath(file)}:${i + 1} -- "${match[1]}" looks like a hand-written payload type. Use @afenda/contracts schemas.`);
         }
       }
     }
@@ -240,6 +247,7 @@ function checkW05() {
     "react",
     "@afenda/contracts",
     "@afenda/core",
+    "lucide-react",
     "./",
     "../",
   ];
@@ -256,7 +264,7 @@ function checkW05() {
     for (const imp of imports) {
       const allowed = ALLOWED_PREFIXES.some((prefix) => imp.startsWith(prefix));
       if (!allowed) {
-        fail("W05", `${rel} — Route imports "${imp}" which is not in allowed prefixes.`);
+        fail("W05", `${rel} -- Route imports "${imp}" which is not in allowed prefixes.`);
       }
     }
   }
@@ -287,7 +295,7 @@ function checkW06() {
         if (imp.startsWith("@/features/")) {
           const importedDomain = imp.split("/")[2]; // @/features/<domain>/...
           if (importedDomain && importedDomain !== domain) {
-            fail("W06", `${rel} — Cross-feature import: "${imp}". features/${domain}/ must not import from features/${importedDomain}/.`);
+            fail("W06", `${rel} -- Cross-feature import: "${imp}". features/${domain}/ must not import from features/${importedDomain}/.`);
           }
         }
       }
@@ -313,6 +321,7 @@ function checkW07() {
   }
 
   const DOMAIN_IMPORTS = ["@/features/", "@/hooks/", "@/providers/", "@afenda/contracts"];
+  const SHADCN_EXCEPTIONS = ["@/hooks/use-mobile"];
 
   for (const file of uiFiles) {
     const content = readFileSync(file, "utf-8");
@@ -320,8 +329,9 @@ function checkW07() {
     const rel = relPath(file);
 
     for (const imp of imports) {
+      if (SHADCN_EXCEPTIONS.includes(imp)) continue;
       if (DOMAIN_IMPORTS.some((prefix) => imp.startsWith(prefix))) {
-        fail("W07", `${rel} — shadcn component imports domain code "${imp}". components/ui/ must be domain-free.`);
+        fail("W07", `${rel} -- shadcn component imports domain code "${imp}". components/ui/ must be domain-free.`);
       }
     }
   }
@@ -352,7 +362,7 @@ function checkW08() {
         if (ANY_PATTERN.test(line) && !CATCH_PATTERN.test(line)) {
           // Skip eslint-disable comments
           if (line.includes("eslint-disable")) continue;
-          fail("W08", `${relPath(file)}:${i + 1} — \`any\` type detected. Use a specific type.`);
+          fail("W08", `${relPath(file)}:${i + 1} -- \`any\` type detected. Use a specific type.`);
         }
       }
     }
@@ -381,7 +391,7 @@ function checkW09() {
         // Check next few lines for type=
         const chunk = lines.slice(i, Math.min(i + 3, lines.length)).join(" ");
         if (!chunk.includes("type=")) {
-          fail("W09", `${rel}:${i + 1} — <button> missing type attribute. Add type="button" or type="submit".`);
+          fail("W09", `${rel}:${i + 1} -- <button> missing type attribute. Add type="button" or type="submit".`);
         }
       }
 
@@ -389,7 +399,7 @@ function checkW09() {
       if (/<img\b/.test(line) && !line.includes("alt=")) {
         const chunk = lines.slice(i, Math.min(i + 3, lines.length)).join(" ");
         if (!chunk.includes("alt=")) {
-          fail("W09", `${rel}:${i + 1} — <img> missing alt attribute.`);
+          fail("W09", `${rel}:${i + 1} -- <img> missing alt attribute.`);
         }
       }
     }
@@ -404,7 +414,7 @@ function checkW10() {
     { pattern: /\btw-[\w-]+/, msg: "tw- prefix (Tailwind v3 plugin syntax)" },
     { pattern: /@apply\s/, msg: "@apply directive (use cn() instead in components)" },
     { pattern: /\btheme\(["']/, msg: "theme() function (use CSS variables in v4)" },
-    { pattern: /\b(?:dark|light):(?!:)/, msg: "dark:/light: variant without class strategy" },
+    { pattern: /\btailwind\.config/, msg: "tailwind.config reference (v4 uses CSS-first config)" },
   ];
 
   // Only check in component/feature files, not globals.css
@@ -421,19 +431,21 @@ function checkW10() {
     for (let i = 0; i < lines.length; i++) {
       for (const { pattern, msg } of DEPRECATED_PATTERNS) {
         if (pattern.test(lines[i])) {
-          warn("W10", `${rel}:${i + 1} — Deprecated Tailwind pattern: ${msg}`);
+          warn("W10", `${rel}:${i + 1} -- Deprecated Tailwind pattern: ${msg}`);
         }
       }
     }
   }
 
-  // Check globals.css for @apply usage (allowed but warned)
+  // Check globals.css for @apply usage (deprecated in v4)
   const globalsCss = join(SRC, "app/globals.css");
   if (existsSync(globalsCss)) {
     const content = readFileSync(globalsCss, "utf-8");
-    const applyCount = (content.match(/@apply\s/g) || []).length;
-    if (applyCount > 10) {
-      warn("W10", `app/globals.css has ${applyCount} @apply directives. Consider migrating to cn()/cva() in Tailwind v4.`);
+    const lines = content.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (/@apply\s/.test(lines[i])) {
+        fail("W10", `app/globals.css:${i + 1} -- @apply is deprecated in Tailwind v4. Use native CSS properties.`);
+      }
     }
   }
 }
@@ -453,7 +465,7 @@ function checkW11() {
     for (const file of files) {
       const content = readFileSync(file, "utf-8");
       if (content.trimStart().startsWith('"use client"') || content.trimStart().startsWith("'use client'")) {
-        fail("W11", `${relPath(file)} — "use client" in lib/. Library files must be server-compatible.`);
+        fail("W11", `${relPath(file)} -- "use client" in lib/. Library files must be server-compatible.`);
       }
     }
   }
@@ -463,7 +475,7 @@ function checkW11() {
   for (const file of queryFiles) {
     const content = readFileSync(file, "utf-8");
     if (content.trimStart().startsWith('"use client"') || content.trimStart().startsWith("'use client'")) {
-      fail("W11", `${relPath(file)} — "use client" in queries/. Query files must be server-side.`);
+      fail("W11", `${relPath(file)} -- "use client" in queries/. Query files must be server-side.`);
     }
   }
 }
@@ -524,23 +536,20 @@ function checkW12() {
 function checkW13() {
   const ALLOWED_RUNTIME = [
     "@afenda/core", "@afenda/contracts",
-    "next", "react", "react-dom", "tailwindcss",
+    "next", "react", "react-dom",
     "@hookform/resolvers", "react-hook-form",
     "lucide-react", "clsx", "tailwind-merge", "class-variance-authority",
     "sonner", "nuqs", "cmdk",
-    "@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu",
-    "@radix-ui/react-label", "@radix-ui/react-popover",
-    "@radix-ui/react-select", "@radix-ui/react-separator",
-    "@radix-ui/react-slot", "@radix-ui/react-tabs",
-    "@radix-ui/react-tooltip", "@radix-ui/react-scroll-area",
-    "@radix-ui/react-avatar", "@radix-ui/react-switch",
+    "radix-ui", "next-themes", "zod",
   ];
 
   const ALLOWED_DEV = [
     "@afenda/typescript-config", "@afenda/eslint-config",
     "@types/react", "@types/react-dom", "typescript",
     "vitest", "@testing-library/react", "@testing-library/jest-dom",
-    "eslint-plugin-jsx-a11y",
+    "@testing-library/user-event", "jsdom", "msw", "jest-axe",
+    "@tailwindcss/postcss", "@vitejs/plugin-react",
+    "tailwindcss", "eslint-plugin-jsx-a11y",
   ];
 
   const pkgJson = loadJson(join(WEB_ROOT, "package.json"));
@@ -581,7 +590,7 @@ function checkW13() {
   const reactVersion = deps.react;
   if (reactVersion && !reactVersion.includes("catalog:")) {
     if (!reactVersion.startsWith("^19") && !reactVersion.startsWith("19") && !reactVersion.startsWith("~19")) {
-      warn("W13", `react version "${reactVersion}" — Architecture targets React 19.`);
+      warn("W13", `react version "${reactVersion}" -- Architecture targets React 19.`);
     }
   }
 
@@ -589,7 +598,7 @@ function checkW13() {
   const nextVersion = deps.next;
   if (nextVersion && !nextVersion.includes("catalog:")) {
     if (!nextVersion.startsWith("^16") && !nextVersion.startsWith("16") && !nextVersion.startsWith("~16")) {
-      warn("W13", `next version "${nextVersion}" — Architecture targets Next.js 16.`);
+      warn("W13", `next version "${nextVersion}" -- Architecture targets Next.js 16.`);
     }
   }
 }
@@ -628,7 +637,7 @@ function checkW14() {
       for (let i = 0; i < lines.length; i++) {
         const match = lines[i].match(HARDCODED_COLOR_PATTERN);
         if (match) {
-          warn("W14", `${rel}:${i + 1} — Hardcoded color "${match[0]}". Use CSS variable (e.g., bg-primary, text-destructive).`);
+          warn("W14", `${rel}:${i + 1} -- Hardcoded color "${match[0]}". Use CSS variable (e.g., bg-primary, text-destructive).`);
         }
       }
     }
@@ -653,7 +662,7 @@ function checkW15() {
 
     const content = readFileSync(file, "utf-8");
     if (CLIENT_FETCH_PATTERN.test(content)) {
-      warn("W15", `${relPath(file)} — Direct fetch() in form component. Use Server Actions instead.`);
+      warn("W15", `${relPath(file)} -- Direct fetch() in form component. Use Server Actions instead.`);
     }
   }
 
@@ -668,7 +677,65 @@ function checkW15() {
     if (content.includes("@/lib/api-client") || content.includes("createApiClient")) continue;
 
     if (CLIENT_FETCH_PATTERN.test(content)) {
-      warn("W15", `${relPath(file)} — Direct fetch() in query file. Use createApiClient() from @/lib/api-client.`);
+      warn("W15", `${relPath(file)} -- Direct fetch() in query file. Use createApiClient() from @/lib/api-client.`);
+    }
+  }
+}
+
+// ─── W16: @theme inline Completeness ─────────────────────────────────────────
+// Every CSS variable defined in :root must have a --color-* mapping in @theme inline.
+
+function checkW16() {
+  const globalsCss = join(SRC, "app/globals.css");
+  if (!existsSync(globalsCss)) {
+    warn("W16", "globals.css not found -- cannot verify @theme inline completeness.");
+    return;
+  }
+
+  const content = readFileSync(globalsCss, "utf-8");
+
+  // Extract CSS variable names from :root block (first :root only, not sidebar)
+  const rootMatch = content.match(/:root\s*\{([^}]+)\}/);
+  if (!rootMatch) {
+    warn("W16", "No :root block found in globals.css.");
+    return;
+  }
+
+  const rootVars = [];
+  for (const line of rootMatch[1].split("\n")) {
+    const m = line.match(/--(\w[\w-]*)\s*:/);
+    if (m) rootVars.push(m[1]);
+  }
+
+  // Extract @theme inline mappings
+  const themeMatch = content.match(/@theme\s+inline\s*\{([^}]+)\}/);
+  if (!themeMatch) {
+    fail("W16", "No @theme inline block found in globals.css. All CSS vars need utility class mappings.");
+    return;
+  }
+
+  const themeMappings = new Set();
+  for (const line of themeMatch[1].split("\n")) {
+    const m = line.match(/--color-([\w-]+)\s*:/);
+    if (m) themeMappings.add(m[1]);
+    const r = line.match(/--(radius)\s*:/);
+    if (r) themeMappings.add(r[1]);
+  }
+
+  // Check each :root var has a mapping (skip --radius which maps differently)
+  for (const varName of rootVars) {
+    if (varName === "radius") {
+      if (!themeMappings.has("radius")) {
+        fail("W16", `CSS var --${varName} has no mapping in @theme inline.`);
+      } else {
+        pass("W16", `--${varName} mapped in @theme inline`);
+      }
+      continue;
+    }
+    if (themeMappings.has(varName)) {
+      pass("W16", `--${varName} mapped in @theme inline`);
+    } else {
+      fail("W16", `CSS var --${varName} has no --color-${varName} mapping in @theme inline. Utility classes like bg-${varName} won't work.`);
     }
   }
 }
@@ -682,10 +749,10 @@ function main() {
   }
 
   if (!JSON_MODE) {
-    console.log("╔══════════════════════════════════════════════════════════════╗");
-    console.log("║  @afenda/web — Frontend Drift Gate                          ║");
-    console.log("║  15 checks · ARCHITECTURE.@afenda-web.md enforcement        ║");
-    console.log("╚══════════════════════════════════════════════════════════════╝\n");
+    console.log("+--------------------------------------------------------------+");
+    console.log("|  @afenda/web -- Frontend Drift Gate                          |");
+    console.log("|  16 checks - ARCHITECTURE.@afenda-web.md enforcement         |");
+    console.log("+--------------------------------------------------------------+\n");
   }
 
   const checks = [
@@ -704,6 +771,7 @@ function main() {
     { id: "W13", name: "Dependency audit", fn: checkW13 },
     { id: "W14", name: "No hardcoded colors", fn: checkW14 },
     { id: "W15", name: "Server Action pattern", fn: checkW15 },
+    { id: "W16", name: "@theme inline completeness", fn: checkW16 },
   ];
 
   for (const check of checks) {
@@ -712,21 +780,21 @@ function main() {
       if (!JSON_MODE) {
         const checkFails = results.fail.filter((r) => r.check === check.id).length;
         const checkWarns = results.warn.filter((r) => r.check === check.id).length;
-        const icon = checkFails > 0 ? "✗" : checkWarns > 0 ? "⚠" : "✓";
+        const icon = checkFails > 0 ? "x" : checkWarns > 0 ? "!" : "+";
         const status = checkFails > 0 ? "FAIL" : checkWarns > 0 ? "WARN" : "PASS";
         console.log(`  ${icon} ${check.id} ${check.name} [${status}]`);
         // Show details for failures
         for (const f of results.fail.filter((r) => r.check === check.id)) {
-          console.log(`      ✗ ${f.msg}`);
+          console.log(`      x ${f.msg}`);
         }
         for (const w of results.warn.filter((r) => r.check === check.id)) {
-          console.log(`      ⚠ ${w.msg}`);
+          console.log(`      ! ${w.msg}`);
         }
       }
     } catch (err) {
       fail(check.id, `Check crashed: ${err.message}`);
       if (!JSON_MODE) {
-        console.log(`  ✗ ${check.id} ${check.name} [CRASH: ${err.message}]`);
+        console.log(`  x ${check.id} ${check.name} [CRASH: ${err.message}]`);
       }
     }
   }
@@ -743,19 +811,19 @@ function main() {
   if (JSON_MODE) {
     console.log(JSON.stringify({ summary, results }, null, 2));
   } else {
-    console.log("\n" + "─".repeat(62));
+    console.log("\n" + "-".repeat(62));
     console.log(`  Total: ${summary.total} checks`);
     console.log(`  Pass:  ${summary.pass}`);
     console.log(`  Fail:  ${summary.fail}`);
     console.log(`  Warn:  ${summary.warn}`);
-    console.log("─".repeat(62));
+    console.log("-".repeat(62));
 
     if (summary.fail > 0) {
-      console.log(`\n  RESULT: FAIL — ${summary.fail} violation(s) must be fixed.\n`);
+      console.log(`\n  RESULT: FAIL -- ${summary.fail} violation(s) must be fixed.\n`);
     } else if (summary.warn > 0) {
       console.log(`\n  RESULT: PASS (with ${summary.warn} warning(s))\n`);
     } else {
-      console.log(`\n  RESULT: PASS — All checks clean.\n`);
+      console.log(`\n  RESULT: PASS -- All checks clean.\n`);
     }
   }
 

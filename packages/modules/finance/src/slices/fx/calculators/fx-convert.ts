@@ -7,7 +7,7 @@
  * Converts amounts between currencies using fixed-point BigInt arithmetic.
  * Eliminates floating-point penny errors by using a high-precision intermediate.
  */
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 const PRECISION_SCALE = 10_000_000_000n; // 10^10 — intermediate precision for rate multiplication
 

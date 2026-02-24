@@ -14,10 +14,10 @@ import { getIncomeStatement } from "../services/get-income-statement.js";
 import { getComparativeBalanceSheet } from "../services/get-comparative-balance-sheet.js";
 import { getComparativeIncomeStatement } from "../services/get-comparative-income-statement.js";
 import { getCashFlow } from "../services/get-cash-flow.js";
-import { getBudgetVariance } from "../../hub/services/get-budget-variance.js";
-import { evaluateVarianceAlerts } from "../../hub/calculators/variance-alerts.js";
-import { computeIcAging } from "../../ic/calculators/ic-aging.js";
-import type { IcOpenItem } from "../../ic/calculators/ic-aging.js";
+import { getBudgetVariance } from "../../../shared/ports/report-hooks.js";
+import { evaluateVarianceAlerts } from "../../../shared/ports/report-hooks.js";
+import { computeIcAging } from "../../../shared/ports/report-hooks.js";
+import type { IcOpenItem } from "../../../shared/ports/report-hooks.js";
 import { money } from "@afenda/core";
 import { mapErrorToStatus } from "../../../shared/routes/error-mapper.js";
 

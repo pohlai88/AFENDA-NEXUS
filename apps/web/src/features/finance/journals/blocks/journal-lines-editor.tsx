@@ -124,7 +124,7 @@ export function JournalLinesEditor({ form }: JournalLinesEditorProps) {
         </p>
       )}
       {isBalanced && (
-        <p className="text-xs text-emerald-600">Balanced</p>
+        <p className="text-xs text-success">Balanced</p>
       )}
     </div>
   );

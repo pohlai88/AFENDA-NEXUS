@@ -32,9 +32,21 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:yaml": "prettier --write '*.{yaml,yml}'",
-    "format:md": "prettier --write '*.{md,markdown}'"
+    "format:md": "prettier --write '*.{md,markdown}'",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --check",
+      "eslint --no-warn-ignored"
+    ],
+    "*.{json,md,yaml,yml,css,mjs,js}": [
+      "prettier --check"
+    ]
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "turbo": "catalog:",
     "typescript": "catalog:"

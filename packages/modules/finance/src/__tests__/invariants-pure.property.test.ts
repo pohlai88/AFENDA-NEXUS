@@ -29,9 +29,6 @@ const arbPositiveMinorUnits = fc.bigInt({ min: 1n, max: 10_000_000_000n });
 /** FX rate between 0.0001 and 10000 (covers most real-world pairs) */
 const arbFxRate = fc.double({ min: 0.0001, max: 10_000, noNaN: true });
 
-/** Currency code (realistic 3-letter codes) */
-const arbCurrency = fc.constantFrom("USD", "EUR", "GBP", "JPY", "MYR", "SGD", "AUD", "CAD", "CHF", "CNY");
-
 /** A balanced set of journal lines: N debit lines + 1 credit line that sums to total */
 const arbBalancedLines = fc
   .array(arbPositiveMinorUnits, { minLength: 1, maxLength: 10 })

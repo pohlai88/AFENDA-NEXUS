@@ -95,4 +95,4 @@ console.log(`  2. Create repository in the relevant module's infra/repositories/
 console.log(`  3. Export via the module's public.ts`);
 console.log(`  4. Run: pnpm db:migrate`);
 
-console.log(`\n✅ Table ${snakeCase} scaffolded.`);
+console.log(`\n[DONE] Table ${snakeCase} scaffolded.`);

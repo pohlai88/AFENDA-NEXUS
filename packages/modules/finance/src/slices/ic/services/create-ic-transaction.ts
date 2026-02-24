@@ -2,7 +2,7 @@ import type { Result } from "@afenda/core";
 import { err, AppError } from "@afenda/core";
 import type { IntercompanyDocument } from "../entities/intercompany.js";
 import type { IIcAgreementRepo, IIcTransactionRepo } from "../../../slices/ic/ports/ic-repo.js";
-import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";
+import type { IJournalRepo, CreateJournalInput } from "../../../shared/ports/journal-posting-port.js";
 import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
 import type { FinanceContext } from "../../../shared/finance-context.js";
 import { FinanceEventType } from "../../../shared/events.js";

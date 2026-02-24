@@ -11,7 +11,7 @@
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check";
 import { money } from "@afenda/core";
-import type { Journal } from "../domain/index.js";
+import type { Journal } from "../slices/gl/entities/journal.js";
 import {
   mockJournalRepo,
   mockAccountRepo,

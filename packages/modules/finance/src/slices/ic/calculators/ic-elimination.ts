@@ -6,7 +6,7 @@
  * Computes elimination journal entries from intercompany balances.
  * Each IC balance produces a paired debit+credit elimination entry.
  */
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export interface IntercompanyBalance {
   readonly fromCompanyId: string;

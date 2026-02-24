@@ -72,7 +72,7 @@ export class DrizzleArPaymentAllocationRepo implements IArPaymentAllocationRepo 
     const limit = params?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.arPaymentAllocations.findMany({
         where: eq(arPaymentAllocations.customerId, customerId),
         limit,
@@ -81,6 +81,7 @@ export class DrizzleArPaymentAllocationRepo implements IArPaymentAllocationRepo 
       this.tx.select({ total: count() }).from(arPaymentAllocations)
         .where(eq(arPaymentAllocations.customerId, customerId)),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     const data = await Promise.all(rows.map(async (r) => {
       const items = await this.tx.query.arAllocationItems.findMany({
@@ -97,10 +98,11 @@ export class DrizzleArPaymentAllocationRepo implements IArPaymentAllocationRepo 
     const limit = params?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.arPaymentAllocations.findMany({ limit, offset }),
       this.tx.select({ total: count() }).from(arPaymentAllocations),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     const data = await Promise.all(rows.map(async (r) => {
       const items = await this.tx.query.arAllocationItems.findMany({

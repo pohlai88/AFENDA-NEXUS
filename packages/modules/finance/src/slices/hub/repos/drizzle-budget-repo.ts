@@ -64,7 +64,7 @@ export class DrizzleBudgetRepo implements IBudgetRepo {
     const limit = params.limit;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx
         .select({
           budget: budgetEntries,
@@ -91,6 +91,7 @@ export class DrizzleBudgetRepo implements IBudgetRepo {
           ),
         ),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     return {
       data: rows.map((r) => mapRow(r.budget, r.accountCode ?? "")),

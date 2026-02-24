@@ -15,4 +15,4 @@
  *   - Updates .afenda/project.manifest.json
  */
 
-console.log("@afenda/generators — stub. Run with --help for usage.");
+console.log("@afenda/generators -- stub. Run with --help for usage.");

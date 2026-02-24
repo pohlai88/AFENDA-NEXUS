@@ -102,4 +102,4 @@ console.log(`  2. Write outbox row in the service that triggers this event`);
 console.log(`  3. Register handler in apps/worker/src/index.ts`);
 console.log(`  4. Implement side effects in the handler`);
 
-console.log(`\n✅ Outbox event ${SCREAMING_SNAKE} scaffolded.`);
+console.log(`\n[DONE] Outbox event ${SCREAMING_SNAKE} scaffolded.`);

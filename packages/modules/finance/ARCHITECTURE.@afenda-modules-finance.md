@@ -4,6 +4,7 @@ root_dir: "packages/modules/finance"
 type: library
 layer: module
 composite: true
+slice_isolation: true
 entrypoints: ["src/public.ts", "src/infra.ts"]
 public_api: "src/public.ts"
 exports_map:
@@ -11,17 +12,23 @@ exports_map:
   "./infra": { source: "./src/infra.ts", import: "./dist/infra.js", types: "./dist/infra.d.ts", default: "./src/infra.ts" }
 dependency_kinds:
   allowed_runtime: ["@afenda/core", "@afenda/contracts", "@afenda/authz", "@afenda/db", "@afenda/platform", "drizzle-orm", "fastify"]
-  allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "tsup", "typescript", "vitest"]
+  allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "tsup", "typescript", "vitest", "fast-check"]
   allowed_peer: []
 enforced_structure:
   required_files: ["src/public.ts", "package.json", "tsconfig.json", "tsconfig.build.json", "tsup.config.ts"]
-  required_directories: ["src/domain", "src/domain/entities", "src/domain/calculators", "src/app", "src/app/ports", "src/app/services", "src/infra", "src/infra/repositories", "src/infra/routes"]
+  required_directories: ["src/app", "src/app/ports", "src/shared", "src/slices"]
 boundary_rules:
   allowed_import_prefixes: ["./", "@afenda/core", "@afenda/contracts", "@afenda/authz", "@afenda/db", "@afenda/platform"]
   forbidden_imports: ["fastify", "drizzle-orm", "postgres"]
   allow_imports_by_path:
-    "src/infra/routes/**": ["fastify"]
-    "src/infra/repositories/**": ["drizzle-orm", "@afenda/db", "postgres"]
+    "src/slices/*/routes/**": ["fastify"]
+    "src/slices/*/repos/**": ["drizzle-orm", "@afenda/db", "postgres"]
+    "src/shared/routes/**": ["fastify"]
+    "src/shared/repos/**": ["drizzle-orm", "@afenda/db", "postgres"]
+    "src/slices/*/routes/**": ["fastify"]
+    "src/slices/*/repos/**": ["drizzle-orm", "@afenda/db", "postgres"]
+    "src/shared/routes/**": ["fastify"]
+    "src/shared/repos/**": ["drizzle-orm", "@afenda/db", "postgres"]
   forbid_cross_layer_imports:
     - { from: "src/domain/**", forbid: ["src/app/**", "src/infra/**"] }
     - { from: "src/app/**", forbid: ["src/infra/**"] }

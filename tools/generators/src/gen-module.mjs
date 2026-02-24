@@ -235,7 +235,7 @@ try {
   writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
   console.log(`Updated .afenda/project.manifest.json`);
 } catch {
-  console.warn("Could not update manifest — update manually.");
+  console.warn("Could not update manifest -- update manually.");
 }
 
 // Update root tsconfig references
@@ -249,7 +249,7 @@ try {
     console.log(`Updated root tsconfig.json references`);
   }
 } catch {
-  console.warn("Could not update root tsconfig — update manually.");
+  console.warn("Could not update root tsconfig -- update manually.");
 }
 
-console.log(`✅ Module ${pkg} scaffolded. Run \`pnpm install\` to resolve deps.`);
+console.log(`[DONE] Module ${pkg} scaffolded. Run \`pnpm install\` to resolve deps.`);

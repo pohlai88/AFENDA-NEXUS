@@ -7,7 +7,7 @@
  * Implements the accounting hub pattern: derives journal lines from
  * source transactions using configurable derivation rules.
  */
-import type { CalculatorResult } from "../../gl/calculators/journal-balance.js";
+import type { CalculatorResult } from "../../../shared/types.js";
 
 export type DerivationRuleType = "posting" | "allocation" | "reclassification" | "accrual";
 
@@ -172,7 +172,7 @@ export function allocateByDriver(
 
   for (const item of sorted) {
     if (remainder <= 0n) break;
-    allocations[item.index].amountMinor += 1n;
+    allocations[item.index]!.amountMinor += 1n;
     remainder -= 1n;
   }
 

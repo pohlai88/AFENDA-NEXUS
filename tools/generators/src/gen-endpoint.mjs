@@ -66,4 +66,4 @@ console.log(`  2. Implement handler logic`);
 console.log(`  3. Register route in the module's infra/routes/index.ts`);
 console.log(`  4. Wire into apps/api/src/index.ts`);
 
-console.log(`\n✅ Endpoint ${httpVerb} ${routePath} scaffolded in ${module_}.`);
+console.log(`\n[DONE] Endpoint ${httpVerb} ${routePath} scaffolded in ${module_}.`);

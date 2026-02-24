@@ -1,4 +1,4 @@
-import type { AccountType } from "../../gl/entities/account.js";
+import type { AccountType } from "../../../shared/types.js";
 
 /**
  * @see GL-09 — Account classification (reporting)

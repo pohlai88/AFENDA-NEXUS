@@ -65,10 +65,11 @@ export class DrizzleDunningRepo implements IDunningRepo {
     const limit = params?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [rows, [{ total }]] = await Promise.all([
+    const [rows, countRows] = await Promise.all([
       this.tx.query.dunningRuns.findMany({ limit, offset }),
       this.tx.select({ total: count() }).from(dunningRuns),
     ]);
+    const total = countRows[0]?.total ?? 0;
 
     const data = await Promise.all(rows.map(async (r) => {
       const letters = await this.tx.query.dunningLetters.findMany({

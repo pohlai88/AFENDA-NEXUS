@@ -28,7 +28,7 @@ const tenantWindows = new Map<string, WindowEntry>();
 
 function pruneWindow(entry: WindowEntry, now: number, windowMs: number): void {
   const cutoff = now - windowMs;
-  while (entry.timestamps.length > 0 && entry.timestamps[0] < cutoff) {
+  while (entry.timestamps.length > 0 && entry.timestamps[0]! < cutoff) {
     entry.timestamps.shift();
   }
 }
