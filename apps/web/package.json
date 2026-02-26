@@ -37,7 +37,7 @@
     "next": "catalog:",
     "next-themes": "catalog:",
     "nuqs": "catalog:",
-    "posthog-js": "^1.354.2",
+    "posthog-js": "^1.354.3",
     "qrcode.react": "^4.2.0",
     "radix-ui": "catalog:",
     "react": "catalog:",
