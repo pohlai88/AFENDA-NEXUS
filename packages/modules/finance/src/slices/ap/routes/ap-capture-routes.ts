@@ -8,6 +8,8 @@ import { createCreditMemo } from '../services/create-credit-memo.js';
 import { batchInvoiceImport } from '../services/batch-invoice-import.js';
 import { processBankRejection } from '../services/process-bank-rejection.js';
 import { generateRemittanceAdvice } from '../services/generate-remittance-advice.js';
+import { processOcrInvoice } from '../services/ap-ocr-pipeline.js';
+import type { OcrInvoicePayload } from '../services/ap-ocr-pipeline.js';
 import { extractIdentity } from '@afenda/api-kit';
 
 export function registerApCaptureRoutes(
@@ -108,6 +110,24 @@ export function registerApCaptureRoutes(
 
       return result.ok
         ? reply.send(result.value)
+        : reply.status(mapErrorToStatus(result.error)).send({ error: result.error });
+    }
+  );
+
+  // B3: POST /ap/ocr/webhook — OCR provider webhook receiver
+  app.post(
+    '/ap/ocr/webhook',
+    { preHandler: [requirePermission(policy, 'journal:create')] },
+    async (req, reply) => {
+      const { tenantId, userId } = extractIdentity(req);
+      const body = req.body as Omit<OcrInvoicePayload, 'tenantId'>;
+
+      const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
+        return processOcrInvoice({ ...body, tenantId }, deps);
+      });
+
+      return result.ok
+        ? reply.status(201).send(result.value)
         : reply.status(mapErrorToStatus(result.error)).send({ error: result.error });
     }
   );

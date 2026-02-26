@@ -149,6 +149,8 @@ export const whtCertificateStatusEnum = pgEnum('wht_certificate_status', [
   'DRAFT',
   'ISSUED',
   'CANCELLED',
+  'EXEMPT',
+  'REVOKED',
 ]);
 
 export const assetStatusEnum = pgEnum('asset_status', [

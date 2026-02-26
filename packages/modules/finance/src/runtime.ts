@@ -53,6 +53,7 @@ import { DrizzleSupplierDisputeRepo } from './slices/ap/repos/drizzle-supplier-d
 import { DrizzleSupplierNotificationPrefRepo } from './slices/ap/repos/drizzle-supplier-notification-pref-repo.js';
 import { DrizzleSupplierComplianceRepo } from './slices/ap/repos/drizzle-supplier-compliance-repo.js';
 import { DrizzleInvoiceAttachmentRepo } from './slices/ap/repos/drizzle-invoice-attachment-repo.js';
+import { DrizzleApWhtCertificateRepo } from './slices/ap/repos/drizzle-ap-wht-certificate-repo.js';
 import { DrizzleArInvoiceRepo } from './slices/ar/repos/drizzle-ar-invoice-repo.js';
 import { DrizzleArPaymentAllocationRepo } from './slices/ar/repos/drizzle-ar-payment-allocation-repo.js';
 import { DrizzleDunningRepo } from './slices/ar/repos/drizzle-dunning-repo.js';
@@ -188,6 +189,7 @@ function buildDeps(tx: TenantTx): FinanceDeps {
     supplierDisputeRepo: new DrizzleSupplierDisputeRepo(tx),
     supplierNotificationPrefRepo: new DrizzleSupplierNotificationPrefRepo(tx),
     supplierComplianceRepo: new DrizzleSupplierComplianceRepo(tx),
+    apWhtCertificateRepo: new DrizzleApWhtCertificateRepo(tx),
     arInvoiceRepo: new DrizzleArInvoiceRepo(tx),
     arPaymentAllocationRepo: new DrizzleArPaymentAllocationRepo(tx),
     dunningRepo: new DrizzleDunningRepo(tx),

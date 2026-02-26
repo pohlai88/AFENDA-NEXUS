@@ -227,3 +227,7 @@ CREATE POLICY tenant_isolation ON erp.supplier_compliance_item
 ALTER TABLE erp.outbox
   ADD COLUMN IF NOT EXISTS content_hash  varchar(64),
   ADD COLUMN IF NOT EXISTS previous_hash varchar(64);
+
+-- ─── F4: Add EXEMPT and REVOKED to wht_certificate_status enum ──────────────
+ALTER TYPE erp.wht_certificate_status ADD VALUE IF NOT EXISTS 'EXEMPT';
+ALTER TYPE erp.wht_certificate_status ADD VALUE IF NOT EXISTS 'REVOKED';
