@@ -35,6 +35,13 @@ import {
   arAllocationItems,
   dunningRuns,
   dunningLetters,
+  matchTolerances,
+  apPrepayments,
+  apPrepaymentApplications,
+  supplierDocuments,
+  supplierDisputes,
+  supplierNotificationPrefs,
+  supplierComplianceItems,
 } from './erp';
 import { documentAttachments, documentLinks } from './erp-document';
 import { outbox } from './outbox-table';
@@ -365,6 +372,75 @@ export const documentLinksRelations = relations(documentLinks, ({ one }) => ({
     references: [documentAttachments.documentId],
   }),
   tenant: one(tenants, { fields: [documentLinks.tenantId], references: [tenants.id] }),
+}));
+
+// ─── AP Gap-Close Relations ────────────────────────────────────────────────
+
+export const matchTolerancesRelations = relations(matchTolerances, ({ one }) => ({
+  tenant: one(tenants, { fields: [matchTolerances.tenantId], references: [tenants.id] }),
+}));
+
+export const apPrepaymentRelations = relations(apPrepayments, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [apPrepayments.tenantId], references: [tenants.id] }),
+  invoice: one(apInvoices, { fields: [apPrepayments.invoiceId], references: [apInvoices.id] }),
+  supplier: one(suppliers, { fields: [apPrepayments.supplierId], references: [suppliers.id] }),
+  applications: many(apPrepaymentApplications),
+}));
+
+export const apPrepaymentApplicationRelations = relations(apPrepaymentApplications, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [apPrepaymentApplications.tenantId],
+    references: [tenants.id],
+  }),
+  prepayment: one(apPrepayments, {
+    fields: [apPrepaymentApplications.prepaymentId],
+    references: [apPrepayments.id],
+  }),
+  targetInvoice: one(apInvoices, {
+    fields: [apPrepaymentApplications.targetInvoiceId],
+    references: [apInvoices.id],
+  }),
+}));
+
+export const supplierDocumentsRelations = relations(supplierDocuments, ({ one }) => ({
+  tenant: one(tenants, { fields: [supplierDocuments.tenantId], references: [tenants.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierDocuments.supplierId],
+    references: [suppliers.id],
+  }),
+}));
+
+export const supplierDisputesRelations = relations(supplierDisputes, ({ one }) => ({
+  tenant: one(tenants, { fields: [supplierDisputes.tenantId], references: [tenants.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierDisputes.supplierId],
+    references: [suppliers.id],
+  }),
+}));
+
+export const supplierNotificationPrefsRelations = relations(
+  supplierNotificationPrefs,
+  ({ one }) => ({
+    tenant: one(tenants, {
+      fields: [supplierNotificationPrefs.tenantId],
+      references: [tenants.id],
+    }),
+    supplier: one(suppliers, {
+      fields: [supplierNotificationPrefs.supplierId],
+      references: [suppliers.id],
+    }),
+  })
+);
+
+export const supplierComplianceItemsRelations = relations(supplierComplianceItems, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [supplierComplianceItems.tenantId],
+    references: [tenants.id],
+  }),
+  supplier: one(suppliers, {
+    fields: [supplierComplianceItems.supplierId],
+    references: [suppliers.id],
+  }),
 }));
 
 // ─── Outbox Relations ───────────────────────────────────────────────────────

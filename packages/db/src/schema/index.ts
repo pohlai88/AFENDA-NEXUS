@@ -167,6 +167,13 @@ export {
   fairValueMeasurements,
   hedgeEffectivenessTests,
   tpBenchmarks,
+  matchTolerances,
+  apPrepayments,
+  apPrepaymentApplications,
+  supplierDocuments,
+  supplierDisputes,
+  supplierNotificationPrefs,
+  supplierComplianceItems,
 } from './erp';
 export { documentAttachments, documentLinks } from './erp-document';
 export { auditLogs } from './audit';

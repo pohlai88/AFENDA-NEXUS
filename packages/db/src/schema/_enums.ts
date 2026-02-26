@@ -88,6 +88,7 @@ export const apHoldStatusEnum = pgEnum('ap_hold_status', ['ACTIVE', 'RELEASED'])
 
 export const apInvoiceStatusEnum = pgEnum('ap_invoice_status', [
   'DRAFT',
+  'INCOMPLETE',
   'PENDING_APPROVAL',
   'APPROVED',
   'POSTED',
@@ -494,5 +495,61 @@ export const documentCategoryEnum = pgEnum('document_category', [
   'LEGAL_OPINION',
   'INSURANCE_POLICY',
   'CORRESPONDENCE',
+  'OTHER',
+]);
+
+// ─── AP Gap-close enums ──────────────────────────────────────────────────
+
+export const toleranceScopeEnum = pgEnum('tolerance_scope', ['ORG', 'COMPANY', 'SITE']);
+
+export const apPrepaymentStatusEnum = pgEnum('ap_prepayment_status', [
+  'OPEN',
+  'PARTIALLY_APPLIED',
+  'FULLY_APPLIED',
+  'CANCELLED',
+]);
+
+export const supplierDocumentCategoryEnum = pgEnum('supplier_document_category', [
+  'CONTRACT',
+  'TAX_NOTICE',
+  'INSURANCE_POLICY',
+  'CORRESPONDENCE',
+  'OTHER',
+]);
+
+export const disputeStatusEnum = pgEnum('dispute_status', [
+  'OPEN',
+  'IN_REVIEW',
+  'RESOLVED',
+  'REJECTED',
+]);
+
+export const disputeCategoryEnum = pgEnum('dispute_category', [
+  'INCORRECT_AMOUNT',
+  'MISSING_PAYMENT',
+  'DUPLICATE_CHARGE',
+  'PRICING_DISCREPANCY',
+  'DELIVERY_ISSUE',
+  'QUALITY_ISSUE',
+  'OTHER',
+]);
+
+export const complianceItemTypeEnum = pgEnum('compliance_item_type', [
+  'KYC',
+  'TAX_CLEARANCE',
+  'INSURANCE',
+  'BANK_VERIFICATION',
+  'TRADE_LICENSE',
+]);
+
+export const whtIncomeTypeEnum = pgEnum('wht_income_type', [
+  'ROYALTIES',
+  'INTEREST',
+  'DIVIDENDS',
+  'TECHNICAL_FEES',
+  'MANAGEMENT_FEES',
+  'CONTRACT_PAYMENTS',
+  'RENTAL_INCOME',
+  'COMMISSION',
   'OTHER',
 ]);

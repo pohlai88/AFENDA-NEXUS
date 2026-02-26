@@ -87,6 +87,13 @@ import {
   paymentMethodTypeEnum,
   apHoldTypeEnum,
   apHoldStatusEnum,
+  toleranceScopeEnum,
+  apPrepaymentStatusEnum,
+  whtIncomeTypeEnum,
+  supplierDocumentCategoryEnum,
+  disputeStatusEnum,
+  disputeCategoryEnum,
+  complianceItemTypeEnum,
 } from './_enums';
 import { moneyBigint, pkId, tenantCol, timestamps } from './_common';
 
@@ -717,6 +724,7 @@ export const apInvoiceLines = erpSchema.table(
     taxAmount: moneyBigint('tax_amount')
       .notNull()
       .default(sql`0`),
+    whtIncomeType: whtIncomeTypeEnum('wht_income_type'),
     ...timestamps(),
   },
   (t) => [
@@ -2233,5 +2241,163 @@ export const tpBenchmarks = erpSchema.table(
   (t) => [
     index('idx_tp_benchmark_policy').on(t.tenantId, t.policyId),
     uniqueIndex('uq_tp_benchmark_year').on(t.tenantId, t.policyId, t.benchmarkYear),
+  ]
+);
+
+// ─── erp.match_tolerance (C5 gap-close) ─────────────────────────────────────
+
+export const matchTolerances = erpSchema.table(
+  'match_tolerance',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    scope: toleranceScopeEnum('scope').notNull(),
+    scopeEntityId: uuid('scope_entity_id'),
+    companyId: uuid('company_id'),
+    toleranceBps: integer('tolerance_bps').notNull(),
+    quantityTolerancePercent: integer('quantity_tolerance_percent').notNull().default(0),
+    autoHold: boolean('auto_hold').notNull().default(true),
+    isActive: boolean('is_active').notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    index('idx_match_tolerance_tenant').on(t.tenantId),
+    index('idx_match_tolerance_scope').on(t.tenantId, t.scope),
+  ]
+);
+
+// ─── erp.ap_prepayment (B6 gap-close) ───────────────────────────────────────
+
+export const apPrepayments = erpSchema.table(
+  'ap_prepayment',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    invoiceId: uuid('invoice_id').notNull(),
+    supplierId: uuid('supplier_id').notNull(),
+    totalAmount: moneyBigint('total_amount').notNull(),
+    appliedAmount: moneyBigint('applied_amount').notNull().default(0n),
+    unappliedBalance: moneyBigint('unapplied_balance').notNull(),
+    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+    status: apPrepaymentStatusEnum('status').notNull().default('OPEN'),
+    ...timestamps(),
+  },
+  (t) => [
+    index('idx_ap_prepayment_supplier').on(t.tenantId, t.supplierId),
+    index('idx_ap_prepayment_invoice').on(t.tenantId, t.invoiceId),
+    index('idx_ap_prepayment_status').on(t.tenantId, t.status),
+  ]
+);
+
+export const apPrepaymentApplications = erpSchema.table(
+  'ap_prepayment_application',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    prepaymentId: uuid('prepayment_id').notNull(),
+    targetInvoiceId: uuid('target_invoice_id').notNull(),
+    amount: moneyBigint('amount').notNull(),
+    appliedBy: uuid('applied_by').notNull(),
+    appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps(),
+  },
+  (t) => [
+    index('idx_ap_prepay_app_prepayment').on(t.tenantId, t.prepaymentId),
+    index('idx_ap_prepay_app_invoice').on(t.tenantId, t.targetInvoiceId),
+  ]
+);
+
+// ─── erp.supplier_document (N8 gap-close) ───────────────────────────────────
+
+export const supplierDocuments = erpSchema.table(
+  'supplier_document',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    supplierId: uuid('supplier_id').notNull(),
+    category: supplierDocumentCategoryEnum('category').notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    description: text('description'),
+    fileName: varchar('file_name', { length: 255 }).notNull(),
+    mimeType: varchar('mime_type', { length: 100 }).notNull(),
+    fileSizeBytes: integer('file_size_bytes').notNull(),
+    checksumSha256: varchar('checksum_sha256', { length: 64 }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    uploadedBy: uuid('uploaded_by').notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index('idx_supplier_doc_supplier').on(t.tenantId, t.supplierId),
+    index('idx_supplier_doc_category').on(t.tenantId, t.category),
+  ]
+);
+
+// ─── erp.supplier_dispute (N9 gap-close) ────────────────────────────────────
+
+export const supplierDisputes = erpSchema.table(
+  'supplier_dispute',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    supplierId: uuid('supplier_id').notNull(),
+    invoiceId: uuid('invoice_id'),
+    paymentRunId: uuid('payment_run_id'),
+    category: disputeCategoryEnum('category').notNull(),
+    subject: varchar('subject', { length: 255 }).notNull(),
+    description: text('description').notNull(),
+    status: disputeStatusEnum('status').notNull().default('OPEN'),
+    resolution: text('resolution'),
+    resolvedBy: uuid('resolved_by'),
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    createdBy: uuid('created_by').notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index('idx_supplier_dispute_supplier').on(t.tenantId, t.supplierId),
+    index('idx_supplier_dispute_status').on(t.tenantId, t.status),
+  ]
+);
+
+// ─── erp.supplier_notification_pref (N10 gap-close) ─────────────────────────
+
+export const supplierNotificationPrefs = erpSchema.table(
+  'supplier_notification_pref',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    supplierId: uuid('supplier_id').notNull(),
+    channel: varchar('channel', { length: 20 }).notNull(),
+    endpoint: varchar('endpoint', { length: 500 }).notNull(),
+    invoiceStatusChanges: boolean('invoice_status_changes').notNull().default(true),
+    paymentNotifications: boolean('payment_notifications').notNull().default(true),
+    disputeUpdates: boolean('dispute_updates').notNull().default(true),
+    complianceAlerts: boolean('compliance_alerts').notNull().default(true),
+    isActive: boolean('is_active').notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [uniqueIndex('uq_supplier_notif_pref').on(t.tenantId, t.supplierId, t.channel)]
+);
+
+// ─── erp.supplier_compliance_item (N11 gap-close) ───────────────────────────
+
+export const supplierComplianceItems = erpSchema.table(
+  'supplier_compliance_item',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    supplierId: uuid('supplier_id').notNull(),
+    itemType: complianceItemTypeEnum('item_type').notNull(),
+    label: varchar('label', { length: 255 }).notNull(),
+    isCompliant: boolean('is_compliant').notNull().default(false),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    documentId: uuid('document_id'),
+    notes: text('notes'),
+    verifiedBy: uuid('verified_by'),
+    verifiedAt: timestamp('verified_at', { withTimezone: true }),
+    ...timestamps(),
+  },
+  (t) => [
+    index('idx_supplier_compliance_supplier').on(t.tenantId, t.supplierId),
+    uniqueIndex('uq_supplier_compliance_type').on(t.tenantId, t.supplierId, t.itemType),
   ]
 );
