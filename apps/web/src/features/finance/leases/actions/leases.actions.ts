@@ -1,41 +1,18 @@
 'use server';
 
+import type { CreateLeaseInput, CreateModificationInput } from '@afenda/contracts';
+
 import { revalidatePath } from 'next/cache';
-import type { LeaseType, AssetClass, PaymentFrequency, ModificationType } from '../types';
+import { routes } from '@/lib/constants';
 
 // ─── Lease Contract Actions ──────────────────────────────────────────────────
-
-interface CreateLeaseInput {
-  description: string;
-  lessorId: string;
-  assetClass: AssetClass;
-  assetDescription: string;
-  leaseType: LeaseType;
-  commencementDate: Date;
-  endDate: Date;
-  paymentAmount: number;
-  paymentFrequency: PaymentFrequency;
-  currency: string;
-  incrementalBorrowingRate: number;
-  hasExtensionOption?: boolean;
-  extensionPeriod?: number;
-  hasTerminationOption?: boolean;
-  terminationPenalty?: number;
-  hasPurchaseOption?: boolean;
-  purchasePrice?: number;
-  costCenterId?: string;
-  glAccountAsset: string;
-  glAccountLiability: string;
-  glAccountInterest: string;
-  glAccountDepreciation: string;
-}
 
 export async function createLease(
   input: CreateLeaseInput
 ): Promise<{ ok: true; leaseId: string; leaseNumber: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 500));
   console.log('[Action] createLease:', input);
-  revalidatePath('/finance/leases');
+  revalidatePath(routes.finance.leases);
   return { ok: true, leaseId: 'lease-new-' + Date.now(), leaseNumber: 'LS-2026-' + Date.now() };
 }
 
@@ -45,8 +22,8 @@ export async function updateLease(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] updateLease:', leaseId, updates);
-  revalidatePath('/finance/leases');
-  revalidatePath(`/finance/leases/${leaseId}`);
+  revalidatePath(routes.finance.leases);
+  revalidatePath(routes.finance.leaseDetail(leaseId));
   return { ok: true };
 }
 
@@ -55,8 +32,8 @@ export async function activateLease(
 ): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 600));
   console.log('[Action] activateLease:', leaseId);
-  revalidatePath('/finance/leases');
-  revalidatePath('/finance/journal');
+  revalidatePath(routes.finance.leases);
+  revalidatePath(routes.finance.journals);
   return { ok: true, journalId: 'je-lease-' + Date.now() };
 }
 
@@ -67,8 +44,8 @@ export async function terminateLease(
 ): Promise<{ ok: true; journalId: string; gainOrLoss: number } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 500));
   console.log('[Action] terminateLease:', leaseId, terminationDate, reason);
-  revalidatePath('/finance/leases');
-  revalidatePath('/finance/journal');
+  revalidatePath(routes.finance.leases);
+  revalidatePath(routes.finance.journals);
   return { ok: true, journalId: 'je-term-' + Date.now(), gainOrLoss: -15000 };
 }
 
@@ -82,8 +59,8 @@ export async function recordLeasePayment(
 ): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] recordLeasePayment:', leaseId, scheduleEntryId, paymentDate, amount);
-  revalidatePath(`/finance/leases/${leaseId}`);
-  revalidatePath('/finance/journal');
+  revalidatePath(routes.finance.leaseDetail(leaseId));
+  revalidatePath(routes.finance.journals);
   return { ok: true, journalId: 'je-pay-' + Date.now() };
 }
 
@@ -93,8 +70,8 @@ export async function runDepreciationForLease(
 ): Promise<{ ok: true; journalId: string; amount: number } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] runDepreciationForLease:', leaseId, periodEnd);
-  revalidatePath(`/finance/leases/${leaseId}`);
-  revalidatePath('/finance/journal');
+  revalidatePath(routes.finance.leaseDetail(leaseId));
+  revalidatePath(routes.finance.journals);
   return { ok: true, journalId: 'je-dep-' + Date.now(), amount: 72917 };
 }
 
@@ -104,40 +81,31 @@ export async function accrueLeaseLiabilityInterest(
 ): Promise<{ ok: true; journalId: string; amount: number } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 350));
   console.log('[Action] accrueLeaseLiabilityInterest:', leaseId, periodEnd);
-  revalidatePath(`/finance/leases/${leaseId}`);
-  revalidatePath('/finance/journal');
+  revalidatePath(routes.finance.leaseDetail(leaseId));
+  revalidatePath(routes.finance.journals);
   return { ok: true, journalId: 'je-int-' + Date.now(), amount: 20560 };
 }
 
 // ─── Lease Modification Actions ──────────────────────────────────────────────
-
-interface CreateModificationInput {
-  leaseId: string;
-  effectiveDate: Date;
-  modificationType: ModificationType;
-  description: string;
-  revisedPaymentAmount?: number;
-  revisedEndDate?: Date;
-  revisedIBR?: number;
-}
 
 export async function createLeaseModification(
   input: CreateModificationInput
 ): Promise<{ ok: true; modificationId: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] createLeaseModification:', input);
-  revalidatePath(`/finance/leases/${input.leaseId}`);
+  revalidatePath(routes.finance.leaseDetail(input.leaseId));
   return { ok: true, modificationId: 'mod-new-' + Date.now() };
 }
 
-export async function calculateModificationImpact(
-  modificationId: string
-): Promise<{
-  ok: true;
-  rouAdjustment: number;
-  liabilityAdjustment: number;
-  gainOrLoss: number;
-} | { ok: false; error: string }> {
+export async function calculateModificationImpact(modificationId: string): Promise<
+  | {
+      ok: true;
+      rouAdjustment: number;
+      liabilityAdjustment: number;
+      gainOrLoss: number;
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 500));
   console.log('[Action] calculateModificationImpact:', modificationId);
   return {
@@ -153,8 +121,8 @@ export async function processModification(
 ): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 600));
   console.log('[Action] processModification:', modificationId);
-  revalidatePath('/finance/leases');
-  revalidatePath('/finance/journal');
+  revalidatePath(routes.finance.leases);
+  revalidatePath(routes.finance.journals);
   return { ok: true, journalId: 'je-mod-' + Date.now() };
 }
 
@@ -167,7 +135,7 @@ export async function reassessExtensionOption(
 ): Promise<{ ok: true; journalId?: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] reassessExtensionOption:', leaseId, isReasonablyCertain, justification);
-  revalidatePath(`/finance/leases/${leaseId}`);
+  revalidatePath(routes.finance.leaseDetail(leaseId));
   if (isReasonablyCertain) {
     return { ok: true, journalId: 'je-ext-' + Date.now() };
   }
@@ -181,7 +149,7 @@ export async function reassessPurchaseOption(
 ): Promise<{ ok: true; journalId?: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] reassessPurchaseOption:', leaseId, isReasonablyCertain, justification);
-  revalidatePath(`/finance/leases/${leaseId}`);
+  revalidatePath(routes.finance.leaseDetail(leaseId));
   return { ok: true };
 }
 
@@ -189,20 +157,36 @@ export async function reassessPurchaseOption(
 
 export async function bulkRunLeaseDepreciation(
   periodEnd: Date
-): Promise<{ ok: true; leasesProcessed: number; totalDepreciation: number; journalId: string } | { ok: false; error: string }> {
+): Promise<
+  | { ok: true; leasesProcessed: number; totalDepreciation: number; journalId: string }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 800));
   console.log('[Action] bulkRunLeaseDepreciation:', periodEnd);
-  revalidatePath('/finance/leases');
-  revalidatePath('/finance/journal');
-  return { ok: true, leasesProcessed: 12, totalDepreciation: 185000, journalId: 'je-bulk-dep-' + Date.now() };
+  revalidatePath(routes.finance.leases);
+  revalidatePath(routes.finance.journals);
+  return {
+    ok: true,
+    leasesProcessed: 12,
+    totalDepreciation: 185000,
+    journalId: 'je-bulk-dep-' + Date.now(),
+  };
 }
 
 export async function bulkAccrueLeaseInterest(
   periodEnd: Date
-): Promise<{ ok: true; leasesProcessed: number; totalInterest: number; journalId: string } | { ok: false; error: string }> {
+): Promise<
+  | { ok: true; leasesProcessed: number; totalInterest: number; journalId: string }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 700));
   console.log('[Action] bulkAccrueLeaseInterest:', periodEnd);
-  revalidatePath('/finance/leases');
-  revalidatePath('/finance/journal');
-  return { ok: true, leasesProcessed: 12, totalInterest: 45000, journalId: 'je-bulk-int-' + Date.now() };
+  revalidatePath(routes.finance.leases);
+  revalidatePath(routes.finance.journals);
+  return {
+    ok: true,
+    leasesProcessed: 12,
+    totalInterest: 45000,
+    journalId: 'je-bulk-int-' + Date.now(),
+  };
 }

@@ -10,6 +10,8 @@
  * All monetary amounts are bigint (minor units).
  */
 
+import { formatMinorUnits } from '@afenda/core';
+
 export interface LocalPaymentInstruction {
   readonly paymentId: string;
   readonly debtorName: string;
@@ -43,13 +45,6 @@ export interface PaymentFileOutput {
   readonly messageId: string;
   readonly numberOfTransactions: number;
   readonly controlSum: bigint;
-}
-
-function formatMinorUnits(amount: bigint, decimalPlaces: number = 2): string {
-  const str = amount.toString();
-  if (decimalPlaces === 0) return str;
-  const padded = str.padStart(decimalPlaces + 1, '0');
-  return `${padded.slice(0, -decimalPlaces)}.${padded.slice(-decimalPlaces)}`;
 }
 
 function formatDate(d: Date): string {

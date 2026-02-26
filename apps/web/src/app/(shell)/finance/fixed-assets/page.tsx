@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { routes } from '@/lib/constants';
 import { Plus, Calculator } from 'lucide-react';
-import { getFixedAssets, getAssetSummary, getDepreciationRuns } from '@/features/finance/fixed-assets/queries/assets.queries';
+import {
+  getFixedAssets,
+  getAssetSummary,
+  getDepreciationRuns,
+} from '@/features/finance/fixed-assets/queries/assets.queries';
 import { AssetSummaryCards } from '@/features/finance/fixed-assets/blocks/asset-summary-cards';
 import { AssetsTable } from '@/features/finance/fixed-assets/blocks/assets-table';
 

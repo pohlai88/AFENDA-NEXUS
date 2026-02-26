@@ -5,6 +5,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { settleIcDocuments } from '../services/settle-ic-documents.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerSettlementRoutes(
   app: FastifyInstance,
@@ -16,8 +17,7 @@ export function registerSettlementRoutes(
     '/ic-settlements',
     { preHandler: [requirePermission(policy, 'ic:settle')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const body = CreateIcSettlementSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -54,8 +54,7 @@ export function registerSettlementRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.icSettlementRepo.findById(id);

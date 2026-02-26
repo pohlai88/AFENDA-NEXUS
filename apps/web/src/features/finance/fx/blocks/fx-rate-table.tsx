@@ -7,7 +7,7 @@ import { FxRateActions } from './fx-rate-actions';
 import type { FxRateListItem } from '../queries/fx.queries';
 
 export function fxRateColumns(
-  editAction?: (rate: FxRateListItem) => React.ReactNode,
+  editAction?: (rate: FxRateListItem) => React.ReactNode
 ): ColumnDef<FxRateListItem>[] {
   return [
     {
@@ -28,9 +28,7 @@ export function fxRateColumns(
       className: 'text-right',
       sortable: true,
       sortFn: (a, b) => Number(a.rate) - Number(b.rate),
-      accessorFn: (row) => (
-        <span className="font-mono">{Number(row.rate).toFixed(6)}</span>
-      ),
+      accessorFn: (row) => <span className="font-mono">{Number(row.rate).toFixed(6)}</span>,
     },
     {
       id: 'effectiveDate',

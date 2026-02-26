@@ -41,7 +41,10 @@ const columns: Column<ExpenseClaim>[] = [
       <div className="flex items-center gap-2">
         <Avatar className="h-8 w-8">
           <AvatarFallback className="text-xs">
-            {claim.employeeName.split(' ').map((n) => n[0]).join('')}
+            {claim.employeeName
+              .split(' ')
+              .map((n) => n[0])
+              .join('')}
           </AvatarFallback>
         </Avatar>
         <div>
@@ -72,9 +75,7 @@ const columns: Column<ExpenseClaim>[] = [
     key: 'lineCount',
     header: 'Items',
     className: 'text-center',
-    render: (claim) => (
-      <span className="text-sm">{claim.lineCount}</span>
-    ),
+    render: (claim) => <span className="text-sm">{claim.lineCount}</span>,
   },
   {
     key: 'totalAmount',

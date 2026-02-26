@@ -7,6 +7,7 @@ import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { getCashFlow } from '@/features/finance/reports/queries/report.queries';
 import { buildCashFlowExport } from '@/features/finance/reports/actions/report-export.actions';
+import { routes } from '@/lib/constants';
 import { ReportFilterBar } from '@/features/finance/reports/blocks/report-filter-bar';
 import { getReportFilterData } from '@/features/finance/reports/blocks/report-filter-data';
 import { Banknote } from 'lucide-react';
@@ -52,8 +53,8 @@ export default async function CashFlowPage({ searchParams }: CashFlowPageProps) 
             : 'Operating, investing, and financing activities.'
         }
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Reports', href: '/finance/reports' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Reports', href: routes.finance.reports },
           { label: 'Cash Flow' },
         ]}
         actions={data ? <ExportMenu payload={buildCashFlowExport(data)} /> : undefined}

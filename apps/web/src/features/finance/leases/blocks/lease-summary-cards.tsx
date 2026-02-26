@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { formatCurrency } from '@/lib/utils';
+import { routes } from '@/lib/constants';
 import {
   FileText,
   Wallet,
@@ -41,28 +42,28 @@ export function LeaseSummaryCards({ summary }: LeaseSummaryCardsProps) {
       value: formatCurrency(summary.totalLeaseLiability, 'USD'),
       icon: TrendingDown,
       description: 'Lease obligations',
-      color: 'text-purple-500',
+      color: 'text-accent-foreground',
     },
     {
       title: 'Current Liability',
       value: formatCurrency(summary.currentLiability, 'USD'),
       icon: Clock,
       description: 'Due within 12 months',
-      color: 'text-amber-500',
+      color: 'text-warning',
     },
     {
       title: 'Monthly Due',
       value: formatCurrency(summary.monthlyPaymentsDue, 'USD'),
       icon: DollarSign,
       description: 'Total monthly payments',
-      color: 'text-cyan-500',
+      color: 'text-info',
     },
     {
       title: 'Expiring Soon',
       value: summary.leasesExpiringSoon.toString(),
       icon: Calendar,
       description: 'Within 90 days',
-      color: summary.leasesExpiringSoon > 0 ? 'text-amber-500' : 'text-gray-400',
+      color: summary.leasesExpiringSoon > 0 ? 'text-warning' : 'text-muted-foreground',
     },
   ];
 
@@ -91,8 +92,8 @@ export function LeaseSummaryCards({ summary }: LeaseSummaryCardsProps) {
           <AlertTitle>Leases Expiring Soon</AlertTitle>
           <AlertDescription>
             <span className="font-medium">{summary.leasesExpiringSoon} lease(s)</span> will expire
-            within the next 90 days. Review extension options or plan for renewal.{' '}
-            <Link href="/finance/leases?filter=expiring" className="underline">
+            within the next 90 days. Review extension options or plan for renewal.{''}
+            <Link href={`${routes.finance.leases}?filter=expiring`} className="underline">
               View expiring leases
             </Link>
           </AlertDescription>
@@ -104,9 +105,10 @@ export function LeaseSummaryCards({ summary }: LeaseSummaryCardsProps) {
           <Clock className="h-4 w-4" />
           <AlertTitle>Pending Modifications</AlertTitle>
           <AlertDescription>
-            <span className="font-medium">{summary.pendingModifications} modification(s)</span>{' '}
-            awaiting processing.{' '}
-            <Link href="/finance/leases/modifications" className="underline">
+            <span className="font-medium">{summary.pendingModifications} modification(s)</span>
+            {''}
+            awaiting processing.{''}
+            <Link href={routes.finance.leaseModifications} className="underline">
               Process modifications
             </Link>
           </AlertDescription>

@@ -65,6 +65,27 @@ export const contractStatusEnum = pgEnum('contract_status', ['ACTIVE', 'COMPLETE
 
 export const reportingStandardEnum = pgEnum('reporting_standard', ['IFRS', 'US_GAAP', 'LOCAL']);
 
+export const supplierStatusEnum = pgEnum('supplier_status', ['ACTIVE', 'ON_HOLD', 'INACTIVE']);
+
+export const paymentMethodTypeEnum = pgEnum('payment_method_type', [
+  'BANK_TRANSFER',
+  'CHECK',
+  'WIRE',
+  'SEPA',
+  'LOCAL_TRANSFER',
+]);
+
+export const apHoldTypeEnum = pgEnum('ap_hold_type', [
+  'DUPLICATE',
+  'MATCH_EXCEPTION',
+  'VALIDATION',
+  'SUPPLIER',
+  'FX_RATE',
+  'MANUAL',
+]);
+
+export const apHoldStatusEnum = pgEnum('ap_hold_status', ['ACTIVE', 'RELEASED']);
+
 export const apInvoiceStatusEnum = pgEnum('ap_invoice_status', [
   'DRAFT',
   'PENDING_APPROVAL',
@@ -457,6 +478,9 @@ export const linkedEntityTypeEnum = pgEnum('linked_entity_type', [
   'TAX_RETURN',
   'PROVISION',
   'IC_TRANSACTION',
+  'SUPPLIER',
+  'SUPPLIER_CONTRACT',
+  'SUPPLIER_STATEMENT',
 ]);
 
 export const documentCategoryEnum = pgEnum('document_category', [

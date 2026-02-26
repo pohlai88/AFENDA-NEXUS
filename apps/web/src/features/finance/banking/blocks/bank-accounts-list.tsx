@@ -27,7 +27,10 @@ function BankAccountCard({ account }: { account: BankAccount }) {
 
   return (
     <Card className="group relative hover:shadow-md transition-shadow">
-      <Link href={`${routes.finance.banking}/accounts/${account.id}`} className="absolute inset-0 z-10">
+      <Link
+        href={`${routes.finance.banking}/accounts/${account.id}`}
+        className="absolute inset-0 z-10"
+      >
         <span className="sr-only">View {account.name}</span>
       </Link>
       <CardHeader className="pb-2">
@@ -64,7 +67,7 @@ function BankAccountCard({ account }: { account: BankAccount }) {
 
           <div className="flex items-center justify-between text-sm">
             <div className="text-muted-foreground">Last Reconciled</div>
-            <div className={cn(!account.lastReconciledDate && 'text-amber-600 dark:text-amber-400')}>
+            <div className={cn(!account.lastReconciledDate && 'text-warning dark:text-warning')}>
               {account.lastReconciledDate ? formatDate(account.lastReconciledDate) : 'Never'}
             </div>
           </div>

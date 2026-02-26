@@ -23,9 +23,8 @@ function StatusBadge({ status }: { status: AssetStatus }) {
 
 function DepreciationProgress({ asset }: { asset: FixedAsset }) {
   const depreciableAmount = asset.originalCost - asset.salvageValue;
-  const percentage = depreciableAmount > 0
-    ? (asset.accumulatedDepreciation / depreciableAmount) * 100
-    : 0;
+  const percentage =
+    depreciableAmount > 0 ? (asset.accumulatedDepreciation / depreciableAmount) * 100 : 0;
 
   return (
     <div className="space-y-1 w-28">
@@ -84,9 +83,7 @@ const columns: Column<FixedAsset>[] = [
     sortable: true,
     className: 'text-right',
     render: (asset) => (
-      <span className="font-mono">
-        {formatCurrency(asset.originalCost, asset.currency)}
-      </span>
+      <span className="font-mono">{formatCurrency(asset.originalCost, asset.currency)}</span>
     ),
   },
   {
@@ -106,10 +103,9 @@ const columns: Column<FixedAsset>[] = [
     sortable: true,
     className: 'text-right',
     render: (asset) => (
-      <span className={cn(
-        'font-mono font-medium',
-        asset.netBookValue === 0 && 'text-muted-foreground'
-      )}>
+      <span
+        className={cn('font-mono font-medium', asset.netBookValue === 0 && 'text-muted-foreground')}
+      >
         {formatCurrency(asset.netBookValue, asset.currency)}
       </span>
     ),

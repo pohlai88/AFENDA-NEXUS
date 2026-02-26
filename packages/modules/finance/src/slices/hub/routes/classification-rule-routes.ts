@@ -5,6 +5,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import type { ReportingStandard } from '../../hub/entities/classification-rule.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerClassificationRuleRoutes(
   app: FastifyInstance,
@@ -16,8 +17,7 @@ export function registerClassificationRuleRoutes(
     '/classification-rules',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { standard, version } = ClassificationRuleQuerySchema.parse(req.query);
 
       if (!standard) {
@@ -48,8 +48,7 @@ export function registerClassificationRuleRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.classificationRuleRepo.findRuleById(id);

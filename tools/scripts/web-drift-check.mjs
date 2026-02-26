@@ -21,6 +21,10 @@
  *   W13  Dependency audit — all deps in package.json are in ARCHITECTURE allowlist
  *   W14  No hardcoded colors — must use CSS variables (bg-red-500 → bg-destructive)
  *   W15  Server Action pattern — forms use "use server" actions, not client fetch
+ *   W17  No hardcoded URLs — localhost, 127.0.0.1, literal URLs must use env vars
+ *   W18  No loose utils — features/erp must not create utils.ts/helpers.ts grab-bags
+ *   W19  shadcn component usage — no raw <input>/<select>/<table> where shadcn exists
+ *   W20  No hardcoded route paths — must use routes.* from @/lib/constants
  *
  * Usage:
  *   node tools/scripts/web-drift-check.mjs
@@ -242,7 +246,7 @@ function checkW04() {
       if (SUSPECT_PATTERN.test(lines[i])) {
         const match = lines[i].match(/(?:interface|type)\s+(\w+)/);
         if (match) {
-          warn(
+          fail(
             'W04',
             `${relPath(file)}:${i + 1} -- "${match[1]}" looks like a hand-written payload type. Use @afenda/contracts schemas.`
           );
@@ -744,9 +748,9 @@ function checkW14() {
       for (let i = 0; i < lines.length; i++) {
         const match = lines[i].match(HARDCODED_COLOR_PATTERN);
         if (match) {
-          warn(
+          fail(
             'W14',
-            `${rel}:${i + 1} -- Hardcoded color "${match[0]}". Use CSS variable (e.g., bg-primary, text-destructive).`
+            `${rel}:${i + 1} -- Hardcoded color "${match[0]}". Use CSS variable (e.g., bg-success, text-warning, bg-destructive/15).`
           );
         }
       }
@@ -866,6 +870,183 @@ function checkW16() {
   }
 }
 
+// ─── W17: No Hardcoded URLs ──────────────────────────────────────────────────
+// Source files must not contain hardcoded localhost, 127.0.0.1, or literal
+// http/https URLs. Use environment variables (NEXT_PUBLIC_*) instead.
+// Exemptions: api-client.ts env fallback, layout.tsx metadataBase fallback,
+// test files (__tests__/), and configuration files.
+
+function checkW17() {
+  const HARDCODED_PATTERNS = [
+    { pattern: /localhost:\d+/, msg: 'hardcoded localhost URL' },
+    { pattern: /127\.0\.0\.1/, msg: 'hardcoded 127.0.0.1' },
+    { pattern: /['"`]https?:\/\/[^'"`\s]+['"`]/, msg: 'hardcoded URL literal' },
+  ];
+
+  // Files where env-var fallbacks like `?? 'http://localhost:3001'` are acceptable
+  const EXEMPT_FILES = [
+    'lib/api-client.ts',
+    'app/layout.tsx',
+    'hooks/use-analytics.ts', // PostHog SDK default host fallback
+  ];
+
+  const allFiles = collectFiles(SRC, ['.ts', '.tsx']);
+  for (const file of allFiles) {
+    const rel = relPath(file);
+    // Skip test files entirely
+    if (rel.startsWith('__tests__/') || rel.includes('/__tests__/')) continue;
+    if (rel.endsWith('.test.ts') || rel.endsWith('.test.tsx')) continue;
+    if (rel.endsWith('.spec.ts') || rel.endsWith('.spec.tsx')) continue;
+    // Skip exempt files
+    if (EXEMPT_FILES.some((ex) => rel === ex || rel.endsWith('/' + ex))) continue;
+
+    const content = readFileSync(file, 'utf-8');
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Skip comments
+      if (line.trimStart().startsWith('//') || line.trimStart().startsWith('*')) continue;
+
+      for (const { pattern, msg } of HARDCODED_PATTERNS) {
+        if (pattern.test(line)) {
+          fail(
+            'W17',
+            `${rel}:${i + 1} -- ${msg}. Use an environment variable (NEXT_PUBLIC_*) instead.`
+          );
+        }
+      }
+    }
+  }
+}
+
+// ─── W18: No Loose Utils Files ──────────────────────────────────────────────
+// Feature modules and components/erp/ must NOT create their own utils.ts,
+// helpers.ts, or similar utility grab-bags. Shared utilities belong in
+// @/lib/utils (or @/lib/<specific>.ts). This prevents drift and duplication.
+
+function checkW18() {
+  const PROHIBITED_NAMES = [
+    'utils.ts', 'utils.tsx',
+    'helpers.ts', 'helpers.tsx',
+    'util.ts', 'util.tsx',
+    'helper.ts', 'helper.tsx',
+    'common.ts', 'common.tsx',
+  ];
+
+  const DIRS_TO_CHECK = [
+    join(SRC, 'features'),
+    join(SRC, 'components/erp'),
+  ];
+
+  for (const dir of DIRS_TO_CHECK) {
+    const files = collectFiles(dir, ['.ts', '.tsx']);
+    for (const file of files) {
+      const fileName = file.split(/[\\/]/).pop();
+      if (PROHIBITED_NAMES.includes(fileName)) {
+        fail(
+          'W18',
+          `${relPath(file)} -- Loose utility file "${fileName}" in feature/erp directory. Move shared utils to @/lib/utils or @/lib/<name>.ts.`
+        );
+      }
+    }
+  }
+}
+
+// ─── W19: shadcn Component Usage ────────────────────────────────────────────
+// Features and components/erp/ must import UI primitives from @/components/ui/
+// (shadcn). They must NOT re-implement primitives that shadcn already provides
+// using raw HTML elements (e.g. <input .../> instead of <Input />,
+// <button ...> instead of <Button />, <select> instead of <Select />).
+//
+// This check detects raw HTML elements that have a shadcn equivalent.
+// Exemptions: components/ui/ itself (it wraps raw elements by design).
+
+function checkW19() {
+  // Map of raw HTML element → shadcn component it should be replaced with
+  const SHADCN_REPLACEMENTS = [
+    { pattern: /<input\s/, replacement: '<Input /> from @/components/ui/input', tag: 'input' },
+    { pattern: /<textarea\s/, replacement: '<Textarea /> from @/components/ui/textarea', tag: 'textarea' },
+    { pattern: /<select\s/, replacement: '<Select /> from @/components/ui/select', tag: 'select' },
+    { pattern: /<table[\s>]/, replacement: '<Table /> from @/components/ui/table', tag: 'table' },
+  ];
+
+  const DIRS_TO_CHECK = [
+    join(SRC, 'features'),
+    join(SRC, 'components/erp'),
+  ];
+
+  for (const dir of DIRS_TO_CHECK) {
+    const files = collectFiles(dir, ['.tsx']);
+    for (const file of files) {
+      const content = readFileSync(file, 'utf-8');
+      const lines = content.split('\n');
+      const rel = relPath(file);
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Skip comments and JSX comments
+        if (line.trimStart().startsWith('//') || line.trimStart().startsWith('*')) continue;
+        if (line.trimStart().startsWith('{/*')) continue;
+
+        for (const { pattern, replacement, tag } of SHADCN_REPLACEMENTS) {
+          if (pattern.test(line)) {
+            // Exempt react-dropzone hidden file inputs: <input {...getInputProps()} />
+            if (tag === 'input' && line.includes('getInputProps')) continue;
+            // Exempt hidden inputs (type="hidden")
+            if (tag === 'input' && line.includes('type="hidden"')) continue;
+            fail(
+              'W19',
+              `${rel}:${i + 1} -- Raw <${tag}> element. Use ${replacement} instead.`
+            );
+          }
+        }
+      }
+    }
+  }
+}
+
+// ─── W20: No hardcoded route paths ──────────────────────────────────────────
+// All route paths must come from `routes.*` in @/lib/constants.
+// Catches: href: '/finance/...', redirect('/finance/...'), push('/finance/...'), etc.
+// Exempt: constants.ts (route definitions), test files.
+
+function checkW20() {
+  const ROUTE_PATH_PATTERN = /['"`]\/finance\/[^'"`\s]*['"`]/;
+
+  // Files where route path literals are the actual definitions
+  const EXEMPT_FILES = [
+    'lib/constants.ts', // route definitions live here
+  ];
+
+  const allFiles = collectFiles(SRC, ['.ts', '.tsx']);
+  for (const file of allFiles) {
+    const rel = relPath(file);
+    // Skip test files
+    if (rel.startsWith('__tests__/') || rel.includes('/__tests__/')) continue;
+    if (rel.endsWith('.test.ts') || rel.endsWith('.test.tsx')) continue;
+    if (rel.endsWith('.spec.ts') || rel.endsWith('.spec.tsx')) continue;
+    // Skip exempt files
+    if (EXEMPT_FILES.some((ex) => rel.endsWith(ex))) continue;
+
+    const content = readFileSync(file, 'utf-8');
+    const lines = content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Skip comments
+      if (line.trimStart().startsWith('//') || line.trimStart().startsWith('*')) continue;
+      if (line.trimStart().startsWith('{/*')) continue;
+
+      if (ROUTE_PATH_PATTERN.test(line)) {
+        fail(
+          'W20',
+          `${rel}:${i + 1} -- Hardcoded route path. Use routes.* from @/lib/constants instead.`
+        );
+      }
+    }
+  }
+}
+
 // ─── Run All Checks ──────────────────────────────────────────────────────────
 
 function main() {
@@ -877,7 +1058,7 @@ function main() {
   if (!JSON_MODE) {
     console.log('+--------------------------------------------------------------+');
     console.log('|  @afenda/web -- Frontend Drift Gate                          |');
-    console.log('|  16 checks - ARCHITECTURE.@afenda-web.md enforcement         |');
+    console.log('|  20 checks - ARCHITECTURE.@afenda-web.md enforcement         |');
     console.log('+--------------------------------------------------------------+\n');
   }
 
@@ -898,6 +1079,10 @@ function main() {
     { id: 'W14', name: 'No hardcoded colors', fn: checkW14 },
     { id: 'W15', name: 'Server Action pattern', fn: checkW15 },
     { id: 'W16', name: '@theme inline completeness', fn: checkW16 },
+    { id: 'W17', name: 'No hardcoded URLs (use env vars)', fn: checkW17 },
+    { id: 'W18', name: 'No loose utils files (use @/lib/)', fn: checkW18 },
+    { id: 'W19', name: 'shadcn component usage (no raw HTML primitives)', fn: checkW19 },
+    { id: 'W20', name: 'No hardcoded route paths (use routes.*)', fn: checkW20 },
   ];
 
   for (const check of checks) {

@@ -94,14 +94,21 @@ export function registerFinanceHandlers(
     }
     if (deps?.resendApiKey && deps?.session) {
       try {
-        const { Resend } = await import('resend');
-        const resend = new Resend(deps.resendApiKey);
-        await resend.emails.send({
-          from: process.env.DEFAULT_FROM_EMAIL ?? 'no-reply@nexuscanon.com',
-          to: [], // Approvers list would come from approval policy lookup
-          subject: `Journal ${p.journalId} posted — review required`,
-          text: `Journal ${p.journalId} has been posted in ledger ${p.ledgerId}.`,
-        });
+        const recipients = (p.notifyEmails as string[] | undefined) ?? [];
+        if (recipients.length > 0) {
+          const { Resend } = await import('resend');
+          const resend = new Resend(deps.resendApiKey);
+          await resend.emails.send({
+            from: process.env.DEFAULT_FROM_EMAIL ?? 'no-reply@nexuscanon.com',
+            to: recipients,
+            subject: `Journal ${p.journalId} posted — review required`,
+            text: `Journal ${p.journalId} has been posted in ledger ${p.ledgerId}.`,
+          });
+        } else {
+          logger.debug('JOURNAL_POSTED — no notifyEmails in payload, skipping email', {
+            journalId: p.journalId,
+          });
+        }
       } catch (emailErr) {
         logger.warn('Notification email failed (non-fatal)', { error: String(emailErr) });
       }
@@ -162,14 +169,21 @@ export function registerFinanceHandlers(
     });
     if (deps?.resendApiKey) {
       try {
-        const { Resend } = await import('resend');
-        const resend = new Resend(deps.resendApiKey);
-        await resend.emails.send({
-          from: process.env.DEFAULT_FROM_EMAIL ?? 'no-reply@nexuscanon.com',
-          to: [], // Counterparty admin email would come from company lookup
-          subject: `New intercompany transaction ${p.transactionId}`,
-          text: `An intercompany transaction has been created between company ${p.sourceCompanyId} and ${p.mirrorCompanyId}.`,
-        });
+        const recipients = (p.notifyEmails as string[] | undefined) ?? [];
+        if (recipients.length > 0) {
+          const { Resend } = await import('resend');
+          const resend = new Resend(deps.resendApiKey);
+          await resend.emails.send({
+            from: process.env.DEFAULT_FROM_EMAIL ?? 'no-reply@nexuscanon.com',
+            to: recipients,
+            subject: `New intercompany transaction ${p.transactionId}`,
+            text: `An intercompany transaction has been created between company ${p.sourceCompanyId} and ${p.mirrorCompanyId}.`,
+          });
+        } else {
+          logger.debug('IC_TRANSACTION_CREATED — no notifyEmails in payload, skipping email', {
+            transactionId: p.transactionId,
+          });
+        }
       } catch (emailErr) {
         logger.warn('IC notification email failed (non-fatal)', { error: String(emailErr) });
       }
@@ -187,7 +201,7 @@ export function registerFinanceHandlers(
     });
     if (deps?.session && p.autoPost) {
       try {
-        const { postJournal } = await import('@afenda/finance/app');
+        const { postJournal } = await import('@afenda/finance');
         await deps.session.withTenant({ tenantId: row.tenantId }, async (tx) => {
           const result = await postJournal(tx, {
             journalId: p.journalId as string,
@@ -206,6 +220,159 @@ export function registerFinanceHandlers(
         logger.warn('Auto-post failed (non-fatal)', { error: String(autoPostErr) });
       }
     }
+  });
+
+  // ─── Tier-1: Approval notifications ──────────────────────────────────────────
+
+  registry.register('APPROVAL_SUBMITTED', async (row) => {
+    const p = payload(row);
+    logger.info('Approval submitted — notification pending', {
+      event: 'APPROVAL_SUBMITTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      entityType: p.entityType,
+      entityId: p.entityId,
+      submittedBy: p.submittedBy,
+    });
+    if (deps?.resendApiKey) {
+      try {
+        const { Resend } = await import('resend');
+        const resend = new Resend(deps.resendApiKey);
+        const approvers = (p.approverEmails as string[]) ?? [];
+        if (approvers.length > 0) {
+          await resend.emails.send({
+            from: process.env.DEFAULT_FROM_EMAIL ?? 'no-reply@nexuscanon.com',
+            to: approvers,
+            subject: `Approval requested: ${p.entityType} ${p.entityId}`,
+            text: `A ${p.entityType} requires your approval. Entity ID: ${p.entityId}.`,
+          });
+        }
+      } catch (emailErr) {
+        logger.warn('Approval notification email failed (non-fatal)', { error: String(emailErr) });
+      }
+    }
+  });
+
+  registry.register('APPROVAL_APPROVED', async (row) => {
+    const p = payload(row);
+    logger.info('Approval approved', {
+      event: 'APPROVAL_APPROVED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      entityType: p.entityType,
+      entityId: p.entityId,
+      approvedBy: p.approvedBy,
+    });
+    if (deps?.resendApiKey) {
+      try {
+        const { Resend } = await import('resend');
+        const resend = new Resend(deps.resendApiKey);
+        const submitterEmail = p.submitterEmail as string | undefined;
+        if (submitterEmail) {
+          await resend.emails.send({
+            from: process.env.DEFAULT_FROM_EMAIL ?? 'no-reply@nexuscanon.com',
+            to: [submitterEmail],
+            subject: `Approved: ${p.entityType} ${p.entityId}`,
+            text: `Your ${p.entityType} (${p.entityId}) has been approved.`,
+          });
+        }
+      } catch (emailErr) {
+        logger.warn('Approval approved email failed (non-fatal)', { error: String(emailErr) });
+      }
+    }
+  });
+
+  registry.register('APPROVAL_REJECTED', async (row) => {
+    const p = payload(row);
+    logger.info('Approval rejected', {
+      event: 'APPROVAL_REJECTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      entityType: p.entityType,
+      entityId: p.entityId,
+      rejectedBy: p.rejectedBy,
+      reason: p.reason,
+    });
+    if (deps?.resendApiKey) {
+      try {
+        const { Resend } = await import('resend');
+        const resend = new Resend(deps.resendApiKey);
+        const submitterEmail = p.submitterEmail as string | undefined;
+        if (submitterEmail) {
+          await resend.emails.send({
+            from: process.env.DEFAULT_FROM_EMAIL ?? 'no-reply@nexuscanon.com',
+            to: [submitterEmail],
+            subject: `Rejected: ${p.entityType} ${p.entityId}`,
+            text: `Your ${p.entityType} (${p.entityId}) has been rejected. Reason: ${p.reason ?? 'None given'}.`,
+          });
+        }
+      } catch (emailErr) {
+        logger.warn('Approval rejected email failed (non-fatal)', { error: String(emailErr) });
+      }
+    }
+  });
+
+  // ─── Tier-1: AP/Expense/Covenant notifications ─────────────────────────────
+
+  registry.register('AP_PAYMENT_RUN_EXECUTED', async (row) => {
+    const p = payload(row);
+    logger.info('AP payment run executed', {
+      event: 'AP_PAYMENT_RUN_EXECUTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      paymentRunId: p.paymentRunId,
+      invoiceCount: p.invoiceCount,
+      totalAmount: p.totalAmount,
+    });
+  });
+
+  registry.register('EXPENSE_CLAIM_APPROVED', async (row) => {
+    const p = payload(row);
+    logger.info('Expense claim approved — reimbursement pending', {
+      event: 'EXPENSE_CLAIM_APPROVED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      claimId: p.claimId,
+      claimantId: p.claimantId,
+    });
+  });
+
+  registry.register('EXPENSE_CLAIM_REJECTED', async (row) => {
+    const p = payload(row);
+    logger.info('Expense claim rejected', {
+      event: 'EXPENSE_CLAIM_REJECTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      claimId: p.claimId,
+      claimantId: p.claimantId,
+      reason: p.reason,
+    });
+  });
+
+  registry.register('COVENANT_BREACHED', async (row) => {
+    const p = payload(row);
+    logger.info('Covenant breached — immediate notification required', {
+      event: 'COVENANT_BREACHED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      covenantId: p.covenantId,
+      metric: p.metric,
+      actual: p.actual,
+      threshold: p.threshold,
+    });
+  });
+
+  // ─── Tier-1: Document operations ───────────────────────────────────────────
+
+  registry.register('AR_DUNNING_RUN_CREATED', async (row) => {
+    const p = payload(row);
+    logger.info('AR dunning run created — dunning letters pending generation', {
+      event: 'AR_DUNNING_RUN_CREATED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      dunningRunId: p.dunningRunId,
+      customerCount: p.customerCount,
+    });
   });
 
   // Document storage handlers (R2 integration)

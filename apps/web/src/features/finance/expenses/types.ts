@@ -1,7 +1,22 @@
 // ─── Expense Claim Types ─────────────────────────────────────────────────────
 
-export type ClaimStatus = 'draft' | 'submitted' | 'pending_approval' | 'approved' | 'rejected' | 'paid' | 'cancelled';
-export type ExpenseCategory = 'travel' | 'meals' | 'accommodation' | 'transport' | 'supplies' | 'entertainment' | 'training' | 'other';
+export type ClaimStatus =
+  | 'draft'
+  | 'submitted'
+  | 'pending_approval'
+  | 'approved'
+  | 'rejected'
+  | 'paid'
+  | 'cancelled';
+export type ExpenseCategory =
+  | 'travel'
+  | 'meals'
+  | 'accommodation'
+  | 'transport'
+  | 'supplies'
+  | 'entertainment'
+  | 'training'
+  | 'other';
 
 export interface ExpenseClaim {
   id: string;
@@ -85,13 +100,22 @@ export interface ExpenseSummary {
 // ─── Status Config ───────────────────────────────────────────────────────────
 
 export const claimStatusConfig: Record<ClaimStatus, { label: string; color: string }> = {
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  submitted: { label: 'Submitted', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  pending_approval: { label: 'Pending Approval', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  approved: { label: 'Approved', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' },
-  cancelled: { label: 'Cancelled', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
+  draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
+  submitted: { label: 'Submitted', color: 'bg-info/15 text-info dark:bg-info/20' },
+  pending_approval: {
+    label: 'Pending Approval',
+    color: 'bg-warning/15 text-warning dark:bg-warning/20',
+  },
+  approved: { label: 'Approved', color: 'bg-success/15 text-success dark:bg-success/20' },
+  rejected: {
+    label: 'Rejected',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  paid: {
+    label: 'Paid',
+    color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
+  },
+  cancelled: { label: 'Cancelled', color: 'bg-muted text-muted-foreground' },
 };
 
 export const expenseCategoryLabels: Record<ExpenseCategory, string> = {

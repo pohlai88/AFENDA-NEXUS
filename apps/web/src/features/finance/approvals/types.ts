@@ -24,30 +24,30 @@ export interface ApprovalItem {
   amount: number;
   currency: string;
   status: ApprovalStatus;
-  
+
   // Requestor info
   requestedBy: string;
   requestedByName: string;
   requestedAt: string;
-  
+
   // SLA tracking
   dueAt: string;
   slaStatus: SLAStatus;
   slaHoursRemaining: number;
-  
+
   // Workflow info
   workflowId: string;
   stepNumber: number;
   totalSteps: number;
-  
+
   // Policy reference
   policyId: string;
   policyName: string;
-  
+
   // Optional delegation
   delegatedFrom?: string;
   delegatedFromName?: string;
-  
+
   // Metadata
   metadata?: Record<string, unknown>;
 }
@@ -115,7 +115,10 @@ export const documentTypeIcons: Record<ApprovalDocumentType, string> = {
   BUDGET_TRANSFER: 'ArrowUpDown',
 };
 
-export const slaStatusConfig: Record<SLAStatus, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
+export const slaStatusConfig: Record<
+  SLAStatus,
+  { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }
+> = {
   ON_TRACK: { variant: 'default', label: 'On Track' },
   AT_RISK: { variant: 'outline', label: 'At Risk' },
   BREACHED: { variant: 'destructive', label: 'SLA Breached' },

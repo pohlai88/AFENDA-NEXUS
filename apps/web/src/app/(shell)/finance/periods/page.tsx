@@ -6,6 +6,7 @@ import { handleApiError } from '@/lib/api-error.server';
 import { getPeriods, type PeriodListItem } from '@/features/finance/periods/queries/period.queries';
 import { PeriodTable } from '@/features/finance/periods/blocks/period-table';
 import { Calendar } from 'lucide-react';
+import { routes } from '@/lib/constants';
 
 export const metadata = { title: 'Fiscal Periods' };
 
@@ -42,7 +43,7 @@ export default async function PeriodsPage({ searchParams }: PeriodsPageProps) {
       <PageHeader
         title="Fiscal Periods"
         description="Manage fiscal year periods — open, close, and lock."
-        breadcrumbs={[{ label: 'Finance', href: '/finance/journals' }, { label: 'Periods' }]}
+        breadcrumbs={[{ label: 'Finance', href: routes.finance.journals }, { label: 'Periods' }]}
       />
 
       {/* Filters */}
@@ -88,7 +89,7 @@ function PeriodFilters({
     const s = overrides.status ?? currentStatus;
     if (s) params.set('status', s);
     const qs = params.toString();
-    return qs ? `/finance/periods?${qs}` : '/finance/periods';
+    return qs ? `${routes.finance.periods}?${qs}` : routes.finance.periods;
   }
 
   return (

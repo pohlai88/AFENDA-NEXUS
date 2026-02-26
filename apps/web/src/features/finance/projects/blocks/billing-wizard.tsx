@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { generateBillingPreview, submitBillingWizard } from '../actions/projects.actions';
 import type { Project, ProjectMilestone, WIPCalculation } from '../types';
 import { milestoneStatusConfig } from '../types';
+import { routes } from '@/lib/constants';
 
 type BillingType = 'milestone' | 'progress' | 'time_materials' | 'final';
 
@@ -71,7 +72,9 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
   } | null>(null);
   const [createInvoice, setCreateInvoice] = useState(true);
 
-  const pendingMilestones = milestones.filter((m) => m.status === 'completed' && !selectedMilestones.includes(m.id));
+  const pendingMilestones = milestones.filter(
+    (m) => m.status === 'completed' && !selectedMilestones.includes(m.id)
+  );
   const selectedMilestoneData = milestones.filter((m) => selectedMilestones.includes(m.id));
 
   const handleNext = async () => {
@@ -120,7 +123,7 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
         if (result.invoiceId) {
           toast.info(`Invoice ${result.invoiceId} generated`);
         }
-        router.push(`/finance/projects/${project.id}`);
+        router.push(routes.finance.projectDetail(project.id));
       } else {
         toast.error(result.error);
       }
@@ -156,7 +159,7 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
         <ChevronLeft className="h-4 w-4" />
         <span
           className="hover:text-foreground cursor-pointer"
-          onClick={() => router.push(`/finance/projects/${project.id}`)}
+          onClick={() => router.push(routes.finance.projectDetail(project.id))}
         >
           {project.name}
         </span>
@@ -164,7 +167,9 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Create Billing</h1>
-        <p className="text-muted-foreground">Generate billing for project {project.projectNumber}</p>
+        <p className="text-muted-foreground">
+          Generate billing for project {project.projectNumber}
+        </p>
       </div>
 
       {/* Progress */}
@@ -173,12 +178,14 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
           {STEPS.map((step, index) => (
             <div
               key={step.id}
-              className={cn('flex items-center gap-2',
+              className={cn(
+                'flex items-center gap-2',
                 index <= currentStep ? 'text-foreground' : 'text-muted-foreground'
               )}
             >
               <div
-                className={cn('h-6 w-6 rounded-full flex items-center justify-center text-xs',
+                className={cn(
+                  'h-6 w-6 rounded-full flex items-center justify-center text-xs',
                   index < currentStep
                     ? 'bg-primary text-primary-foreground'
                     : index === currentStep
@@ -279,7 +286,9 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
                   <Label>Select Completed Milestones</Label>
                   <div className="space-y-2">
                     {milestones.filter((m) => m.status === 'completed').length === 0 ? (
-                      <p className="text-muted-foreground text-sm">No completed milestones available for billing.</p>
+                      <p className="text-muted-foreground text-sm">
+                        No completed milestones available for billing.
+                      </p>
                     ) : (
                       milestones
                         .filter((m) => m.status === 'completed')
@@ -388,7 +397,7 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
                         {formatCurrency(project.contractValue - wip.billedToDate, project.currency)}
                       </span>
                     </div>
-                    <div className="flex justify-between text-amber-600">
+                    <div className="flex justify-between text-warning">
                       <span>WIP Adjustment</span>
                       <span className="font-mono">
                         {formatCurrency(wip.wipBalance, project.currency)}
@@ -425,7 +434,7 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
           {currentStep === 2 && (
             <div className="space-y-4">
               <p className="text-muted-foreground">
-                Click "Generate Preview" to see the billing line items.
+                Click"Generate Preview"to see the billing line items.
               </p>
               {!preview && (
                 <Button onClick={handleNext} disabled={isPending}>
@@ -445,7 +454,9 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
                   {preview.lineItems.map((item, index) => (
                     <div key={index} className="p-3 flex justify-between">
                       <span>{item.description}</span>
-                      <span className="font-mono">{formatCurrency(item.amount, project.currency)}</span>
+                      <span className="font-mono">
+                        {formatCurrency(item.amount, project.currency)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -454,16 +465,22 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
               <div className="p-4 bg-muted rounded-lg space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-mono">{formatCurrency(preview.totalAmount, project.currency)}</span>
+                  <span className="font-mono">
+                    {formatCurrency(preview.totalAmount, project.currency)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Taxes</span>
-                  <span className="font-mono">{formatCurrency(preview.taxes, project.currency)}</span>
+                  <span className="font-mono">
+                    {formatCurrency(preview.taxes, project.currency)}
+                  </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Grand Total</span>
-                  <span className="font-mono">{formatCurrency(preview.grandTotal, project.currency)}</span>
+                  <span className="font-mono">
+                    {formatCurrency(preview.grandTotal, project.currency)}
+                  </span>
                 </div>
               </div>
 

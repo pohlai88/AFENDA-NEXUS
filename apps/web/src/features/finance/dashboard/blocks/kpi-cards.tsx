@@ -50,18 +50,17 @@ function Sparkline({ data, trend }: { data: number[]; trend?: 'up' | 'down' | 'f
 // ─── KPI Card Component ──────────────────────────────────────────────────────
 
 function KPICardItem({ kpi }: { kpi: KPICard }) {
-  const TrendIcon =
-    kpi.trend === 'up' ? TrendingUp : kpi.trend === 'down' ? TrendingDown : Minus;
+  const TrendIcon = kpi.trend === 'up' ? TrendingUp : kpi.trend === 'down' ? TrendingDown : Minus;
 
   const trendColorClass =
     kpi.trend === 'up'
       ? kpi.trendIsGood
-        ? 'text-green-600 dark:text-green-400'
-        : 'text-red-600 dark:text-red-400'
+        ? 'text-success'
+        : 'text-destructive'
       : kpi.trend === 'down'
         ? kpi.trendIsGood
-          ? 'text-green-600 dark:text-green-400'
-          : 'text-red-600 dark:text-red-400'
+          ? 'text-success'
+          : 'text-destructive'
         : 'text-muted-foreground';
 
   const content = (
@@ -72,12 +71,8 @@ function KPICardItem({ kpi }: { kpi: KPICard }) {
       )}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {kpi.title}
-        </CardTitle>
-        {kpi.sparklineData && (
-          <Sparkline data={kpi.sparklineData} trend={kpi.trend} />
-        )}
+        <CardTitle className="text-sm font-medium text-muted-foreground">{kpi.title}</CardTitle>
+        {kpi.sparklineData && <Sparkline data={kpi.sparklineData} trend={kpi.trend} />}
       </CardHeader>
       <CardContent>
         <div className="flex items-end justify-between">
@@ -96,9 +91,7 @@ function KPICardItem({ kpi }: { kpi: KPICard }) {
               </div>
             )}
           </div>
-          {kpi.href && (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          )}
+          {kpi.href && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
         </div>
       </CardContent>
     </Card>

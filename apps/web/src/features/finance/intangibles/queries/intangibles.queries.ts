@@ -232,11 +232,14 @@ export async function getIntangibleAssets(params?: {
   search?: string;
   page?: number;
   perPage?: number;
-}): Promise<{
-  ok: true;
-  data: IntangibleAsset[];
-  pagination: { page: number; perPage: number; total: number; totalPages: number };
-} | { ok: false; error: string }> {
+}): Promise<
+  | {
+      ok: true;
+      data: IntangibleAsset[];
+      pagination: { page: number; perPage: number; total: number; totalPages: number };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 400));
 
   let filtered = [...mockIntangibles];
@@ -319,10 +322,16 @@ export async function getAmortizationSchedule(
       periodName: periodStart.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
       amortizationAmount: monthlyAmort,
       accumulatedAmortization: Math.min(accAmort, asset.originalCost - asset.residualValue),
-      carryingAmount: Math.max(asset.originalCost - accAmort - asset.impairmentLoss, asset.residualValue),
+      carryingAmount: Math.max(
+        asset.originalCost - accAmort - asset.impairmentLoss,
+        asset.residualValue
+      ),
       isPosted: periodEnd < new Date(),
       journalId: periodEnd < new Date() ? `jnl-${i}` : null,
-      journalNumber: periodEnd < new Date() ? `JE-${periodStart.getFullYear()}-${String(i + 200).padStart(4, '0')}` : null,
+      journalNumber:
+        periodEnd < new Date()
+          ? `JE-${periodStart.getFullYear()}-${String(i + 200).padStart(4, '0')}`
+          : null,
       postedDate: periodEnd < new Date() ? periodEnd : null,
     });
   }

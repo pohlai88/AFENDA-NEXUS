@@ -21,7 +21,11 @@ import {
 } from 'lucide-react';
 import type { WHTCertificate, WHTCertificateStatus, WHTType } from '../types';
 import { whtStatusConfig } from '../types';
-import { issueWHTCertificate, downloadWHTCertificatePDF, bulkIssueWHTCertificates } from '../actions/tax.actions';
+import {
+  issueWHTCertificate,
+  downloadWHTCertificatePDF,
+  bulkIssueWHTCertificates,
+} from '../actions/tax.actions';
 
 // ─── Status Badge ────────────────────────────────────────────────────────────
 
@@ -39,16 +43,10 @@ function TypeBadge({ type }: { type: WHTType }) {
       variant="outline"
       className={cn(
         'gap-1',
-        isPayable
-          ? 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-300'
-          : 'border-green-200 text-green-700 dark:border-green-800 dark:text-green-300'
+        isPayable ? 'border-destructive/30 text-destructive' : 'border-success/30 text-success'
       )}
     >
-      {isPayable ? (
-        <ArrowUpRight className="h-3 w-3" />
-      ) : (
-        <ArrowDownLeft className="h-3 w-3" />
-      )}
+      {isPayable ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
       {isPayable ? 'Payable' : 'Receivable'}
     </Badge>
   );
@@ -61,9 +59,7 @@ const columns: Column<WHTCertificate>[] = [
     key: 'certificateNumber',
     header: 'Certificate #',
     sortable: true,
-    render: (cert) => (
-      <span className="font-mono font-medium">{cert.certificateNumber}</span>
-    ),
+    render: (cert) => <span className="font-mono font-medium">{cert.certificateNumber}</span>,
   },
   {
     key: 'type',
@@ -101,9 +97,7 @@ const columns: Column<WHTCertificate>[] = [
     sortable: true,
     className: 'text-right',
     render: (cert) => (
-      <span className="font-mono">
-        {formatCurrency(cert.grossAmount, cert.currency)}
-      </span>
+      <span className="font-mono">{formatCurrency(cert.grossAmount, cert.currency)}</span>
     ),
   },
   {
@@ -118,9 +112,7 @@ const columns: Column<WHTCertificate>[] = [
     sortable: true,
     className: 'text-right',
     render: (cert) => (
-      <span className="font-mono font-medium">
-        {formatCurrency(cert.taxAmount, cert.currency)}
-      </span>
+      <span className="font-mono font-medium">{formatCurrency(cert.taxAmount, cert.currency)}</span>
     ),
   },
   {
@@ -163,9 +155,7 @@ function BulkActions({ selectedIds, onClearSelection }: BulkActionsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground">
-        {selectedIds.size} selected
-      </span>
+      <span className="text-sm text-muted-foreground">{selectedIds.size} selected</span>
       <Button size="sm" onClick={handleBulkIssue} disabled={isPending}>
         <Send className="mr-2 h-4 w-4" />
         Issue Selected

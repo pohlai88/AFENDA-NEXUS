@@ -18,9 +18,19 @@ import { ActivityFeed } from '@/features/finance/dashboard/blocks/activity-feed'
 import { QuickActions } from '@/features/finance/dashboard/blocks/quick-actions';
 import { AttentionPanel } from '@/features/finance/dashboard/blocks/attention-panel';
 
-export const metadata = {
-  title: 'Finance Dashboard | Afenda',
-  description: 'Financial overview and key performance indicators',
+import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export const metadata: Metadata = {
+  title: 'Finance Dashboard',
+  description:
+    'Real-time financial overview, KPIs, and key performance indicators for your organization',
+  openGraph: {
+    title: 'Finance Dashboard | Afenda',
+    description: 'Real-time financial overview and key performance indicators',
+  },
 };
 
 // ─── Loading Skeletons ───────────────────────────────────────────────────────

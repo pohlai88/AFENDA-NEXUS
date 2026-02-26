@@ -7,6 +7,7 @@ import { getFxRates } from '@/features/finance/fx/queries/fx.queries';
 import { FxRateCreateForm } from '@/features/finance/fx/blocks/fx-rate-create-form';
 import { FxRateList } from '@/features/finance/fx/blocks/fx-rate-list';
 import { ArrowRightLeft, Plus } from 'lucide-react';
+import { routes } from '@/lib/constants';
 
 export const metadata = { title: 'FX Rates' };
 
@@ -45,7 +46,7 @@ export default async function FxRatesPage({ searchParams }: FxRatesPageProps) {
       <PageHeader
         title="FX Rates"
         description="Manage foreign exchange rates for multi-currency transactions."
-        breadcrumbs={[{ label: 'Finance', href: '/finance/journals' }, { label: 'FX Rates' }]}
+        breadcrumbs={[{ label: 'Finance', href: routes.finance.journals }, { label: 'FX Rates' }]}
       />
 
       {/* Inline create form */}

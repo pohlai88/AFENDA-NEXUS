@@ -58,6 +58,12 @@ function evaluateCondition(
   }
 }
 
+export interface ApprovalRouteResult {
+  readonly policyId: string;
+  readonly policyVersion: number;
+  readonly chain: readonly ApprovalChainStep[];
+}
+
 /**
  * Routes an approval request to the appropriate chain based on policies.
  *
@@ -69,7 +75,7 @@ export function routeApproval(
   policies: readonly ApprovalPolicy[],
   entityType: string,
   metadata: Record<string, unknown>
-): readonly ApprovalChainStep[] | null {
+): ApprovalRouteResult | null {
   // Filter to active policies matching this entity type
   const applicable = policies.filter((p) => p.isActive && p.entityType === entityType);
 
@@ -79,7 +85,11 @@ export function routeApproval(
     for (const rule of policy.rules) {
       const { field, operator, value } = rule.condition;
       if (evaluateCondition(field, operator, value, metadata)) {
-        return rule.chain;
+        return {
+          policyId: policy.id,
+          policyVersion: policy.version,
+          chain: rule.chain,
+        };
       }
     }
   }

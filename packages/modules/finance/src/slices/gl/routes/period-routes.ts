@@ -15,6 +15,7 @@ import { reopenPeriod } from '../services/reopen-period.js';
 import { closeYear } from '../services/close-year.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { generateFiscalYear } from '../calculators/fiscal-year-generator.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerPeriodRoutes(
   app: FastifyInstance,
@@ -43,8 +44,7 @@ export function registerPeriodRoutes(
     '/periods',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const pagination = PaginationSchema.parse(req.query);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -63,8 +63,7 @@ export function registerPeriodRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.periodRepo.findById(id);
@@ -76,7 +75,7 @@ export function registerPeriodRoutes(
     }
   );
 
-  // POST /periods/:id/close — requires x-user-id
+  // POST /periods/:id/close — requires authenticated user
   app.post(
     '/periods/:id/close',
     {
@@ -87,8 +86,7 @@ export function registerPeriodRoutes(
     },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
 
       const { reason } = OptionalReasonBodySchema.parse(req.body ?? {});
 
@@ -111,14 +109,13 @@ export function registerPeriodRoutes(
     }
   );
 
-  // POST /periods/:id/lock — requires x-user-id, period must be CLOSED
+  // POST /periods/:id/lock — requires authenticated user, period must be CLOSED
   app.post(
     '/periods/:id/lock',
     { preHandler: [requirePermission(policy, 'period:lock')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
 
       const { reason } = OptionalReasonBodySchema.parse(req.body ?? {});
 
@@ -141,7 +138,7 @@ export function registerPeriodRoutes(
     }
   );
 
-  // POST /periods/:id/reopen — requires x-user-id, period must be CLOSED (not LOCKED)
+  // POST /periods/:id/reopen — requires authenticated user, period must be CLOSED (not LOCKED)
   app.post(
     '/periods/:id/reopen',
     {
@@ -152,8 +149,7 @@ export function registerPeriodRoutes(
     },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
 
       const { reason } = OptionalReasonBodySchema.parse(req.body ?? {});
 
@@ -181,8 +177,7 @@ export function registerPeriodRoutes(
     '/periods/close-year',
     { preHandler: [requirePermission(policy, 'year:close')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const body = CloseYearSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {

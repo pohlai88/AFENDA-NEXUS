@@ -46,27 +46,27 @@ interface ReportWrapperProps {
   breadcrumbs?: ReportBreadcrumb[];
   children: ReactNode;
   reportId?: string;
-  
+
   // Export
   exportPayload?: ExportPayload;
-  
+
   // Favorites
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
-  
+
   // Refresh
   onRefresh?: () => void;
   isRefreshing?: boolean;
-  
+
   // Actions
   actions?: ReactNode;
-  
+
   // Drilldown context
   drilldownPath?: DrilldownLink[];
-  
+
   // Loading
   loading?: boolean;
-  
+
   className?: string;
 }
 
@@ -80,10 +80,7 @@ function DrilldownBreadcrumb({ path }: { path: DrilldownLink[] }) {
       {path.map((item, index) => (
         <div key={item.href} className="flex items-center gap-1">
           {index > 0 && <ChevronRight className="h-3 w-3" />}
-          <a
-            href={item.href}
-            className="hover:text-foreground hover:underline transition-colors"
-          >
+          <a href={item.href} className="hover:text-foreground hover:underline transition-colors">
             {item.label}
           </a>
         </div>
@@ -198,7 +195,7 @@ export function ReportWrapper({
                 aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               >
                 {isFavorite ? (
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <Star className="h-4 w-4 fill-yellow-400 text-warning" />
                 ) : (
                   <StarOff className="h-4 w-4" />
                 )}
@@ -206,9 +203,7 @@ export function ReportWrapper({
             )}
           </div>
 
-          {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
 
           {/* Drilldown path */}
           {drilldownPath && drilldownPath.length > 0 && (
@@ -295,15 +290,12 @@ export function DrilldownRow({ href, children, className }: DrilldownRowProps) {
 
   return (
     <tr
-      className={cn(
-        'cursor-pointer hover:bg-accent/50 transition-colors group',
-        className
-      )}
+      className={cn('cursor-pointer hover:bg-accent/50 transition-colors group', className)}
       onClick={() => router.push(href)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === 'Enter' || e.key === '') {
           e.preventDefault();
           router.push(href);
         }

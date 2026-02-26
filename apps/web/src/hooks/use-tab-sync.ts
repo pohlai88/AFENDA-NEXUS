@@ -14,11 +14,7 @@ interface UseTabSyncOptions {
 // ─── useTabSync Hook ─────────────────────────────────────────────────────────
 
 export function useTabSync(options: UseTabSyncOptions = {}) {
-  const {
-    paramKey = 'tab',
-    defaultTab = '',
-    shallow = true,
-  } = options;
+  const { paramKey = 'tab', defaultTab = '', shallow = true } = options;
 
   const [tab, setTabState] = useQueryState(
     paramKey,

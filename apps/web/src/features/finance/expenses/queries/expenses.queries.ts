@@ -1,11 +1,6 @@
 'use server';
 
-import type {
-  ExpenseClaim,
-  ExpenseLineItem,
-  ExpensePolicy,
-  ExpenseSummary,
-} from '../types';
+import type { ExpenseClaim, ExpenseLineItem, ExpensePolicy, ExpenseSummary } from '../types';
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
@@ -46,10 +41,10 @@ const mockClaims: ExpenseClaim[] = [
     submittedDate: new Date('2026-02-18'),
     periodFrom: new Date('2026-02-05'),
     periodTo: new Date('2026-02-07'),
-    totalAmount: 1875.00,
+    totalAmount: 1875.0,
     currency: 'USD',
     lineCount: 5,
-    approvedAmount: 1875.00,
+    approvedAmount: 1875.0,
     approvedBy: 'Mike Johnson',
     approvedAt: new Date('2026-02-22'),
     paidDate: null,
@@ -70,10 +65,10 @@ const mockClaims: ExpenseClaim[] = [
     submittedDate: new Date('2026-02-15'),
     periodFrom: new Date('2026-02-01'),
     periodTo: new Date('2026-02-14'),
-    totalAmount: 425.50,
+    totalAmount: 425.5,
     currency: 'USD',
     lineCount: 3,
-    approvedAmount: 425.50,
+    approvedAmount: 425.5,
     approvedBy: 'Sarah Brown',
     approvedAt: new Date('2026-02-16'),
     paidDate: new Date('2026-02-20'),
@@ -94,7 +89,7 @@ const mockClaims: ExpenseClaim[] = [
     submittedDate: new Date('2026-02-10'),
     periodFrom: new Date('2026-02-08'),
     periodTo: new Date('2026-02-08'),
-    totalAmount: 850.00,
+    totalAmount: 850.0,
     currency: 'USD',
     lineCount: 2,
     approvedAmount: null,
@@ -102,7 +97,8 @@ const mockClaims: ExpenseClaim[] = [
     approvedAt: null,
     paidDate: null,
     paymentReference: null,
-    rejectionReason: 'Exceeds policy limit for entertainment. Please provide additional justification.',
+    rejectionReason:
+      'Exceeds policy limit for entertainment. Please provide additional justification.',
     createdAt: new Date('2026-02-09'),
     updatedAt: new Date('2026-02-12'),
   },
@@ -140,7 +136,7 @@ const mockLineItems: ExpenseLineItem[] = [
     category: 'travel',
     description: 'Flight to San Francisco',
     merchantName: 'United Airlines',
-    amount: 450.00,
+    amount: 450.0,
     currency: 'USD',
     taxAmount: 0,
     taxCodeId: null,
@@ -161,9 +157,9 @@ const mockLineItems: ExpenseLineItem[] = [
     category: 'accommodation',
     description: 'Hotel - 3 nights',
     merchantName: 'Marriott SF',
-    amount: 750.00,
+    amount: 750.0,
     currency: 'USD',
-    taxAmount: 67.50,
+    taxAmount: 67.5,
     taxCodeId: 'tc-1',
     glAccountId: 'gl-6310',
     glAccountCode: '6310',
@@ -182,9 +178,9 @@ const mockLineItems: ExpenseLineItem[] = [
     category: 'meals',
     description: 'Client lunch',
     merchantName: 'The Restaurant',
-    amount: 125.50,
+    amount: 125.5,
     currency: 'USD',
-    taxAmount: 11.30,
+    taxAmount: 11.3,
     taxCodeId: 'tc-1',
     glAccountId: 'gl-6320',
     glAccountCode: '6320',
@@ -207,11 +203,14 @@ export async function getExpenseClaims(params?: {
   search?: string;
   page?: number;
   perPage?: number;
-}): Promise<{
-  ok: true;
-  data: ExpenseClaim[];
-  pagination: { page: number; perPage: number; total: number; totalPages: number };
-} | { ok: false; error: string }> {
+}): Promise<
+  | {
+      ok: true;
+      data: ExpenseClaim[];
+      pagination: { page: number; perPage: number; total: number; totalPages: number };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 400));
 
   let filtered = [...mockClaims];
@@ -310,8 +309,8 @@ export async function getExpenseSummary(params?: {
     pendingClaims: 8,
     approvedThisMonth: 32,
     pendingAmount: 12450.75,
-    approvedAmount: 28750.00,
-    paidThisMonth: 22500.00,
+    approvedAmount: 28750.0,
+    paidThisMonth: 22500.0,
     rejectionRate: 5.2,
     averageProcessingDays: 2.4,
   };

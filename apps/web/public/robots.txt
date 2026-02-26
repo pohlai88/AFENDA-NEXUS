@@ -1,0 +1,16 @@
+# Afenda ERP Platform - Robots.txt
+# Only allow indexing in production environments
+
+User-agent: *
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /onboarding
+Disallow: /settings
+Disallow: /finance/
+
+# Allow public pages (if any in the future)
+Allow: /$
+
+# Sitemap location (to be generated)
+Sitemap: https://afenda.io/sitemap.xml

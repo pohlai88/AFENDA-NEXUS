@@ -7,9 +7,7 @@ import { generateIdempotencyKey } from '@/lib/idempotency';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type ActionResult<T> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
+type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
 interface UseFormSubmitOptions<T> {
   onSuccess?: (data: T) => void;

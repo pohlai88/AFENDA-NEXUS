@@ -36,7 +36,8 @@ export function documentUploadRateLimitGuard(config?: {
   const windowMs = config?.windowMs ?? DEFAULT_WINDOW_MS;
 
   return async (req: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const tenantId = (req as FastifyRequest & { authUser?: { tenantId?: string } }).authUser
+      ?.tenantId;
     if (!tenantId) return;
 
     const contentLength = parseInt(req.headers['content-length'] ?? '0', 10);
@@ -97,7 +98,8 @@ export function documentPresignRateLimitGuard(config?: {
   const windowMs = config?.windowMs ?? PRESIGN_WINDOW_MS;
 
   return async (req: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = req.headers['x-tenant-id'] as string;
+    const tenantId = (req as FastifyRequest & { authUser?: { tenantId?: string } }).authUser
+      ?.tenantId;
     if (!tenantId) return;
 
     const now = Date.now();

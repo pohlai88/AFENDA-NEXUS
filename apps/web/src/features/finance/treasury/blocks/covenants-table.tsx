@@ -11,6 +11,7 @@ import { formatDate } from '@/lib/utils';
 import { Plus, FileCheck, AlertTriangle, CheckCircle2, AlertCircle } from 'lucide-react';
 import type { Covenant, CovenantStatus, CovenantType } from '../types';
 import { covenantStatusConfig, covenantTypeLabels } from '../types';
+import { routes } from '@/lib/constants';
 
 function StatusBadge({ status }: { status: CovenantStatus }) {
   const config = covenantStatusConfig[status];
@@ -55,7 +56,14 @@ function ComplianceGauge({ covenant }: { covenant: Covenant }) {
     <div className="flex items-center gap-2 min-w-[120px]">
       <Progress
         value={Math.min(cappedPercentage, 100)}
-        className={cn('h-2 flex-1', !isHealthy ? '[&>div]:bg-destructive' : cappedPercentage > 80 && operator !== 'gte' ? '[&>div]:bg-warning' : '')}
+        className={cn(
+          'h-2 flex-1',
+          !isHealthy
+            ? '[&>div]:bg-destructive'
+            : cappedPercentage > 80 && operator !== 'gte'
+              ? '[&>div]:bg-warning'
+              : ''
+        )}
       />
       <span className={cn('text-xs font-mono', !isHealthy && 'text-destructive')}>
         {currentValue.toFixed(2)}
@@ -86,16 +94,12 @@ export function CovenantsTable({ covenants }: CovenantsTableProps) {
     {
       key: 'type',
       header: 'Type',
-      render: (covenant) => (
-        <Badge variant="secondary">{covenantTypeLabels[covenant.type]}</Badge>
-      ),
+      render: (covenant) => <Badge variant="secondary">{covenantTypeLabels[covenant.type]}</Badge>,
     },
     {
       key: 'metric',
       header: 'Metric',
-      render: (covenant) => (
-        <span className="font-mono text-sm">{covenant.metric}</span>
-      ),
+      render: (covenant) => <span className="font-mono text-sm">{covenant.metric}</span>,
     },
     {
       key: 'threshold',
@@ -118,9 +122,7 @@ export function CovenantsTable({ covenants }: CovenantsTableProps) {
     {
       key: 'testingFrequency',
       header: 'Frequency',
-      render: (covenant) => (
-        <span className="text-sm capitalize">{covenant.testingFrequency}</span>
-      ),
+      render: (covenant) => <span className="text-sm capitalize">{covenant.testingFrequency}</span>,
     },
     {
       key: 'nextTestDate',
@@ -145,7 +147,7 @@ export function CovenantsTable({ covenants }: CovenantsTableProps) {
   ];
 
   const handleRowClick = (covenant: Covenant) => {
-    router.push(`/finance/treasury/covenants/${covenant.id}`);
+    router.push(routes.finance.covenantDetail(covenant.id));
   };
 
   return (
@@ -161,7 +163,7 @@ export function CovenantsTable({ covenants }: CovenantsTableProps) {
         description: 'Set up covenant monitoring for your credit facilities.',
         action: (
           <Button asChild>
-            <Link href="/finance/treasury/covenants/new">
+            <Link href={routes.finance.covenantNew}>
               <Plus className="mr-2 h-4 w-4" />
               Add Covenant
             </Link>
@@ -170,7 +172,7 @@ export function CovenantsTable({ covenants }: CovenantsTableProps) {
       }}
       actions={
         <Button asChild>
-          <Link href="/finance/treasury/covenants/new">
+          <Link href={routes.finance.covenantNew}>
             <Plus className="mr-2 h-4 w-4" />
             Add Covenant
           </Link>

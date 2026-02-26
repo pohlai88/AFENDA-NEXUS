@@ -5,6 +5,8 @@ import { requirePermission } from '../../../shared/routes/authorization-guard.js
 import type { CreateAssetInput } from '../ports/asset-repo.js';
 import { disposeAsset } from '../services/dispose-asset.js';
 import { runDepreciation } from '../services/run-depreciation.js';
+import { extractIdentity } from '@afenda/api-kit';
+import type { IdParam } from '@afenda/contracts';
 
 export function registerAssetRoutes(
   app: FastifyInstance,
@@ -15,8 +17,7 @@ export function registerAssetRoutes(
     '/fixed-assets',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const list = await deps.assetRepo.findAll();
         return { data: list };
@@ -24,12 +25,11 @@ export function registerAssetRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/fixed-assets/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const asset = await deps.assetRepo.findById(req.params.id);
         if (!asset) return reply.status(404).send({ error: 'Asset not found' });
@@ -42,25 +42,20 @@ export function registerAssetRoutes(
     '/fixed-assets',
     { preHandler: [requirePermission(policy, 'journal:create')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
-        const asset = await deps.assetRepo.create(
-          tenantId,
-          body as unknown as CreateAssetInput
-        );
+        const asset = await deps.assetRepo.create(tenantId, body as unknown as CreateAssetInput);
         return reply.status(201).send(asset);
       });
     }
   );
 
-  app.post<{ Params: { id: string } }>(
+  app.post<{ Params: IdParam }>(
     '/fixed-assets/:id/dispose',
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await disposeAsset(
@@ -84,8 +79,7 @@ export function registerAssetRoutes(
     '/fixed-assets/depreciation-run',
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await runDepreciation(

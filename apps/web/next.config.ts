@@ -8,10 +8,37 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@afenda/core', '@afenda/contracts', '@afenda/authz', '@afenda/db'],
-  serverExternalPackages: [],
+  serverExternalPackages: ['@neondatabase/serverless', 'drizzle-orm'],
   output: process.env.STANDALONE === 'true' ? 'standalone' : undefined,
+
+  // Compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+
+  // Experimental features for performance
+  experimental: {
+    optimizePackageImports: [
+      '@radix-ui/react-icons',
+      'lucide-react',
+      'recharts',
+      'date-fns',
+      'framer-motion',
+    ],
+    webpackBuildWorker: true,
+    parallelServerCompiles: true,
+    parallelServerBuildTraces: true,
+  },
+
+  // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: false,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       { protocol: 'https', hostname: '**.afenda.io' },
       { protocol: 'https', hostname: '**.neon.tech' },
@@ -25,6 +52,8 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    const isDev = process.env.NODE_ENV === 'development';
+
     return [
       {
         source: '/(.*)',
@@ -33,16 +62,20 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              isDev
+                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+                : "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data:",
-              process.env.NODE_ENV === 'development'
-                ? "connect-src 'self' http://localhost:* ws://localhost:* https://*.neon.tech"
-                : "connect-src 'self' https://*.afenda.io https://*.neon.tech",
+              isDev
+                ? "connect-src 'self' http://localhost:* ws://localhost:* https://*.neon.tech https://o4508206844526592.ingest.us.sentry.io"
+                : "connect-src 'self' https://*.afenda.io https://*.neon.tech https://o4508206844526592.ingest.us.sentry.io",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
+              "object-src 'none'",
+              "upgrade-insecure-requests",
             ].join('; '),
           },
           {
@@ -59,7 +92,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'camera=(), microphone=(), geolocation=(), payment=()',
           },
           {
             key: 'X-DNS-Prefetch-Control',
@@ -68,6 +101,29 @@ const nextConfig: NextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+      // Cache static assets aggressively
+      {
+        source: '/fonts/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

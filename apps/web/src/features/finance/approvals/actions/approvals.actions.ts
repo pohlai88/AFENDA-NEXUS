@@ -1,24 +1,9 @@
 'use server';
 
+import type { ApproveItemsInput, RejectItemsInput, DelegateItemsInput } from '@afenda/contracts';
+
 import { revalidatePath } from 'next/cache';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-interface ApproveItemsInput {
-  itemIds: string[];
-  comment?: string;
-}
-
-interface RejectItemsInput {
-  itemIds: string[];
-  comment: string;
-}
-
-interface DelegateItemsInput {
-  itemIds: string[];
-  delegateTo: string;
-  comment?: string;
-}
+import { routes } from '@/lib/constants';
 
 // ─── Server Actions ──────────────────────────────────────────────────────────
 
@@ -31,7 +16,7 @@ export async function approveItems(input: ApproveItemsInput) {
   // TODO: Replace with actual API call
   console.log('Approving items:', itemIds, 'Comment:', comment);
 
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.approvals);
 
   return {
     ok: true as const,
@@ -58,7 +43,7 @@ export async function rejectItems(input: RejectItemsInput) {
   // TODO: Replace with actual API call
   console.log('Rejecting items:', itemIds, 'Reason:', comment);
 
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.approvals);
 
   return {
     ok: true as const,
@@ -85,7 +70,7 @@ export async function delegateItems(input: DelegateItemsInput) {
   // TODO: Replace with actual API call
   console.log('Delegating items:', itemIds, 'To:', delegateTo, 'Comment:', comment);
 
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.approvals);
 
   return {
     ok: true as const,
@@ -103,7 +88,7 @@ export async function escalateItems(itemIds: string[]) {
   // TODO: Replace with actual API call
   console.log('Escalating items:', itemIds);
 
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.approvals);
 
   return {
     ok: true as const,

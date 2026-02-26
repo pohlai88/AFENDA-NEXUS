@@ -54,7 +54,7 @@ export function ArAllocatePaymentForm({ invoice }: ArAllocatePaymentFormProps) {
       data.paymentDate,
       data.paymentRef,
       data.paymentAmount,
-      data.currencyCode,
+      data.currencyCode
     );
 
     setSubmitting(false);
@@ -118,7 +118,8 @@ export function ArAllocatePaymentForm({ invoice }: ArAllocatePaymentFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Payment Amount ({invoice.currencyCode}) <span className="text-destructive">*</span>
+                  Payment Amount ({invoice.currencyCode}){' '}
+                  <span className="text-destructive">*</span>
                 </FormLabel>
                 <FormControl>
                   <Input

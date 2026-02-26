@@ -5,6 +5,8 @@ import type { IApInvoiceRepo } from '../ports/ap-invoice-repo.js';
 import type { IJournalRepo } from '../../../shared/ports/journal-posting-port.js';
 import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
 import type { IDocumentNumberGenerator } from '../../../shared/ports/journal-posting-port.js';
+import type { IIdempotencyStore } from '../../../shared/ports/idempotency-store.js';
+import type { IFiscalPeriodRepo } from '../../gl/ports/fiscal-period-repo.js';
 import type { FinanceContext } from '../../../shared/finance-context.js';
 import { FinanceEventType } from '../../../shared/events.js';
 
@@ -24,11 +26,25 @@ export async function postApInvoice(
     journalRepo: IJournalRepo;
     outboxWriter: IOutboxWriter;
     documentNumberGenerator: IDocumentNumberGenerator;
+    idempotencyStore: IIdempotencyStore;
+    fiscalPeriodRepo?: IFiscalPeriodRepo;
   },
   ctx?: FinanceContext
 ): Promise<Result<ApInvoice>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor.userId ?? input.userId;
+
+  const idempotencyKey = input.correlationId ?? input.invoiceId;
+  const claim = await deps.idempotencyStore.claimOrGet({
+    tenantId,
+    key: idempotencyKey,
+    commandType: 'POST_AP_INVOICE',
+  });
+  if (!claim.claimed) {
+    return err(
+      new AppError('IDEMPOTENCY_CONFLICT', `AP invoice ${input.invoiceId} already posted`)
+    );
+  }
 
   const found = await deps.apInvoiceRepo.findById(input.invoiceId);
   if (!found.ok) return found;
@@ -42,6 +58,21 @@ export async function postApInvoice(
         `Invoice must be APPROVED to post, current status: ${invoice.status}`
       )
     );
+  }
+
+  // W2-7: Period control check — reject posting into closed/locked periods
+  if (deps.fiscalPeriodRepo) {
+    const periodResult = await deps.fiscalPeriodRepo.findById(input.fiscalPeriodId);
+    if (!periodResult.ok) return periodResult as Result<never>;
+    const period = periodResult.value;
+    if (period.status !== 'OPEN') {
+      return err(
+        new AppError(
+          'AP_PERIOD_CLOSED',
+          `Cannot post to fiscal period "${period.name}" — status is ${period.status}`
+        )
+      );
+    }
   }
 
   const numResult = await deps.documentNumberGenerator.next(tenantId, 'AP');
@@ -95,6 +126,13 @@ export async function postApInvoice(
       correlationId: input.correlationId,
     },
   });
+
+  await deps.idempotencyStore.recordOutcome?.(
+    tenantId,
+    idempotencyKey,
+    'POST_AP_INVOICE',
+    invoice.id
+  );
 
   return updated;
 }

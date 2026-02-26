@@ -29,7 +29,7 @@ export function createDocumentStoreAdapter(
       entityId: string,
       userId: string
     ): Promise<DocumentLink> {
-      const result = await service.complete({
+      await service.complete({
         tenantId: ctx.tenantId,
         userId: userId || ctx.userId,
         documentId,

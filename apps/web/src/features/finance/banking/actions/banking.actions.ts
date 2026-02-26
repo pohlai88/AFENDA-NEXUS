@@ -1,12 +1,17 @@
 'use server';
 
+import type { IdParam } from '@afenda/contracts';
+
 import { revalidatePath } from 'next/cache';
 import type { MatchStatus, ReconciliationAction } from '../types';
+import { routes } from '@/lib/constants';
 
 // ─── Import Statement ────────────────────────────────────────────────────────
 
-export async function importStatement(formData: FormData): Promise<
-  | { ok: true; data: { statementId: string; transactionCount: number } }
+export async function importStatement(
+  formData: FormData
+): Promise<
+  | { ok: true; data: { statementId: IdParam['id']; transactionCount: number } }
   | { ok: false; error: string }
 > {
   await new Promise((r) => setTimeout(r, 1500));
@@ -26,8 +31,8 @@ export async function importStatement(formData: FormData): Promise<
   // Simulate processing
   console.log(`Importing ${format} file: ${file.name} for account ${bankAccountId}`);
 
-  revalidatePath('/finance/banking');
-  revalidatePath('/finance/banking/statements');
+  revalidatePath(routes.finance.banking);
+  revalidatePath(routes.finance.bankStatementsList);
 
   return {
     ok: true,
@@ -49,7 +54,7 @@ export async function matchTransactions(params: {
 
   console.log('Matching transactions:', params);
 
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
   return { ok: true };
 }
@@ -64,7 +69,7 @@ export async function unmatchTransactions(params: {
 
   console.log('Unmatching transactions:', params);
 
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
   return { ok: true };
 }
@@ -83,8 +88,8 @@ export async function createJournalFromTransaction(params: {
 
   console.log('Creating journal from transaction:', params);
 
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
-  revalidatePath('/finance/general-ledger/journals');
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
+  revalidatePath(routes.finance.journals);
 
   return {
     ok: true,
@@ -103,7 +108,7 @@ export async function excludeTransactions(params: {
 
   console.log('Excluding transactions:', params);
 
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
   return { ok: true };
 }
@@ -118,7 +123,7 @@ export async function includeTransactions(params: {
 
   console.log('Including transactions:', params);
 
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
   return { ok: true };
 }
@@ -133,7 +138,7 @@ export async function autoMatchTransactions(params: {
 
   console.log('Auto-matching transactions:', params);
 
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
   return {
     ok: true,
@@ -156,9 +161,9 @@ export async function completeReconciliation(params: {
 
   console.log('Completing reconciliation:', params);
 
-  revalidatePath('/finance/banking');
-  revalidatePath('/finance/banking/statements');
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
+  revalidatePath(routes.finance.banking);
+  revalidatePath(routes.finance.bankStatementsList);
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
   return { ok: true };
 }
@@ -174,7 +179,7 @@ export async function updateTransactionMatchStatus(params: {
 
   console.log('Updating transaction match status:', params);
 
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
   return { ok: true };
 }
@@ -192,7 +197,7 @@ export async function bulkReconciliationAction(params: {
 
   console.log('Bulk reconciliation action:', params);
 
-  revalidatePath(`/finance/banking/reconcile/${params.statementId}`);
+  revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
   return {
     ok: true,

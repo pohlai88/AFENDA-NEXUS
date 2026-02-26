@@ -13,18 +13,14 @@ import { taxTypeLabels } from '../types';
 // ─── Type Badges ─────────────────────────────────────────────────────────────
 
 const taxTypeColors: Record<TaxType, string> = {
-  sales: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  purchase: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  both: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  withholding: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
+  sales: 'bg-success/15 text-success dark:bg-success/20',
+  purchase: 'bg-info/15 text-info dark:bg-info/20',
+  both: 'bg-accent text-accent-foreground',
+  withholding: 'bg-warning/15 text-warning dark:bg-warning/20',
 };
 
 function TaxTypeBadge({ type }: { type: TaxType }) {
-  return (
-    <Badge className={taxTypeColors[type]}>
-      {taxTypeLabels[type]}
-    </Badge>
-  );
+  return <Badge className={taxTypeColors[type]}>{taxTypeLabels[type]}</Badge>;
 }
 
 const methodLabels: Record<TaxCalculationMethod, string> = {
@@ -66,9 +62,7 @@ const columns: Column<TaxCode>[] = [
     render: (tc) => (
       <div>
         <div className="font-medium">{tc.name}</div>
-        <div className="text-xs text-muted-foreground truncate max-w-xs">
-          {tc.description}
-        </div>
+        <div className="text-xs text-muted-foreground truncate max-w-xs">{tc.description}</div>
       </div>
     ),
   },
@@ -105,9 +99,7 @@ const columns: Column<TaxCode>[] = [
   {
     key: 'taxAccountCode',
     header: 'GL Account',
-    render: (tc) => (
-      <span className="font-mono text-sm">{tc.taxAccountCode}</span>
-    ),
+    render: (tc) => <span className="font-mono text-sm">{tc.taxAccountCode}</span>,
   },
   {
     key: 'jurisdiction',
@@ -119,9 +111,7 @@ const columns: Column<TaxCode>[] = [
     header: 'Status',
     sortable: true,
     render: (tc) => (
-      <Badge variant={tc.status === 'active' ? 'default' : 'secondary'}>
-        {tc.status}
-      </Badge>
+      <Badge variant={tc.status === 'active' ? 'default' : 'secondary'}>{tc.status}</Badge>
     ),
   },
 ];

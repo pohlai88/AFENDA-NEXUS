@@ -351,10 +351,10 @@ describe('buildPain001', () => {
     expect(output.xml).toContain('Supplier A');
   });
 
-  it('handles empty instructions', () => {
-    const output = buildPain001('MSG-002', 'ACME Corp', []);
-    expect(output.numberOfTransactions).toBe(0);
-    expect(output.controlSum).toBe(0n);
+  it('rejects empty instructions', () => {
+    expect(() => buildPain001('MSG-002', 'ACME Corp', [])).toThrow(
+      'Payment instruction validation failed'
+    );
   });
 });
 

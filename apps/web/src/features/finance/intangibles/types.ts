@@ -1,7 +1,19 @@
 // ─── Intangible Asset Types ─────────────────────────────────────────────────
 
-export type IntangibleType = 'software' | 'patent' | 'trademark' | 'license' | 'goodwill' | 'development' | 'other';
-export type IntangibleStatus = 'active' | 'fully_amortized' | 'impaired' | 'disposed' | 'written_off';
+export type IntangibleType =
+  | 'software'
+  | 'patent'
+  | 'trademark'
+  | 'license'
+  | 'goodwill'
+  | 'development'
+  | 'other';
+export type IntangibleStatus =
+  | 'active'
+  | 'fully_amortized'
+  | 'impaired'
+  | 'disposed'
+  | 'written_off';
 export type AmortizationMethod = 'straight_line' | 'declining_balance' | 'units_of_production';
 
 export interface IntangibleCategory {
@@ -110,11 +122,14 @@ export interface IntangibleSummary {
 // ─── Status Config ───────────────────────────────────────────────────────────
 
 export const intangibleStatusConfig: Record<IntangibleStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  fully_amortized: { label: 'Fully Amortized', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  impaired: { label: 'Impaired', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  disposed: { label: 'Disposed', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  written_off: { label: 'Written Off', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  fully_amortized: { label: 'Fully Amortized', color: 'bg-info/15 text-info dark:bg-info/20' },
+  impaired: { label: 'Impaired', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  disposed: { label: 'Disposed', color: 'bg-muted text-muted-foreground' },
+  written_off: {
+    label: 'Written Off',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
 };
 
 export const intangibleTypeLabels: Record<IntangibleType, string> = {

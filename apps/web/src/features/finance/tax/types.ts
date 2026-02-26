@@ -104,18 +104,24 @@ export interface TaxSummary {
 // ─── Status Config ───────────────────────────────────────────────────────────
 
 export const taxReturnStatusConfig: Record<TaxReturnStatus, { label: string; color: string }> = {
-  open: { label: 'Open', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  ready: { label: 'Ready to File', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  filed: { label: 'Filed', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200' },
-  overdue: { label: 'Overdue', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  open: { label: 'Open', color: 'bg-info/15 text-info dark:bg-info/20' },
+  ready: { label: 'Ready to File', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  filed: { label: 'Filed', color: 'bg-success/15 text-success dark:bg-success/20' },
+  paid: {
+    label: 'Paid',
+    color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
+  },
+  overdue: { label: 'Overdue', color: 'bg-destructive/15 text-destructive dark:bg-destructive/20' },
 };
 
 export const whtStatusConfig: Record<WHTCertificateStatus, { label: string; color: string }> = {
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  issued: { label: 'Issued', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  replaced: { label: 'Replaced', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
+  draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
+  issued: { label: 'Issued', color: 'bg-success/15 text-success dark:bg-success/20' },
+  cancelled: {
+    label: 'Cancelled',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  replaced: { label: 'Replaced', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
 };
 
 export const taxTypeLabels: Record<TaxType, string> = {

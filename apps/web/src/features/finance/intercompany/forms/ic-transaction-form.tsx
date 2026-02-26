@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { createIcTransactionAction } from '@/features/finance/intercompany/actions/ic.actions';
 import type { CommandReceipt } from '@/lib/types';
 import Link from 'next/link';
+import { routes } from '@/lib/constants';
 
 export function IcTransactionCreateForm({
   agreements,
@@ -75,7 +76,7 @@ export function IcTransactionCreateForm({
           onClose={() => setReceipt(null)}
         />
         <Button asChild variant="outline">
-          <Link href="/finance/intercompany">Back to IC Transactions</Link>
+          <Link href={routes.finance.icTransactions}>Back to IC Transactions</Link>
         </Button>
       </div>
     );
@@ -218,7 +219,7 @@ export function IcTransactionCreateForm({
           {isPending ? 'Creating…' : 'Create IC Transaction'}
         </Button>
         <Button type="button" variant="outline" asChild>
-          <Link href="/finance/intercompany">Cancel</Link>
+          <Link href={routes.finance.icTransactions}>Cancel</Link>
         </Button>
       </div>
     </form>

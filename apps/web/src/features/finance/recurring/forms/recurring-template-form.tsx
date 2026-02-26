@@ -19,6 +19,7 @@ import {
 import { ReceiptPanel } from '@/components/erp/receipt-panel';
 import type { CommandReceipt } from '@/lib/types';
 import { Plus, Trash2 } from 'lucide-react';
+import { routes } from '@/lib/constants';
 
 interface LedgerOption {
   id: string;
@@ -81,7 +82,7 @@ export function RecurringTemplateForm({ ledgers }: RecurringTemplateFormProps) {
       <ReceiptPanel
         receipt={receipt}
         title="Recurring template created"
-        onClose={() => router.push('/finance/recurring')}
+        onClose={() => router.push(routes.finance.recurring)}
       />
     );
   }
@@ -97,10 +98,7 @@ export function RecurringTemplateForm({ ledgers }: RecurringTemplateFormProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label>Ledger</Label>
-          <Select
-            value={form.watch('ledgerId')}
-            onValueChange={handleLedgerChange}
-          >
+          <Select value={form.watch('ledgerId')} onValueChange={handleLedgerChange}>
             <SelectTrigger>
               <SelectValue placeholder="Select ledger" />
             </SelectTrigger>
@@ -133,7 +131,9 @@ export function RecurringTemplateForm({ ledgers }: RecurringTemplateFormProps) {
           <Label>Frequency</Label>
           <Select
             value={form.watch('frequency')}
-            onValueChange={(v) => form.setValue('frequency', v as 'MONTHLY' | 'QUARTERLY' | 'YEARLY')}
+            onValueChange={(v) =>
+              form.setValue('frequency', v as 'MONTHLY' | 'QUARTERLY' | 'YEARLY')
+            }
           >
             <SelectTrigger>
               <SelectValue />
@@ -148,11 +148,7 @@ export function RecurringTemplateForm({ ledgers }: RecurringTemplateFormProps) {
 
         <div className="space-y-1.5">
           <Label htmlFor="nextRunDate">Next Run Date</Label>
-          <Input
-            id="nextRunDate"
-            type="date"
-            {...form.register('nextRunDate')}
-          />
+          <Input id="nextRunDate" type="date" {...form.register('nextRunDate')} />
           {form.formState.errors.nextRunDate && (
             <p className="text-xs text-destructive">{form.formState.errors.nextRunDate.message}</p>
           )}

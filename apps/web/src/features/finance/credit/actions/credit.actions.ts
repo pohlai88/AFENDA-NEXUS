@@ -1,25 +1,24 @@
 'use server';
 
+import type {
+  SetCreditLimitInput,
+  CreateReviewInput,
+  UpdateReviewInput,
+  PlaceHoldInput,
+} from '@afenda/contracts';
+import type { RiskRating } from '../types';
+
 import { revalidatePath } from 'next/cache';
-import type { RiskRating, ReviewType, HoldType } from '../types';
+import { routes } from '@/lib/constants';
 
 // ─── Credit Limit Actions ────────────────────────────────────────────────────
-
-interface SetCreditLimitInput {
-  customerId: string;
-  creditLimit: number;
-  currency: string;
-  paymentTermsDays: number;
-  reviewFrequency: 'monthly' | 'quarterly' | 'annually';
-  notes?: string;
-}
 
 export async function setCreditLimit(
   input: SetCreditLimitInput
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] setCreditLimit:', input);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
 }
 
@@ -30,7 +29,7 @@ export async function updateRiskRating(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 300));
   console.log('[Action] updateRiskRating:', customerId, rating, reason);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
 }
 
@@ -39,26 +38,18 @@ export async function recalculateInternalScore(
 ): Promise<{ ok: true; newScore: number } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 500));
   console.log('[Action] recalculateInternalScore:', customerId);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true, newScore: 78 };
 }
 
 // ─── Credit Review Actions ───────────────────────────────────────────────────
-
-interface CreateReviewInput {
-  customerId: string;
-  reviewType: ReviewType;
-  proposedLimit: number;
-  proposedRating: RiskRating;
-  justification: string;
-}
 
 export async function createCreditReview(
   input: CreateReviewInput
 ): Promise<{ ok: true; reviewId: string; reviewNumber: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] createCreditReview:', input);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true, reviewId: 'rev-new-' + Date.now(), reviewNumber: 'CR-2026-' + Date.now() };
 }
 
@@ -68,17 +59,8 @@ export async function assignReview(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 250));
   console.log('[Action] assignReview:', reviewId, assignedTo);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
-}
-
-interface UpdateReviewInput {
-  reviewId: string;
-  financialAnalysis?: string;
-  paymentHistory?: string;
-  recommendation?: string;
-  proposedLimit?: number;
-  proposedRating?: RiskRating;
 }
 
 export async function updateCreditReview(
@@ -86,7 +68,7 @@ export async function updateCreditReview(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 350));
   console.log('[Action] updateCreditReview:', input);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
 }
 
@@ -98,7 +80,7 @@ export async function approveCreditReview(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] approveCreditReview:', reviewId, approvedLimit, approvedRating);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
 }
 
@@ -108,7 +90,7 @@ export async function rejectCreditReview(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 300));
   console.log('[Action] rejectCreditReview:', reviewId, reason);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
 }
 
@@ -119,25 +101,18 @@ export async function escalateCreditReview(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 300));
   console.log('[Action] escalateCreditReview:', reviewId, escalateTo, reason);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
 }
 
 // ─── Credit Hold Actions ─────────────────────────────────────────────────────
-
-interface PlaceHoldInput {
-  customerId: string;
-  holdType: HoldType;
-  reason: string;
-  amount?: number;
-}
 
 export async function placeCreditHold(
   input: PlaceHoldInput
 ): Promise<{ ok: true; holdId: string } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
   console.log('[Action] placeCreditHold:', input);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true, holdId: 'hold-new-' + Date.now() };
 }
 
@@ -147,7 +122,7 @@ export async function releaseCreditHold(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 350));
   console.log('[Action] releaseCreditHold:', holdId, notes);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
 }
 
@@ -158,7 +133,7 @@ export async function escalateCreditHold(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 300));
   console.log('[Action] escalateCreditHold:', holdId, escalateTo, reason);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true };
 }
 
@@ -169,7 +144,7 @@ export async function releaseOrderFromHold(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 300));
   console.log('[Action] releaseOrderFromHold:', holdId, orderId, reason);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   revalidatePath('/sales/orders');
   return { ok: true };
 }
@@ -181,7 +156,7 @@ export async function bulkRecalculateScores(
 ): Promise<{ ok: true; updated: number } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 800));
   console.log('[Action] bulkRecalculateScores:', customerIds);
-  revalidatePath('/finance/credit');
+  revalidatePath(routes.finance.creditLimits);
   return { ok: true, updated: customerIds.length };
 }
 

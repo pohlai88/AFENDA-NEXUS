@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Plus, CreditCard, AlertTriangle, Ban, Building2 } from 'lucide-react';
 import type { CustomerCredit, CreditStatus, RiskRating } from '../types';
 import { creditStatusConfig, riskRatingConfig } from '../types';
+import { routes } from '@/lib/constants';
 
 function StatusBadge({ status }: { status: CreditStatus }) {
   const config = creditStatusConfig[status];
@@ -33,8 +34,8 @@ function RiskBadge({ rating }: { rating: RiskRating }) {
 function UtilizationGauge({ percent, isOnHold }: { percent: number; isOnHold: boolean }) {
   const getColor = () => {
     if (isOnHold) return '[&>div]:bg-destructive';
-    if (percent >= 90) return '[&>div]:bg-red-500';
-    if (percent >= 75) return '[&>div]:bg-amber-500';
+    if (percent >= 90) return '[&>div]:bg-destructive';
+    if (percent >= 75) return '[&>div]:bg-warning';
     return '';
   };
 
@@ -110,7 +111,8 @@ export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
       sortable: true,
       render: (credit) => (
         <span
-          className={cn('font-mono',
+          className={cn(
+            'font-mono',
             credit.avgPaymentDays > credit.paymentTermsDays && 'text-warning'
           )}
         >
@@ -126,7 +128,8 @@ export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
       sortable: true,
       render: (credit) => (
         <span
-          className={cn('font-mono',
+          className={cn(
+            'font-mono',
             credit.creditScoreInternal >= 70
               ? 'text-success'
               : credit.creditScoreInternal >= 50
@@ -171,7 +174,7 @@ export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
   ];
 
   const handleRowClick = (credit: CustomerCredit) => {
-    router.push(`/finance/credit/${credit.id}`);
+    router.push(routes.finance.creditLimitDetail(credit.id));
   };
 
   return (
@@ -187,7 +190,7 @@ export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
         description: 'Set up credit limits for your customers.',
         action: (
           <Button asChild>
-            <Link href="/finance/credit/new">
+            <Link href={routes.finance.creditNew}>
               <Plus className="mr-2 h-4 w-4" />
               Add Credit Limit
             </Link>
@@ -196,7 +199,7 @@ export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
       }}
       actions={
         <Button asChild>
-          <Link href="/finance/credit/new">
+          <Link href={routes.finance.creditNew}>
             <Plus className="mr-2 h-4 w-4" />
             Add Credit Limit
           </Link>

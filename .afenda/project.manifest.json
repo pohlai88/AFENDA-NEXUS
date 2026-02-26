@@ -32,6 +32,11 @@
       "type": "library",
       "layer": "platform"
     },
+    "packages/api-kit": {
+      "name": "@afenda/api-kit",
+      "type": "library",
+      "layer": "infrastructure"
+    },
     "packages/modules/finance": {
       "name": "@afenda/finance",
       "type": "library",

@@ -4,6 +4,8 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import type { DriverType } from '../entities/cost-driver.js';
 import { runCostAllocation } from '../services/run-allocation.js';
+import { extractIdentity } from '@afenda/api-kit';
+import type { IdParam } from '@afenda/contracts';
 
 export function registerCostAccountingRoutes(
   app: FastifyInstance,
@@ -16,8 +18,7 @@ export function registerCostAccountingRoutes(
     '/cost-centers',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const list = await deps.costCenterRepo.findAll();
         return { data: list };
@@ -25,12 +26,11 @@ export function registerCostAccountingRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/cost-centers/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const cc = await deps.costCenterRepo.findById(req.params.id);
         if (!cc) return reply.status(404).send({ error: 'Cost center not found' });
@@ -43,8 +43,7 @@ export function registerCostAccountingRoutes(
     '/cost-centers',
     { preHandler: [requirePermission(policy, 'admin:all')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.costCenterRepo.create(tenantId, {
@@ -68,8 +67,7 @@ export function registerCostAccountingRoutes(
     '/cost-drivers',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const list = await deps.costDriverRepo.findAll();
         return { data: list };
@@ -81,8 +79,7 @@ export function registerCostAccountingRoutes(
     '/cost-drivers',
     { preHandler: [requirePermission(policy, 'admin:all')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.costDriverRepo.create(tenantId, {
@@ -102,8 +99,7 @@ export function registerCostAccountingRoutes(
     '/cost-allocation-runs',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const list = await deps.costAllocationRunRepo.findAll();
         return { data: list };
@@ -111,12 +107,11 @@ export function registerCostAccountingRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/cost-allocation-runs/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const run = await deps.costAllocationRunRepo.findById(req.params.id);
         if (!run) return reply.status(404).send({ error: 'Allocation run not found' });
@@ -130,8 +125,7 @@ export function registerCostAccountingRoutes(
     '/cost-allocation-runs',
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await runCostAllocation(

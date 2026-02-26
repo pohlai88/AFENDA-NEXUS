@@ -18,9 +18,12 @@ export const FinanceEventType = {
   REVENUE_RECOGNIZED: 'REVENUE_RECOGNIZED',
   RECURRING_JOURNAL_CREATED: 'RECURRING_JOURNAL_CREATED',
   RECURRING_JOURNALS_PROCESSED: 'RECURRING_JOURNALS_PROCESSED',
+  AP_INVOICE_APPROVED: 'AP_INVOICE_APPROVED',
+  AP_INVOICE_CANCELLED: 'AP_INVOICE_CANCELLED',
   AP_INVOICE_POSTED: 'AP_INVOICE_POSTED',
   AP_INVOICE_PAID: 'AP_INVOICE_PAID',
   AP_PAYMENT_RUN_EXECUTED: 'AP_PAYMENT_RUN_EXECUTED',
+  AP_PAYMENT_RUN_REVERSED: 'AP_PAYMENT_RUN_REVERSED',
   AP_DEBIT_MEMO_CREATED: 'AP_DEBIT_MEMO_CREATED',
   AR_INVOICE_POSTED: 'AR_INVOICE_POSTED',
   AR_INVOICE_PAID: 'AR_INVOICE_PAID',
@@ -86,6 +89,71 @@ export const FinanceEventType = {
   APPROVAL_SUBMITTED: 'APPROVAL_SUBMITTED',
   APPROVAL_APPROVED: 'APPROVAL_APPROVED',
   APPROVAL_REJECTED: 'APPROVAL_REJECTED',
+  AP_CREDIT_MEMO_CREATED: 'AP_CREDIT_MEMO_CREATED',
+  AP_PREPAYMENT_CREATED: 'AP_PREPAYMENT_CREATED',
+  AP_PREPAYMENT_APPLIED: 'AP_PREPAYMENT_APPLIED',
+  AP_INVOICE_BATCH_IMPORTED: 'AP_INVOICE_BATCH_IMPORTED',
+  AP_BANK_REJECTION_PROCESSED: 'AP_BANK_REJECTION_PROCESSED',
+  AP_REMITTANCE_ADVICE_GENERATED: 'AP_REMITTANCE_ADVICE_GENERATED',
+  AP_WHT_CERTIFICATE_ISSUED: 'AP_WHT_CERTIFICATE_ISSUED',
+  SUPPLIER_BANK_ACCOUNT_UPDATED: 'SUPPLIER_BANK_ACCOUNT_UPDATED',
+  SUPPLIER_PROFILE_UPDATED: 'SUPPLIER_PROFILE_UPDATED',
+  SUPPLIER_INVOICE_SUBMITTED: 'SUPPLIER_INVOICE_SUBMITTED',
+  SUPPLIER_REMITTANCE_DOWNLOADED: 'SUPPLIER_REMITTANCE_DOWNLOADED',
+  SUPPLIER_STATEMENT_UPLOADED: 'SUPPLIER_STATEMENT_UPLOADED',
+  SUPPLIER_DOCUMENT_UPLOADED: 'SUPPLIER_DOCUMENT_UPLOADED',
+  SUPPLIER_DISPUTE_CREATED: 'SUPPLIER_DISPUTE_CREATED',
+  SUPPLIER_DISPUTE_RESOLVED: 'SUPPLIER_DISPUTE_RESOLVED',
+  AP_INVOICE_MARKED_INCOMPLETE: 'AP_INVOICE_MARKED_INCOMPLETE',
+  AP_TRIAGE_ASSIGNED: 'AP_TRIAGE_ASSIGNED',
+  AP_TRIAGE_RESOLVED: 'AP_TRIAGE_RESOLVED',
+  AP_OCR_INVOICE_RECEIVED: 'AP_OCR_INVOICE_RECEIVED',
 } as const;
 
 export type FinanceEventType = (typeof FinanceEventType)[keyof typeof FinanceEventType];
+
+// ─── Event Tier & Family metadata ───────────────────────────────────────────
+
+export type EventTier = 0 | 1;
+export type EventFamily = 'audit' | 'notification' | 'document' | 'cache' | 'webhook';
+
+export interface EventMeta {
+  readonly tier: EventTier;
+  readonly family: EventFamily;
+}
+
+const T1_NOTIFICATION: EventMeta = { tier: 1, family: 'notification' };
+const T1_CACHE: EventMeta = { tier: 1, family: 'cache' };
+const T1_DOCUMENT: EventMeta = { tier: 1, family: 'document' };
+const T0_AUDIT: EventMeta = { tier: 0, family: 'audit' };
+
+/**
+ * Event tier registry. Tier-1 events MUST have real side-effects (email, cache
+ * invalidation, document ops, webhooks). Tier-0 events are audit-only.
+ *
+ * Future modules add their own entries without modifying this file.
+ */
+export const EVENT_REGISTRY: Record<string, EventMeta> = {
+  // Tier-1: notification (email/in-app)
+  [FinanceEventType.JOURNAL_POSTED]: T1_NOTIFICATION,
+  [FinanceEventType.APPROVAL_SUBMITTED]: T1_NOTIFICATION,
+  [FinanceEventType.APPROVAL_APPROVED]: T1_NOTIFICATION,
+  [FinanceEventType.APPROVAL_REJECTED]: T1_NOTIFICATION,
+  [FinanceEventType.AP_PAYMENT_RUN_EXECUTED]: T1_NOTIFICATION,
+  [FinanceEventType.EXPENSE_CLAIM_APPROVED]: T1_NOTIFICATION,
+  [FinanceEventType.EXPENSE_CLAIM_REJECTED]: T1_NOTIFICATION,
+  [FinanceEventType.COVENANT_BREACHED]: T1_NOTIFICATION,
+
+  // Tier-1: cache invalidation
+  [FinanceEventType.GL_BALANCE_CHANGED]: T1_CACHE,
+
+  // Tier-1: document operations
+  [FinanceEventType.AR_DUNNING_RUN_CREATED]: T1_DOCUMENT,
+};
+
+/**
+ * Returns the tier metadata for an event, defaulting to Tier-0 audit.
+ */
+export function getEventMeta(eventType: string): EventMeta {
+  return EVENT_REGISTRY[eventType] ?? T0_AUDIT;
+}

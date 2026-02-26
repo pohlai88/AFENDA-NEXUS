@@ -35,6 +35,7 @@ export interface ApprovalPolicy {
   readonly companyId: string | null;
   readonly entityType: string;
   readonly name: string;
+  readonly version: number;
   readonly isActive: boolean;
   readonly rules: readonly ApprovalRule[];
   readonly createdAt: Date;

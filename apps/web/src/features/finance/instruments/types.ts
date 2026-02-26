@@ -71,11 +71,14 @@ export const instrumentTypeLabels: Record<InstrumentType, string> = {
 };
 
 export const instrumentStatusConfig: Record<InstrumentStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  matured: { label: 'Matured', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  sold: { label: 'Sold', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
-  impaired: { label: 'Impaired', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  written_off: { label: 'Written Off', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  matured: { label: 'Matured', color: 'bg-info/15 text-info dark:bg-info/20' },
+  sold: { label: 'Sold', color: 'bg-accent text-accent-foreground' },
+  impaired: { label: 'Impaired', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  written_off: {
+    label: 'Written Off',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
 };
 
 export const fairValueLevelLabels: Record<FairValueLevel, string> = {

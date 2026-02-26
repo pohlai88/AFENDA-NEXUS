@@ -13,8 +13,7 @@ import { registerRecurringTemplateRoutes } from '../slices/hub/routes/recurring-
 import { registerBudgetRoutes } from '../slices/hub/routes/budget-routes.js';
 import { registerReportRoutes } from '../slices/reporting/routes/report-routes.js';
 import { DefaultAuthorizationPolicy } from '../shared/authorization/default-authorization-policy.js';
-import { registerErrorHandler } from '../shared/routes/fastify-plugins.js';
-import { registerBigIntSerializer } from '../shared/routes/fastify-plugins.js';
+import { registerErrorHandler, registerBigIntSerializer } from '@afenda/api-kit';
 import {
   IDS,
   makeJournal,
@@ -43,6 +42,7 @@ import {
   mockClassificationRuleRepo,
   mockFxRateApprovalRepo,
   mockRevenueContractRepo,
+  registerTestAuthPlugin,
 } from './helpers.js';
 
 const BASE_HEADERS = {
@@ -97,6 +97,7 @@ function buildApp(depsOverrides: Partial<FinanceDeps> = {}): {
   };
 
   const app = Fastify({ logger: false });
+  registerTestAuthPlugin(app);
   registerErrorHandler(app);
   registerBigIntSerializer(app);
   const policy = new DefaultAuthorizationPolicy();

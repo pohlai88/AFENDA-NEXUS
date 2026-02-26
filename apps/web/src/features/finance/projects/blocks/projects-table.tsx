@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Plus, Briefcase, User2 } from 'lucide-react';
 import type { Project, ProjectStatus, ProjectType } from '../types';
 import { projectStatusConfig, projectTypeLabels } from '../types';
+import { routes } from '@/lib/constants';
 
 function StatusBadge({ status }: { status: ProjectStatus }) {
   const config = projectStatusConfig[status];
@@ -36,7 +37,12 @@ function ProjectProgress({ percent, overBudget }: { percent: number; overBudget?
         value={percent}
         className={cn('h-2 flex-1', overBudget && '[&>div]:bg-destructive')}
       />
-      <span className={cn('text-xs font-mono', overBudget ? 'text-destructive' : 'text-muted-foreground')}>
+      <span
+        className={cn(
+          'text-xs font-mono',
+          overBudget ? 'text-destructive' : 'text-muted-foreground'
+        )}
+      >
         {percent}%
       </span>
     </div>
@@ -46,12 +52,12 @@ function ProjectProgress({ percent, overBudget }: { percent: number; overBudget?
 function MarginIndicator({ margin }: { margin: number }) {
   const color =
     margin >= 25
-      ? 'text-green-600 dark:text-green-400'
+      ? 'text-success'
       : margin >= 15
-        ? 'text-amber-600 dark:text-amber-400'
+        ? 'text-warning dark:text-warning'
         : margin >= 0
-          ? 'text-orange-600 dark:text-orange-400'
-          : 'text-red-600 dark:text-red-400';
+          ? 'text-warning dark:text-warning'
+          : 'text-destructive';
 
   return <span className={cn('font-mono text-sm', color)}>{margin.toFixed(1)}%</span>;
 }
@@ -128,7 +134,8 @@ export function ProjectsTable({ projects, pagination }: ProjectsTableProps) {
       align: 'right',
       render: (project) => (
         <span
-          className={cn('font-mono',
+          className={cn(
+            'font-mono',
             project.actualCost > project.budgetedCost && 'text-destructive'
           )}
         >
@@ -192,7 +199,7 @@ export function ProjectsTable({ projects, pagination }: ProjectsTableProps) {
   ];
 
   const handleRowClick = (project: Project) => {
-    router.push(`/finance/projects/${project.id}`);
+    router.push(routes.finance.projectDetail(project.id));
   };
 
   return (
@@ -208,7 +215,7 @@ export function ProjectsTable({ projects, pagination }: ProjectsTableProps) {
         description: 'Get started by creating your first project.',
         action: (
           <Button asChild>
-            <Link href="/finance/projects/new">
+            <Link href={routes.finance.projectNew}>
               <Plus className="mr-2 h-4 w-4" />
               New Project
             </Link>
@@ -218,7 +225,7 @@ export function ProjectsTable({ projects, pagination }: ProjectsTableProps) {
       pageSize={pagination?.perPage}
       actions={
         <Button asChild>
-          <Link href="/finance/projects/new">
+          <Link href={routes.finance.projectNew}>
             <Plus className="mr-2 h-4 w-4" />
             New Project
           </Link>

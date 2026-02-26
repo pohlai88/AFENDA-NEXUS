@@ -1,16 +1,10 @@
 'use server';
 
+import type { CreateLedgerPayload } from '@afenda/contracts';
+
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-export interface CreateLedgerPayload {
-  name: string;
-  companyId: string;
-  baseCurrencyCode: string;
-}
 
 // ─── Mutations ───────────────────────────────────────────────────────────────
 

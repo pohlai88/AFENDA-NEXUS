@@ -169,15 +169,19 @@ export function mergeFilters(
   updates: Record<string, unknown>
 ): Record<string, string | number | boolean | null | undefined> {
   const merged = { ...current, ...updates };
-  
+
   const result: Record<string, string | number | boolean | null | undefined> = {};
   Object.entries(merged).forEach(([key, value]) => {
     if (value === null || value === undefined) {
       result[key] = null;
-    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    } else if (
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
       result[key] = value;
     }
   });
-  
+
   return result;
 }

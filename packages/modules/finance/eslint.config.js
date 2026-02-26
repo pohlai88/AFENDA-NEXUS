@@ -19,6 +19,13 @@ export default [
       ],
     },
   },
+  // Allow `any` in test files — mocks frequently require type casts
+  {
+    files: ['src/**/__tests__/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
   {
     languageOptions: {
       parserOptions: {

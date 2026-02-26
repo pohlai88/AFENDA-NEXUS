@@ -20,7 +20,8 @@ export interface IApprovalPolicyRepo {
   findByTenantAndEntityType(tenantId: string, entityType: string): Promise<ApprovalPolicy[]>;
   update(
     id: string,
-    input: Partial<Pick<ApprovalPolicy, 'name' | 'isActive' | 'rules'>>
+    input: Partial<Pick<ApprovalPolicy, 'name' | 'isActive' | 'rules'>>,
+    bumpVersion?: boolean
   ): Promise<Result<ApprovalPolicy>>;
   deactivate(id: string): Promise<Result<void>>;
 }

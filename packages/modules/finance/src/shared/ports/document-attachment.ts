@@ -32,7 +32,10 @@ export type LinkedEntityType =
   | 'BANK_RECONCILIATION'
   | 'TAX_RETURN'
   | 'PROVISION'
-  | 'IC_TRANSACTION';
+  | 'IC_TRANSACTION'
+  | 'SUPPLIER'
+  | 'SUPPLIER_CONTRACT'
+  | 'SUPPLIER_STATEMENT';
 
 export interface DocumentAttachment {
   readonly documentId: string;
@@ -111,6 +114,9 @@ const REQUIRED_CATEGORIES: Record<LinkedEntityType, readonly DocumentCategory[]>
   TAX_RETURN: ['TAX_NOTICE'],
   PROVISION: ['LEGAL_OPINION'],
   IC_TRANSACTION: ['INVOICE', 'CONTRACT'],
+  SUPPLIER: ['CONTRACT', 'CORRESPONDENCE'],
+  SUPPLIER_CONTRACT: ['CONTRACT'],
+  SUPPLIER_STATEMENT: ['BANK_STATEMENT'],
 };
 
 /**

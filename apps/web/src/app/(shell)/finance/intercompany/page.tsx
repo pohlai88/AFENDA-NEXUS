@@ -44,7 +44,10 @@ export default async function IcTransactionsPage({ searchParams }: IcTransaction
       <PageHeader
         title="Intercompany Transactions"
         description="Paired journal entries between companies within the same tenant."
-        breadcrumbs={[{ label: 'Finance', href: '/finance/journals' }, { label: 'Intercompany' }]}
+        breadcrumbs={[
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Intercompany' },
+        ]}
         actions={
           <Button asChild>
             <Link href={routes.finance.icTransactionNew}>
@@ -106,7 +109,7 @@ function IcFilters({
     const pg = overrides.page ?? currentPage;
     if (pg > 1) p.set('page', String(pg));
     const qs = p.toString();
-    return qs ? `/finance/intercompany?${qs}` : '/finance/intercompany';
+    return qs ? `${routes.finance.icTransactions}?${qs}` : routes.finance.icTransactions;
   }
 
   return (

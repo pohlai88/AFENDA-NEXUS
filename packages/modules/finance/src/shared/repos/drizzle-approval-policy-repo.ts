@@ -43,6 +43,7 @@ function mapRow(r: typeof approvalPolicies.$inferSelect): ApprovalPolicy {
     companyId: r.companyId,
     entityType: r.entityType,
     name: r.name,
+    version: r.version,
     isActive: r.isActive,
     rules: parseRulesJsonb(r.rules),
     createdAt: r.createdAt,
@@ -91,8 +92,7 @@ export class DrizzleApprovalPolicyRepo implements IApprovalPolicyRepo {
     const values: Record<string, unknown> = { updatedAt: new Date() };
     if (input.name !== undefined) values.name = input.name;
     if (input.isActive !== undefined) values.isActive = input.isActive;
-    if (input.rules !== undefined)
-      values.rules = rulesToJsonb(input.rules);
+    if (input.rules !== undefined) values.rules = rulesToJsonb(input.rules);
 
     const [row] = await this.tx
       .update(approvalPolicies)

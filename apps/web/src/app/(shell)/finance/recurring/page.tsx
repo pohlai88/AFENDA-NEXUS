@@ -50,7 +50,7 @@ export default async function RecurringPage({ searchParams }: RecurringPageProps
         title="Recurring Templates"
         description="Manage recurring journal templates for scheduled postings."
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
+          { label: 'Finance', href: routes.finance.journals },
           { label: 'Recurring Templates' },
         ]}
         actions={
@@ -67,7 +67,9 @@ export default async function RecurringPage({ searchParams }: RecurringPageProps
       <div className="flex gap-2">
         {filters.map((f) => {
           const isActive = (params.active ?? undefined) === f.value;
-          const href = f.value ? `/finance/recurring?active=${f.value}` : '/finance/recurring';
+          const href = f.value
+            ? `${routes.finance.recurring}?active=${f.value}`
+            : routes.finance.recurring;
           return (
             <Link
               key={f.label}
@@ -104,7 +106,7 @@ export default async function RecurringPage({ searchParams }: RecurringPageProps
           <div className="flex gap-2">
             {page > 1 && (
               <Link
-                href={`/finance/recurring?page=${page - 1}${params.active ? `&active=${params.active}` : ''}`}
+                href={`${routes.finance.recurring}?page=${page - 1}${params.active ? `&active=${params.active}` : ''}`}
                 className="rounded-md border px-3 py-1.5 hover:bg-muted"
               >
                 Previous
@@ -112,7 +114,7 @@ export default async function RecurringPage({ searchParams }: RecurringPageProps
             )}
             {page < totalPages && (
               <Link
-                href={`/finance/recurring?page=${page + 1}${params.active ? `&active=${params.active}` : ''}`}
+                href={`${routes.finance.recurring}?page=${page + 1}${params.active ? `&active=${params.active}` : ''}`}
                 className="rounded-md border px-3 py-1.5 hover:bg-muted"
               >
                 Next

@@ -1,7 +1,16 @@
 // ─── Asset Types ─────────────────────────────────────────────────────────────
 
-export type AssetStatus = 'active' | 'fully_depreciated' | 'disposed' | 'written_off' | 'held_for_sale';
-export type DepreciationMethod = 'straight_line' | 'declining_balance' | 'sum_of_years' | 'units_of_production';
+export type AssetStatus =
+  | 'active'
+  | 'fully_depreciated'
+  | 'disposed'
+  | 'written_off'
+  | 'held_for_sale';
+export type DepreciationMethod =
+  | 'straight_line'
+  | 'declining_balance'
+  | 'sum_of_years'
+  | 'units_of_production';
 export type AssetDisposalType = 'sale' | 'scrap' | 'theft' | 'donation' | 'transfer';
 
 export interface AssetCategory {
@@ -114,7 +123,12 @@ export interface AssetSummary {
 
 // ─── Disposal Request ────────────────────────────────────────────────────────
 
-export type DisposalRequestStatus = 'draft' | 'pending_approval' | 'approved' | 'rejected' | 'completed';
+export type DisposalRequestStatus =
+  | 'draft'
+  | 'pending_approval'
+  | 'approved'
+  | 'rejected'
+  | 'completed';
 
 export interface DisposalRequest {
   id: string;
@@ -136,11 +150,14 @@ export interface DisposalRequest {
 // ─── Status Config ───────────────────────────────────────────────────────────
 
 export const assetStatusConfig: Record<AssetStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  fully_depreciated: { label: 'Fully Depreciated', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  disposed: { label: 'Disposed', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  written_off: { label: 'Written Off', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  held_for_sale: { label: 'Held for Sale', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  fully_depreciated: { label: 'Fully Depreciated', color: 'bg-info/15 text-info dark:bg-info/20' },
+  disposed: { label: 'Disposed', color: 'bg-muted text-muted-foreground' },
+  written_off: {
+    label: 'Written Off',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  held_for_sale: { label: 'Held for Sale', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
 };
 
 export const depreciationMethodLabels: Record<DepreciationMethod, string> = {
@@ -159,8 +176,11 @@ export const disposalTypeLabels: Record<AssetDisposalType, string> = {
 };
 
 export const depRunStatusConfig: Record<DepreciationRunStatus, { label: string; color: string }> = {
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  calculated: { label: 'Calculated', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  posted: { label: 'Posted', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
+  calculated: { label: 'Calculated', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  posted: { label: 'Posted', color: 'bg-success/15 text-success dark:bg-success/20' },
+  cancelled: {
+    label: 'Cancelled',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
 };

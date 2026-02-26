@@ -15,7 +15,10 @@ const columns: ColumnDef<IcTransactionListItem>[] = [
     sortable: true,
     sortFn: (a, b) => a.description.localeCompare(b.description),
     accessorFn: (row) => (
-      <Link href={routes.finance.icTransactionDetail(row.id)} className="font-medium hover:underline">
+      <Link
+        href={routes.finance.icTransactionDetail(row.id)}
+        className="font-medium hover:underline"
+      >
         {row.description}
       </Link>
     ),

@@ -61,8 +61,11 @@ export const erpStatements = {
   auditLog: ['read'],
   user: ['read', 'update', 'invite', 'remove'],
 
-  // ── Document Storage ─────────────────────────────────────────────────
+  // ── Document Storage ─────────────────────────────────────────────
   document: ['create', 'read', 'delete'],
+
+  // ── Supplier Portal ────────────────────────────────────────────────
+  supplierPortal: ['create', 'read', 'update'],
 } as const;
 
 // ─── Helper ─────────────────────────────────────────────────────────────────

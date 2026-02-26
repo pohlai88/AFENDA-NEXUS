@@ -85,7 +85,13 @@ export interface LeaseScheduleEntry {
 
 // ─── Lease Modification Types ────────────────────────────────────────────────
 
-export type ModificationType = 'scope_increase' | 'scope_decrease' | 'term_extension' | 'term_reduction' | 'payment_change' | 'reassessment';
+export type ModificationType =
+  | 'scope_increase'
+  | 'scope_decrease'
+  | 'term_extension'
+  | 'term_reduction'
+  | 'payment_change'
+  | 'reassessment';
 
 export interface LeaseModification {
   id: string;
@@ -122,11 +128,14 @@ export interface LeaseSummary {
 // ─── Status Configs ──────────────────────────────────────────────────────────
 
 export const leaseStatusConfig: Record<LeaseStatus, { label: string; color: string }> = {
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  modified: { label: 'Modified', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  terminated: { label: 'Terminated', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  expired: { label: 'Expired', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
+  draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  modified: { label: 'Modified', color: 'bg-info/15 text-info dark:bg-info/20' },
+  terminated: {
+    label: 'Terminated',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  expired: { label: 'Expired', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
 };
 
 export const leaseTypeLabels: Record<LeaseType, string> = {

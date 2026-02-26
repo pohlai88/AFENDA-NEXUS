@@ -20,7 +20,12 @@ import {
   classificationRuleSets,
   classificationRules,
   paymentTermsTemplates,
+  suppliers,
+  supplierSites,
+  supplierBankAccounts,
+  supplierUsers,
   apInvoices,
+  apHolds,
   apInvoiceLines,
   apPaymentRuns,
   apPaymentRunItems,
@@ -224,6 +229,42 @@ export const paymentTermsTemplatesRelations = relations(paymentTermsTemplates, (
   tenant: one(tenants, { fields: [paymentTermsTemplates.tenantId], references: [tenants.id] }),
 }));
 
+export const suppliersRelations = relations(suppliers, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [suppliers.tenantId], references: [tenants.id] }),
+  company: one(companies, { fields: [suppliers.companyId], references: [companies.id] }),
+  currency: one(currencies, { fields: [suppliers.currencyId], references: [currencies.id] }),
+  defaultPaymentTerms: one(paymentTermsTemplates, {
+    fields: [suppliers.defaultPaymentTermsId],
+    references: [paymentTermsTemplates.id],
+  }),
+  sites: many(supplierSites),
+  bankAccounts: many(supplierBankAccounts),
+  users: many(supplierUsers),
+}));
+
+export const supplierUsersRelations = relations(supplierUsers, ({ one }) => ({
+  tenant: one(tenants, { fields: [supplierUsers.tenantId], references: [tenants.id] }),
+  supplier: one(suppliers, { fields: [supplierUsers.supplierId], references: [suppliers.id] }),
+  user: one(users, { fields: [supplierUsers.userId], references: [users.id] }),
+}));
+
+export const supplierSitesRelations = relations(supplierSites, ({ one }) => ({
+  tenant: one(tenants, { fields: [supplierSites.tenantId], references: [tenants.id] }),
+  supplier: one(suppliers, { fields: [supplierSites.supplierId], references: [suppliers.id] }),
+}));
+
+export const supplierBankAccountsRelations = relations(supplierBankAccounts, ({ one }) => ({
+  tenant: one(tenants, { fields: [supplierBankAccounts.tenantId], references: [tenants.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierBankAccounts.supplierId],
+    references: [suppliers.id],
+  }),
+  currency: one(currencies, {
+    fields: [supplierBankAccounts.currencyId],
+    references: [currencies.id],
+  }),
+}));
+
 export const apInvoicesRelations = relations(apInvoices, ({ one, many }) => ({
   tenant: one(tenants, { fields: [apInvoices.tenantId], references: [tenants.id] }),
   company: one(companies, { fields: [apInvoices.companyId], references: [companies.id] }),
@@ -235,6 +276,11 @@ export const apInvoicesRelations = relations(apInvoices, ({ one, many }) => ({
     references: [paymentTermsTemplates.id],
   }),
   lines: many(apInvoiceLines),
+}));
+
+export const apHoldsRelations = relations(apHolds, ({ one }) => ({
+  tenant: one(tenants, { fields: [apHolds.tenantId], references: [tenants.id] }),
+  invoice: one(apInvoices, { fields: [apHolds.invoiceId], references: [apInvoices.id] }),
 }));
 
 export const apInvoiceLinesRelations = relations(apInvoiceLines, ({ one }) => ({

@@ -375,10 +375,293 @@ export {
   type ReconResult,
 } from './slices/ap/calculators/supplier-statement-recon.js';
 
+// ─── Supplier entities & ports ────────────────────────────────────────────
+export type {
+  Supplier,
+  SupplierSite,
+  SupplierBankAccount,
+  SupplierStatus,
+  PaymentMethodType,
+} from './slices/ap/entities/supplier.js';
+export type {
+  ISupplierRepo,
+  CreateSupplierInput,
+  UpdateSupplierInput,
+  CreateSupplierSiteInput,
+  CreateSupplierBankAccountInput,
+} from './slices/ap/ports/supplier-repo.js';
+
+// ─── AP Hold entities, ports & services ───────────────────────────────────
+export type { ApHold, ApHoldType, ApHoldStatus } from './slices/ap/entities/ap-hold.js';
+export type {
+  IApHoldRepo,
+  CreateApHoldInput,
+  ReleaseApHoldInput,
+} from './slices/ap/ports/ap-hold-repo.js';
+export { applyHold, type ApplyHoldInput } from './slices/ap/services/apply-hold.js';
+export { releaseHold, type ReleaseHoldInput } from './slices/ap/services/release-hold.js';
+export {
+  validateInvoice,
+  type ValidateInvoiceInput,
+  type ValidationResult,
+} from './slices/ap/services/validate-invoice.js';
+export {
+  reversePaymentRun,
+  type ReversePaymentRunInput,
+  type PaymentReversalResult,
+} from './slices/ap/services/reverse-payment-run.js';
+
+// ─── AP services (W2) ─────────────────────────────────────────────────────
+export {
+  computePeriodAccruals,
+  type ComputePeriodAccrualsInput,
+  type PeriodAccrualResult,
+} from './slices/ap/services/compute-period-accruals.js';
+export type { ClearingTrace } from './slices/ap/entities/clearing-trace.js';
+
+// ─── AP error codes ───────────────────────────────────────────────────────
+export { ApErrorCode } from './slices/ap/ap-error-codes.js';
+export type { ApErrorCode as ApErrorCodeType } from './slices/ap/ap-error-codes.js';
+
 // ─── AP route registrars ───────────────────────────────────────────────────
 export { registerApInvoiceRoutes } from './slices/ap/routes/ap-invoice-routes.js';
 export { registerApPaymentRunRoutes } from './slices/ap/routes/ap-payment-run-routes.js';
 export { registerApAgingRoutes } from './slices/ap/routes/ap-aging-routes.js';
+export { registerSupplierRoutes } from './slices/ap/routes/supplier-routes.js';
+export { registerApHoldRoutes } from './slices/ap/routes/ap-hold-routes.js';
+export { registerApSupplierReconRoutes } from './slices/ap/routes/ap-supplier-recon-routes.js';
+export { registerApReportingRoutes } from './slices/ap/routes/ap-reporting-routes.js';
+
+// ─── AP Wave 3: Proposal, Reports, Matching ──────────────────────────────
+export {
+  computePaymentProposal,
+  type PaymentProposalInput,
+  type PaymentProposal,
+  type PaymentProposalGroup,
+  type PaymentProposalItem,
+  type PaymentProposalSummary,
+  type ProposableInvoice,
+  type ProposableSupplier,
+} from './slices/ap/calculators/payment-proposal.js';
+export {
+  partialMatch,
+  type PartialMatchInput,
+  type PartialMatchResult,
+  type LineMatchResult,
+  type LineMatchStatus,
+  type MatchLine,
+} from './slices/ap/calculators/partial-match.js';
+export {
+  computeWhtReport,
+  type WhtReportEntry,
+  type WhtReportRow,
+  type WhtReport,
+} from './slices/ap/calculators/wht-report.js';
+export {
+  resolveMatchTolerance,
+  type MatchTolerance,
+  type ToleranceScope,
+} from './slices/ap/entities/match-tolerance.js';
+export type {
+  IMatchToleranceRepo,
+  CreateMatchToleranceInput,
+  UpdateMatchToleranceInput,
+} from './slices/ap/ports/match-tolerance-repo.js';
+export {
+  computeApPeriodCloseChecklist,
+  type ApPeriodCloseChecklistInput,
+  type ApPeriodCloseChecklist,
+  type ApCloseException,
+} from './slices/ap/services/ap-period-close-checklist.js';
+export {
+  getPaymentRunReport,
+  type PaymentRunReportInput,
+  type PaymentRunReport,
+  type PaymentRunSupplierBreakdown,
+} from './slices/ap/services/get-payment-run-report.js';
+export {
+  getInvoiceAuditTimeline,
+  type InvoiceAuditTimelineInput,
+  type InvoiceAuditTimeline,
+  type AuditTimelineEvent,
+} from './slices/ap/services/get-invoice-audit-timeline.js';
+export type { ITransactionScope } from './shared/ports/transaction-scope.js';
+
+// ─── AP Wave 4: Capture, Integration & Feedback ──────────────────────────
+export type { ApInvoiceType } from './slices/ap/entities/ap-invoice.js';
+export {
+  createCreditMemo,
+  type CreateCreditMemoInput,
+} from './slices/ap/services/create-credit-memo.js';
+export type {
+  ApPrepayment,
+  ApPrepaymentStatus,
+  PrepaymentApplication,
+} from './slices/ap/entities/prepayment.js';
+export type {
+  IApPrepaymentRepo,
+  CreatePrepaymentInput as CreatePrepaymentRepoInput,
+  ApplyPrepaymentInput as ApplyPrepaymentRepoInput,
+} from './slices/ap/ports/prepayment-repo.js';
+export {
+  applyPrepayment,
+  type ApplyPrepaymentInput,
+} from './slices/ap/services/apply-prepayment.js';
+export {
+  batchInvoiceImport,
+  type BatchInvoiceImportInput,
+  type BatchImportResult,
+  type BatchRowResult,
+  type BatchInvoiceRow,
+} from './slices/ap/services/batch-invoice-import.js';
+export type {
+  InvoiceAttachment,
+  IInvoiceAttachmentRepo,
+  CreateAttachmentInput,
+} from './slices/ap/entities/invoice-attachment.js';
+export {
+  processBankRejection,
+  type BankRejectionInput,
+  type BankRejectionResult,
+} from './slices/ap/services/process-bank-rejection.js';
+export {
+  generateRemittanceAdvice,
+  type GenerateRemittanceAdviceInput,
+  type RemittanceAdvice,
+  type SupplierRemittance,
+  type RemittanceLineItem,
+} from './slices/ap/services/generate-remittance-advice.js';
+export type {
+  WhtCertificate as ApWhtCertificate,
+  WhtCertificateType as ApWhtCertificateType,
+  WhtExemption,
+} from './slices/ap/entities/wht-certificate.js';
+export type {
+  IWhtCertificateRepo as IApWhtCertificateRepo,
+  CreateWhtCertificateInput as CreateApWhtCertificateInput,
+  CreateWhtExemptionInput,
+} from './slices/ap/ports/wht-certificate-repo.js';
+export { registerApCaptureRoutes } from './slices/ap/routes/ap-capture-routes.js';
+
+// ─── Supplier Portal services (N1–N6) ────────────────────────────────────
+export {
+  getSupplierInvoices,
+  getSupplierAging,
+  getSupplierPaymentRunReport,
+  type GetSupplierInvoicesInput,
+  type GetSupplierAgingInput,
+  type GetSupplierPaymentRunInput,
+} from './slices/ap/services/supplier-portal-visibility.js';
+export {
+  supplierAddBankAccount,
+  type SupplierAddBankAccountInput,
+} from './slices/ap/services/supplier-portal-bank-account.js';
+export {
+  supplierDownloadRemittance,
+  type SupplierRemittanceDownloadInput,
+  type SupplierRemittanceAdvice,
+} from './slices/ap/services/supplier-portal-remittance.js';
+export {
+  getSupplierWhtCertificates,
+  getSupplierWhtCertificateById,
+  type GetSupplierWhtCertificatesInput,
+  type GetSupplierWhtCertificateByIdInput,
+} from './slices/ap/services/supplier-portal-wht.js';
+export {
+  supplierSubmitInvoices,
+  type SupplierInvoiceSubmitInput,
+  type SupplierInvoiceRow,
+} from './slices/ap/services/supplier-portal-invoice-submit.js';
+export {
+  supplierUpdateProfile,
+  type SupplierProfileUpdateInput,
+} from './slices/ap/services/supplier-portal-profile.js';
+export {
+  supplierStatementRecon,
+  type SupplierStatementReconInput,
+  type SupplierStatementLineInput,
+} from './slices/ap/services/supplier-portal-statement-recon.js';
+export {
+  supplierUploadDocument,
+  supplierListDocuments,
+  supplierVerifyDocumentIntegrity,
+  type SupplierDocument,
+  type SupplierDocumentUploadInput,
+  type SupplierDocumentListInput,
+  type SupplierDocumentCategory,
+  type ISupplierDocumentRepo,
+} from './slices/ap/services/supplier-portal-document-vault.js';
+export {
+  supplierCreateDispute,
+  supplierListDisputes,
+  supplierGetDisputeById,
+  type SupplierDispute,
+  type CreateDisputeInput,
+  type ListDisputesInput,
+  type GetDisputeByIdInput,
+  type DisputeStatus,
+  type DisputeCategory,
+  type ISupplierDisputeRepo,
+} from './slices/ap/services/supplier-portal-dispute.js';
+export {
+  supplierGetNotificationPrefs,
+  supplierUpdateNotificationPrefs,
+  type SupplierNotificationPref,
+  type NotificationChannel,
+  type NotificationEventType,
+  type ISupplierNotificationPrefRepo,
+} from './slices/ap/services/supplier-portal-notifications.js';
+export {
+  supplierGetComplianceSummary,
+  type SupplierComplianceItem,
+  type SupplierComplianceSummary,
+  type ComplianceItemType,
+  type ComplianceStatus,
+  type ISupplierComplianceRepo,
+} from './slices/ap/services/supplier-portal-compliance.js';
+export {
+  resolveSupplierIdentity,
+  type SupplierIdentityInput,
+  type SupplierIdentityResult,
+} from './slices/ap/services/supplier-portal-identity.js';
+export { registerSupplierPortalRoutes } from './slices/ap/routes/supplier-portal-routes.js';
+
+// ─── B2: Triage queue ──────────────────────────────────────────────────────
+export {
+  markInvoiceIncomplete,
+  assignTriageInvoice,
+  resolveTriageInvoice,
+  listTriageQueue,
+  type TriageAssignment,
+  type ITriageAssignmentRepo,
+  type MarkIncompleteInput,
+  type AssignTriageInput,
+  type ResolveTriageInput,
+  type TriageQueueQuery,
+} from './slices/ap/services/ap-triage-queue.js';
+
+// ─── B3: OCR/Automation pipeline ───────────────────────────────────────────
+export {
+  processOcrInvoice,
+  type OcrInvoicePayload,
+  type OcrInvoiceLine,
+  type OcrInvoiceResult,
+  type OcrConfidence,
+} from './slices/ap/services/ap-ocr-pipeline.js';
+
+// ─── K4: Tamper-resistant outbox ────────────────────────────────────────────
+export {
+  TamperResistantOutboxWriter,
+  computeContentHash,
+  verifyEntryIntegrity,
+  verifyOutboxChain,
+  type HashedOutboxEntry,
+  type IHashedOutboxStore,
+  type ChainVerificationResult,
+} from './shared/services/tamper-resistant-outbox.js';
+
+// ─── F2: WHT Income Type ───────────────────────────────────────────────────
+export type { WhtIncomeType } from './slices/ap/entities/ap-invoice.js';
 
 // ─── AR ports ──────────────────────────────────────────────────────────────
 export type {

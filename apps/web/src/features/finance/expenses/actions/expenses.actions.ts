@@ -1,12 +1,30 @@
 'use server';
 
+import type { IdParam } from '@afenda/contracts';
+
 import { revalidatePath } from 'next/cache';
 import type { ExpenseClaim, ExpenseLineItem, ClaimStatus } from '../types';
+import { routes } from '@/lib/constants';
 
 // ─── Claim Actions ───────────────────────────────────────────────────────────
 
 export async function createExpenseClaim(
-  data: Omit<ExpenseClaim, 'id' | 'claimNumber' | 'status' | 'submittedDate' | 'lineCount' | 'approvedAmount' | 'approvedBy' | 'approvedAt' | 'paidDate' | 'paymentReference' | 'rejectionReason' | 'createdAt' | 'updatedAt'>
+  data: Omit<
+    ExpenseClaim,
+    | 'id'
+    | 'claimNumber'
+    | 'status'
+    | 'submittedDate'
+    | 'lineCount'
+    | 'approvedAmount'
+    | 'approvedBy'
+    | 'approvedAt'
+    | 'paidDate'
+    | 'paymentReference'
+    | 'rejectionReason'
+    | 'createdAt'
+    | 'updatedAt'
+  >
 ): Promise<{ ok: true; data: { id: string; claimNumber: string } } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 600));
 
@@ -14,7 +32,7 @@ export async function createExpenseClaim(
 
   const claimNumber = `EXP-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
-  revalidatePath('/finance/expenses');
+  revalidatePath(routes.finance.expenses);
 
   return {
     ok: true,
@@ -30,8 +48,8 @@ export async function updateExpenseClaim(
 
   console.log('Updating expense claim:', id, data);
 
-  revalidatePath('/finance/expenses');
-  revalidatePath(`/finance/expenses/${id}`);
+  revalidatePath(routes.finance.expenses);
+  revalidatePath(routes.finance.expenseDetail(id));
 
   return { ok: true };
 }
@@ -43,9 +61,9 @@ export async function submitExpenseClaim(
 
   console.log('Submitting expense claim:', id);
 
-  revalidatePath('/finance/expenses');
-  revalidatePath(`/finance/expenses/${id}`);
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.expenses);
+  revalidatePath(routes.finance.expenseDetail(id));
+  revalidatePath(routes.finance.approvals);
 
   return { ok: true };
 }
@@ -59,9 +77,9 @@ export async function approveExpenseClaim(params: {
 
   console.log('Approving expense claim:', params);
 
-  revalidatePath('/finance/expenses');
-  revalidatePath(`/finance/expenses/${params.id}`);
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.expenses);
+  revalidatePath(routes.finance.expenseDetail(params.id));
+  revalidatePath(routes.finance.approvals);
 
   return { ok: true };
 }
@@ -74,9 +92,9 @@ export async function rejectExpenseClaim(params: {
 
   console.log('Rejecting expense claim:', params);
 
-  revalidatePath('/finance/expenses');
-  revalidatePath(`/finance/expenses/${params.id}`);
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.expenses);
+  revalidatePath(routes.finance.expenseDetail(params.id));
+  revalidatePath(routes.finance.approvals);
 
   return { ok: true };
 }
@@ -88,8 +106,8 @@ export async function cancelExpenseClaim(
 
   console.log('Cancelling expense claim:', id);
 
-  revalidatePath('/finance/expenses');
-  revalidatePath(`/finance/expenses/${id}`);
+  revalidatePath(routes.finance.expenses);
+  revalidatePath(routes.finance.expenseDetail(id));
 
   return { ok: true };
 }
@@ -98,13 +116,15 @@ export async function processExpensePayment(params: {
   claimIds: string[];
   paymentDate: Date;
   paymentMethod: string;
-}): Promise<{ ok: true; data: { paymentReference: string; totalPaid: number } } | { ok: false; error: string }> {
+}): Promise<
+  { ok: true; data: { paymentReference: string; totalPaid: number } } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 800));
 
   console.log('Processing expense payment:', params);
 
-  revalidatePath('/finance/expenses');
-  revalidatePath('/finance/payables');
+  revalidatePath(routes.finance.expenses);
+  revalidatePath(routes.finance.payables);
 
   return {
     ok: true,
@@ -118,14 +138,14 @@ export async function processExpensePayment(params: {
 // ─── Line Item Actions ───────────────────────────────────────────────────────
 
 export async function addExpenseLineItem(
-  claimId: string,
+  claimId: IdParam['id'],
   data: Omit<ExpenseLineItem, 'id' | 'claimId'>
 ): Promise<{ ok: true; data: { id: string } } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 400));
 
   console.log('Adding expense line item:', claimId, data);
 
-  revalidatePath(`/finance/expenses/${claimId}`);
+  revalidatePath(routes.finance.expenseDetail(claimId));
 
   return { ok: true, data: { id: `line-${Date.now()}` } };
 }
@@ -138,7 +158,7 @@ export async function updateExpenseLineItem(
 
   console.log('Updating expense line item:', id, data);
 
-  revalidatePath('/finance/expenses');
+  revalidatePath(routes.finance.expenses);
 
   return { ok: true };
 }
@@ -151,7 +171,7 @@ export async function deleteExpenseLineItem(
 
   console.log('Deleting expense line item:', id);
 
-  revalidatePath(`/finance/expenses/${claimId}`);
+  revalidatePath(routes.finance.expenseDetail(claimId));
 
   return { ok: true };
 }
@@ -193,8 +213,8 @@ export async function bulkApproveExpenseClaims(
 
   console.log('Bulk approving expense claims:', ids);
 
-  revalidatePath('/finance/expenses');
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.expenses);
+  revalidatePath(routes.finance.approvals);
 
   return { ok: true, data: { approvedCount: ids.length } };
 }
@@ -207,8 +227,8 @@ export async function bulkRejectExpenseClaims(params: {
 
   console.log('Bulk rejecting expense claims:', params);
 
-  revalidatePath('/finance/expenses');
-  revalidatePath('/finance/approvals');
+  revalidatePath(routes.finance.expenses);
+  revalidatePath(routes.finance.approvals);
 
   return { ok: true, data: { rejectedCount: params.ids.length } };
 }

@@ -9,6 +9,7 @@ import {
   type TrialBalanceRow,
 } from '@/features/finance/reports/queries/report.queries';
 import { buildTrialBalanceExport } from '@/features/finance/reports/actions/report-export.actions';
+import { routes } from '@/lib/constants';
 import {
   Table,
   TableBody,
@@ -65,7 +66,10 @@ export default async function TrialBalancePage({ searchParams }: TrialBalancePag
             ? `Account balances as of ${asOfDate}.`
             : 'Account balances for the selected period.'
         }
-        breadcrumbs={[{ label: 'Finance', href: '/finance/journals' }, { label: 'Trial Balance' }]}
+        breadcrumbs={[
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Trial Balance' },
+        ]}
         actions={tbData ? <ExportMenu payload={buildTrialBalanceExport(tbData)} /> : undefined}
       />
 
@@ -168,7 +172,7 @@ function TrialBalanceFilters({
     const p = overrides.period ?? currentPeriod;
     if (p) params.set('period', p);
     const qs = params.toString();
-    return qs ? `/finance/trial-balance?${qs}` : '/finance/trial-balance';
+    return qs ? `${routes.finance.trialBalance}?${qs}` : routes.finance.trialBalance;
   }
 
   return (

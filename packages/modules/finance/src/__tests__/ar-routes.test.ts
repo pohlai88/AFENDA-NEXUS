@@ -6,10 +6,7 @@ import { registerArPaymentRoutes } from '../slices/ar/routes/ar-payment-routes.j
 import { registerArAgingRoutes } from '../slices/ar/routes/ar-aging-routes.js';
 import { registerArDunningRoutes } from '../slices/ar/routes/ar-dunning-routes.js';
 import { DefaultAuthorizationPolicy } from '../shared/authorization/default-authorization-policy.js';
-import {
-  registerErrorHandler,
-  registerBigIntSerializer,
-} from '../shared/routes/fastify-plugins.js';
+import { registerErrorHandler, registerBigIntSerializer } from '@afenda/api-kit';
 import { money } from '@afenda/core';
 import {
   IDS,
@@ -40,6 +37,7 @@ import {
   mockArInvoiceRepo,
   mockArPaymentAllocationRepo,
   mockDunningRepo,
+  registerTestAuthPlugin,
 } from './helpers.js';
 
 const BASE_HEADERS = { 'x-tenant-id': 't1', 'x-user-id': 'u1' };
@@ -88,6 +86,7 @@ function buildArApp(depsOverrides: Partial<FinanceDeps> = {}): {
   };
 
   const app = Fastify({ logger: false });
+  registerTestAuthPlugin(app);
   registerErrorHandler(app);
   registerBigIntSerializer(app);
   const policy = new DefaultAuthorizationPolicy();

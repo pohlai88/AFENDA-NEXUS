@@ -2,7 +2,14 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,19 +34,14 @@ import { DocumentUpload, type UploadedFile } from '@/components/erp/document-upl
 import { cn, formatCurrency } from '@/lib/utils';
 import { routes } from '@/lib/constants';
 import { toast } from 'sonner';
-import {
-  Plus,
-  Trash2,
-  Save,
-  Send,
-  Loader2,
-  Receipt,
-  Upload,
-  CheckCircle,
-} from 'lucide-react';
+import { Plus, Trash2, Save, Send, Loader2, Receipt, Upload, CheckCircle } from 'lucide-react';
 import type { ExpenseLineItem, ExpenseCategory, ExpensePolicy } from '../types';
 import { expenseCategoryLabels } from '../types';
-import { createExpenseClaim, submitExpenseClaim, addExpenseLineItem } from '../actions/expenses.actions';
+import {
+  createExpenseClaim,
+  submitExpenseClaim,
+  addExpenseLineItem,
+} from '../actions/expenses.actions';
 
 // ─── Line Item Form ──────────────────────────────────────────────────────────
 
@@ -71,7 +73,11 @@ interface ExpenseClaimFormProps {
   employeeName?: string;
 }
 
-export function ExpenseClaimForm({ policy, employeeId = 'emp-1', employeeName = 'Current User' }: ExpenseClaimFormProps) {
+export function ExpenseClaimForm({
+  policy,
+  employeeId = 'emp-1',
+  employeeName = 'Current User',
+}: ExpenseClaimFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -95,12 +101,12 @@ export function ExpenseClaimForm({ policy, employeeId = 'emp-1', employeeName = 
     }
   };
 
-  const updateLineItem = (id: string, field: keyof LineItemState, value: string | ExpenseCategory | UploadedFile | null) => {
-    setLineItems(
-      lineItems.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    );
+  const updateLineItem = (
+    id: string,
+    field: keyof LineItemState,
+    value: string | ExpenseCategory | UploadedFile | null
+  ) => {
+    setLineItems(lineItems.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
   };
 
   const validateForm = (): string | null => {
@@ -110,7 +116,8 @@ export function ExpenseClaimForm({ policy, employeeId = 'emp-1', employeeName = 
     for (const item of lineItems) {
       if (!item.description.trim()) return 'All expenses must have a description';
       if (!item.merchantName.trim()) return 'All expenses must have a merchant name';
-      if (!item.amount || parseFloat(item.amount) <= 0) return 'All expenses must have a valid amount';
+      if (!item.amount || parseFloat(item.amount) <= 0)
+        return 'All expenses must have a valid amount';
 
       const amount = parseFloat(item.amount);
       const categoryLimit = policy.categoryLimits[item.category];
@@ -266,18 +273,11 @@ export function ExpenseClaimForm({ policy, employeeId = 'emp-1', employeeName = 
         <CardContent>
           <div className="space-y-4">
             {lineItems.map((item, index) => (
-              <div
-                key={item.id}
-                className="grid gap-4 p-4 rounded-lg border bg-accent/20"
-              >
+              <div key={item.id} className="grid gap-4 p-4 rounded-lg border bg-accent/20">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">Expense #{index + 1}</span>
                   {lineItems.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeLineItem(item.id)}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => removeLineItem(item.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   )}
@@ -297,7 +297,9 @@ export function ExpenseClaimForm({ policy, employeeId = 'emp-1', employeeName = 
                     <Label>Category *</Label>
                     <Select
                       value={item.category}
-                      onValueChange={(v) => updateLineItem(item.id, 'category', v as ExpenseCategory)}
+                      onValueChange={(v) =>
+                        updateLineItem(item.id, 'category', v as ExpenseCategory)
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -307,7 +309,12 @@ export function ExpenseClaimForm({ policy, employeeId = 'emp-1', employeeName = 
                           <SelectItem key={value} value={value}>
                             {label}
                             <span className="text-xs text-muted-foreground ml-2">
-                              (max {formatCurrency(policy.categoryLimits[value as ExpenseCategory], 'USD')})
+                              (max{' '}
+                              {formatCurrency(
+                                policy.categoryLimits[value as ExpenseCategory],
+                                'USD'
+                              )}
+                              )
                             </span>
                           </SelectItem>
                         ))}
@@ -350,13 +357,17 @@ export function ExpenseClaimForm({ policy, employeeId = 'emp-1', employeeName = 
                   <Label className="flex items-center gap-2">
                     Receipt
                     {parseFloat(item.amount) >= policy.receiptThreshold && (
-                      <Badge variant="destructive" className="text-xs">Required</Badge>
+                      <Badge variant="destructive" className="text-xs">
+                        Required
+                      </Badge>
                     )}
                   </Label>
                   {item.receipt ? (
-                    <div className="flex items-center gap-2 p-2 rounded border bg-green-50 dark:bg-green-950">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">{item.receipt.file?.name ?? item.receipt.name}</span>
+                    <div className="flex items-center gap-2 p-2 rounded border bg-success/10 dark:bg-success/20">
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      <span className="text-sm">
+                        {item.receipt.file?.name ?? item.receipt.name}
+                      </span>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -394,16 +405,26 @@ export function ExpenseClaimForm({ policy, employeeId = 'emp-1', employeeName = 
           <div className="text-lg font-semibold">
             Total: <span className="font-mono">{formatCurrency(totalAmount, 'USD')}</span>
             {totalAmount > policy.monthlyLimit && (
-              <Badge variant="destructive" className="ml-2">Exceeds Limit</Badge>
+              <Badge variant="destructive" className="ml-2">
+                Exceeds Limit
+              </Badge>
             )}
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={handleSave} disabled={isPending}>
-              {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
               Save Draft
             </Button>
             <Button onClick={handleSubmit} disabled={isPending}>
-              {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="mr-2 h-4 w-4" />
+              )}
               Submit for Approval
             </Button>
           </div>

@@ -13,10 +13,8 @@ import type { FinanceRuntime, FinanceDeps } from '../app/ports/finance-runtime.j
 import { registerJournalRoutes } from '../slices/gl/routes/journal-routes.js';
 import { registerPeriodRoutes } from '../slices/gl/routes/period-routes.js';
 import { RbacAuthorizationPolicy } from '../shared/authorization/rbac-authorization-policy.js';
-import {
-  registerErrorHandler,
-  registerBigIntSerializer,
-} from '../shared/routes/fastify-plugins.js';
+import { registerErrorHandler, registerBigIntSerializer } from '@afenda/api-kit';
+import type { RoleDefinition } from '@afenda/authz';
 import type { IRoleResolver } from '../shared/ports/role-resolver.js';
 import type { ISoDActionLogRepo, SoDLogInput } from '../shared/ports/sod-action-log-repo.js';
 import type { SoDActionLog } from '../shared/entities/sod-action-log.js';
@@ -108,6 +106,27 @@ function buildGuardedApp(opts: {
   const app = Fastify({ logger: false });
   registerErrorHandler(app);
   registerBigIntSerializer(app);
+
+  // Bridge test headers → req.authUser with roles from roleMap
+  const roleMap = opts.roleMap ?? {};
+  app.decorateRequest('authUser', undefined);
+  app.addHook('preHandler', async (req) => {
+    const tenantId = req.headers['x-tenant-id'] as string | undefined;
+    const userId = req.headers['x-user-id'] as string | undefined;
+    if (tenantId && userId) {
+      const roleNames = roleMap[userId] ?? [];
+      const resolved = roleNames
+        .map((n) => (roles as Record<string, RoleDefinition>)[n])
+        .filter((r): r is RoleDefinition => !!r);
+      (req as typeof req & { authUser?: Record<string, unknown> }).authUser = {
+        tenantId,
+        userId,
+        roles: resolved,
+        orgRoles: [] as readonly string[],
+      };
+    }
+  });
+
   registerJournalRoutes(app, runtime, policy);
   registerPeriodRoutes(app, runtime, policy);
 

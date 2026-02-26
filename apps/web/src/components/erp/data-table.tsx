@@ -130,16 +130,16 @@ interface DataTableProps<T> {
   keyFn?: (row: T) => string;
   /** Legacy: use this field as row key (e.g. "id") */
   keyField?: keyof T | string;
-  
+
   // Search
   searchPlaceholder?: string;
   searchFn?: (row: T, query: string) => boolean;
   /** Legacy: build searchFn from these keys (searches string values) */
   searchKeys?: (keyof T | string)[];
-  
+
   // Row interaction
   onRowClick?: (row: T) => void;
-  
+
   // Empty state
   emptyMessage?: string;
   emptyTitle?: string;
@@ -147,35 +147,35 @@ interface DataTableProps<T> {
   emptyAction?: React.ReactNode;
   /** Legacy: maps to emptyTitle, emptyMessage, emptyIcon, emptyAction */
   emptyState?: EmptyStateConfig;
-  
+
   // Toolbar
   actions?: React.ReactNode;
-  
+
   /** Legacy: page size (for display; client-side pagination not yet implemented) */
   pageSize?: number;
-  
+
   // Loading state
   loading?: boolean;
   loadingRows?: number;
-  
+
   // Server pagination (URL-based)
   pagination?: PaginationProps | LegacyPaginationProps;
-  
+
   // Bulk selection
   selectable?: boolean;
   selectedIds?: Set<string>;
   onSelectionChange?: (ids: Set<string>) => void;
   bulkActions?: React.ReactNode;
-  
+
   // Column toggles
   columnToggles?: boolean;
-  
+
   // Search (legacy shorthand — enables client-side search across all string values)
   searchable?: boolean;
 
   // Export
   exportPayload?: ExportPayload;
-  
+
   // Styling
   className?: string;
   compact?: boolean;
@@ -191,7 +191,7 @@ function buildPaginationUrl(
   searchParams?: Record<string, string | undefined>
 ): string {
   const params = new URLSearchParams();
-  
+
   if (searchParams) {
     Object.entries(searchParams).forEach(([key, value]) => {
       if (value !== undefined && key !== 'page') {
@@ -199,11 +199,11 @@ function buildPaginationUrl(
       }
     });
   }
-  
+
   if (page > 1) {
     params.set('page', String(page));
   }
-  
+
   const qs = params.toString();
   return qs ? `${baseUrl}?${qs}` : baseUrl;
 }
@@ -264,7 +264,7 @@ function SkeletonRows({
   selectable?: boolean;
 }) {
   const totalColumns = selectable ? columnCount + 1 : columnCount;
-  
+
   return (
     <>
       {Array.from({ length: rowCount }).map((_, rowIdx) => (
@@ -317,7 +317,7 @@ function Pagination({ page, totalPages, baseUrl, searchParams }: PaginationProps
             </span>
           )}
         </Button>
-        
+
         {/* Previous page */}
         <Button
           variant="outline"
@@ -327,7 +327,10 @@ function Pagination({ page, totalPages, baseUrl, searchParams }: PaginationProps
           asChild={canGoPrev}
         >
           {canGoPrev ? (
-            <Link href={buildPaginationUrl(baseUrl, page - 1, searchParams)} aria-label="Previous page">
+            <Link
+              href={buildPaginationUrl(baseUrl, page - 1, searchParams)}
+              aria-label="Previous page"
+            >
               <ChevronLeft className="h-4 w-4" />
             </Link>
           ) : (
@@ -336,7 +339,7 @@ function Pagination({ page, totalPages, baseUrl, searchParams }: PaginationProps
             </span>
           )}
         </Button>
-        
+
         {/* Next page */}
         <Button
           variant="outline"
@@ -355,7 +358,7 @@ function Pagination({ page, totalPages, baseUrl, searchParams }: PaginationProps
             </span>
           )}
         </Button>
-        
+
         {/* Last page */}
         <Button
           variant="outline"
@@ -365,7 +368,10 @@ function Pagination({ page, totalPages, baseUrl, searchParams }: PaginationProps
           asChild={canGoNext}
         >
           {canGoNext ? (
-            <Link href={buildPaginationUrl(baseUrl, totalPages, searchParams)} aria-label="Last page">
+            <Link
+              href={buildPaginationUrl(baseUrl, totalPages, searchParams)}
+              aria-label="Last page"
+            >
               <ChevronsRight className="h-4 w-4" />
             </Link>
           ) : (
@@ -528,7 +534,8 @@ export function DataTable<T>({
 
   // Selection handlers
   const allRowIds = useMemo(() => new Set(sortedData.map(keyFn)), [sortedData, keyFn]);
-  const allSelected = allRowIds.size > 0 && [...allRowIds].every((id) => effectiveSelectedIds.has(id));
+  const allSelected =
+    allRowIds.size > 0 && [...allRowIds].every((id) => effectiveSelectedIds.has(id));
   const someSelected = [...allRowIds].some((id) => effectiveSelectedIds.has(id));
   const selectionCount = effectiveSelectedIds.size;
 
@@ -554,7 +561,8 @@ export function DataTable<T>({
   const columnCount = visibleColumns.length + (selectable ? 1 : 0);
   const rowCount = sortedData.length;
 
-  const showToolbar = searchFn || columnToggles || exportPayload || actions || (selectable && selectionCount > 0);
+  const showToolbar =
+    searchFn || columnToggles || exportPayload || actions || (selectable && selectionCount > 0);
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -578,9 +586,7 @@ export function DataTable<T>({
 
             {/* Bulk selection indicator */}
             {selectable && selectionCount > 0 && (
-              <span className="text-sm text-muted-foreground">
-                {selectionCount} selected
-              </span>
+              <span className="text-sm text-muted-foreground">{selectionCount} selected</span>
             )}
           </div>
 
@@ -697,20 +703,14 @@ export function DataTable<T>({
                 return (
                   <TableRow
                     key={rowId}
-                    className={cn(
-                      onRowClick && 'cursor-pointer',
-                      isSelected && 'bg-muted/50'
-                    )}
+                    className={cn(onRowClick && 'cursor-pointer', isSelected && 'bg-muted/50')}
                     onClick={() => onRowClick?.(row)}
                     aria-selected={selectable ? isSelected : undefined}
                     data-state={isSelected ? 'selected' : undefined}
                   >
                     {/* Selection checkbox */}
                     {selectable && (
-                      <TableCell
-                        className="w-12"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <TableCell className="w-12" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => handleSelectRow(rowId)}

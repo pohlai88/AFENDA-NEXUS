@@ -1,7 +1,16 @@
 // ─── Deferred Tax Types ──────────────────────────────────────────────────────
 
 export type DeferredTaxType = 'dta' | 'dtl';
-export type OriginType = 'fixed_assets' | 'intangibles' | 'provisions' | 'leases' | 'revenue_recognition' | 'share_compensation' | 'losses' | 'credits' | 'other';
+export type OriginType =
+  | 'fixed_assets'
+  | 'intangibles'
+  | 'provisions'
+  | 'leases'
+  | 'revenue_recognition'
+  | 'share_compensation'
+  | 'losses'
+  | 'credits'
+  | 'other';
 export type ItemStatus = 'active' | 'reversed' | 'utilized';
 
 export interface DeferredTaxItem {
@@ -69,7 +78,7 @@ export const originTypeLabels: Record<OriginType, string> = {
 };
 
 export const itemStatusConfig: Record<ItemStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  reversed: { label: 'Reversed', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  utilized: { label: 'Utilized', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  reversed: { label: 'Reversed', color: 'bg-info/15 text-info dark:bg-info/20' },
+  utilized: { label: 'Utilized', color: 'bg-muted text-muted-foreground' },
 };

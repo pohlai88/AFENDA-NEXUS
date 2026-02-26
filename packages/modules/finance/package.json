@@ -36,6 +36,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@afenda/api-kit": "workspace:*",
     "@afenda/authz": "workspace:*",
     "@afenda/contracts": "workspace:*",
     "@afenda/core": "workspace:*",

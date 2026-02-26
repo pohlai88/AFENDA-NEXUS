@@ -130,6 +130,25 @@ jobs:
       - name: Dependency audit (critical)
         run: pnpm audit --audit-level=critical
 
+      # T5: Module gates (identity SoT, API, worker, web, DB, OpenAPI)
+      - name: Identity SoT gate
+        run: node tools/scripts/gate-identity-sot.mjs
+
+      - name: API module gate
+        run: node tools/scripts/gate-api-module.mjs
+
+      - name: Worker module gate
+        run: node tools/scripts/gate-worker-module.mjs
+
+      - name: Web module gate
+        run: node tools/scripts/gate-web-module.mjs
+
+      - name: DB module gate
+        run: node tools/scripts/gate-db-module.mjs
+
+      - name: OpenAPI drift gate
+        run: node tools/scripts/gate-openapi-drift.mjs
+
   # ─── Docker Build ──────────────────────────────────────────────────────────
   docker:
     name: Docker · Build

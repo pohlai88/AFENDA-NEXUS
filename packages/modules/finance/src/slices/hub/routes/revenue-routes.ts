@@ -10,6 +10,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { recognizeRevenue } from '../services/recognize-revenue.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerRevenueRoutes(
   app: FastifyInstance,
@@ -21,8 +22,7 @@ export function registerRevenueRoutes(
     '/revenue-contracts',
     { preHandler: [requirePermission(policy, 'revenue:create')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const body = CreateRevenueContractSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -52,8 +52,7 @@ export function registerRevenueRoutes(
     '/revenue-contracts',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { page, limit } = PaginationSchema.parse(req.query);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -72,8 +71,7 @@ export function registerRevenueRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.revenueContractRepo.findById(id);
@@ -91,8 +89,7 @@ export function registerRevenueRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.revenueContractRepo.findMilestones(id);
@@ -110,8 +107,7 @@ export function registerRevenueRoutes(
     { preHandler: [requirePermission(policy, 'revenue:recognize')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const idempotencyKey = req.headers['idempotency-key'] as string;
       const body = RecognizeRevenueSchema.parse(req.body);
 

@@ -232,12 +232,7 @@ function NavGroupSection({
       </SidebarGroupLabel>
       <SidebarMenu>
         {group.items.map((item) => (
-          <NavMenuItem
-            key={item.href}
-            item={item}
-            pathname={pathname}
-            badgeCounts={badgeCounts}
-          />
+          <NavMenuItem key={item.href} item={item} pathname={pathname} badgeCounts={badgeCounts} />
         ))}
       </SidebarMenu>
     </SidebarGroup>

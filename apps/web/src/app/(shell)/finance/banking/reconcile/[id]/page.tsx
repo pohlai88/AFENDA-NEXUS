@@ -59,11 +59,10 @@ export default async function ReconcilePage({ params }: ReconcilePageProps) {
               <FileText className="h-5 w-5" />
             </div>
             <div>
-              <PageHeaderHeading>
-                Reconcile: {statement.bankAccountName}
-              </PageHeaderHeading>
+              <PageHeaderHeading>Reconcile: {statement.bankAccountName}</PageHeaderHeading>
               <PageHeaderDescription>
-                Statement period: {formatDate(statement.startDate)} - {formatDate(statement.endDate)}
+                Statement period: {formatDate(statement.startDate)} -{' '}
+                {formatDate(statement.endDate)}
                 {' • '}
                 Closing balance: {formatCurrency(statement.closingBalance, statement.currency)}
               </PageHeaderDescription>

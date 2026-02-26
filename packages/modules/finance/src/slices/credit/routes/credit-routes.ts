@@ -3,6 +3,8 @@ import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { placeCreditHold, releaseCreditHold } from '../services/credit-hold-release.js';
+import { extractIdentity } from '@afenda/api-kit';
+import type { IdParam } from '@afenda/contracts';
 
 export function registerCreditRoutes(
   app: FastifyInstance,
@@ -13,8 +15,7 @@ export function registerCreditRoutes(
     '/credit-limits',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const list = await deps.creditLimitRepo.findAll();
         return { data: list };
@@ -22,12 +23,11 @@ export function registerCreditRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/credit-limits/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const limit = await deps.creditLimitRepo.findById(req.params.id);
         if (!limit) return reply.status(404).send({ error: 'Credit limit not found' });
@@ -40,8 +40,7 @@ export function registerCreditRoutes(
     '/credit-limits/:customerId/hold',
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await placeCreditHold(
@@ -63,8 +62,7 @@ export function registerCreditRoutes(
     '/credit-limits/:customerId/release',
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await releaseCreditHold(
@@ -86,8 +84,7 @@ export function registerCreditRoutes(
     '/credit-reviews/:customerId',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const reviews = await deps.creditReviewRepo.findByCustomer(req.params.customerId);
         return { data: reviews };

@@ -34,6 +34,7 @@ import { computeIcAging } from '../../../shared/ports/report-hooks.js';
 import type { IcOpenItem } from '../../../shared/ports/report-hooks.js';
 import { money } from '@afenda/core';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 /** Use read replica when DATABASE_URL_READONLY is set; otherwise primary. */
 const withReportCtx = (runtime: FinanceRuntime) => runtime.withTenantReadOnly ?? runtime.withTenant;
@@ -50,8 +51,7 @@ export function registerReportRoutes(
     '/reports/balance-sheet',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { ledgerId, periodId } = BalanceSheetQuerySchema.parse(req.query);
 
       const result = await run({ tenantId, userId }, async (deps) => {
@@ -75,8 +75,7 @@ export function registerReportRoutes(
     '/reports/income-statement',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { ledgerId, fromPeriodId, toPeriodId } = IncomeStatementQuerySchema.parse(req.query);
 
       const result = await run({ tenantId, userId }, async (deps) => {
@@ -100,8 +99,7 @@ export function registerReportRoutes(
     '/reports/cash-flow',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { ledgerId, fromPeriodId, toPeriodId } = CashFlowQuerySchema.parse(req.query);
 
       const result = await run({ tenantId, userId }, async (deps) => {
@@ -125,8 +123,7 @@ export function registerReportRoutes(
     '/reports/equity-statement',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { ledgerId, periodId, movements } = EquityStatementBodySchema.parse(req.body);
 
       const result = await run({ tenantId, userId }, async (deps) => {
@@ -216,8 +213,7 @@ export function registerReportRoutes(
     '/reports/budget-variance-alerts',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { ledgerId, periodId, warningPct, criticalPct } = VarianceAlertsQuerySchema.parse(
         req.query
       );
@@ -254,8 +250,7 @@ export function registerReportRoutes(
     '/reports/comparative-balance-sheet',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { ledgerId, currentPeriodId, priorPeriodId } = ComparativeBalanceSheetQuerySchema.parse(
         req.query
       );
@@ -281,8 +276,7 @@ export function registerReportRoutes(
     '/reports/comparative-income-statement',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const {
         ledgerId,
         currentFromPeriodId,
@@ -309,8 +303,7 @@ export function registerReportRoutes(
     '/reports/ic-aging',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const parsed = IcAgingQuerySchema.parse(req.query);
       const currency = parsed.currency;
       const asOfDate = parsed.asOfDate ? new Date(parsed.asOfDate) : new Date();

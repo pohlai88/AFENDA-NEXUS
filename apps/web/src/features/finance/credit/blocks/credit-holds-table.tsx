@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { releaseCreditHold } from '../actions/credit.actions';
 import type { CreditHold, HoldStatus, HoldType } from '../types';
 import { holdStatusConfig, holdTypeLabels } from '../types';
+import { routes } from '@/lib/constants';
 
 function StatusBadge({ status }: { status: HoldStatus }) {
   const config = holdStatusConfig[status];
@@ -110,7 +111,7 @@ export function CreditHoldsTable({ holds }: CreditHoldsTableProps) {
       header: 'Auto Release',
       render: (hold) =>
         hold.autoRelease ? (
-          <span className="text-xs text-green-600">{hold.autoReleaseCondition}</span>
+          <span className="text-xs text-success">{hold.autoReleaseCondition}</span>
         ) : (
           <span className="text-xs text-muted-foreground">Manual</span>
         ),
@@ -140,7 +141,7 @@ export function CreditHoldsTable({ holds }: CreditHoldsTableProps) {
               Release
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/finance/credit/holds/${hold.id}`}>
+              <Link href={routes.finance.creditHoldDetail(hold.id)}>
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
             </Button>

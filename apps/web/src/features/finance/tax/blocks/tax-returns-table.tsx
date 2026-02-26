@@ -44,11 +44,7 @@ function StatusBadge({ status }: { status: TaxReturnStatus }) {
 // ─── Type Badge ──────────────────────────────────────────────────────────────
 
 function TypeBadge({ type }: { type: TaxReturnType }) {
-  return (
-    <Badge variant="outline">
-      {taxReturnTypeLabels[type]}
-    </Badge>
-  );
+  return <Badge variant="outline">{taxReturnTypeLabels[type]}</Badge>;
 }
 
 // ─── Columns ─────────────────────────────────────────────────────────────────
@@ -82,9 +78,7 @@ const columns: Column<TaxReturnPeriod>[] = [
     sortable: true,
     className: 'text-right',
     render: (period) => (
-      <span className="font-mono">
-        {formatCurrency(period.outputTax, period.currency)}
-      </span>
+      <span className="font-mono">{formatCurrency(period.outputTax, period.currency)}</span>
     ),
   },
   {
@@ -93,9 +87,7 @@ const columns: Column<TaxReturnPeriod>[] = [
     sortable: true,
     className: 'text-right',
     render: (period) => (
-      <span className="font-mono">
-        {formatCurrency(period.inputTax, period.currency)}
-      </span>
+      <span className="font-mono">{formatCurrency(period.inputTax, period.currency)}</span>
     ),
   },
   {
@@ -107,7 +99,7 @@ const columns: Column<TaxReturnPeriod>[] = [
       <span
         className={cn(
           'font-mono font-medium',
-          period.netPayable > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+          period.netPayable > 0 ? 'text-destructive' : 'text-success'
         )}
       >
         {formatCurrency(period.netPayable, period.currency)}
@@ -121,7 +113,7 @@ const columns: Column<TaxReturnPeriod>[] = [
     render: (period) => {
       const isOverdue = period.status !== 'paid' && new Date(period.dueDate) < new Date();
       return (
-        <span className={cn(isOverdue && 'text-red-600 dark:text-red-400 font-medium')}>
+        <span className={cn(isOverdue && 'text-destructive font-medium')}>
           {formatDate(period.dueDate)}
         </span>
       );

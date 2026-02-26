@@ -9,6 +9,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission, requireSoD } from '../../../shared/routes/authorization-guard.js';
 import { getBudgetVariance } from '../services/get-budget-variance.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerBudgetRoutes(
   app: FastifyInstance,
@@ -25,9 +26,7 @@ export function registerBudgetRoutes(
       ],
     },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
-      if (!userId) return reply.status(400).send({ error: 'x-user-id header required' });
+      const { tenantId, userId } = extractIdentity(req);
 
       const body = UpsertBudgetEntrySchema.parse(req.body);
 
@@ -62,8 +61,7 @@ export function registerBudgetRoutes(
     '/budget-entries',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { ledgerId, periodId, page, limit } = BudgetEntryListQuerySchema.parse(req.query);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -79,8 +77,7 @@ export function registerBudgetRoutes(
     '/budget-variance',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const query = BudgetVarianceQuerySchema.parse(req.query);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {

@@ -1,11 +1,6 @@
 'use server';
 
-import type {
-  CustomerCredit,
-  CreditReview,
-  CreditHold,
-  CreditSummary,
-} from '../types';
+import type { CustomerCredit, CreditReview, CreditHold, CreditSummary } from '../types';
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 

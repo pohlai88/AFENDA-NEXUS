@@ -48,6 +48,8 @@ async function loadRequest(
     tenantId: row.tenantId,
     entityType: row.entityType,
     entityId: row.entityId,
+    policyId: row.policyId ?? null,
+    policyVersion: row.policyVersion ?? null,
     requestedBy: row.requestedBy,
     requestedAt: row.requestedAt,
     status: row.status as ApprovalRequestStatus,
@@ -68,6 +70,8 @@ export class DrizzleApprovalRequestRepo implements IApprovalRequestRepo {
         tenantId: input.tenantId,
         entityType: input.entityType,
         entityId: input.entityId,
+        policyId: input.policyId ?? null,
+        policyVersion: input.policyVersion ?? null,
         requestedBy: input.requestedBy,
         metadata: input.metadata as Record<string, unknown>,
       })

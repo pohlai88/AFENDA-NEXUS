@@ -52,7 +52,8 @@ export class DrizzleApPaymentRunRepo implements IApPaymentRunRepo {
     const curr = await this.tx.query.currencies.findFirst({
       where: eq(currencies.id, currencyId),
     });
-    return curr?.code ?? 'USD';
+    if (!curr) throw new NotFoundError('Currency', currencyId);
+    return curr.code;
   }
 
   async create(input: CreatePaymentRunInput): Promise<Result<PaymentRun>> {

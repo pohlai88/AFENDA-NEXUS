@@ -76,8 +76,8 @@ export const consolidationMethodLabels: Record<ConsolidationMethod, string> = {
 };
 
 export const entityStatusConfig: Record<EntityStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  inactive: { label: 'Inactive', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  divested: { label: 'Divested', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  acquired: { label: 'Newly Acquired', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  inactive: { label: 'Inactive', color: 'bg-muted text-muted-foreground' },
+  divested: { label: 'Divested', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  acquired: { label: 'Newly Acquired', color: 'bg-info/15 text-info dark:bg-info/20' },
 };

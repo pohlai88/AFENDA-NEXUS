@@ -68,7 +68,15 @@ function formatFileSize(bytes?: number): string {
 
 // ─── Image Viewer ────────────────────────────────────────────────────────────
 
-function ImageViewer({ file, zoom, rotation }: { file: DocumentFile; zoom: number; rotation: number }) {
+function ImageViewer({
+  file,
+  zoom,
+  rotation,
+}: {
+  file: DocumentFile;
+  zoom: number;
+  rotation: number;
+}) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 

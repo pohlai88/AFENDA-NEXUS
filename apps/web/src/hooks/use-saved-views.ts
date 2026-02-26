@@ -79,10 +79,7 @@ export function useSavedViews({ moduleKey }: UseSavedViewsOptions) {
     [views, activeViewId]
   );
 
-  const defaultView = useMemo(
-    () => views.find((v) => v.isDefault) ?? null,
-    [views]
-  );
+  const defaultView = useMemo(() => views.find((v) => v.isDefault) ?? null, [views]);
 
   // Create a new saved view
   const createView = useCallback(
@@ -115,16 +112,11 @@ export function useSavedViews({ moduleKey }: UseSavedViewsOptions) {
 
   // Update an existing view
   const updateView = useCallback(
-    (
-      id: string,
-      updates: Partial<Pick<SavedView, 'name' | 'filters' | 'columns' | 'sort'>>
-    ) => {
+    (id: string, updates: Partial<Pick<SavedView, 'name' | 'filters' | 'columns' | 'sort'>>) => {
       setStore((prev) => ({
         ...prev,
         views: prev.views.map((v) =>
-          v.id === id
-            ? { ...v, ...updates, updatedAt: new Date().toISOString() }
-            : v
+          v.id === id ? { ...v, ...updates, updatedAt: new Date().toISOString() } : v
         ),
       }));
     },
@@ -188,9 +180,12 @@ export function useSavedViews({ moduleKey }: UseSavedViewsOptions) {
   );
 
   // Rename a view
-  const renameView = useCallback((id: string, newName: string) => {
-    updateView(id, { name: newName });
-  }, [updateView]);
+  const renameView = useCallback(
+    (id: string, newName: string) => {
+      updateView(id, { name: newName });
+    },
+    [updateView]
+  );
 
   return {
     views,

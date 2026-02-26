@@ -6,6 +6,7 @@ import { MoneyCell } from '@/components/erp/money-cell';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { buildBudgetVarianceExport } from '@/features/finance/reports/actions/report-export.actions';
+import { routes } from '@/lib/constants';
 import type { ApiResult } from '@/lib/types';
 import {
   getBudgetVariance,
@@ -86,8 +87,8 @@ export default async function BudgetVariancePage({ searchParams }: BudgetVarianc
             : 'Compare budgeted amounts against actual postings.'
         }
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Reports', href: '/finance/reports' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Reports', href: routes.finance.reports },
           { label: 'Budget Variance' },
         ]}
         actions={data ? <ExportMenu payload={buildBudgetVarianceExport(data)} /> : undefined}

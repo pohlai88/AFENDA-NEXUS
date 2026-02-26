@@ -45,7 +45,7 @@ export default async function PayablesPage({ searchParams }: PayablesPageProps) 
       <PageHeader
         title="Payables"
         description="Accounts payable invoices from suppliers."
-        breadcrumbs={[{ label: 'Finance', href: '/finance/payables' }, { label: 'Payables' }]}
+        breadcrumbs={[{ label: 'Finance', href: routes.finance.payables }, { label: 'Payables' }]}
         actions={
           <Button asChild>
             <Link href={routes.finance.payableNew}>
@@ -93,7 +93,7 @@ function ApListFilters({
     const p = overrides.page ?? currentPage;
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
-    return qs ? `/finance/payables?${qs}` : '/finance/payables';
+    return qs ? `${routes.finance.payables}?${qs}` : routes.finance.payables;
   }
 
   return (

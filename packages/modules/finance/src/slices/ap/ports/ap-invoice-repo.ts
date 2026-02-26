@@ -1,5 +1,6 @@
 import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
-import type { ApInvoice } from '../entities/ap-invoice.js';
+import type { ApInvoice, ApInvoiceStatus } from '../entities/ap-invoice.js';
+import type { ClearingTrace } from '../entities/clearing-trace.js';
 
 export interface CreateApInvoiceInput {
   readonly tenantId: string;
@@ -25,6 +26,7 @@ export interface CreateApInvoiceLineInput {
   readonly unitPrice: bigint;
   readonly amount: bigint;
   readonly taxAmount: bigint;
+  readonly whtIncomeType?: string | null;
 }
 
 export interface IApInvoiceRepo {
@@ -34,9 +36,17 @@ export interface IApInvoiceRepo {
     supplierId: string,
     params?: PaginationParams
   ): Promise<PaginatedResult<ApInvoice>>;
-  findByStatus(status: string, params?: PaginationParams): Promise<PaginatedResult<ApInvoice>>;
+  findByStatus(
+    status: ApInvoiceStatus,
+    params?: PaginationParams
+  ): Promise<PaginatedResult<ApInvoice>>;
   findAll(params?: PaginationParams): Promise<PaginatedResult<ApInvoice>>;
   findUnpaid(): Promise<ApInvoice[]>;
-  updateStatus(id: string, status: string, journalId?: string): Promise<Result<ApInvoice>>;
+  updateStatus(id: string, status: ApInvoiceStatus, journalId?: string): Promise<Result<ApInvoice>>;
   recordPayment(id: string, amount: bigint): Promise<Result<ApInvoice>>;
+  recordPaymentWithTrace(
+    id: string,
+    amount: bigint,
+    paymentRef?: string
+  ): Promise<Result<{ invoice: ApInvoice; trace: ClearingTrace }>>;
 }

@@ -22,25 +22,25 @@ const priorityConfig: Record<
   critical: {
     icon: AlertCircle,
     badgeVariant: 'destructive',
-    bgColor: 'bg-red-50 dark:bg-red-950',
-    iconColor: 'text-red-500',
+    bgColor: 'bg-destructive/10 dark:bg-destructive/20',
+    iconColor: 'text-destructive',
   },
   high: {
     icon: AlertTriangle,
     badgeVariant: 'destructive',
-    bgColor: 'bg-orange-50 dark:bg-orange-950',
-    iconColor: 'text-orange-500',
+    bgColor: 'bg-warning/10 dark:bg-warning/20',
+    iconColor: 'text-warning',
   },
   medium: {
     icon: AlertTriangle,
     badgeVariant: 'outline',
-    bgColor: 'bg-amber-50 dark:bg-amber-950',
-    iconColor: 'text-amber-500',
+    bgColor: 'bg-warning/10 dark:bg-warning/20',
+    iconColor: 'text-warning',
   },
   low: {
     icon: Info,
     badgeVariant: 'secondary',
-    bgColor: 'bg-blue-50 dark:bg-blue-950',
+    bgColor: 'bg-info/10 dark:bg-blue-950',
     iconColor: 'text-blue-500',
   },
 };
@@ -68,9 +68,7 @@ function AttentionItemRow({ item }: { item: AttentionItem }) {
         </div>
         <p className="text-xs text-muted-foreground">{item.description}</p>
         {item.dueDate && (
-          <p className="text-xs text-muted-foreground">
-            Due: {formatRelativeTime(item.dueDate)}
-          </p>
+          <p className="text-xs text-muted-foreground">Due: {formatRelativeTime(item.dueDate)}</p>
         )}
       </div>
       <Button variant="ghost" size="sm" asChild className="shrink-0">
@@ -96,7 +94,9 @@ export function AttentionPanel({ items }: AttentionPanelProps) {
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
 
-  const criticalCount = items.filter((i) => i.priority === 'critical' || i.priority === 'high').length;
+  const criticalCount = items.filter(
+    (i) => i.priority === 'critical' || i.priority === 'high'
+  ).length;
 
   return (
     <Card className={criticalCount > 0 ? 'border-destructive/50' : undefined}>
@@ -106,9 +106,7 @@ export function AttentionPanel({ items }: AttentionPanelProps) {
             <CardTitle className="text-base">Needs Attention</CardTitle>
             <CardDescription>Items requiring your action</CardDescription>
           </div>
-          {criticalCount > 0 && (
-            <Badge variant="destructive">{criticalCount} urgent</Badge>
-          )}
+          {criticalCount > 0 && <Badge variant="destructive">{criticalCount} urgent</Badge>}
         </div>
       </CardHeader>
       <CardContent className="space-y-2">

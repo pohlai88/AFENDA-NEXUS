@@ -154,16 +154,19 @@ export interface TreasurySummary {
 // ─── Status Configs ──────────────────────────────────────────────────────────
 
 export const forecastStatusConfig: Record<ForecastStatus, { label: string; color: string }> = {
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  published: { label: 'Published', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  archived: { label: 'Archived', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
+  draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
+  published: { label: 'Published', color: 'bg-success/15 text-success dark:bg-success/20' },
+  archived: { label: 'Archived', color: 'bg-info/15 text-info dark:bg-info/20' },
 };
 
 export const covenantStatusConfig: Record<CovenantStatus, { label: string; color: string }> = {
-  compliant: { label: 'Compliant', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  at_risk: { label: 'At Risk', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  breached: { label: 'Breached', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  waived: { label: 'Waived', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
+  compliant: { label: 'Compliant', color: 'bg-success/15 text-success dark:bg-success/20' },
+  at_risk: { label: 'At Risk', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  breached: {
+    label: 'Breached',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  waived: { label: 'Waived', color: 'bg-accent text-accent-foreground' },
 };
 
 export const covenantTypeLabels: Record<CovenantType, string> = {
@@ -173,10 +176,13 @@ export const covenantTypeLabels: Record<CovenantType, string> = {
 };
 
 export const icLoanStatusConfig: Record<ICLoanStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  matured: { label: 'Matured', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  defaulted: { label: 'Defaulted', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  prepaid: { label: 'Prepaid', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  matured: { label: 'Matured', color: 'bg-info/15 text-info dark:bg-info/20' },
+  defaulted: {
+    label: 'Defaulted',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  prepaid: { label: 'Prepaid', color: 'bg-accent text-accent-foreground' },
 };
 
 export const icLoanTypeLabels: Record<ICLoanType, string> = {

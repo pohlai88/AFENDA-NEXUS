@@ -13,6 +13,7 @@ import {
 import { CreditSummaryCards } from '@/features/finance/credit/blocks/credit-summary-cards';
 import { CustomerCreditsTable } from '@/features/finance/credit/blocks/customer-credits-table';
 import { CreditHoldsTable } from '@/features/finance/credit/blocks/credit-holds-table';
+import { routes } from '@/lib/constants';
 
 async function SummarySection() {
   const result = await getCreditSummary();
@@ -75,13 +76,13 @@ export default function CreditPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href="/finance/credit/reviews">
+            <Link href={routes.finance.creditReviews}>
               <FileText className="mr-2 h-4 w-4" />
               Reviews
             </Link>
           </Button>
           <Button asChild>
-            <Link href="/finance/credit/new">
+            <Link href={routes.finance.creditNew}>
               <Plus className="mr-2 h-4 w-4" />
               Add Customer Credit
             </Link>

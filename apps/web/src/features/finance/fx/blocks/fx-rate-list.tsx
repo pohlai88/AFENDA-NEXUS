@@ -9,10 +9,5 @@ interface FxRateListProps {
 }
 
 export function FxRateList({ data }: FxRateListProps) {
-  return (
-    <FxRateTable
-      data={data}
-      editAction={(rate) => <FxRateEditDialog rate={rate} />}
-    />
-  );
+  return <FxRateTable data={data} editAction={(rate) => <FxRateEditDialog rate={rate} />} />;
 }

@@ -1,5 +1,7 @@
 'use server';
 
+import type { IdParam } from '@afenda/contracts';
+
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
@@ -19,7 +21,7 @@ export async function createFxRateAction(data: {
 }
 
 export async function updateFxRateAction(
-  rateId: string,
+  rateId: IdParam['id'],
   data: {
     rate?: string;
     effectiveDate?: string;

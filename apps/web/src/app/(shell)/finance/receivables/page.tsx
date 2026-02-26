@@ -45,7 +45,10 @@ export default async function ReceivablesPage({ searchParams }: ReceivablesPageP
       <PageHeader
         title="Receivables"
         description="Accounts receivable invoices to customers."
-        breadcrumbs={[{ label: 'Finance', href: '/finance/receivables' }, { label: 'Receivables' }]}
+        breadcrumbs={[
+          { label: 'Finance', href: routes.finance.receivables },
+          { label: 'Receivables' },
+        ]}
         actions={
           <Button asChild>
             <Link href={routes.finance.receivableNew}>
@@ -94,7 +97,7 @@ function ArListFilters({
     const p = overrides.page ?? currentPage;
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
-    return qs ? `/finance/receivables?${qs}` : '/finance/receivables';
+    return qs ? `${routes.finance.receivables}?${qs}` : routes.finance.receivables;
   }
 
   return (

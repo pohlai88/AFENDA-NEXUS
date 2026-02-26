@@ -1,7 +1,10 @@
 'use server';
 
+import type { IdParam } from '@afenda/contracts';
+
 import { revalidatePath } from 'next/cache';
 import type { TaxCode, TaxReturnPeriod, WHTCertificate } from '../types';
+import { routes } from '@/lib/constants';
 
 // ─── Tax Code Actions ────────────────────────────────────────────────────────
 
@@ -12,8 +15,8 @@ export async function createTaxCode(
 
   console.log('Creating tax code:', data);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/codes');
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.taxCodes);
 
   return { ok: true, data: { id: `tc-${Date.now()}` } };
 }
@@ -26,15 +29,15 @@ export async function updateTaxCode(
 
   console.log('Updating tax code:', id, data);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/codes');
-  revalidatePath(`/finance/tax/codes/${id}`);
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.taxCodes);
+  revalidatePath(routes.finance.taxCodeDetail(id));
 
   return { ok: true };
 }
 
 export async function updateTaxRate(params: {
-  taxCodeId: string;
+  taxCodeId: IdParam['id'];
   newRate: number;
   effectiveFrom: Date;
   reason: string;
@@ -43,9 +46,9 @@ export async function updateTaxRate(params: {
 
   console.log('Updating tax rate:', params);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/codes');
-  revalidatePath(`/finance/tax/codes/${params.taxCodeId}`);
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.taxCodes);
+  revalidatePath(routes.finance.taxCodeDetail(params.taxCodeId));
 
   return { ok: true };
 }
@@ -57,8 +60,8 @@ export async function deactivateTaxCode(
 
   console.log('Deactivating tax code:', id);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/codes');
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.taxCodes);
 
   return { ok: true };
 }
@@ -66,14 +69,17 @@ export async function deactivateTaxCode(
 // ─── Tax Return Period Actions ───────────────────────────────────────────────
 
 export async function createTaxReturnPeriod(
-  data: Omit<TaxReturnPeriod, 'id' | 'filedDate' | 'filedBy' | 'paidDate' | 'referenceNumber' | 'attachmentCount'>
+  data: Omit<
+    TaxReturnPeriod,
+    'id' | 'filedDate' | 'filedBy' | 'paidDate' | 'referenceNumber' | 'attachmentCount'
+  >
 ): Promise<{ ok: true; data: { id: string } } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 500));
 
   console.log('Creating tax return period:', data);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/returns');
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.taxReturns);
 
   return { ok: true, data: { id: `trp-${Date.now()}` } };
 }
@@ -88,9 +94,9 @@ export async function fileTaxReturn(params: {
 
   console.log('Filing tax return:', params);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/returns');
-  revalidatePath(`/finance/tax/returns/${params.periodId}`);
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.taxReturns);
+  revalidatePath(routes.finance.taxReturnDetail(params.periodId));
 
   return { ok: true };
 }
@@ -105,21 +111,24 @@ export async function recordTaxPayment(params: {
 
   console.log('Recording tax payment:', params);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/returns');
-  revalidatePath(`/finance/tax/returns/${params.periodId}`);
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.taxReturns);
+  revalidatePath(routes.finance.taxReturnDetail(params.periodId));
 
   return { ok: true };
 }
 
 export async function recalculateTaxReturn(
   periodId: string
-): Promise<{ ok: true; data: { outputTax: number; inputTax: number; netPayable: number } } | { ok: false; error: string }> {
+): Promise<
+  | { ok: true; data: { outputTax: number; inputTax: number; netPayable: number } }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 1000));
 
   console.log('Recalculating tax return:', periodId);
 
-  revalidatePath(`/finance/tax/returns/${periodId}`);
+  revalidatePath(routes.finance.taxReturnDetail(periodId));
 
   return {
     ok: true,
@@ -135,15 +144,17 @@ export async function recalculateTaxReturn(
 
 export async function createWHTCertificate(
   data: Omit<WHTCertificate, 'id' | 'certificateNumber' | 'status' | 'replacedById' | 'createdAt'>
-): Promise<{ ok: true; data: { id: string; certificateNumber: string } } | { ok: false; error: string }> {
+): Promise<
+  { ok: true; data: { id: string; certificateNumber: string } } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 600));
 
   console.log('Creating WHT certificate:', data);
 
   const certNumber = `WHT-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/wht');
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.whtList);
 
   return {
     ok: true,
@@ -161,9 +172,9 @@ export async function issueWHTCertificate(
 
   console.log('Issuing WHT certificate:', id);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/wht');
-  revalidatePath(`/finance/tax/wht/${id}`);
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.whtList);
+  revalidatePath(routes.finance.whtDetail(id));
 
   return { ok: true };
 }
@@ -176,26 +187,31 @@ export async function cancelWHTCertificate(params: {
 
   console.log('Cancelling WHT certificate:', params);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/wht');
-  revalidatePath(`/finance/tax/wht/${params.id}`);
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.whtList);
+  revalidatePath(routes.finance.whtDetail(params.id));
 
   return { ok: true };
 }
 
 export async function replaceWHTCertificate(params: {
   originalId: string;
-  newData: Omit<WHTCertificate, 'id' | 'certificateNumber' | 'status' | 'replacedById' | 'createdAt'>;
-}): Promise<{ ok: true; data: { id: string; certificateNumber: string } } | { ok: false; error: string }> {
+  newData: Omit<
+    WHTCertificate,
+    'id' | 'certificateNumber' | 'status' | 'replacedById' | 'createdAt'
+  >;
+}): Promise<
+  { ok: true; data: { id: string; certificateNumber: string } } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 700));
 
   console.log('Replacing WHT certificate:', params);
 
   const certNumber = `WHT-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/wht');
-  revalidatePath(`/finance/tax/wht/${params.originalId}`);
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.whtList);
+  revalidatePath(routes.finance.whtDetail(params.originalId));
 
   return {
     ok: true,
@@ -228,8 +244,8 @@ export async function bulkIssueWHTCertificates(
 
   console.log('Bulk issuing WHT certificates:', ids);
 
-  revalidatePath('/finance/tax');
-  revalidatePath('/finance/tax/wht');
+  revalidatePath(routes.finance.tax);
+  revalidatePath(routes.finance.whtList);
 
   return { ok: true, data: { issuedCount: ids.length } };
 }

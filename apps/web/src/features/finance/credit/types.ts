@@ -111,26 +111,35 @@ export interface CreditSummary {
 // ─── Status Configs ──────────────────────────────────────────────────────────
 
 export const creditStatusConfig: Record<CreditStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  under_review: { label: 'Under Review', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  suspended: { label: 'Suspended', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  on_hold: { label: 'On Hold', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  inactive: { label: 'Inactive', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  under_review: { label: 'Under Review', color: 'bg-info/15 text-info dark:bg-info/20' },
+  suspended: {
+    label: 'Suspended',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  on_hold: { label: 'On Hold', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  inactive: { label: 'Inactive', color: 'bg-muted text-muted-foreground' },
 };
 
 export const riskRatingConfig: Record<RiskRating, { label: string; color: string }> = {
-  low: { label: 'Low', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  medium: { label: 'Medium', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  high: { label: 'High', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  very_high: { label: 'Very High', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  low: { label: 'Low', color: 'bg-success/15 text-success dark:bg-success/20' },
+  medium: { label: 'Medium', color: 'bg-info/15 text-info dark:bg-info/20' },
+  high: { label: 'High', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  very_high: {
+    label: 'Very High',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
 };
 
 export const reviewStatusConfig: Record<ReviewStatus, { label: string; color: string }> = {
-  pending: { label: 'Pending', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  approved: { label: 'Approved', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  escalated: { label: 'Escalated', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
+  pending: { label: 'Pending', color: 'bg-muted text-muted-foreground' },
+  in_progress: { label: 'In Progress', color: 'bg-info/15 text-info dark:bg-info/20' },
+  approved: { label: 'Approved', color: 'bg-success/15 text-success dark:bg-success/20' },
+  rejected: {
+    label: 'Rejected',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  escalated: { label: 'Escalated', color: 'bg-accent text-accent-foreground' },
 };
 
 export const reviewTypeLabels: Record<ReviewType, string> = {
@@ -148,7 +157,7 @@ export const holdTypeLabels: Record<HoldType, string> = {
 };
 
 export const holdStatusConfig: Record<HoldStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  released: { label: 'Released', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  escalated: { label: 'Escalated', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' },
+  active: { label: 'Active', color: 'bg-destructive/15 text-destructive dark:bg-destructive/20' },
+  released: { label: 'Released', color: 'bg-success/15 text-success dark:bg-success/20' },
+  escalated: { label: 'Escalated', color: 'bg-accent text-accent-foreground' },
 };

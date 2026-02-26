@@ -45,7 +45,7 @@ export default async function JournalsPage({ searchParams }: JournalsPageProps) 
       <PageHeader
         title="Journals"
         description="General ledger journal entries."
-        breadcrumbs={[{ label: 'Finance', href: '/finance/journals' }, { label: 'Journals' }]}
+        breadcrumbs={[{ label: 'Finance', href: routes.finance.journals }, { label: 'Journals' }]}
         actions={
           <Button asChild>
             <Link href={routes.finance.journalNew}>
@@ -94,7 +94,7 @@ function JournalListFilters({
     const p = overrides.page ?? currentPage;
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
-    return qs ? `/finance/journals?${qs}` : '/finance/journals';
+    return qs ? `${routes.finance.journals}?${qs}` : routes.finance.journals;
   }
 
   return (

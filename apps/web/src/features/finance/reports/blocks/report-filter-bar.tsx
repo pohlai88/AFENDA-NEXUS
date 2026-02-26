@@ -24,10 +24,7 @@ interface PeriodOption {
   name: string;
 }
 
-export type ReportFilterVariant =
-  | 'ledger-period'
-  | 'ledger-period-range'
-  | 'currency-date';
+export type ReportFilterVariant = 'ledger-period' | 'ledger-period-range' | 'currency-date';
 
 interface ReportFilterBarProps {
   variant: ReportFilterVariant;
@@ -56,12 +53,24 @@ export function ReportFilterBar({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const [ledgerId, setLedgerId] = useState(defaults?.ledgerId ?? searchParams.get('ledgerId') ?? '');
-  const [periodId, setPeriodId] = useState(defaults?.periodId ?? searchParams.get('periodId') ?? '');
-  const [fromPeriodId, setFromPeriodId] = useState(defaults?.fromPeriodId ?? searchParams.get('fromPeriodId') ?? '');
-  const [toPeriodId, setToPeriodId] = useState(defaults?.toPeriodId ?? searchParams.get('toPeriodId') ?? '');
-  const [currency, setCurrency] = useState(defaults?.currency ?? searchParams.get('currency') ?? '');
-  const [asOfDate, setAsOfDate] = useState(defaults?.asOfDate ?? searchParams.get('asOfDate') ?? '');
+  const [ledgerId, setLedgerId] = useState(
+    defaults?.ledgerId ?? searchParams.get('ledgerId') ?? ''
+  );
+  const [periodId, setPeriodId] = useState(
+    defaults?.periodId ?? searchParams.get('periodId') ?? ''
+  );
+  const [fromPeriodId, setFromPeriodId] = useState(
+    defaults?.fromPeriodId ?? searchParams.get('fromPeriodId') ?? ''
+  );
+  const [toPeriodId, setToPeriodId] = useState(
+    defaults?.toPeriodId ?? searchParams.get('toPeriodId') ?? ''
+  );
+  const [currency, setCurrency] = useState(
+    defaults?.currency ?? searchParams.get('currency') ?? ''
+  );
+  const [asOfDate, setAsOfDate] = useState(
+    defaults?.asOfDate ?? searchParams.get('asOfDate') ?? ''
+  );
 
   function handleGenerate() {
     const params = new URLSearchParams();

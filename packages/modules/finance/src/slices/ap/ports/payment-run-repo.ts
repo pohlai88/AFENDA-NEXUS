@@ -1,5 +1,5 @@
 import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
-import type { PaymentRun, PaymentRunItem } from '../entities/payment-run.js';
+import type { PaymentRun, PaymentRunItem, PaymentRunStatus } from '../entities/payment-run.js';
 
 export interface CreatePaymentRunInput {
   readonly tenantId: string;
@@ -22,6 +22,6 @@ export interface IApPaymentRunRepo {
   findById(id: string): Promise<Result<PaymentRun>>;
   findAll(params?: PaginationParams): Promise<PaginatedResult<PaymentRun>>;
   addItem(runId: string, item: AddPaymentRunItemInput): Promise<Result<PaymentRunItem>>;
-  updateStatus(id: string, status: string): Promise<Result<PaymentRun>>;
+  updateStatus(id: string, status: PaymentRunStatus): Promise<Result<PaymentRun>>;
   execute(id: string, userId: string): Promise<Result<PaymentRun>>;
 }

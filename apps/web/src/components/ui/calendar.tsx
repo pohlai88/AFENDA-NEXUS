@@ -9,12 +9,7 @@ import { cn } from '@/lib/utils';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
+function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -25,8 +20,10 @@ function Calendar({
         month_caption: 'flex justify-center pt-1 relative items-center',
         caption_label: 'text-sm font-medium',
         nav: 'flex items-center gap-1',
-        button_previous: 'absolute left-1 h-7 w-7 rounded-md border bg-background p-0 opacity-50 hover:opacity-100',
-        button_next: 'absolute right-1 h-7 w-7 rounded-md border bg-background p-0 opacity-50 hover:opacity-100',
+        button_previous:
+          'absolute left-1 h-7 w-7 rounded-md border bg-background p-0 opacity-50 hover:opacity-100',
+        button_next:
+          'absolute right-1 h-7 w-7 rounded-md border bg-background p-0 opacity-50 hover:opacity-100',
         month_grid: 'w-full border-collapse space-y-1',
         weekdays: 'flex',
         weekday: 'text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]',

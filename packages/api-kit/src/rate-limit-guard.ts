@@ -1,18 +1,27 @@
 /**
- * GAP-15: Per-tenant rate limiting preHandler.
+ * @afenda/api-kit — Per-tenant rate limiting preHandler.
  *
- * In-memory sliding window rate limiter keyed by tenant ID.
- * Rejects requests with 429 when a tenant exceeds the configured
- * requests-per-window threshold.
+ * In-memory sliding window rate limiter keyed by tenant ID
+ * from req.authUser (NOT from headers).
  *
- * For production, replace with a Redis-backed implementation
- * (e.g. @fastify/rate-limit with Redis store) for multi-instance support.
+ * For production multi-instance deployments, replace with a
+ * Redis-backed implementation via IRateLimitStore.
  */
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyInstance } from 'fastify/types/instance.js';
+import type { FastifyRequest } from 'fastify/types/request.js';
+import type { FastifyReply } from 'fastify/types/reply.js';
 
 export interface RateLimitConfig {
   readonly maxRequests: number;
   readonly windowMs: number;
+}
+
+/**
+ * Port for rate limit storage — allows swapping in Redis
+ * without changing the guard logic.
+ */
+export interface IRateLimitStore {
+  increment(key: string, windowMs: number): Promise<{ count: number; ttlMs: number }>;
 }
 
 const DEFAULT_CONFIG: RateLimitConfig = {
@@ -35,13 +44,14 @@ function pruneWindow(entry: WindowEntry, now: number, windowMs: number): void {
 
 /**
  * Returns a Fastify preHandler that enforces per-tenant rate limits.
+ * Reads tenant ID from req.authUser (set by auth middleware).
  */
-export function registerRateLimitGuard(config?: Partial<RateLimitConfig>) {
+export function rateLimitGuard(config?: Partial<RateLimitConfig>) {
   const { maxRequests, windowMs } = { ...DEFAULT_CONFIG, ...config };
 
   return async (req: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = req.headers['x-tenant-id'] as string;
-    if (!tenantId) return; // tenant guard handles missing tenant
+    const tenantId = (req as FastifyRequest & { authUser?: { tenantId?: string } }).authUser?.tenantId;
+    if (!tenantId) return; // auth middleware handles missing auth
 
     const now = Date.now();
     let entry = tenantWindows.get(tenantId);
@@ -64,6 +74,13 @@ export function registerRateLimitGuard(config?: Partial<RateLimitConfig>) {
 
     entry.timestamps.push(now);
   };
+}
+
+/**
+ * Registers the rate limit guard as a global preHandler on the Fastify instance.
+ */
+export function registerGlobalRateLimit(app: FastifyInstance, config?: Partial<RateLimitConfig>): void {
+  app.addHook('preHandler', rateLimitGuard(config));
 }
 
 /**

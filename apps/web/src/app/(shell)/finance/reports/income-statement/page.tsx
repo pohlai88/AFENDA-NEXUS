@@ -10,6 +10,7 @@ import {
   type ReportSection,
 } from '@/features/finance/reports/queries/report.queries';
 import { buildIncomeStatementExport } from '@/features/finance/reports/actions/report-export.actions';
+import { routes } from '@/lib/constants';
 import { ReportFilterBar } from '@/features/finance/reports/blocks/report-filter-bar';
 import { getReportFilterData } from '@/features/finance/reports/blocks/report-filter-data';
 import {
@@ -64,8 +65,8 @@ export default async function IncomeStatementPage({ searchParams }: IncomeStatem
             : 'Revenue and expenses over a period.'
         }
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Reports', href: '/finance/reports' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Reports', href: routes.finance.reports },
           { label: 'Income Statement' },
         ]}
         actions={data ? <ExportMenu payload={buildIncomeStatementExport(data)} /> : undefined}

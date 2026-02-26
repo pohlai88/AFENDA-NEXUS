@@ -2,14 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { cn, formatCurrency } from '@/lib/utils';
-import {
-  Receipt,
-  Clock,
-  CheckCircle,
-  Banknote,
-  TrendingUp,
-  AlertTriangle,
-} from 'lucide-react';
+import { Receipt, Clock, CheckCircle, Banknote, TrendingUp, AlertTriangle } from 'lucide-react';
 import type { ExpenseSummary } from '../types';
 
 interface ExpenseSummaryCardsProps {
@@ -37,9 +30,9 @@ export function ExpenseSummaryCards({ summary, currency = 'USD' }: ExpenseSummar
       </Card>
 
       {/* Pending Claims */}
-      <Card className={cn(summary.pendingClaims > 5 && 'border-amber-200 dark:border-amber-800')}>
+      <Card className={cn(summary.pendingClaims > 5 && 'border-warning/30 dark:border-warning/30')}>
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 text-amber-500">
+          <div className="flex items-center gap-2 text-warning">
             <Clock className="h-4 w-4" />
             <CardDescription>Pending Approval</CardDescription>
           </div>
@@ -55,13 +48,13 @@ export function ExpenseSummaryCards({ summary, currency = 'USD' }: ExpenseSummar
       {/* Approved Amount */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 text-green-500">
+          <div className="flex items-center gap-2 text-success">
             <CheckCircle className="h-4 w-4" />
             <CardDescription>Approved</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold font-mono text-green-600 dark:text-green-400">
+          <div className="text-2xl font-bold font-mono text-success">
             {formatCurrency(summary.approvedAmount, currency)}
           </div>
           <p className="text-xs text-muted-foreground">This month</p>
@@ -87,7 +80,7 @@ export function ExpenseSummaryCards({ summary, currency = 'USD' }: ExpenseSummar
       {/* Processing Metrics */}
       <Card className="sm:col-span-2 lg:col-span-2">
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 text-purple-500">
+          <div className="flex items-center gap-2 text-accent-foreground">
             <TrendingUp className="h-4 w-4" />
             <CardDescription>Processing Metrics</CardDescription>
           </div>
@@ -99,10 +92,12 @@ export function ExpenseSummaryCards({ summary, currency = 'USD' }: ExpenseSummar
               <p className="text-xs text-muted-foreground">Avg. processing time</p>
             </div>
             <div>
-              <div className={cn(
-                'text-2xl font-bold',
-                summary.rejectionRate > 10 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
-              )}>
+              <div
+                className={cn(
+                  'text-2xl font-bold',
+                  summary.rejectionRate > 10 ? 'text-destructive' : 'text-success'
+                )}
+              >
                 {summary.rejectionRate}%
               </div>
               <p className="text-xs text-muted-foreground">Rejection rate</p>
@@ -113,9 +108,9 @@ export function ExpenseSummaryCards({ summary, currency = 'USD' }: ExpenseSummar
 
       {/* Pending Alert */}
       {summary.pendingClaims > 5 && (
-        <Card className="sm:col-span-2 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950">
+        <Card className="sm:col-span-2 border-warning/30 dark:border-warning/30 bg-warning/10 dark:bg-warning/20">
           <CardContent className="flex items-center gap-4 py-4">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            <AlertTriangle className="h-5 w-5 text-warning" />
             <div>
               <p className="font-medium">High Volume of Pending Claims</p>
               <p className="text-sm text-muted-foreground">

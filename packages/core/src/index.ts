@@ -105,6 +105,36 @@ export function money(amount: bigint, currency: string, scale = 2): Money {
   return { amount, currency, scale };
 }
 
+export const CURRENCY_SCALE: Readonly<Record<string, number>> = {
+  USD: 2, EUR: 2, GBP: 2, MYR: 2, SGD: 2, THB: 2, AUD: 2, CAD: 2,
+  CHF: 2, CNY: 2, HKD: 2, INR: 2, NZD: 2, PHP: 2, TWD: 2, ZAR: 2,
+  IDR: 0, JPY: 0, KRW: 0, VND: 0,
+  KWD: 3, BHD: 3, OMR: 3,
+};
+
+export function currencyScale(currency: string): number {
+  return CURRENCY_SCALE[currency] ?? 2;
+}
+
+export function toMinorUnits(amount: number, currency: string): bigint {
+  const scale = currencyScale(currency);
+  return BigInt(Math.round(amount * 10 ** scale));
+}
+
+export function fromMinorUnits(amount: bigint, currency: string): number {
+  const scale = currencyScale(currency);
+  return Number(amount) / 10 ** scale;
+}
+
+export function formatMinorUnits(amount: bigint, scale = 2): string {
+  const divisor = 10 ** scale;
+  const whole = amount / BigInt(divisor);
+  const frac = amount % BigInt(divisor);
+  if (scale === 0) return whole.toString();
+  const fracStr = frac.toString().padStart(scale, '0');
+  return `${whole}.${fracStr}`;
+}
+
 // ─── Date Utilities ─────────────────────────────────────────────────────────
 
 export interface DateRange {

@@ -1,5 +1,5 @@
 import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
-import type { ArInvoice } from '../entities/ar-invoice.js';
+import type { ArInvoice, ArInvoiceStatus } from '../entities/ar-invoice.js';
 
 export interface CreateArInvoiceInput {
   readonly tenantId: string;
@@ -32,10 +32,13 @@ export interface IArInvoiceRepo {
     customerId: string,
     params?: PaginationParams
   ): Promise<PaginatedResult<ArInvoice>>;
-  findByStatus(status: string, params?: PaginationParams): Promise<PaginatedResult<ArInvoice>>;
+  findByStatus(
+    status: ArInvoiceStatus,
+    params?: PaginationParams
+  ): Promise<PaginatedResult<ArInvoice>>;
   findAll(params?: PaginationParams): Promise<PaginatedResult<ArInvoice>>;
   findUnpaid(): Promise<ArInvoice[]>;
-  updateStatus(id: string, status: string, journalId?: string): Promise<Result<ArInvoice>>;
+  updateStatus(id: string, status: ArInvoiceStatus, journalId?: string): Promise<Result<ArInvoice>>;
   recordPayment(id: string, amount: bigint): Promise<Result<ArInvoice>>;
   writeOff(id: string): Promise<Result<ArInvoice>>;
 }

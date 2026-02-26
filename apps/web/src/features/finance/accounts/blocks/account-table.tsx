@@ -36,7 +36,10 @@ const columns: ColumnDef<AccountListItem>[] = [
     sortFn: (a, b) => a.type.localeCompare(b.type),
     accessorFn: (row) => (
       <span
-        className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium', typeColors[row.type] ?? 'bg-muted text-muted-foreground border-border')}
+        className={cn(
+          'inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium',
+          typeColors[row.type] ?? 'bg-muted text-muted-foreground border-border'
+        )}
       >
         {row.type}
       </span>
@@ -48,9 +51,7 @@ const columns: ColumnDef<AccountListItem>[] = [
     className: 'w-[100px]',
     sortable: true,
     sortFn: (a, b) => a.normalBalance.localeCompare(b.normalBalance),
-    accessorFn: (row) => (
-      <span className="text-xs text-muted-foreground">{row.normalBalance}</span>
-    ),
+    accessorFn: (row) => <span className="text-xs text-muted-foreground">{row.normalBalance}</span>,
   },
   {
     id: 'isActive',

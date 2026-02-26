@@ -9,9 +9,7 @@ import { mapJournalToDomain } from '../../../shared/mappers/journal-mapper.js';
 import type { JournalRowWithLines } from '../../../shared/mappers/journal-mapper.js';
 
 /** Drizzle relational query result for glJournals with lines + account + ledger. */
-type JournalQueryRow = Awaited<
-  ReturnType<TenantTx['query']['glJournals']['findFirst']>
->;
+type JournalQueryRow = Awaited<ReturnType<TenantTx['query']['glJournals']['findFirst']>>;
 
 function toJournalRowWithLines(row: NonNullable<JournalQueryRow>): JournalRowWithLines {
   const r = row as unknown as JournalRowWithLines;

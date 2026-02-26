@@ -1,6 +1,13 @@
 // ─── Provision Types ─────────────────────────────────────────────────────────
 
-export type ProvisionType = 'legal' | 'warranty' | 'restructuring' | 'environmental' | 'onerous_contract' | 'decommissioning' | 'other';
+export type ProvisionType =
+  | 'legal'
+  | 'warranty'
+  | 'restructuring'
+  | 'environmental'
+  | 'onerous_contract'
+  | 'decommissioning'
+  | 'other';
 export type ProvisionStatus = 'active' | 'utilized' | 'reversed' | 'closed';
 
 export interface Provision {
@@ -34,7 +41,14 @@ export interface Provision {
 
 // ─── Provision Movement Types ────────────────────────────────────────────────
 
-export type MovementType = 'initial' | 'addition' | 'utilization' | 'reversal' | 'unwinding' | 'revaluation' | 'fx_adjustment';
+export type MovementType =
+  | 'initial'
+  | 'addition'
+  | 'utilization'
+  | 'reversal'
+  | 'unwinding'
+  | 'revaluation'
+  | 'fx_adjustment';
 
 export interface ProvisionMovement {
   id: string;
@@ -67,10 +81,10 @@ export interface ProvisionSummary {
 // ─── Status Configs ──────────────────────────────────────────────────────────
 
 export const provisionStatusConfig: Record<ProvisionStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  utilized: { label: 'Utilized', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  reversed: { label: 'Reversed', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  closed: { label: 'Closed', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  utilized: { label: 'Utilized', color: 'bg-info/15 text-info dark:bg-info/20' },
+  reversed: { label: 'Reversed', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground' },
 };
 
 export const provisionTypeLabels: Record<ProvisionType, string> = {

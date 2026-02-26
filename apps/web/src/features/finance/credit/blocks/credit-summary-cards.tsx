@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { formatCurrency } from '@/lib/utils';
+import { routes } from '@/lib/constants';
 import {
   Users,
   CreditCard,
@@ -42,28 +43,28 @@ export function CreditSummaryCards({ summary }: CreditSummaryCardsProps) {
       value: formatCurrency(summary.totalOutstanding, 'USD'),
       icon: TrendingUp,
       description: `${summary.avgUtilization.toFixed(1)}% utilization`,
-      color: 'text-purple-500',
+      color: 'text-accent-foreground',
     },
     {
       title: 'Overdue',
       value: formatCurrency(summary.totalOverdue, 'USD'),
       icon: AlertTriangle,
       description: 'Past due balances',
-      color: summary.totalOverdue > 0 ? 'text-destructive' : 'text-green-500',
+      color: summary.totalOverdue > 0 ? 'text-destructive' : 'text-success',
     },
     {
       title: 'On Hold',
       value: summary.customersOnHold.toString(),
       icon: Ban,
       description: 'Customers blocked',
-      color: summary.customersOnHold > 0 ? 'text-amber-500' : 'text-gray-400',
+      color: summary.customersOnHold > 0 ? 'text-warning' : 'text-muted-foreground',
     },
     {
       title: 'Pending Reviews',
       value: summary.pendingReviews.toString(),
       icon: Clock,
       description: `${summary.overdueReviews} overdue`,
-      color: summary.pendingReviews > 0 ? 'text-amber-500' : 'text-gray-400',
+      color: summary.pendingReviews > 0 ? 'text-warning' : 'text-muted-foreground',
     },
   ];
 
@@ -92,8 +93,8 @@ export function CreditSummaryCards({ summary }: CreditSummaryCardsProps) {
           <AlertTitle>High Risk Customers</AlertTitle>
           <AlertDescription>
             <span className="font-medium">{summary.highRiskCustomers} customers</span> are
-            classified as high risk.{' '}
-            <Link href="/finance/credit?filter=high_risk" className="underline">
+            classified as high risk.{''}
+            <Link href={`${routes.finance.creditLimits}?filter=high_risk`} className="underline">
               Review now
             </Link>
           </AlertDescription>
@@ -106,8 +107,8 @@ export function CreditSummaryCards({ summary }: CreditSummaryCardsProps) {
           <AlertTitle>Overdue Reviews</AlertTitle>
           <AlertDescription>
             <span className="font-medium">{summary.overdueReviews} credit reviews</span> are past
-            their due date.{' '}
-            <Link href="/finance/credit/reviews?filter=overdue" className="underline">
+            their due date.{''}
+            <Link href={`${routes.finance.creditReviews}?filter=overdue`} className="underline">
               View overdue reviews
             </Link>
           </AlertDescription>

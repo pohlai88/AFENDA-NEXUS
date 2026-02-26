@@ -6,6 +6,7 @@ import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { getRecurringTemplate } from '@/features/finance/recurring/queries/recurring.queries';
 import { RecurringTemplateActions } from '@/features/finance/recurring/blocks/recurring-template-actions';
+import { routes } from '@/lib/constants';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -45,8 +46,8 @@ export default async function RecurringDetailPage({ params }: RecurringDetailPag
         title={template.description}
         description={`Recurring ${template.frequency.toLowerCase()} journal template.`}
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Recurring Templates', href: '/finance/recurring' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Recurring Templates', href: routes.finance.recurring },
           { label: template.description },
         ]}
         actions={
@@ -111,9 +112,7 @@ export default async function RecurringDetailPage({ params }: RecurringDetailPag
               {template.lines.map((line, i) => (
                 <TableRow key={i}>
                   <TableCell className="font-mono text-xs">{line.accountCode}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {line.description ?? '—'}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{line.description ?? '—'}</TableCell>
                   <TableCell className="text-right font-mono text-sm tabular-nums">
                     {Number(line.debit) > 0 ? Number(line.debit).toLocaleString() : ''}
                   </TableCell>

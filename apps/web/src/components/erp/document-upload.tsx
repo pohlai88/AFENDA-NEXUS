@@ -101,7 +101,7 @@ export function DocumentUpload({
 
       try {
         const uploaded = await onUpload(acceptedFiles);
-        
+
         setFiles((prev) =>
           prev.map((f) => {
             if (f.status === 'uploading') {

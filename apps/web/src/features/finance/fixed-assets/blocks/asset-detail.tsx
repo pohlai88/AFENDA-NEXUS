@@ -118,9 +118,8 @@ function AssetHeader({ asset }: AssetHeaderProps) {
 
 function ValueSummaryCard({ asset }: { asset: FixedAsset }) {
   const depreciableAmount = asset.originalCost - asset.salvageValue;
-  const depreciationPercent = depreciableAmount > 0
-    ? (asset.accumulatedDepreciation / depreciableAmount) * 100
-    : 0;
+  const depreciationPercent =
+    depreciableAmount > 0 ? (asset.accumulatedDepreciation / depreciableAmount) * 100 : 0;
 
   return (
     <Card>
@@ -137,19 +136,17 @@ function ValueSummaryCard({ asset }: { asset: FixedAsset }) {
           </div>
           <div>
             <div className="text-muted-foreground">Salvage Value</div>
-            <div className="font-mono">
-              {formatCurrency(asset.salvageValue, asset.currency)}
-            </div>
+            <div className="font-mono">{formatCurrency(asset.salvageValue, asset.currency)}</div>
           </div>
           <div>
             <div className="text-muted-foreground">Accumulated Depreciation</div>
-            <div className="font-mono text-red-600 dark:text-red-400">
+            <div className="font-mono text-destructive">
               ({formatCurrency(asset.accumulatedDepreciation, asset.currency)})
             </div>
           </div>
           <div>
             <div className="text-muted-foreground">Net Book Value</div>
-            <div className="font-mono font-bold text-lg text-green-600 dark:text-green-400">
+            <div className="font-mono font-bold text-lg text-success">
               {formatCurrency(asset.netBookValue, asset.currency)}
             </div>
           </div>
@@ -225,9 +222,11 @@ function AssetDetailsCard({ asset }: { asset: FixedAsset }) {
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
               <dt className="text-muted-foreground">Warranty Expiry:</dt>
-              <dd className={cn(
-                new Date(asset.warrantyExpiryDate) < new Date() && 'text-red-600'
-              )}>
+              <dd
+                className={cn(
+                  new Date(asset.warrantyExpiryDate) < new Date() && 'text-destructive'
+                )}
+              >
                 {formatDate(asset.warrantyExpiryDate)}
               </dd>
             </div>
@@ -252,9 +251,7 @@ function DepreciationMethodCard({ asset }: { asset: FixedAsset }) {
       <CardContent className="space-y-3 text-sm">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground">Method:</span>
-          <Badge variant="outline">
-            {depreciationMethodLabels[asset.depreciationMethod]}
-          </Badge>
+          <Badge variant="outline">{depreciationMethodLabels[asset.depreciationMethod]}</Badge>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground">Useful Life:</span>

@@ -106,11 +106,7 @@ export function LedgerForm({
         <Label htmlFor="name">
           Ledger Name <span className="text-destructive">*</span>
         </Label>
-        <Input
-          id="name"
-          {...form.register('name')}
-          placeholder="e.g. General Ledger"
-        />
+        <Input id="name" {...form.register('name')} placeholder="e.g. General Ledger" />
         {form.formState.errors.name && (
           <p className="text-xs text-destructive" role="alert">
             {form.formState.errors.name.message}
@@ -125,9 +121,7 @@ export function LedgerForm({
           </Label>
           <Select
             value={form.watch('companyId')}
-            onValueChange={(val) =>
-              form.setValue('companyId', val, { shouldValidate: true })
-            }
+            onValueChange={(val) => form.setValue('companyId', val, { shouldValidate: true })}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select company" />

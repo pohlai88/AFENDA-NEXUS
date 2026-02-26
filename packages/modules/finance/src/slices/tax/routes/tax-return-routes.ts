@@ -3,6 +3,8 @@ import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { aggregateTaxReturn } from '../services/aggregate-tax-return.js';
+import { extractIdentity } from '@afenda/api-kit';
+import type { IdParam } from '@afenda/contracts';
 
 export function registerTaxReturnRoutes(
   app: FastifyInstance,
@@ -13,8 +15,7 @@ export function registerTaxReturnRoutes(
     '/tax/returns',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const returns = await deps.taxReturnRepo.findAll();
         return { data: returns };
@@ -22,12 +23,11 @@ export function registerTaxReturnRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/tax/returns/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const taxReturn = await deps.taxReturnRepo.findById(req.params.id);
         if (!taxReturn) return reply.status(404).send({ error: 'Tax return not found' });
@@ -40,8 +40,7 @@ export function registerTaxReturnRoutes(
     '/tax/returns',
     { preHandler: [requirePermission(policy, 'admin:all')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await aggregateTaxReturn(

@@ -1,4 +1,4 @@
-import { eq, count, inArray, sql } from 'drizzle-orm';
+import { eq, count, desc, inArray, sql } from 'drizzle-orm';
 import { ok, err, NotFoundError, money } from '@afenda/core';
 import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
 import type { TenantTx } from '@afenda/db';
@@ -8,6 +8,14 @@ import type { IArInvoiceRepo, CreateArInvoiceInput } from '../ports/ar-invoice-r
 
 type InvoiceRow = typeof arInvoices.$inferSelect;
 type LineRow = typeof arInvoiceLines.$inferSelect;
+
+function extractFirstRow<T>(result: unknown): T | undefined {
+  if (Array.isArray(result)) return result[0] as T;
+  if (result && typeof result === 'object' && 'rows' in result) {
+    return (result as { rows: T[] }).rows[0];
+  }
+  return undefined;
+}
 
 function mapLineToDomain(row: LineRow, currencyCode: string): ArInvoiceLine {
   return {
@@ -123,6 +131,7 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
     const [rows, countRows] = await Promise.all([
       this.tx.query.arInvoices.findMany({
         where: eq(arInvoices.customerId, customerId),
+        orderBy: [desc(arInvoices.createdAt), desc(arInvoices.id)],
         limit,
         offset,
       }),
@@ -156,6 +165,7 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
     const [rows, countRows] = await Promise.all([
       this.tx.query.arInvoices.findMany({
         where: eq(arInvoices.status, status as typeof arInvoices.$inferSelect.status),
+        orderBy: [desc(arInvoices.createdAt), desc(arInvoices.id)],
         limit,
         offset,
       }),
@@ -184,7 +194,11 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
     const offset = (page - 1) * limit;
 
     const [rows, countRows] = await Promise.all([
-      this.tx.query.arInvoices.findMany({ limit, offset }),
+      this.tx.query.arInvoices.findMany({
+        orderBy: [desc(arInvoices.createdAt), desc(arInvoices.id)],
+        limit,
+        offset,
+      }),
       this.tx.select({ total: count() }).from(arInvoices),
     ]);
     const total = countRows[0]?.total ?? 0;
@@ -204,6 +218,7 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
   async findUnpaid(): Promise<ArInvoice[]> {
     const rows = await this.tx.query.arInvoices.findMany({
       where: inArray(arInvoices.status, ['POSTED', 'PARTIALLY_PAID', 'APPROVED']),
+      orderBy: [desc(arInvoices.dueDate), desc(arInvoices.id)],
     });
 
     return Promise.all(
@@ -228,28 +243,26 @@ export class DrizzleArInvoiceRepo implements IArInvoiceRepo {
   }
 
   async recordPayment(id: string, amount: bigint): Promise<Result<ArInvoice>> {
-    await this.tx
-      .update(arInvoices)
-      .set({
-        paidAmount: sql`${arInvoices.paidAmount} + ${amount}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(arInvoices.id, id));
+    const result = await this.tx.execute(sql`
+      UPDATE ${arInvoices}
+      SET
+        paid_amount = ${arInvoices.paidAmount} + ${amount},
+        status = CASE
+          WHEN ${arInvoices.paidAmount} + ${amount} >= ${arInvoices.totalAmount} THEN 'PAID'
+          WHEN ${arInvoices.paidAmount} + ${amount} > 0 THEN 'PARTIALLY_PAID'
+          ELSE status
+        END,
+        updated_at = now()
+      WHERE id = ${id}
+      RETURNING *
+    `);
+    const row = extractFirstRow<InvoiceRow>(result);
+    if (!row) return err(new NotFoundError('ArInvoice', id));
 
-    const row = await this.tx.query.arInvoices.findFirst({ where: eq(arInvoices.id, id) });
-    if (row && row.paidAmount >= row.totalAmount) {
-      await this.tx
-        .update(arInvoices)
-        .set({ status: 'PAID', updatedAt: new Date() })
-        .where(eq(arInvoices.id, id));
-    } else if (row && row.paidAmount > 0n) {
-      await this.tx
-        .update(arInvoices)
-        .set({ status: 'PARTIALLY_PAID', updatedAt: new Date() })
-        .where(eq(arInvoices.id, id));
-    }
-
-    return this.findById(id);
+    const lines = await this.tx.query.arInvoiceLines.findMany({
+      where: eq(arInvoiceLines.invoiceId, id),
+    });
+    return ok(mapToDomain(row, lines));
   }
 
   async writeOff(id: string): Promise<Result<ArInvoice>> {

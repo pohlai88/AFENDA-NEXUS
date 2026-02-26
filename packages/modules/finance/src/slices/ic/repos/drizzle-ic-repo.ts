@@ -194,7 +194,11 @@ export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
         sourceJournalId: sellerLeg?.journalId ?? '',
         mirrorJournalId: buyerLeg?.journalId ?? '',
         amount: row.amount ?? 0n,
-        currency: row.currencyCode ?? 'USD',
+        currency:
+          row.currencyCode ??
+          (() => {
+            throw new NotFoundError('Currency', 'ic-transaction');
+          })(),
         status: row.settlementStatus === 'PENDING' ? 'PENDING' : 'PAIRED',
         createdAt: row.createdAt,
       });
@@ -238,7 +242,11 @@ export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
       sourceJournalId: sellerLeg?.journalId ?? '',
       mirrorJournalId: buyerLeg?.journalId ?? '',
       amount: row.amount ?? 0n,
-      currency: row.currencyCode ?? 'USD',
+      currency:
+        row.currencyCode ??
+        (() => {
+          throw new NotFoundError('Currency', id);
+        })(),
       status: row.settlementStatus === 'PENDING' ? 'PENDING' : 'PAIRED',
       createdAt: row.createdAt,
     });

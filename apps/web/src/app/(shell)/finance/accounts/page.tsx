@@ -3,12 +3,10 @@ import { PageHeader } from '@/components/erp/page-header';
 import { EmptyState } from '@/components/erp/empty-state';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
-import {
-  getAccounts,
-  type AccountType,
-} from '@/features/finance/accounts/queries/account.queries';
+import { getAccounts, type AccountType } from '@/features/finance/accounts/queries/account.queries';
 import { AccountTable } from '@/features/finance/accounts/blocks/account-table';
 import { List } from 'lucide-react';
+import { routes } from '@/lib/constants';
 
 export const metadata = { title: 'Chart of Accounts' };
 
@@ -56,7 +54,7 @@ export default async function AccountsPage({ searchParams }: AccountsPageProps) 
       <PageHeader
         title="Chart of Accounts"
         description="Manage your general ledger account structure."
-        breadcrumbs={[{ label: 'Finance', href: '/finance/journals' }, { label: 'Accounts' }]}
+        breadcrumbs={[{ label: 'Finance', href: routes.finance.journals }, { label: 'Accounts' }]}
       />
 
       {/* Filter bar */}
@@ -95,7 +93,7 @@ function AccountFilters({
     const p = overrides.page ?? currentPage;
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
-    return qs ? `/finance/accounts?${qs}` : '/finance/accounts';
+    return qs ? `${routes.finance.accounts}?${qs}` : routes.finance.accounts;
   }
 
   return (

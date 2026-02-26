@@ -2,8 +2,34 @@
  * Shared mock factories for finance unit tests.
  * All repos are mocked via ports — no DB needed.
  */
+import type { FastifyInstance } from 'fastify';
 import { ok, err, NotFoundError, money, companyId, ledgerId, dateRange } from '@afenda/core';
 import type { PaginationParams, PaginatedResult } from '@afenda/core';
+import { admin as adminRole } from '@afenda/authz';
+
+/**
+ * Registers a test auth plugin that populates req.authUser from headers.
+ * This bridges the gap between test headers and the extractIdentity(req) flow.
+ *
+ * Tests send `x-tenant-id` / `x-user-id` headers; this plugin translates
+ * them into `req.authUser` so route handlers (which use extractIdentity)
+ * see the identity on the canonical path.
+ */
+export function registerTestAuthPlugin(app: FastifyInstance): void {
+  app.decorateRequest('authUser', undefined);
+  app.addHook('preHandler', async (req) => {
+    const tenantId = req.headers['x-tenant-id'] as string | undefined;
+    const userId = req.headers['x-user-id'] as string | undefined;
+    if (tenantId && userId) {
+      (req as typeof req & { authUser?: Record<string, unknown> }).authUser = {
+        tenantId,
+        userId,
+        roles: [adminRole] as const,
+        orgRoles: [] as readonly string[],
+      };
+    }
+  });
+}
 
 // Fixed UUIDs for deterministic tests
 export const IDS = {
@@ -766,6 +792,7 @@ export function makeApInvoiceLine(overrides: Partial<ApInvoiceLine> = {}): ApInv
     unitPrice: money(10000n, 'USD'),
     amount: money(10000n, 'USD'),
     taxAmount: money(0n, 'USD'),
+    whtIncomeType: null,
     ...overrides,
   };
 }
@@ -784,11 +811,13 @@ export function makeApInvoice(overrides: Partial<ApInvoice> = {}): ApInvoice {
     totalAmount: money(10000n, 'USD'),
     paidAmount: money(0n, 'USD'),
     status: 'DRAFT',
+    invoiceType: 'STANDARD',
     description: 'Test AP invoice',
     poRef: null,
     receiptRef: null,
     paymentTermsId: null,
     journalId: null,
+    originalInvoiceId: null,
     lines: [makeApInvoiceLine()],
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -938,6 +967,35 @@ export function mockApInvoiceRepo(
       };
       invoices.set(id, updated);
       return ok(updated);
+    },
+    async recordPaymentWithTrace(id: string, amount: bigint, paymentRef?: string) {
+      const prior = invoices.get(id);
+      if (!prior) return err(new NotFoundError('ApInvoice', id));
+      const priorBalance = prior.totalAmount.amount - prior.paidAmount.amount;
+      const newPaid = money(prior.paidAmount.amount + amount, prior.paidAmount.currency);
+      const newStatus = newPaid.amount >= prior.totalAmount.amount ? 'PAID' : 'PARTIALLY_PAID';
+      const updated = {
+        ...prior,
+        paidAmount: newPaid,
+        status: newStatus as ApInvoice['status'],
+        updatedAt: new Date(),
+      };
+      invoices.set(id, updated);
+      const newBalance = updated.totalAmount.amount - updated.paidAmount.amount;
+      return ok({
+        invoice: updated,
+        trace: {
+          invoiceId: id,
+          paymentRef: paymentRef ?? null,
+          priorBalance,
+          paymentAmount: amount,
+          newBalance,
+          priorStatus: prior.status,
+          newStatus: updated.status,
+          clearedFully: newBalance <= 0n,
+          timestamp: new Date(),
+        },
+      });
     },
   };
 }

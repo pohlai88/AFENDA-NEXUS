@@ -236,9 +236,7 @@ export async function getTaxCodes(params?: {
   if (params?.search) {
     const search = params.search.toLowerCase();
     filtered = filtered.filter(
-      (tc) =>
-        tc.code.toLowerCase().includes(search) ||
-        tc.name.toLowerCase().includes(search)
+      (tc) => tc.code.toLowerCase().includes(search) || tc.name.toLowerCase().includes(search)
     );
   }
 
@@ -293,9 +291,7 @@ export async function getTaxReturnPeriods(params?: {
   }
 
   if (params?.year) {
-    filtered = filtered.filter(
-      (trp) => trp.startDate.getFullYear() === params.year
-    );
+    filtered = filtered.filter((trp) => trp.startDate.getFullYear() === params.year);
   }
 
   return { ok: true, data: filtered };
@@ -351,7 +347,9 @@ export async function getWHTCertificateById(
   return { ok: true, data: cert };
 }
 
-export async function getTaxSummary(): Promise<{ ok: true; data: TaxSummary } | { ok: false; error: string }> {
+export async function getTaxSummary(): Promise<
+  { ok: true; data: TaxSummary } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 250));
 
   const summary: TaxSummary = {

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { formatCurrency } from '@/lib/utils';
+import { routes } from '@/lib/constants';
 import {
   Briefcase,
   TrendingUp,
@@ -42,21 +43,21 @@ export function ProjectSummaryCards({ summary }: ProjectSummaryCardsProps) {
       value: formatCurrency(summary.totalBilledAmount, 'USD'),
       icon: Receipt,
       description: `${formatCurrency(summary.totalUnbilledAmount, 'USD')} unbilled`,
-      color: 'text-purple-500',
+      color: 'text-accent-foreground',
     },
     {
       title: 'WIP Balance',
       value: formatCurrency(summary.totalWIP, 'USD'),
       icon: Calculator,
       description: 'Revenue not yet billed',
-      color: 'text-amber-500',
+      color: 'text-warning',
     },
     {
       title: 'Average Margin',
       value: `${summary.averageMargin.toFixed(1)}%`,
       icon: TrendingUp,
       description: 'Across all projects',
-      color: summary.averageMargin >= 25 ? 'text-green-500' : 'text-orange-500',
+      color: summary.averageMargin >= 25 ? 'text-success' : 'text-warning',
     },
     {
       title: 'Actual Cost',
@@ -64,9 +65,7 @@ export function ProjectSummaryCards({ summary }: ProjectSummaryCardsProps) {
       icon: Clock,
       description: `vs budget: ${formatCurrency(summary.totalBudgetedCost, 'USD')}`,
       color:
-        summary.totalActualCost > summary.totalBudgetedCost
-          ? 'text-destructive'
-          : 'text-green-500',
+        summary.totalActualCost > summary.totalBudgetedCost ? 'text-destructive' : 'text-success',
     },
   ];
 
@@ -95,8 +94,8 @@ export function ProjectSummaryCards({ summary }: ProjectSummaryCardsProps) {
           <AlertTitle>Budget Alert</AlertTitle>
           <AlertDescription>
             <span className="font-medium">{summary.projectsOverBudget} projects</span> are over
-            budget.{' '}
-            <Link href="/finance/projects?filter=over_budget" className="underline">
+            budget.{''}
+            <Link href={`${routes.finance.projects}?filter=over_budget`} className="underline">
               View projects
             </Link>
           </AlertDescription>
@@ -139,14 +138,15 @@ export function CompactProjectSummary({ summary }: CompactProjectSummaryProps) {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">WIP</span>
-            <span className="font-mono text-sm text-amber-600">
+            <span className="font-mono text-sm text-warning">
               {formatCurrency(summary.totalWIP, 'USD')}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Avg. Margin</span>
             <span
-              className={cn('font-mono text-sm',
+              className={cn(
+                'font-mono text-sm',
                 summary.averageMargin >= 25 ? 'text-success' : 'text-warning'
               )}
             >

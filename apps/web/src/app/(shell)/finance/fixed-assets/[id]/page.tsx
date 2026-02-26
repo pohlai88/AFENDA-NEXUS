@@ -1,5 +1,8 @@
 import { notFound } from 'next/navigation';
-import { getFixedAssetById, getDepreciationSchedule } from '@/features/finance/fixed-assets/queries/assets.queries';
+import {
+  getFixedAssetById,
+  getDepreciationSchedule,
+} from '@/features/finance/fixed-assets/queries/assets.queries';
 import { AssetDetail } from '@/features/finance/fixed-assets/blocks/asset-detail';
 
 export const metadata = {
@@ -27,10 +30,5 @@ export default async function AssetDetailPage({ params }: AssetDetailPageProps) 
     throw new Error(scheduleResult.error);
   }
 
-  return (
-    <AssetDetail
-      asset={assetResult.data}
-      schedule={scheduleResult.data}
-    />
-  );
+  return <AssetDetail asset={assetResult.data} schedule={scheduleResult.data} />;
 }

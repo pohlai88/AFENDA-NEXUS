@@ -3,7 +3,11 @@
 export type ProjectStatus = 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled';
 export type ProjectType = 'fixed_price' | 'time_materials' | 'cost_plus' | 'internal';
 export type BillingMethod = 'milestone' | 'percentage_completion' | 'monthly' | 'on_completion';
-export type RevenueRecognition = 'completed_contract' | 'percentage_of_completion' | 'milestone' | 'time_based';
+export type RevenueRecognition =
+  | 'completed_contract'
+  | 'percentage_of_completion'
+  | 'milestone'
+  | 'time_based';
 
 export interface Project {
   id: string;
@@ -139,11 +143,14 @@ export interface ProjectSummary {
 // ─── Status Config ───────────────────────────────────────────────────────────
 
 export const projectStatusConfig: Record<ProjectStatus, { label: string; color: string }> = {
-  planning: { label: 'Planning', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  on_hold: { label: 'On Hold', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  completed: { label: 'Completed', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  planning: { label: 'Planning', color: 'bg-muted text-muted-foreground' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  on_hold: { label: 'On Hold', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  completed: { label: 'Completed', color: 'bg-info/15 text-info dark:bg-info/20' },
+  cancelled: {
+    label: 'Cancelled',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
 };
 
 export const projectTypeLabels: Record<ProjectType, string> = {
@@ -170,8 +177,8 @@ export const costTypeLabels: Record<CostType, string> = {
 };
 
 export const milestoneStatusConfig: Record<MilestoneStatus, { label: string; color: string }> = {
-  pending: { label: 'Pending', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  completed: { label: 'Completed', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  delayed: { label: 'Delayed', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  pending: { label: 'Pending', color: 'bg-muted text-muted-foreground' },
+  in_progress: { label: 'In Progress', color: 'bg-info/15 text-info dark:bg-info/20' },
+  completed: { label: 'Completed', color: 'bg-success/15 text-success dark:bg-success/20' },
+  delayed: { label: 'Delayed', color: 'bg-destructive/15 text-destructive dark:bg-destructive/20' },
 };

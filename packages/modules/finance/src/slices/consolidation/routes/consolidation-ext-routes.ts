@@ -5,6 +5,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { updateOwnership } from '../services/update-ownership.js';
 import { computeEquityMethod } from '../calculators/equity-method.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerConsolidationExtRoutes(
   app: FastifyInstance,
@@ -35,8 +36,7 @@ export function registerConsolidationExtRoutes(
     '/group-entities',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const list = await deps.groupEntityRepo.findAll();
         return { data: list };
@@ -48,8 +48,7 @@ export function registerConsolidationExtRoutes(
     '/group-entities/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const entity = await deps.groupEntityRepo.findById(req.params.id);
         if (!entity) return reply.status(404).send({ error: 'Group entity not found' });
@@ -62,8 +61,7 @@ export function registerConsolidationExtRoutes(
     '/group-entities',
     { preHandler: [requirePermission(policy, 'admin:all')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.groupEntityRepo.create(tenantId, {
@@ -84,8 +82,7 @@ export function registerConsolidationExtRoutes(
     '/ownership-records',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const list = await deps.ownershipRecordRepo.findAll();
         return { data: list };
@@ -97,8 +94,7 @@ export function registerConsolidationExtRoutes(
     '/ownership-records',
     { preHandler: [requirePermission(policy, 'admin:all')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await updateOwnership(
@@ -124,8 +120,7 @@ export function registerConsolidationExtRoutes(
   // ─── Goodwill ───────────────────────────────────────────────────────────
 
   app.get('/goodwills', { preHandler: [requirePermission(policy, 'report:read')] }, async (req) => {
-    const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-    const userId = (req.headers as Record<string, string>)['x-user-id']!;
+    const { tenantId, userId } = extractIdentity(req);
     return runtime.withTenant({ tenantId, userId }, async (deps) => {
       const list = await deps.goodwillRepo.findAll();
       return { data: list };
@@ -136,8 +131,7 @@ export function registerConsolidationExtRoutes(
     '/goodwills/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const gw = await deps.goodwillRepo.findById(req.params.id);
         if (!gw) return reply.status(404).send({ error: 'Goodwill not found' });

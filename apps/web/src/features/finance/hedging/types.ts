@@ -60,13 +60,19 @@ export const hedgeTypeLabels: Record<HedgeType, string> = {
 };
 
 export const hedgeStatusConfig: Record<HedgeStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  discontinued: { label: 'Discontinued', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  terminated: { label: 'Terminated', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  discontinued: { label: 'Discontinued', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  terminated: {
+    label: 'Terminated',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
 };
 
-export const effectivenessResultConfig: Record<EffectivenessResult, { label: string; color: string }> = {
-  effective: { label: 'Effective', color: 'bg-green-100 text-green-800' },
-  partially_effective: { label: 'Partially Effective', color: 'bg-amber-100 text-amber-800' },
-  ineffective: { label: 'Ineffective', color: 'bg-red-100 text-red-800' },
+export const effectivenessResultConfig: Record<
+  EffectivenessResult,
+  { label: string; color: string }
+> = {
+  effective: { label: 'Effective', color: 'bg-success/15 text-success' },
+  partially_effective: { label: 'Partially Effective', color: 'bg-warning/15 text-warning' },
+  ineffective: { label: 'Ineffective', color: 'bg-destructive/15 text-destructive' },
 };

@@ -66,16 +66,19 @@ export function FxRateEditDialog({ rate }: FxRateEditDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => {
-      setOpen(v);
-      if (v) {
-        setRateValue(rate.rate);
-        setEffectiveDate(rate.effectiveDate);
-        setExpiresAt(rate.expiresAt ?? '');
-        setSource(rate.source);
-        setError(null);
-      }
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (v) {
+          setRateValue(rate.rate);
+          setEffectiveDate(rate.effectiveDate);
+          setExpiresAt(rate.expiresAt ?? '');
+          setSource(rate.source);
+          setError(null);
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm">
           <Pencil className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />

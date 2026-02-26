@@ -19,7 +19,8 @@ export default async function NewExpenseClaimPage() {
       <PageHeader>
         <PageHeaderHeading>New Expense Claim</PageHeaderHeading>
         <PageHeaderDescription>
-          Submit expenses for reimbursement. All claims are subject to approval based on company policy.
+          Submit expenses for reimbursement. All claims are subject to approval based on company
+          policy.
         </PageHeaderDescription>
       </PageHeader>
 

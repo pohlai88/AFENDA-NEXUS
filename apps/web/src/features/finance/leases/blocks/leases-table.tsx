@@ -10,6 +10,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Plus, FileText, Building2, Car, Monitor, Package, HelpCircle } from 'lucide-react';
 import type { LeaseContract, LeaseStatus, LeaseType, AssetClass } from '../types';
 import { leaseStatusConfig, leaseTypeLabels, assetClassLabels } from '../types';
+import { routes } from '@/lib/constants';
 
 function StatusBadge({ status }: { status: LeaseStatus }) {
   const config = leaseStatusConfig[status];
@@ -114,7 +115,9 @@ export function LeasesTable({ leases }: LeasesTableProps) {
       align: 'right',
       sortable: true,
       render: (lease) => (
-        <span className="font-mono">{formatCurrency(lease.leaseLiabilityValue, lease.currency)}</span>
+        <span className="font-mono">
+          {formatCurrency(lease.leaseLiabilityValue, lease.currency)}
+        </span>
       ),
     },
     {
@@ -147,7 +150,7 @@ export function LeasesTable({ leases }: LeasesTableProps) {
   ];
 
   const handleRowClick = (lease: LeaseContract) => {
-    router.push(`/finance/leases/${lease.id}`);
+    router.push(routes.finance.leaseDetail(lease.id));
   };
 
   return (
@@ -163,7 +166,7 @@ export function LeasesTable({ leases }: LeasesTableProps) {
         description: 'Create a new lease to start tracking under IFRS 16.',
         action: (
           <Button asChild>
-            <Link href="/finance/leases/new">
+            <Link href={routes.finance.leaseNew}>
               <Plus className="mr-2 h-4 w-4" />
               New Lease
             </Link>
@@ -172,7 +175,7 @@ export function LeasesTable({ leases }: LeasesTableProps) {
       }}
       actions={
         <Button asChild>
-          <Link href="/finance/leases/new">
+          <Link href={routes.finance.leaseNew}>
             <Plus className="mr-2 h-4 w-4" />
             New Lease
           </Link>

@@ -1,5 +1,5 @@
 import { eq, and, sql } from 'drizzle-orm';
-import { ok, money } from '@afenda/core';
+import { ok, err, money, NotFoundError } from '@afenda/core';
 import type { Result, CompanyId, LedgerId } from '@afenda/core';
 import type { TenantTx } from '@afenda/db';
 import { glBalances, ledgers } from '@afenda/db';
@@ -34,7 +34,10 @@ export class DrizzleBalanceRepo implements IGlBalanceRepo {
       with: { currency: true },
     });
     const ledgerWithRels = ledgerRow as LedgerWithCurrency | undefined;
-    const baseCurrency = ledgerWithRels?.currency?.code ?? 'USD';
+    if (!ledgerWithRels?.currency?.code) {
+      return err(new NotFoundError('Ledger currency', ledgerId));
+    }
+    const baseCurrency = ledgerWithRels.currency.code;
 
     const conditions = [eq(glBalances.ledgerId, ledgerId), eq(glBalances.fiscalYear, year)];
     if (period !== undefined) {

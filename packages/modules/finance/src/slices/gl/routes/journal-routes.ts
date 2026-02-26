@@ -20,6 +20,8 @@ import { reverseJournal } from '../services/reverse-journal.js';
 import { voidJournal } from '../services/void-journal.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { validateOpeningBalances } from '../calculators/opening-balance-import.js';
+import { extractIdentity } from '@afenda/api-kit';
+import { toMinorUnits } from '@afenda/core';
 
 export function registerJournalRoutes(
   app: FastifyInstance,
@@ -49,8 +51,7 @@ export function registerJournalRoutes(
     { preHandler: [requirePermission(policy, 'journal:create')] },
     async (req, reply) => {
       const body = CreateJournalSchema.parse(req.body);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return createJournal(
@@ -62,10 +63,8 @@ export function registerJournalRoutes(
             postingDate: new Date(body.date),
             lines: body.lines.map((l) => ({
               accountCode: l.accountCode,
-              // eslint-disable-next-line no-restricted-syntax -- HTTP boundary: dollars→cents, not FX
-              debit: BigInt(Math.round(l.debit * 100)),
-              // eslint-disable-next-line no-restricted-syntax -- HTTP boundary: dollars→cents, not FX
-              credit: BigInt(Math.round(l.credit * 100)),
+              debit: toMinorUnits(l.debit, l.currency),
+              credit: toMinorUnits(l.credit, l.currency),
               currency: l.currency,
               description: l.description,
             })),
@@ -91,8 +90,7 @@ export function registerJournalRoutes(
     },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const idempotencyKey = req.headers['idempotency-key'] as string;
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -125,8 +123,7 @@ export function registerJournalRoutes(
     },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const idempotencyKey = req.headers['idempotency-key'] as string;
       const { reason } = ReasonBodySchema.parse(req.body);
 
@@ -156,8 +153,7 @@ export function registerJournalRoutes(
     { preHandler: [requirePermission(policy, 'journal:void')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const { reason } = ReasonBodySchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -185,8 +181,7 @@ export function registerJournalRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { periodId, status, page, limit } = JournalListQuerySchema.parse(req.query);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.journalRepo.findByPeriod(periodId, status, { page, limit });
@@ -204,8 +199,7 @@ export function registerJournalRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.journalAuditRepo.findByJournalId(id);
@@ -223,8 +217,7 @@ export function registerJournalRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.journalRepo.findById(id);

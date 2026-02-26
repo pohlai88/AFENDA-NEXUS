@@ -43,6 +43,8 @@ import { DrizzleDocumentNumberGenerator } from './slices/gl/repos/drizzle-docume
 import { DrizzleApInvoiceRepo } from './slices/ap/repos/drizzle-ap-invoice-repo.js';
 import { DrizzlePaymentTermsRepo } from './slices/ap/repos/drizzle-payment-terms-repo.js';
 import { DrizzleApPaymentRunRepo } from './slices/ap/repos/drizzle-ap-payment-run-repo.js';
+import { DrizzleSupplierRepo } from './slices/ap/repos/drizzle-supplier-repo.js';
+import { DrizzleApHoldRepo } from './slices/ap/repos/drizzle-ap-hold-repo.js';
 import { DrizzleArInvoiceRepo } from './slices/ar/repos/drizzle-ar-invoice-repo.js';
 import { DrizzleArPaymentAllocationRepo } from './slices/ar/repos/drizzle-ar-payment-allocation-repo.js';
 import { DrizzleDunningRepo } from './slices/ar/repos/drizzle-dunning-repo.js';
@@ -169,6 +171,8 @@ function buildDeps(tx: TenantTx): FinanceDeps {
     apInvoiceRepo: new DrizzleApInvoiceRepo(tx),
     paymentTermsRepo: new DrizzlePaymentTermsRepo(tx),
     apPaymentRunRepo: new DrizzleApPaymentRunRepo(tx),
+    supplierRepo: new DrizzleSupplierRepo(tx),
+    apHoldRepo: new DrizzleApHoldRepo(tx),
     arInvoiceRepo: new DrizzleArInvoiceRepo(tx),
     arPaymentAllocationRepo: new DrizzleArPaymentAllocationRepo(tx),
     dunningRepo: new DrizzleDunningRepo(tx),

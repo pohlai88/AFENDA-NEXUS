@@ -123,9 +123,7 @@ export function StatementImportForm({ bankAccounts }: StatementImportFormProps) 
                   <FileText className="h-4 w-4" />
                   <span className="font-medium">{format.label}</span>
                 </div>
-                <span className="mt-1 text-xs text-muted-foreground">
-                  {format.description}
-                </span>
+                <span className="mt-1 text-xs text-muted-foreground">{format.description}</span>
               </div>
             ))}
           </div>
@@ -177,7 +175,10 @@ export function StatementImportForm({ bankAccounts }: StatementImportFormProps) 
           >
             Cancel
           </Button>
-          <Button onClick={handleImport} disabled={isPending || !selectedAccount || !selectedFormat}>
+          <Button
+            onClick={handleImport}
+            disabled={isPending || !selectedAccount || !selectedFormat}
+          >
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

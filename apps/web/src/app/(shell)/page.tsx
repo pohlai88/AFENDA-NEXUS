@@ -4,13 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getRequestContext } from '@/lib/auth';
 import { formatMoney, formatRelativeTime } from '@/lib/format';
 import { getDashboardSummary } from '@/features/finance/dashboard/queries/dashboard.queries';
-import {
-  DollarSign,
-  ArrowUpRight,
-  ArrowDownLeft,
-  CalendarDays,
-  Activity,
-} from 'lucide-react';
+import { DollarSign, ArrowUpRight, ArrowDownLeft, CalendarDays, Activity } from 'lucide-react';
 
 export default async function DashboardPage() {
   const ctx = await getRequestContext();
@@ -49,9 +43,7 @@ export default async function DashboardPage() {
             >
               {formatMoney(cashBalance, 'USD')}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Sum of ASSET accounts (1xxx)
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">Sum of ASSET accounts (1xxx)</p>
           </CardContent>
         </Card>
 

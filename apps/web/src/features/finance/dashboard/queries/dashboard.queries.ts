@@ -8,6 +8,7 @@ import type {
   AgingBucket,
 } from '../types';
 import { routes } from '@/lib/constants';
+import type { IdParam } from '@afenda/contracts';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult } from '@/lib/types';
 
@@ -21,11 +22,9 @@ export interface DashboardSummary {
   recentActivity: Array<{ id: string; eventType: string; createdAt: string; payload?: unknown }>;
 }
 
-type RequestCtx = { tenantId: string; userId?: string; token?: string };
+type RequestCtx = { tenantId: IdParam['id']; userId?: string; token?: string };
 
-export async function getDashboardSummary(
-  ctx: RequestCtx
-): Promise<ApiResult<DashboardSummary>> {
+export async function getDashboardSummary(ctx: RequestCtx): Promise<ApiResult<DashboardSummary>> {
   const client = createApiClient(ctx);
   return client.get<DashboardSummary>('/dashboard/summary');
 }
@@ -117,7 +116,7 @@ const mockActivities: ActivityItem[] = [
     description: 'JE-2026-002150 - Month-end accruals',
     timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
     user: 'Sarah Chen',
-    href: '/finance/journals/je-2026-002150',
+    href: routes.finance.journalDetail('je-2026-002150'),
     amount: 45000,
     currency: 'USD',
   },
@@ -127,7 +126,7 @@ const mockActivities: ActivityItem[] = [
     title: 'Payment Received',
     description: 'From Acme Corp - Invoice #INV-2026-0892',
     timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-    href: '/finance/receivables/inv-2026-0892',
+    href: routes.finance.receivableDetail('inv-2026-0892'),
     amount: 125000,
     currency: 'USD',
   },
@@ -137,7 +136,7 @@ const mockActivities: ActivityItem[] = [
     title: 'Approval Required',
     description: 'AP Invoice from TechSupply Inc - $52,400',
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    href: '/finance/approvals',
+    href: routes.finance.approvals,
     amount: 52400,
     currency: 'USD',
   },
@@ -148,7 +147,7 @@ const mockActivities: ActivityItem[] = [
     description: 'INV-2026-0945 for Global Enterprises',
     timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
     user: 'Mike Johnson',
-    href: '/finance/receivables/inv-2026-0945',
+    href: routes.finance.receivableDetail('inv-2026-0945'),
     amount: 78500,
     currency: 'USD',
   },
@@ -159,7 +158,7 @@ const mockActivities: ActivityItem[] = [
     description: 'Operating Account - February 2026',
     timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
     user: 'Lisa Wang',
-    href: '/finance/banking/reconciliation',
+    href: routes.finance.bankReconciliation,
   },
 ];
 

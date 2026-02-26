@@ -17,6 +17,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import type { TreasurySummary } from '../types';
+import { routes } from '@/lib/constants';
 
 interface TreasurySummaryCardsProps {
   summary: TreasurySummary;
@@ -38,7 +39,7 @@ export function TreasurySummaryCards({ summary }: TreasurySummaryCardsProps) {
       value: formatCurrency(summary.forecastedEndOfMonth, 'USD'),
       icon: cashTrend ? TrendingUp : TrendingDown,
       description: cashTrend ? 'Projected increase' : 'Projected decrease',
-      color: cashTrend ? 'text-green-500' : 'text-amber-500',
+      color: cashTrend ? 'text-success' : 'text-warning',
     },
     {
       title: 'Active Loans',
@@ -52,31 +53,34 @@ export function TreasurySummaryCards({ summary }: TreasurySummaryCardsProps) {
       value: formatCurrency(summary.netIntercompanyPosition, 'USD'),
       icon: Building2,
       description: summary.netIntercompanyPosition >= 0 ? 'Net lender' : 'Net borrower',
-      color: summary.netIntercompanyPosition >= 0 ? 'text-blue-500' : 'text-orange-500',
+      color: summary.netIntercompanyPosition >= 0 ? 'text-blue-500' : 'text-warning',
     },
     {
       title: 'Covenants',
-      value: summary.covenantsAtRisk + summary.covenantsBreeched > 0
-        ? `${summary.covenantsAtRisk + summary.covenantsBreeched} Issues`
-        : 'All Clear',
+      value:
+        summary.covenantsAtRisk + summary.covenantsBreeched > 0
+          ? `${summary.covenantsAtRisk + summary.covenantsBreeched} Issues`
+          : 'All Clear',
       icon: FileCheck,
-      description: summary.covenantsBreeched > 0
-        ? `${summary.covenantsBreeched} breached`
-        : summary.covenantsAtRisk > 0
-          ? `${summary.covenantsAtRisk} at risk`
-          : 'Fully compliant',
-      color: summary.covenantsBreeched > 0
-        ? 'text-destructive'
-        : summary.covenantsAtRisk > 0
-          ? 'text-amber-500'
-          : 'text-green-500',
+      description:
+        summary.covenantsBreeched > 0
+          ? `${summary.covenantsBreeched} breached`
+          : summary.covenantsAtRisk > 0
+            ? `${summary.covenantsAtRisk} at risk`
+            : 'Fully compliant',
+      color:
+        summary.covenantsBreeched > 0
+          ? 'text-destructive'
+          : summary.covenantsAtRisk > 0
+            ? 'text-warning'
+            : 'text-success',
     },
     {
       title: 'Maturities',
       value: summary.upcomingMaturities.toString(),
       icon: Clock,
       description: 'Next 90 days',
-      color: summary.upcomingMaturities > 0 ? 'text-amber-500' : 'text-gray-400',
+      color: summary.upcomingMaturities > 0 ? 'text-warning' : 'text-muted-foreground',
     },
   ];
 
@@ -116,8 +120,9 @@ export function TreasurySummaryCards({ summary }: TreasurySummaryCardsProps) {
                 <span className="font-medium">{summary.covenantsAtRisk} covenant(s)</span> are
                 approaching threshold limits.
               </>
-            )}{' '}
-            <Link href="/finance/treasury/covenants" className="underline">
+            )}
+            {''}
+            <Link href={routes.finance.covenants} className="underline">
               Review covenants
             </Link>
           </AlertDescription>

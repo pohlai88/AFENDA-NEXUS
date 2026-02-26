@@ -8,16 +8,17 @@ import { formatDate } from '@/lib/utils';
 import { Plus, Gauge, Activity } from 'lucide-react';
 import type { CostDriver, DriverType } from '../types';
 import { driverTypeLabels } from '../types';
+import { routes } from '@/lib/constants';
 
 function TypeBadge({ type }: { type: DriverType }) {
   const colors: Record<DriverType, string> = {
-    headcount: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    revenue: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    square_footage: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    machine_hours: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-    direct_labor: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
-    units_produced: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
-    custom: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+    headcount: 'bg-info/15 text-info dark:bg-info/20',
+    revenue: 'bg-success/15 text-success dark:bg-success/20',
+    square_footage: 'bg-accent text-accent-foreground',
+    machine_hours: 'bg-warning/15 text-warning dark:bg-warning/20',
+    direct_labor: 'bg-info/15 text-info dark:bg-info/20',
+    units_produced: 'bg-warning/15 text-warning dark:bg-warning/20',
+    custom: 'bg-muted text-muted-foreground',
   };
 
   return (
@@ -91,8 +92,8 @@ export function CostDriversTable({ drivers }: CostDriversTableProps) {
           variant="outline"
           className={
             driver.status === 'active'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-gray-100 text-gray-800'
+              ? 'bg-success/15 text-success'
+              : 'bg-muted text-muted-foreground'
           }
         >
           {driver.status === 'active' ? 'Active' : 'Inactive'}
@@ -113,7 +114,7 @@ export function CostDriversTable({ drivers }: CostDriversTableProps) {
         description: 'Create cost drivers to allocate costs across cost centers.',
         action: (
           <Button asChild>
-            <Link href="/finance/cost-centers/drivers/new">
+            <Link href={routes.finance.costDriverNew}>
               <Plus className="mr-2 h-4 w-4" />
               New Driver
             </Link>
@@ -122,7 +123,7 @@ export function CostDriversTable({ drivers }: CostDriversTableProps) {
       }}
       actions={
         <Button asChild>
-          <Link href="/finance/cost-centers/drivers/new">
+          <Link href={routes.finance.costDriverNew}>
             <Plus className="mr-2 h-4 w-4" />
             New Driver
           </Link>

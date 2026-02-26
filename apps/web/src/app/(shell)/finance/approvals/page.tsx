@@ -2,7 +2,10 @@ import { Suspense } from 'react';
 import { PageHeader, PageHeaderDescription, PageHeaderHeading } from '@/components/erp/page-header';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getApprovals, getApprovalStats } from '@/features/finance/approvals/queries/approvals.queries';
+import {
+  getApprovals,
+  getApprovalStats,
+} from '@/features/finance/approvals/queries/approvals.queries';
 import { ApprovalStatsCards } from '@/features/finance/approvals/blocks/approval-stats-cards';
 import { ApprovalsTable } from '@/features/finance/approvals/blocks/approvals-table';
 

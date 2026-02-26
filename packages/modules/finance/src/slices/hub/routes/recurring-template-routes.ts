@@ -4,6 +4,7 @@ import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { processRecurringJournals } from '../../../shared/ports/recurring-journal-hook.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerRecurringTemplateRoutes(
   app: FastifyInstance,
@@ -15,9 +16,7 @@ export function registerRecurringTemplateRoutes(
     '/recurring-templates',
     { preHandler: [requirePermission(policy, 'journal:create')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
-      if (!userId) return reply.status(400).send({ error: 'x-user-id header required' });
+      const { tenantId, userId } = extractIdentity(req);
 
       const body = CreateRecurringTemplateSchema.parse(req.body);
 
@@ -47,8 +46,7 @@ export function registerRecurringTemplateRoutes(
     '/recurring-templates',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const pagination = PaginationSchema.parse(req.query);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -65,8 +63,7 @@ export function registerRecurringTemplateRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.recurringTemplateRepo.findById(id);
@@ -82,9 +79,7 @@ export function registerRecurringTemplateRoutes(
     '/recurring-templates/process',
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
-      if (!userId) return reply.status(400).send({ error: 'x-user-id header required' });
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return processRecurringJournals(

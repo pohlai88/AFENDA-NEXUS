@@ -69,8 +69,9 @@ export function FormSkeleton() {
 }
 
 /** Generic page loading skeleton with variant support */
-export function LoadingSkeleton({ variant = 'detail' }: { variant?: 'table' | 'detail' }) {
+export function LoadingSkeleton({ variant = 'detail' }: { variant?: 'table' | 'detail' | 'form' }) {
   if (variant === 'table') return <TableSkeleton />;
+  if (variant === 'form') return <FormSkeleton />;
   return <DetailSkeleton />;
 }
 

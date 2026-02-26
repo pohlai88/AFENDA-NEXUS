@@ -11,19 +11,26 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn, formatDate } from '@/lib/utils';
 import { Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
-import { format, subMonths, subQuarters, subYears, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from 'date-fns';
+import {
+  format,
+  subMonths,
+  subQuarters,
+  subYears,
+  startOfMonth,
+  endOfMonth,
+  startOfQuarter,
+  endOfQuarter,
+  startOfYear,
+  endOfYear,
+} from 'date-fns';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type DateRangePreset = 
+export type DateRangePreset =
   | 'this-month'
   | 'last-month'
   | 'this-quarter'
@@ -69,7 +76,7 @@ interface ReportPeriodPickerProps {
 
 function getPresetRange(preset: DateRangePreset): DateRange | null {
   const now = new Date();
-  
+
   switch (preset) {
     case 'this-month':
       return { from: startOfMonth(now), to: endOfMonth(now) };
@@ -99,9 +106,9 @@ const presetLabels: Record<DateRangePreset, string> = {
   'last-month': 'Last Month',
   'this-quarter': 'This Quarter',
   'last-quarter': 'Last Quarter',
-  'ytd': 'Year to Date',
+  ytd: 'Year to Date',
   'last-year': 'Last Year',
-  'custom': 'Custom Range',
+  custom: 'Custom Range',
 };
 
 // ─── Main Component ──────────────────────────────────────────────────────────

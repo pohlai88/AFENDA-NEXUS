@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import type { CostCenter, CostCenterType, CostCenterStatus } from '../types';
 import { costCenterStatusConfig, costCenterTypeLabels } from '../types';
+import { routes } from '@/lib/constants';
 
 const typeIcons: Record<CostCenterType, React.ElementType> = {
   department: Building2,
@@ -73,7 +74,12 @@ function CostCenterNode({ costCenter, level = 0, onSelect }: CostCenterNodeProps
             <div className="w-6" />
           )}
 
-          <div className={cn('rounded p-1.5', costCenter.status === 'active' ? 'bg-primary/10' : 'bg-muted')}>
+          <div
+            className={cn(
+              'rounded p-1.5',
+              costCenter.status === 'active' ? 'bg-primary/10' : 'bg-muted'
+            )}
+          >
             <Icon className="h-4 w-4 text-primary" />
           </div>
 
@@ -82,7 +88,10 @@ function CostCenterNode({ costCenter, level = 0, onSelect }: CostCenterNodeProps
               <span className="font-mono text-sm text-muted-foreground">{costCenter.code}</span>
               <span className="font-medium truncate">{costCenter.name}</span>
               {costCenter.status !== 'active' && (
-                <Badge variant="outline" className={costCenterStatusConfig[costCenter.status].color}>
+                <Badge
+                  variant="outline"
+                  className={costCenterStatusConfig[costCenter.status].color}
+                >
                   {costCenterStatusConfig[costCenter.status].label}
                 </Badge>
               )}
@@ -109,7 +118,12 @@ function CostCenterNode({ costCenter, level = 0, onSelect }: CostCenterNodeProps
                 value={Math.min(budgetUsed, 100)}
                 className={cn('h-1.5 w-20', isOverBudget && '[&>div]:bg-destructive')}
               />
-              <span className={cn('text-xs', isOverBudget ? 'text-destructive' : 'text-muted-foreground')}>
+              <span
+                className={cn(
+                  'text-xs',
+                  isOverBudget ? 'text-destructive' : 'text-muted-foreground'
+                )}
+              >
                 {budgetUsed.toFixed(0)}%
               </span>
             </div>
@@ -142,7 +156,7 @@ export function CostCenterTree({ costCenters }: CostCenterTreeProps) {
   const [search, setSearch] = useState('');
 
   const handleSelect = (cc: CostCenter) => {
-    router.push(`/finance/cost-centers/${cc.id}`);
+    router.push(routes.finance.costCenterDetail(cc.id));
   };
 
   const filterTree = (nodes: CostCenter[], term: string): CostCenter[] => {
@@ -152,8 +166,7 @@ export function CostCenterTree({ costCenters }: CostCenterTreeProps) {
     return nodes
       .map((node) => {
         const matchesSearch =
-          node.code.toLowerCase().includes(lower) ||
-          node.name.toLowerCase().includes(lower);
+          node.code.toLowerCase().includes(lower) || node.name.toLowerCase().includes(lower);
 
         const filteredChildren = node.children ? filterTree(node.children, term) : [];
 
@@ -173,7 +186,7 @@ export function CostCenterTree({ costCenters }: CostCenterTreeProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Cost Center Hierarchy</CardTitle>
           <Button size="sm" asChild>
-            <Link href="/finance/cost-centers/new">
+            <Link href={routes.finance.costCenterNew}>
               <Plus className="mr-2 h-4 w-4" />
               Add
             </Link>

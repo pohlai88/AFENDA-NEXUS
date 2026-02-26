@@ -56,7 +56,9 @@ function MatchProgress({ matched, total }: { matched: number; total: number }) {
   return (
     <div className="space-y-1 w-32">
       <div className="flex items-center justify-between text-xs">
-        <span>{matched}/{total}</span>
+        <span>
+          {matched}/{total}
+        </span>
         <span className="text-muted-foreground">{Math.round(percentage)}%</span>
       </div>
       <Progress value={percentage} className="h-1.5" />
@@ -87,9 +89,7 @@ const columns: Column<BankStatement>[] = [
     key: 'bankAccountName',
     header: 'Bank Account',
     sortable: true,
-    render: (statement) => (
-      <div className="font-medium">{statement.bankAccountName}</div>
-    ),
+    render: (statement) => <div className="font-medium">{statement.bankAccountName}</div>,
   },
   {
     key: 'closingBalance',
@@ -107,9 +107,7 @@ const columns: Column<BankStatement>[] = [
     header: 'Transactions',
     sortable: true,
     className: 'text-center',
-    render: (statement) => (
-      <div className="text-center">{statement.transactionCount}</div>
-    ),
+    render: (statement) => <div className="text-center">{statement.transactionCount}</div>,
   },
   {
     key: 'matchedCount',

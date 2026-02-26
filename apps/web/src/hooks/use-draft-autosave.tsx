@@ -25,10 +25,7 @@ interface StoredDraft<T> {
 
 // ─── useDraftAutoSave Hook ───────────────────────────────────────────────────
 
-export function useDraftAutoSave<T>(
-  data: T,
-  options: UseDraftAutoSaveOptions<T>
-) {
+export function useDraftAutoSave<T>(data: T, options: UseDraftAutoSaveOptions<T>) {
   const {
     key,
     debounceMs = 2000,
@@ -159,7 +156,7 @@ function isDraftExpired(metadata: DraftMetadata, maxAge: number): boolean {
 
 function hasSignificantContent(data: unknown): boolean {
   if (!data) return false;
-  
+
   if (typeof data === 'object') {
     const values = Object.values(data as Record<string, unknown>);
     return values.some((v) => {
@@ -172,7 +169,7 @@ function hasSignificantContent(data: unknown): boolean {
       return false;
     });
   }
-  
+
   return true;
 }
 

@@ -83,6 +83,10 @@ import {
   hedgeTestMethodEnum,
   hedgeTestResultEnum,
   tpMethodEnum,
+  supplierStatusEnum,
+  paymentMethodTypeEnum,
+  apHoldTypeEnum,
+  apHoldStatusEnum,
 } from './_enums';
 import { moneyBigint, pkId, tenantCol, timestamps } from './_common';
 
@@ -568,6 +572,99 @@ export const paymentTermsTemplates = erpSchema.table(
   (t) => [uniqueIndex('uq_payment_terms_code_tenant').on(t.tenantId, t.code)]
 );
 
+// ─── erp.supplier ───────────────────────────────────────────────────────────
+
+export const suppliers = erpSchema.table(
+  'supplier',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    companyId: uuid('company_id').notNull(),
+    code: varchar('code', { length: 20 }).notNull(),
+    name: text('name').notNull(),
+    taxId: varchar('tax_id', { length: 50 }),
+    currencyId: uuid('currency_id').notNull(),
+    defaultPaymentTermsId: uuid('default_payment_terms_id'),
+    defaultPaymentMethod: paymentMethodTypeEnum('default_payment_method'),
+    whtRateId: uuid('wht_rate_id'),
+    remittanceEmail: varchar('remittance_email', { length: 255 }),
+    status: supplierStatusEnum('status').notNull().default('ACTIVE'),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex('uq_supplier_code_tenant').on(t.tenantId, t.companyId, t.code),
+    index('idx_supplier_status_tenant').on(t.tenantId, t.status),
+    index('idx_supplier_company_tenant').on(t.tenantId, t.companyId),
+  ]
+);
+
+// ─── erp.supplier_site ──────────────────────────────────────────────────────
+
+export const supplierSites = erpSchema.table(
+  'supplier_site',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    supplierId: uuid('supplier_id').notNull(),
+    siteCode: varchar('site_code', { length: 20 }).notNull(),
+    name: text('name').notNull(),
+    addressLine1: text('address_line1').notNull(),
+    addressLine2: text('address_line2'),
+    city: varchar('city', { length: 100 }).notNull(),
+    region: varchar('region', { length: 100 }),
+    postalCode: varchar('postal_code', { length: 20 }),
+    countryCode: varchar('country_code', { length: 3 }).notNull(),
+    isPrimary: boolean('is_primary').notNull().default(false),
+    isActive: boolean('is_active').notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex('uq_supplier_site_code').on(t.tenantId, t.supplierId, t.siteCode),
+    index('idx_supplier_site_supplier').on(t.tenantId, t.supplierId),
+  ]
+);
+
+// ─── erp.supplier_bank_account ──────────────────────────────────────────────
+
+export const supplierBankAccounts = erpSchema.table(
+  'supplier_bank_account',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    supplierId: uuid('supplier_id').notNull(),
+    bankName: varchar('bank_name', { length: 200 }).notNull(),
+    accountName: varchar('account_name', { length: 200 }).notNull(),
+    accountNumber: varchar('account_number', { length: 50 }).notNull(),
+    iban: varchar('iban', { length: 34 }),
+    swiftBic: varchar('swift_bic', { length: 11 }),
+    localBankCode: varchar('local_bank_code', { length: 20 }),
+    currencyId: uuid('currency_id').notNull(),
+    isPrimary: boolean('is_primary').notNull().default(false),
+    isActive: boolean('is_active').notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [index('idx_supplier_bank_supplier').on(t.tenantId, t.supplierId)]
+);
+
+// ─── erp.supplier_user ─────────────────────────────────────────────────────
+
+export const supplierUsers = erpSchema.table(
+  'supplier_user',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    supplierId: uuid('supplier_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    isPrimary: boolean('is_primary').notNull().default(false),
+    isActive: boolean('is_active').notNull().default(true),
+    ...timestamps(),
+  },
+  (t) => [
+    uniqueIndex('uq_supplier_user').on(t.tenantId, t.supplierId, t.userId),
+    index('idx_supplier_user_user').on(t.tenantId, t.userId),
+  ]
+);
+
 // ─── erp.ap_invoice ──────────────────────────────────────────────────────────
 
 export const apInvoices = erpSchema.table(
@@ -625,6 +722,33 @@ export const apInvoiceLines = erpSchema.table(
   (t) => [
     uniqueIndex('uq_ap_invoice_line_num_tenant').on(t.tenantId, t.invoiceId, t.lineNumber),
     index('idx_ap_invoice_line_account_tenant').on(t.tenantId, t.accountId),
+  ]
+);
+
+// ─── erp.ap_hold ───────────────────────────────────────────────────────────
+
+export const apHolds = erpSchema.table(
+  'ap_hold',
+  {
+    ...pkId(),
+    ...tenantCol(),
+    invoiceId: uuid('invoice_id').notNull(),
+    holdType: apHoldTypeEnum('hold_type').notNull(),
+    holdReason: text('hold_reason').notNull(),
+    holdDate: timestamp('hold_date', { withTimezone: true })
+      .notNull()
+      .default(sql`now()`),
+    releaseDate: timestamp('release_date', { withTimezone: true }),
+    releasedBy: uuid('released_by'),
+    releaseReason: text('release_reason'),
+    status: apHoldStatusEnum('status').notNull().default('ACTIVE'),
+    createdBy: uuid('created_by').notNull(),
+    ...timestamps(),
+  },
+  (t) => [
+    index('idx_ap_hold_invoice_tenant').on(t.tenantId, t.invoiceId),
+    index('idx_ap_hold_status_tenant').on(t.tenantId, t.status),
+    index('idx_ap_hold_type_tenant').on(t.tenantId, t.holdType),
   ]
 );
 

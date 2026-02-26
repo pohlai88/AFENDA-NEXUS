@@ -16,6 +16,7 @@ export interface PermissionMapping {
 
 export const PERMISSION_MAP: Record<FinancePermission, PermissionMapping> = {
   'journal:create': { resource: 'journal', action: 'create' },
+  'journal:approve': { resource: 'journal', action: 'post' },
   'journal:post': { resource: 'journal', action: 'post' },
   'journal:reverse': { resource: 'journal', action: 'reverse' },
   'journal:void': { resource: 'journal', action: 'void' },
@@ -36,4 +37,7 @@ export const PERMISSION_MAP: Record<FinancePermission, PermissionMapping> = {
   'document:delete': { resource: 'document', action: 'delete' },
   'document:list': { resource: 'document', action: 'read' },
   'trialBalance:read': { resource: 'financialReport', action: 'read' },
+  'supplier:read': { resource: 'supplierPortal', action: 'read' },
+  'supplier:write': { resource: 'supplierPortal', action: 'update' },
+  'supplier:submit': { resource: 'supplierPortal', action: 'create' },
 } as const;

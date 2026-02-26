@@ -2,6 +2,7 @@ import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
 import { getLedgers } from '@/features/finance/ledgers/queries/ledger.queries';
 import { RecurringTemplateForm } from '@/features/finance/recurring/forms/recurring-template-form';
+import { routes } from '@/lib/constants';
 
 export const metadata = { title: 'New Recurring Template' };
 
@@ -23,8 +24,8 @@ export default async function RecurringNewPage() {
         title="New Recurring Template"
         description="Create a recurring journal template for scheduled postings."
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Recurring Templates', href: '/finance/recurring' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Recurring Templates', href: routes.finance.recurring },
           { label: 'New' },
         ]}
       />

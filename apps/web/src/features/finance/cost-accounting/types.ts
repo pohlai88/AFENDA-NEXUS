@@ -1,6 +1,12 @@
 // ─── Cost Center Types ───────────────────────────────────────────────────────
 
-export type CostCenterType = 'department' | 'project' | 'location' | 'product' | 'service' | 'other';
+export type CostCenterType =
+  | 'department'
+  | 'project'
+  | 'location'
+  | 'product'
+  | 'service'
+  | 'other';
 export type CostCenterStatus = 'active' | 'inactive' | 'closed';
 
 export interface CostCenter {
@@ -26,7 +32,14 @@ export interface CostCenter {
 
 // ─── Cost Driver Types ───────────────────────────────────────────────────────
 
-export type DriverType = 'headcount' | 'revenue' | 'square_footage' | 'machine_hours' | 'direct_labor' | 'units_produced' | 'custom';
+export type DriverType =
+  | 'headcount'
+  | 'revenue'
+  | 'square_footage'
+  | 'machine_hours'
+  | 'direct_labor'
+  | 'units_produced'
+  | 'custom';
 export type DriverStatus = 'active' | 'inactive';
 
 export interface CostDriver {
@@ -137,9 +150,9 @@ export interface CostAccountingSummary {
 // ─── Status Configs ──────────────────────────────────────────────────────────
 
 export const costCenterStatusConfig: Record<CostCenterStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  inactive: { label: 'Inactive', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  closed: { label: 'Closed', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  inactive: { label: 'Inactive', color: 'bg-muted text-muted-foreground' },
+  closed: { label: 'Closed', color: 'bg-destructive/15 text-destructive dark:bg-destructive/20' },
 };
 
 export const costCenterTypeLabels: Record<CostCenterType, string> = {
@@ -169,8 +182,11 @@ export const allocationMethodLabels: Record<AllocationMethod, string> = {
 };
 
 export const allocationStatusConfig: Record<AllocationStatus, { label: string; color: string }> = {
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  completed: { label: 'Completed', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  reversed: { label: 'Reversed', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
+  in_progress: { label: 'In Progress', color: 'bg-info/15 text-info dark:bg-info/20' },
+  completed: { label: 'Completed', color: 'bg-success/15 text-success dark:bg-success/20' },
+  reversed: {
+    label: 'Reversed',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
 };

@@ -1,12 +1,28 @@
 'use server';
 
+import type { IdParam } from '@afenda/contracts';
+
 import { revalidatePath } from 'next/cache';
 import type { IntangibleAsset, ImpairmentTestResult } from '../types';
+import { routes } from '@/lib/constants';
 
 // ─── Asset CRUD Actions ──────────────────────────────────────────────────────
 
 export async function createIntangibleAsset(
-  data: Omit<IntangibleAsset, 'id' | 'assetNumber' | 'accumulatedAmortization' | 'carryingAmount' | 'impairmentLoss' | 'lastAmortizationDate' | 'lastImpairmentTestDate' | 'nextImpairmentTestDate' | 'attachmentCount' | 'createdAt' | 'updatedAt'>
+  data: Omit<
+    IntangibleAsset,
+    | 'id'
+    | 'assetNumber'
+    | 'accumulatedAmortization'
+    | 'carryingAmount'
+    | 'impairmentLoss'
+    | 'lastAmortizationDate'
+    | 'lastImpairmentTestDate'
+    | 'nextImpairmentTestDate'
+    | 'attachmentCount'
+    | 'createdAt'
+    | 'updatedAt'
+  >
 ): Promise<{ ok: true; data: { id: string; assetNumber: string } } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 600));
 
@@ -14,7 +30,7 @@ export async function createIntangibleAsset(
 
   const assetNumber = `IA-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
 
-  revalidatePath('/finance/intangibles');
+  revalidatePath(routes.finance.intangibles);
 
   return {
     ok: true,
@@ -30,8 +46,8 @@ export async function updateIntangibleAsset(
 
   console.log('Updating intangible asset:', id, data);
 
-  revalidatePath('/finance/intangibles');
-  revalidatePath(`/finance/intangibles/${id}`);
+  revalidatePath(routes.finance.intangibles);
+  revalidatePath(routes.finance.intangibleDetail(id));
 
   return { ok: true };
 }
@@ -42,15 +58,18 @@ export async function calculateAmortization(params: {
   periodStart: Date;
   periodEnd: Date;
   assetIds?: string[];
-}): Promise<{
-  ok: true;
-  data: { runId: string; assetCount: number; totalAmortization: number };
-} | { ok: false; error: string }> {
+}): Promise<
+  | {
+      ok: true;
+      data: { runId: IdParam['id']; assetCount: number; totalAmortization: number };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 1500));
 
   console.log('Calculating amortization:', params);
 
-  revalidatePath('/finance/intangibles');
+  revalidatePath(routes.finance.intangibles);
 
   return {
     ok: true,
@@ -64,13 +83,15 @@ export async function calculateAmortization(params: {
 
 export async function postAmortizationRun(
   runId: string
-): Promise<{ ok: true; data: { journalId: string; journalNumber: string } } | { ok: false; error: string }> {
+): Promise<
+  { ok: true; data: { journalId: string; journalNumber: string } } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 1000));
 
   console.log('Posting amortization run:', runId);
 
-  revalidatePath('/finance/intangibles');
-  revalidatePath('/finance/general-ledger/journals');
+  revalidatePath(routes.finance.intangibles);
+  revalidatePath(routes.finance.journals);
 
   return {
     ok: true,
@@ -89,21 +110,24 @@ export async function recordImpairmentTest(params: {
   recoverableAmount: number;
   methodology: string;
   assumptions: string;
-}): Promise<{
-  ok: true;
-  data: {
-    testId: string;
-    result: ImpairmentTestResult;
-    impairmentLoss: number;
-    journalId: string | null;
-  };
-} | { ok: false; error: string }> {
+}): Promise<
+  | {
+      ok: true;
+      data: {
+        testId: string;
+        result: ImpairmentTestResult;
+        impairmentLoss: number;
+        journalId: string | null;
+      };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 800));
 
   console.log('Recording impairment test:', params);
 
-  revalidatePath('/finance/intangibles');
-  revalidatePath(`/finance/intangibles/${params.assetId}`);
+  revalidatePath(routes.finance.intangibles);
+  revalidatePath(routes.finance.intangibleDetail(params.assetId));
 
   return {
     ok: true,
@@ -126,9 +150,9 @@ export async function reverseImpairment(params: {
 
   console.log('Reversing impairment:', params);
 
-  revalidatePath('/finance/intangibles');
-  revalidatePath(`/finance/intangibles/${params.assetId}`);
-  revalidatePath('/finance/general-ledger/journals');
+  revalidatePath(routes.finance.intangibles);
+  revalidatePath(routes.finance.intangibleDetail(params.assetId));
+  revalidatePath(routes.finance.journals);
 
   return {
     ok: true,
@@ -143,17 +167,20 @@ export async function disposeIntangibleAsset(params: {
   disposalDate: Date;
   disposalProceeds: number;
   reason: string;
-}): Promise<{
-  ok: true;
-  data: { gainLoss: number; journalId: string };
-} | { ok: false; error: string }> {
+}): Promise<
+  | {
+      ok: true;
+      data: { gainLoss: number; journalId: string };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 700));
 
   console.log('Disposing intangible asset:', params);
 
-  revalidatePath('/finance/intangibles');
-  revalidatePath(`/finance/intangibles/${params.assetId}`);
-  revalidatePath('/finance/general-ledger/journals');
+  revalidatePath(routes.finance.intangibles);
+  revalidatePath(routes.finance.intangibleDetail(params.assetId));
+  revalidatePath(routes.finance.journals);
 
   return {
     ok: true,
@@ -173,9 +200,9 @@ export async function writeOffIntangibleAsset(params: {
 
   console.log('Writing off intangible asset:', params);
 
-  revalidatePath('/finance/intangibles');
-  revalidatePath(`/finance/intangibles/${params.assetId}`);
-  revalidatePath('/finance/general-ledger/journals');
+  revalidatePath(routes.finance.intangibles);
+  revalidatePath(routes.finance.intangibleDetail(params.assetId));
+  revalidatePath(routes.finance.journals);
 
   return {
     ok: true,

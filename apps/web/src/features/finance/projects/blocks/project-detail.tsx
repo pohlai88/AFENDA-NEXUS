@@ -59,6 +59,7 @@ import {
   costTypeLabels,
   milestoneStatusConfig,
 } from '../types';
+import { routes } from '@/lib/constants';
 
 // ─── Header ──────────────────────────────────────────────────────────────────
 
@@ -98,7 +99,10 @@ function ProjectHeader({ project }: ProjectHeaderProps) {
     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
       <div className="space-y-1">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/finance/projects" className="hover:text-foreground flex items-center gap-1">
+          <Link
+            href={routes.finance.projects}
+            className="hover:text-foreground flex items-center gap-1"
+          >
             <ChevronLeft className="h-4 w-4" />
             Projects
           </Link>
@@ -125,13 +129,13 @@ function ProjectHeader({ project }: ProjectHeaderProps) {
           Calculate WIP
         </Button>
         <Button asChild variant="outline">
-          <Link href={`/finance/projects/${project.id}/billing`}>
+          <Link href={routes.finance.projectBilling(project.id)}>
             <Receipt className="mr-2 h-4 w-4" />
             Create Billing
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link href={`/finance/projects/${project.id}/edit`}>
+          <Link href={routes.finance.projectEdit(project.id)}>
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Link>
@@ -217,13 +221,15 @@ function ValueSummary({ project, wip }: ValueSummaryProps) {
               {formatCurrency(project.actualCost, project.currency)}
             </div>
             <span className={cn('text-xs', isOverBudget ? 'text-destructive' : 'text-success')}>
-              {isOverBudget ? 'Over' : 'Under'} by {formatCurrency(Math.abs(budgetVariance), project.currency)}
+              {isOverBudget ? 'Over' : 'Under'} by{' '}
+              {formatCurrency(Math.abs(budgetVariance), project.currency)}
             </span>
           </div>
           <div>
             <span className="text-xs text-muted-foreground">Profit Margin</span>
             <div
-              className={cn('text-lg font-bold',
+              className={cn(
+                'text-lg font-bold',
                 project.profitMargin >= 25
                   ? 'text-success'
                   : project.profitMargin >= 15
@@ -247,7 +253,7 @@ function ValueSummary({ project, wip }: ValueSummaryProps) {
           </div>
           <div>
             <span className="text-xs text-muted-foreground">Unbilled</span>
-            <div className="text-lg font-bold text-amber-600">
+            <div className="text-lg font-bold text-warning">
               {formatCurrency(project.unbilledAmount, project.currency)}
             </div>
           </div>
@@ -317,9 +323,7 @@ function ProjectDetails({ project }: ProjectDetailsProps) {
           </div>
           <div>
             <span className="text-muted-foreground">End Date</span>
-            <div className="font-medium">
-              {project.endDate ? formatDate(project.endDate) : '—'}
-            </div>
+            <div className="font-medium">{project.endDate ? formatDate(project.endDate) : '—'}</div>
           </div>
           {project.costCenterCode && (
             <div className="col-span-2">
@@ -388,11 +392,14 @@ function ProgressCard({ project }: ProgressCardProps) {
             <span className="text-sm font-medium">
               {project.contractValue > 0
                 ? ((project.billedAmount / project.contractValue) * 100).toFixed(0)
-                : 0}%
+                : 0}
+              %
             </span>
           </div>
           <Progress
-            value={project.contractValue > 0 ? (project.billedAmount / project.contractValue) * 100 : 0}
+            value={
+              project.contractValue > 0 ? (project.billedAmount / project.contractValue) * 100 : 0
+            }
             className="h-3"
           />
         </div>
@@ -430,7 +437,9 @@ function CostsTab({ costs, currency }: CostsTabProps) {
         {Object.entries(costsByType).map(([type, amount]) => (
           <Card key={type}>
             <CardContent className="pt-4">
-              <div className="text-sm text-muted-foreground">{costTypeLabels[type as CostType]}</div>
+              <div className="text-sm text-muted-foreground">
+                {costTypeLabels[type as CostType]}
+              </div>
               <div className="text-lg font-bold">{formatCurrency(amount, currency)}</div>
             </CardContent>
           </Card>
@@ -481,14 +490,16 @@ interface BillingsTabProps {
 
 function BillingsTab({ billings, currency }: BillingsTabProps) {
   const totalBilled = billings.reduce((sum, b) => sum + b.amount, 0);
-  const paidAmount = billings.filter((b) => b.status === 'paid').reduce((sum, b) => sum + b.amount, 0);
+  const paidAmount = billings
+    .filter((b) => b.status === 'paid')
+    .reduce((sum, b) => sum + b.amount, 0);
 
   const statusConfig: Record<string, { label: string; color: string }> = {
-    draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800' },
-    pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800' },
-    invoiced: { label: 'Invoiced', color: 'bg-blue-100 text-blue-800' },
-    paid: { label: 'Paid', color: 'bg-green-100 text-green-800' },
-    cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800' },
+    draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
+    pending: { label: 'Pending', color: 'bg-warning/15 text-warning' },
+    invoiced: { label: 'Invoiced', color: 'bg-info/15 text-info' },
+    paid: { label: 'Paid', color: 'bg-success/15 text-success' },
+    cancelled: { label: 'Cancelled', color: 'bg-destructive/15 text-destructive' },
   };
 
   return (
@@ -510,13 +521,15 @@ function BillingsTab({ billings, currency }: BillingsTabProps) {
         <Card>
           <CardContent className="pt-4">
             <div className="text-sm text-muted-foreground">Paid</div>
-            <div className="text-lg font-bold text-green-600">{formatCurrency(paidAmount, currency)}</div>
+            <div className="text-lg font-bold text-success">
+              {formatCurrency(paidAmount, currency)}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
             <div className="text-sm text-muted-foreground">Outstanding</div>
-            <div className="text-lg font-bold text-amber-600">
+            <div className="text-lg font-bold text-warning">
               {formatCurrency(totalBilled - paidAmount, currency)}
             </div>
           </CardContent>
@@ -539,7 +552,9 @@ function BillingsTab({ billings, currency }: BillingsTabProps) {
                     </div>
                   </div>
                   <div className="text-right space-y-1">
-                    <div className="font-mono font-medium">{formatCurrency(billing.amount, currency)}</div>
+                    <div className="font-mono font-medium">
+                      {formatCurrency(billing.amount, currency)}
+                    </div>
                     <Badge className={statusConfig[billing.status]?.color}>
                       {statusConfig[billing.status]?.label}
                     </Badge>
@@ -584,7 +599,8 @@ function MilestonesTab({ milestones, currency }: MilestonesTabProps) {
             <CardContent className="p-4">
               <div className="flex items-start gap-4">
                 <div
-                  className={cn('rounded-full p-2',
+                  className={cn(
+                    'rounded-full p-2',
                     milestone.status === 'completed'
                       ? 'bg-success/10 text-success'
                       : milestone.status === 'in_progress'
@@ -615,14 +631,16 @@ function MilestonesTab({ milestones, currency }: MilestonesTabProps) {
                       Due: {formatDate(milestone.dueDate)}
                     </span>
                     {milestone.completedDate && (
-                      <span className="text-green-600">
+                      <span className="text-success">
                         Completed: {formatDate(milestone.completedDate)}
                       </span>
                     )}
                     <span className="font-mono">
                       {formatCurrency(milestone.billingAmount, currency)}
                     </span>
-                    <span className="text-muted-foreground">{milestone.percentageWeight}% weight</span>
+                    <span className="text-muted-foreground">
+                      {milestone.percentageWeight}% weight
+                    </span>
                   </div>
                   {milestone.deliverables.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">

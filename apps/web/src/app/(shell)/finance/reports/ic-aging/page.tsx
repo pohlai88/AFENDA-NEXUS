@@ -6,6 +6,7 @@ import { MoneyCell } from '@/components/erp/money-cell';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { buildIcAgingExport } from '@/features/finance/reports/actions/report-export.actions';
+import { routes } from '@/lib/constants';
 import { getIcAging } from '@/features/finance/intercompany/queries/ic.queries';
 import { ReportFilterBar } from '@/features/finance/reports/blocks/report-filter-bar';
 import { getReportFilterData } from '@/features/finance/reports/blocks/report-filter-data';
@@ -57,8 +58,8 @@ export default async function IcAgingPage({ searchParams }: IcAgingPageProps) {
             : 'Analyze aging of intercompany balances by counterparty.'
         }
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Reports', href: '/finance/reports' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Reports', href: routes.finance.reports },
           { label: 'IC Aging' },
         ]}
         actions={data ? <ExportMenu payload={buildIcAgingExport(data)} /> : undefined}

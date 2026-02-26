@@ -14,6 +14,8 @@ import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { postArInvoice } from '../services/post-ar-invoice.js';
 import { createCreditNote } from '../services/create-credit-note.js';
 import { writeOffInvoice } from '../services/write-off-invoice.js';
+import { extractIdentity } from '@afenda/api-kit';
+import { toMinorUnits } from '@afenda/core';
 
 export function registerArInvoiceRoutes(
   app: FastifyInstance,
@@ -25,8 +27,7 @@ export function registerArInvoiceRoutes(
     '/ar/invoices',
     { preHandler: [requirePermission(policy, 'journal:create')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const body = CreateArInvoiceSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -34,9 +35,9 @@ export function registerArInvoiceRoutes(
           accountId: l.accountId,
           description: l.description ?? null,
           quantity: l.quantity,
-          unitPrice: BigInt(Math.round(l.unitPrice * 100)), // eslint-disable-line no-restricted-syntax
-          amount: BigInt(Math.round(l.amount * 100)), // eslint-disable-line no-restricted-syntax
-          taxAmount: BigInt(Math.round(l.taxAmount * 100)), // eslint-disable-line no-restricted-syntax
+          unitPrice: toMinorUnits(l.unitPrice, body.currencyCode),
+          amount: toMinorUnits(l.amount, body.currencyCode),
+          taxAmount: toMinorUnits(l.taxAmount, body.currencyCode),
         }));
 
         return deps.arInvoiceRepo.create({
@@ -66,8 +67,7 @@ export function registerArInvoiceRoutes(
     '/ar/invoices',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const query = ArInvoiceListQuerySchema.parse(req.query);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -90,8 +90,7 @@ export function registerArInvoiceRoutes(
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.arInvoiceRepo.findById(id);
@@ -109,8 +108,7 @@ export function registerArInvoiceRoutes(
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const body = PostArInvoiceSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -138,8 +136,7 @@ export function registerArInvoiceRoutes(
     { preHandler: [requirePermission(policy, 'journal:void')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const body = WriteOffInvoiceSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -157,8 +154,7 @@ export function registerArInvoiceRoutes(
     '/ar/credit-notes',
     { preHandler: [requirePermission(policy, 'journal:create')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const body = CreateCreditNoteSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {

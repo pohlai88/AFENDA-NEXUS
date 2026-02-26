@@ -9,6 +9,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Plus, Calculator, FileText, RotateCcw } from 'lucide-react';
 import type { AllocationRun, AllocationStatus, AllocationMethod } from '../types';
 import { allocationStatusConfig, allocationMethodLabels } from '../types';
+import { routes } from '@/lib/constants';
 
 function StatusBadge({ status }: { status: AllocationStatus }) {
   const config = allocationStatusConfig[status];
@@ -86,7 +87,7 @@ export function AllocationRunsTable({ runs }: AllocationRunsTableProps) {
       render: (run) =>
         run.journalEntryNumber ? (
           <Link
-            href={`/finance/journal/${run.journalEntryId}`}
+            href={routes.finance.journalDetail(run.journalEntryId!)}
             className="flex items-center gap-1 text-primary hover:underline"
           >
             <FileText className="h-3.5 w-3.5" />
@@ -125,7 +126,7 @@ export function AllocationRunsTable({ runs }: AllocationRunsTableProps) {
   ];
 
   const handleRowClick = (run: AllocationRun) => {
-    router.push(`/finance/cost-centers/allocations/${run.id}`);
+    router.push(routes.finance.allocationDetail(run.id));
   };
 
   return (
@@ -141,7 +142,7 @@ export function AllocationRunsTable({ runs }: AllocationRunsTableProps) {
         description: 'Create an allocation run to distribute costs across cost centers.',
         action: (
           <Button asChild>
-            <Link href="/finance/cost-centers/allocations/new">
+            <Link href={routes.finance.allocationNew}>
               <Plus className="mr-2 h-4 w-4" />
               New Allocation Run
             </Link>
@@ -150,7 +151,7 @@ export function AllocationRunsTable({ runs }: AllocationRunsTableProps) {
       }}
       actions={
         <Button asChild>
-          <Link href="/finance/cost-centers/allocations/new">
+          <Link href={routes.finance.allocationNew}>
             <Plus className="mr-2 h-4 w-4" />
             New Allocation
           </Link>

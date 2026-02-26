@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { routes } from '@/lib/constants';
 import { Plus } from 'lucide-react';
-import { getExpenseClaims, getExpenseSummary } from '@/features/finance/expenses/queries/expenses.queries';
+import {
+  getExpenseClaims,
+  getExpenseSummary,
+} from '@/features/finance/expenses/queries/expenses.queries';
 import { ExpenseSummaryCards } from '@/features/finance/expenses/blocks/expense-summary-cards';
 import { ClaimsTable } from '@/features/finance/expenses/blocks/claims-table';
 

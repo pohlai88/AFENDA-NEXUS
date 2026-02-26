@@ -3,6 +3,7 @@ import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { getIcAgreements } from '@/features/finance/intercompany/queries/ic.queries';
 import { IcTransactionCreateForm } from '@/features/finance/intercompany/forms/ic-transaction-form';
+import { routes } from '@/lib/constants';
 
 export const metadata = { title: 'Create IC Transaction' };
 
@@ -27,8 +28,8 @@ export default async function IcTransactionNewPage() {
         title="Create IC Transaction"
         description="Create a new intercompany transaction with paired journal entries."
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Intercompany', href: '/finance/intercompany' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Intercompany', href: routes.finance.icTransactions },
           { label: 'New' },
         ]}
       />

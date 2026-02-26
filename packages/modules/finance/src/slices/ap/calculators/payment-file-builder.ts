@@ -5,6 +5,8 @@
  *
  * Uses raw bigint for amounts (minor units, e.g. cents).
  */
+import { formatMinorUnits } from '@afenda/core';
+import { validatePaymentInstructions } from './validate-payment-instruction.js';
 
 export interface PaymentInstruction {
   readonly paymentId: string;
@@ -35,13 +37,6 @@ function escapeXml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-function formatMinorUnits(amount: bigint, decimalPlaces: number = 2): string {
-  const str = amount.toString();
-  if (decimalPlaces === 0) return str;
-  const padded = str.padStart(decimalPlaces + 1, '0');
-  return `${padded.slice(0, -decimalPlaces)}.${padded.slice(-decimalPlaces)}`;
-}
-
 function formatDate(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
@@ -51,6 +46,12 @@ export function buildPain001(
   debtorName: string,
   instructions: readonly PaymentInstruction[]
 ): Pain001Output {
+  const validationErrors = validatePaymentInstructions(instructions);
+  if (validationErrors.length > 0) {
+    const details = validationErrors.map((e) => `${e.field}: ${e.message}`).join('; ');
+    throw new Error(`Payment instruction validation failed: ${details}`);
+  }
+
   let controlSum = 0n;
   for (const instr of instructions) {
     controlSum += instr.amount;

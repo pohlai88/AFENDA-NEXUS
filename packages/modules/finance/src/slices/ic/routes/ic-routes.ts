@@ -5,6 +5,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { createIcTransaction } from '../services/create-ic-transaction.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerIcRoutes(
   app: FastifyInstance,
@@ -16,8 +17,7 @@ export function registerIcRoutes(
     '/ic-transactions',
     { preHandler: [requirePermission(policy, 'ic:create')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const body = CreateIcTransactionSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -58,8 +58,7 @@ export function registerIcRoutes(
     '/ic-transactions/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const { id } = IdParamSchema.parse(req.params);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {

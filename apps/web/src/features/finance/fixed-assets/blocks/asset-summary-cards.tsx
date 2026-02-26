@@ -35,7 +35,7 @@ export function AssetSummaryCards({ summary, currency = 'USD' }: AssetSummaryCar
         <CardContent>
           <div className="text-2xl font-bold">{summary.totalAssets}</div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="text-green-600">{summary.activeAssets} active</span>
+            <span className="text-success">{summary.activeAssets} active</span>
             <span>•</span>
             <span>{summary.fullyDepreciatedAssets} fully depreciated</span>
           </div>
@@ -45,7 +45,7 @@ export function AssetSummaryCards({ summary, currency = 'USD' }: AssetSummaryCar
       {/* Total Original Cost */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 text-purple-500">
+          <div className="flex items-center gap-2 text-accent-foreground">
             <Banknote className="h-4 w-4" />
             <CardDescription>Original Cost</CardDescription>
           </div>
@@ -61,13 +61,13 @@ export function AssetSummaryCards({ summary, currency = 'USD' }: AssetSummaryCar
       {/* Net Book Value */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 text-green-500">
+          <div className="flex items-center gap-2 text-success">
             <TrendingDown className="h-4 w-4" />
             <CardDescription>Net Book Value</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold font-mono text-green-600 dark:text-green-400">
+          <div className="text-2xl font-bold font-mono text-success">
             {formatCurrency(summary.totalNetBookValue, currency)}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -79,13 +79,13 @@ export function AssetSummaryCards({ summary, currency = 'USD' }: AssetSummaryCar
       {/* Monthly Depreciation */}
       <Card>
         <CardHeader className="pb-2">
-          <div className="flex items-center gap-2 text-amber-500">
+          <div className="flex items-center gap-2 text-warning">
             <Calculator className="h-4 w-4" />
             <CardDescription>Monthly Depreciation</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold font-mono text-red-600 dark:text-red-400">
+          <div className="text-2xl font-bold font-mono text-destructive">
             {formatCurrency(summary.monthlyDepreciation, currency)}
           </div>
           <p className="text-xs text-muted-foreground">Expense per month</p>
@@ -94,21 +94,20 @@ export function AssetSummaryCards({ summary, currency = 'USD' }: AssetSummaryCar
 
       {/* Pending Disposals Alert */}
       {summary.pendingDisposals > 0 && (
-        <Card className="sm:col-span-2 lg:col-span-4 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950">
+        <Card className="sm:col-span-2 lg:col-span-4 border-warning/30 dark:border-warning/30 bg-warning/10 dark:bg-warning/20">
           <CardContent className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <AlertTriangle className="h-5 w-5 text-warning" />
               <div>
                 <p className="font-medium">Pending Disposals</p>
                 <p className="text-sm text-muted-foreground">
-                  {summary.pendingDisposals} asset disposal{summary.pendingDisposals !== 1 && 's'} awaiting approval
+                  {summary.pendingDisposals} asset disposal{summary.pendingDisposals !== 1 && 's'}{' '}
+                  awaiting approval
                 </p>
               </div>
             </div>
             <Button variant="outline" asChild>
-              <Link href={`${routes.finance.fixedAssets}/disposals`}>
-                View Disposals
-              </Link>
+              <Link href={`${routes.finance.fixedAssets}/disposals`}>View Disposals</Link>
             </Button>
           </CardContent>
         </Card>

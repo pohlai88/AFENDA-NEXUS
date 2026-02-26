@@ -10,6 +10,7 @@ import {
   type ReportSection,
 } from '@/features/finance/reports/queries/report.queries';
 import { buildBalanceSheetExport } from '@/features/finance/reports/actions/report-export.actions';
+import { routes } from '@/lib/constants';
 import { ReportFilterBar } from '@/features/finance/reports/blocks/report-filter-bar';
 import { getReportFilterData } from '@/features/finance/reports/blocks/report-filter-data';
 import {
@@ -60,8 +61,8 @@ export default async function BalanceSheetPage({ searchParams }: BalanceSheetPag
             : 'Assets, liabilities, and equity at a point in time.'
         }
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Reports', href: '/finance/reports' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Reports', href: routes.finance.reports },
           { label: 'Balance Sheet' },
         ]}
         actions={data ? <ExportMenu payload={buildBalanceSheetExport(data)} /> : undefined}

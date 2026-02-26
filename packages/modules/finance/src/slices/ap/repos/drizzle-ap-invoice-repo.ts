@@ -1,15 +1,25 @@
-import { eq, count, inArray, sql } from 'drizzle-orm';
+import { eq, count, desc, inArray, sql } from 'drizzle-orm';
 import { ok, err, NotFoundError, money } from '@afenda/core';
 import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
 import type { TenantTx } from '@afenda/db';
 import { apInvoices, apInvoiceLines, currencies } from '@afenda/db';
 import type { ApInvoice, ApInvoiceLine } from '../entities/ap-invoice.js';
+import type { ClearingTrace } from '../entities/clearing-trace.js';
 import type { IApInvoiceRepo, CreateApInvoiceInput } from '../ports/ap-invoice-repo.js';
 
 type InvoiceRow = typeof apInvoices.$inferSelect;
 type LineRow = typeof apInvoiceLines.$inferSelect;
 
-function mapLineToDomain(row: LineRow): ApInvoiceLine {
+function extractFirstRow<T>(result: unknown): T | undefined {
+  if (Array.isArray(result)) return result[0] as T;
+  if (result && typeof result === 'object' && 'rows' in result) {
+    return (result as { rows: T[] }).rows[0];
+  }
+  return undefined;
+}
+
+function mapLineToDomain(row: LineRow, currencyCode: string): ApInvoiceLine {
+  const ext = row as Record<string, unknown>;
   return {
     id: row.id,
     invoiceId: row.invoiceId,
@@ -17,13 +27,16 @@ function mapLineToDomain(row: LineRow): ApInvoiceLine {
     accountId: row.accountId,
     description: row.description,
     quantity: row.quantity,
-    unitPrice: money(row.unitPrice, 'USD'),
-    amount: money(row.amount, 'USD'),
-    taxAmount: money(row.taxAmount, 'USD'),
+    unitPrice: money(row.unitPrice, currencyCode),
+    amount: money(row.amount, currencyCode),
+    taxAmount: money(row.taxAmount, currencyCode),
+    whtIncomeType: (ext.whtIncomeType as ApInvoiceLine['whtIncomeType']) ?? null,
   };
 }
 
 function mapToDomain(row: InvoiceRow, lines: LineRow[], currencyCode: string): ApInvoice {
+  // W4: invoiceType + originalInvoiceId may not exist in older schema rows
+  const ext = row as Record<string, unknown>;
   return {
     id: row.id,
     tenantId: row.tenantId,
@@ -37,12 +50,14 @@ function mapToDomain(row: InvoiceRow, lines: LineRow[], currencyCode: string): A
     totalAmount: money(row.totalAmount, currencyCode),
     paidAmount: money(row.paidAmount, currencyCode),
     status: row.status as ApInvoice['status'],
+    invoiceType: ((ext.invoiceType as string) ?? 'STANDARD') as ApInvoice['invoiceType'],
     description: row.description,
     poRef: row.poRef,
     receiptRef: row.receiptRef,
     paymentTermsId: row.paymentTermsId,
     journalId: row.journalId,
-    lines: lines.map(mapLineToDomain),
+    originalInvoiceId: (ext.originalInvoiceId as string) ?? null,
+    lines: lines.map((l) => mapLineToDomain(l, currencyCode)),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -50,6 +65,14 @@ function mapToDomain(row: InvoiceRow, lines: LineRow[], currencyCode: string): A
 
 export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
   constructor(private readonly tx: TenantTx) {}
+
+  private async resolveCurrencyCode(currencyId: string): Promise<string> {
+    const curr = await this.tx.query.currencies.findFirst({
+      where: eq(currencies.id, currencyId),
+    });
+    if (!curr) throw new NotFoundError('Currency', currencyId);
+    return curr.code;
+  }
 
   async create(input: CreateApInvoiceInput): Promise<Result<ApInvoice>> {
     // Resolve currency code to ID
@@ -120,12 +143,8 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
       where: eq(apInvoiceLines.invoiceId, id),
     });
 
-    // Resolve currency
-    const curr = await this.tx.query.currencies.findFirst({
-      where: eq(currencies.id, row.currencyId),
-    });
-
-    return ok(mapToDomain(row, lines, curr?.code ?? 'USD'));
+    const cc = await this.resolveCurrencyCode(row.currencyId);
+    return ok(mapToDomain(row, lines, cc));
   }
 
   async findBySupplier(
@@ -139,6 +158,7 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
     const [rows, countRows] = await Promise.all([
       this.tx.query.apInvoices.findMany({
         where: eq(apInvoices.supplierId, supplierId),
+        orderBy: [desc(apInvoices.createdAt), desc(apInvoices.id)],
         limit,
         offset,
       }),
@@ -154,10 +174,8 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
         const lines = await this.tx.query.apInvoiceLines.findMany({
           where: eq(apInvoiceLines.invoiceId, r.id),
         });
-        const curr = await this.tx.query.currencies.findFirst({
-          where: eq(currencies.id, r.currencyId),
-        });
-        return mapToDomain(r, lines, curr?.code ?? 'USD');
+        const cc = await this.resolveCurrencyCode(r.currencyId);
+        return mapToDomain(r, lines, cc);
       })
     );
 
@@ -175,6 +193,7 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
     const [rows, countRows] = await Promise.all([
       this.tx.query.apInvoices.findMany({
         where: eq(apInvoices.status, status as typeof apInvoices.$inferSelect.status),
+        orderBy: [desc(apInvoices.createdAt), desc(apInvoices.id)],
         limit,
         offset,
       }),
@@ -190,10 +209,8 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
         const lines = await this.tx.query.apInvoiceLines.findMany({
           where: eq(apInvoiceLines.invoiceId, r.id),
         });
-        const curr = await this.tx.query.currencies.findFirst({
-          where: eq(currencies.id, r.currencyId),
-        });
-        return mapToDomain(r, lines, curr?.code ?? 'USD');
+        const cc = await this.resolveCurrencyCode(r.currencyId);
+        return mapToDomain(r, lines, cc);
       })
     );
 
@@ -206,7 +223,11 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
     const offset = (page - 1) * limit;
 
     const [rows, countRows] = await Promise.all([
-      this.tx.query.apInvoices.findMany({ limit, offset }),
+      this.tx.query.apInvoices.findMany({
+        orderBy: [desc(apInvoices.createdAt), desc(apInvoices.id)],
+        limit,
+        offset,
+      }),
       this.tx.select({ total: count() }).from(apInvoices),
     ]);
     const total = countRows[0]?.total ?? 0;
@@ -216,10 +237,8 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
         const lines = await this.tx.query.apInvoiceLines.findMany({
           where: eq(apInvoiceLines.invoiceId, r.id),
         });
-        const curr = await this.tx.query.currencies.findFirst({
-          where: eq(currencies.id, r.currencyId),
-        });
-        return mapToDomain(r, lines, curr?.code ?? 'USD');
+        const cc = await this.resolveCurrencyCode(r.currencyId);
+        return mapToDomain(r, lines, cc);
       })
     );
 
@@ -229,6 +248,7 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
   async findUnpaid(): Promise<ApInvoice[]> {
     const rows = await this.tx.query.apInvoices.findMany({
       where: inArray(apInvoices.status, ['POSTED', 'PARTIALLY_PAID', 'APPROVED']),
+      orderBy: [desc(apInvoices.dueDate), desc(apInvoices.id)],
     });
 
     return Promise.all(
@@ -236,10 +256,8 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
         const lines = await this.tx.query.apInvoiceLines.findMany({
           where: eq(apInvoiceLines.invoiceId, r.id),
         });
-        const curr = await this.tx.query.currencies.findFirst({
-          where: eq(currencies.id, r.currencyId),
-        });
-        return mapToDomain(r, lines, curr?.code ?? 'USD');
+        const cc = await this.resolveCurrencyCode(r.currencyId);
+        return mapToDomain(r, lines, cc);
       })
     );
   }
@@ -256,28 +274,58 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
   }
 
   async recordPayment(id: string, amount: bigint): Promise<Result<ApInvoice>> {
-    await this.tx
-      .update(apInvoices)
-      .set({
-        paidAmount: sql`${apInvoices.paidAmount} + ${amount}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(apInvoices.id, id));
+    const result = await this.tx.execute(sql`
+      UPDATE ${apInvoices}
+      SET
+        paid_amount = ${apInvoices.paidAmount} + ${amount},
+        status = CASE
+          WHEN ${apInvoices.paidAmount} + ${amount} >= ${apInvoices.totalAmount} THEN 'PAID'
+          WHEN ${apInvoices.paidAmount} + ${amount} > 0 THEN 'PARTIALLY_PAID'
+          ELSE status
+        END,
+        updated_at = now()
+      WHERE id = ${id}
+      RETURNING *
+    `);
+    const row = extractFirstRow<InvoiceRow>(result);
+    if (!row) return err(new NotFoundError('ApInvoice', id));
 
-    // Check if fully paid
-    const row = await this.tx.query.apInvoices.findFirst({ where: eq(apInvoices.id, id) });
-    if (row && row.paidAmount >= row.totalAmount) {
-      await this.tx
-        .update(apInvoices)
-        .set({ status: 'PAID', updatedAt: new Date() })
-        .where(eq(apInvoices.id, id));
-    } else if (row && row.paidAmount > 0n) {
-      await this.tx
-        .update(apInvoices)
-        .set({ status: 'PARTIALLY_PAID', updatedAt: new Date() })
-        .where(eq(apInvoices.id, id));
-    }
+    const lines = await this.tx.query.apInvoiceLines.findMany({
+      where: eq(apInvoiceLines.invoiceId, id),
+    });
+    const cc = await this.resolveCurrencyCode(row.currencyId);
+    return ok(mapToDomain(row, lines, cc));
+  }
 
-    return this.findById(id);
+  async recordPaymentWithTrace(
+    id: string,
+    amount: bigint,
+    paymentRef?: string
+  ): Promise<Result<{ invoice: ApInvoice; trace: ClearingTrace }>> {
+    // Capture prior state
+    const prior = await this.findById(id);
+    if (!prior.ok) return prior as Result<never>;
+    const priorInvoice = prior.value;
+    const priorBalance = priorInvoice.totalAmount.amount - priorInvoice.paidAmount.amount;
+
+    // Apply payment
+    const payResult = await this.recordPayment(id, amount);
+    if (!payResult.ok) return payResult as Result<never>;
+    const invoice = payResult.value;
+    const newBalance = invoice.totalAmount.amount - invoice.paidAmount.amount;
+
+    const trace: ClearingTrace = {
+      invoiceId: id,
+      paymentRef: paymentRef ?? null,
+      priorBalance,
+      paymentAmount: amount,
+      newBalance,
+      priorStatus: priorInvoice.status,
+      newStatus: invoice.status,
+      clearedFully: newBalance <= 0n,
+      timestamp: new Date(),
+    };
+
+    return ok({ invoice, trace });
   }
 }

@@ -13,6 +13,7 @@ import {
 import { TreasurySummaryCards } from '@/features/finance/treasury/blocks/treasury-summary-cards';
 import { CovenantsTable } from '@/features/finance/treasury/blocks/covenants-table';
 import { ICLoansTable } from '@/features/finance/treasury/blocks/ic-loans-table';
+import { routes } from '@/lib/constants';
 
 async function SummarySection() {
   const result = await getTreasurySummary();
@@ -75,13 +76,13 @@ export default function TreasuryPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href="/finance/treasury/forecasts/new">
+            <Link href={routes.finance.cashForecastNew}>
               <TrendingUp className="mr-2 h-4 w-4" />
               New Forecast
             </Link>
           </Button>
           <Button asChild>
-            <Link href="/finance/treasury/loans/new">
+            <Link href={routes.finance.treasuryLoanNew}>
               <Plus className="mr-2 h-4 w-4" />
               New IC Loan
             </Link>

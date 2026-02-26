@@ -3,6 +3,8 @@ import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { issueWhtCertificate } from '../services/issue-wht-certificate.js';
+import { extractIdentity } from '@afenda/api-kit';
+import type { IdParam } from '@afenda/contracts';
 
 export function registerWhtCertificateRoutes(
   app: FastifyInstance,
@@ -13,8 +15,7 @@ export function registerWhtCertificateRoutes(
     '/tax/wht-certificates',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const certs = await deps.whtCertificateRepo.findAll();
         return { data: certs };
@@ -22,12 +23,11 @@ export function registerWhtCertificateRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/tax/wht-certificates/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const cert = await deps.whtCertificateRepo.findById(req.params.id);
         if (!cert) return reply.status(404).send({ error: 'WHT certificate not found' });
@@ -40,8 +40,7 @@ export function registerWhtCertificateRoutes(
     '/tax/wht-certificates',
     { preHandler: [requirePermission(policy, 'admin:all')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const body = req.body as Record<string, unknown>;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await issueWhtCertificate(

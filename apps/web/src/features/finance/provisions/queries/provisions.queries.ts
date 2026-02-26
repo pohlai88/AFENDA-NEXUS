@@ -72,23 +72,55 @@ export async function getProvisions(params?: {
   return { ok: true, data: filtered };
 }
 
-export async function getProvisionById(id: string): Promise<{ ok: true; data: Provision } | { ok: false; error: string }> {
+export async function getProvisionById(
+  id: string
+): Promise<{ ok: true; data: Provision } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 200));
   const prov = mockProvisions.find((p) => p.id === id);
   if (!prov) return { ok: false, error: 'Provision not found' };
   return { ok: true, data: prov };
 }
 
-export async function getProvisionMovements(provisionId: string): Promise<{ ok: true; data: ProvisionMovement[] } | { ok: false; error: string }> {
+export async function getProvisionMovements(
+  provisionId: string
+): Promise<{ ok: true; data: ProvisionMovement[] } | { ok: false; error: string }> {
   await new Promise((r) => setTimeout(r, 250));
   const movements: ProvisionMovement[] = [
-    { id: 'mov-1', provisionId, movementDate: new Date('2024-01-01'), movementType: 'initial', amount: 500000, currency: 'USD', description: 'Initial recognition', reference: null, journalEntryId: 'je-1', journalEntryNumber: 'JE-2024-0001', createdBy: 'controller@company.com', createdAt: new Date('2024-01-01') },
-    { id: 'mov-2', provisionId, movementDate: new Date('2026-01-15'), movementType: 'utilization', amount: -45000, currency: 'USD', description: 'Warranty claims Q1', reference: 'WC-2026-001', journalEntryId: 'je-2', journalEntryNumber: 'JE-2026-0089', createdBy: 'controller@company.com', createdAt: new Date('2026-01-15') },
+    {
+      id: 'mov-1',
+      provisionId,
+      movementDate: new Date('2024-01-01'),
+      movementType: 'initial',
+      amount: 500000,
+      currency: 'USD',
+      description: 'Initial recognition',
+      reference: null,
+      journalEntryId: 'je-1',
+      journalEntryNumber: 'JE-2024-0001',
+      createdBy: 'controller@company.com',
+      createdAt: new Date('2024-01-01'),
+    },
+    {
+      id: 'mov-2',
+      provisionId,
+      movementDate: new Date('2026-01-15'),
+      movementType: 'utilization',
+      amount: -45000,
+      currency: 'USD',
+      description: 'Warranty claims Q1',
+      reference: 'WC-2026-001',
+      journalEntryId: 'je-2',
+      journalEntryNumber: 'JE-2026-0089',
+      createdBy: 'controller@company.com',
+      createdAt: new Date('2026-01-15'),
+    },
   ];
   return { ok: true, data: movements };
 }
 
-export async function getProvisionSummary(): Promise<{ ok: true; data: ProvisionSummary } | { ok: false; error: string }> {
+export async function getProvisionSummary(): Promise<
+  { ok: true; data: ProvisionSummary } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 250));
   return {
     ok: true,

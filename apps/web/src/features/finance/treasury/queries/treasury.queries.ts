@@ -189,7 +189,9 @@ export async function getCashForecasts(params?: {
 
 export async function getCashForecastById(
   id: string
-): Promise<{ ok: true; data: CashForecast; periods: CashForecastPeriod[] } | { ok: false; error: string }> {
+): Promise<
+  { ok: true; data: CashForecast; periods: CashForecastPeriod[] } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 350));
   const forecast = mockForecasts.find((f) => f.id === id);
   if (!forecast) return { ok: false, error: 'Forecast not found' };
@@ -202,12 +204,44 @@ export async function getCashForecastById(
       periodEnd: new Date('2026-01-07'),
       openingBalance: 5000000,
       inflows: [
-        { id: '1', category: 'AR Collections', description: 'Customer payments', amount: 450000, isActual: true, confidence: 'high', sourceType: 'AR' },
-        { id: '2', category: 'Other Income', description: 'Interest income', amount: 5000, isActual: true, confidence: 'high', sourceType: 'Manual' },
+        {
+          id: '1',
+          category: 'AR Collections',
+          description: 'Customer payments',
+          amount: 450000,
+          isActual: true,
+          confidence: 'high',
+          sourceType: 'AR',
+        },
+        {
+          id: '2',
+          category: 'Other Income',
+          description: 'Interest income',
+          amount: 5000,
+          isActual: true,
+          confidence: 'high',
+          sourceType: 'Manual',
+        },
       ],
       outflows: [
-        { id: '3', category: 'AP Payments', description: 'Vendor payments', amount: 280000, isActual: true, confidence: 'high', sourceType: 'AP' },
-        { id: '4', category: 'Payroll', description: 'Weekly payroll', amount: 150000, isActual: true, confidence: 'high', sourceType: 'HR' },
+        {
+          id: '3',
+          category: 'AP Payments',
+          description: 'Vendor payments',
+          amount: 280000,
+          isActual: true,
+          confidence: 'high',
+          sourceType: 'AP',
+        },
+        {
+          id: '4',
+          category: 'Payroll',
+          description: 'Weekly payroll',
+          amount: 150000,
+          isActual: true,
+          confidence: 'high',
+          sourceType: 'HR',
+        },
       ],
       totalInflows: 455000,
       totalOutflows: 430000,
@@ -289,7 +323,10 @@ export async function getIntercompanyLoans(params?: {
 
 export async function getICLoanById(
   id: string
-): Promise<{ ok: true; data: IntercompanyLoan; schedule: ICLoanScheduleEntry[] } | { ok: false; error: string }> {
+): Promise<
+  | { ok: true; data: IntercompanyLoan; schedule: ICLoanScheduleEntry[] }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 300));
   const loan = mockICLoans.find((l) => l.id === id);
   if (!loan) return { ok: false, error: 'Loan not found' };

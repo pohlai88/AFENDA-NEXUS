@@ -4,9 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Plus, Calculator, Briefcase } from 'lucide-react';
-import { getProjects, getProjectSummary } from '@/features/finance/projects/queries/projects.queries';
+import {
+  getProjects,
+  getProjectSummary,
+} from '@/features/finance/projects/queries/projects.queries';
 import { ProjectsTable } from '@/features/finance/projects/blocks/projects-table';
 import { ProjectSummaryCards } from '@/features/finance/projects/blocks/project-summary-cards';
+import { routes } from '@/lib/constants';
 
 async function SummarySection() {
   const result = await getProjectSummary();
@@ -55,19 +59,17 @@ export default function ProjectsPage() {
             <Briefcase className="h-8 w-8" />
             Project Accounting
           </h1>
-          <p className="text-muted-foreground">
-            Manage projects, track costs, billings, and WIP
-          </p>
+          <p className="text-muted-foreground">Manage projects, track costs, billings, and WIP</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href="/finance/projects/wip">
+            <Link href={routes.finance.projectWip}>
               <Calculator className="mr-2 h-4 w-4" />
               WIP Report
             </Link>
           </Button>
           <Button asChild>
-            <Link href="/finance/projects/new">
+            <Link href={routes.finance.projectNew}>
               <Plus className="mr-2 h-4 w-4" />
               New Project
             </Link>

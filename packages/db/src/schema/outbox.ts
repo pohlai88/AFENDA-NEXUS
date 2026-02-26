@@ -10,6 +10,7 @@ export interface OutboxRow {
   readonly tenantId: string;
   readonly eventType: string;
   readonly payload: Record<string, unknown>;
+  readonly correlationId: string | null;
   readonly createdAt: Date;
   readonly processedAt: Date | null;
 }

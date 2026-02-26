@@ -11,6 +11,13 @@ export const routes = {
     dashboard: '/finance',
     approvals: '/finance/approvals',
 
+    // Payments
+    payments: '/finance/payments',
+    paymentDetail: (id: string) => `/finance/payments/${id}`,
+
+    // Budgets
+    budgetTransferDetail: (id: string) => `/finance/budgets/transfers/${id}`,
+
     // General Ledger
     journals: '/finance/journals',
     journalDetail: (id: string) => `/finance/journals/${id}`,
@@ -51,6 +58,7 @@ export const routes = {
     // Banking & Reconciliation
     banking: '/finance/banking',
     bankStatements: '/finance/banking',
+    bankStatementsList: '/finance/banking/statements',
     bankStatementImport: '/finance/banking/import',
     bankReconciliation: '/finance/banking',
     bankReconciliationDetail: (id: string) => `/finance/banking/reconcile/${id}`,
@@ -65,14 +73,18 @@ export const routes = {
     taxReturns: '/finance/tax/returns',
     taxReturnDetail: (id: string) => `/finance/tax/returns/${id}`,
     whtCertificates: '/finance/tax/wht-certificates',
+    whtList: '/finance/tax/wht',
+    whtDetail: (id: string) => `/finance/tax/wht/${id}`,
 
     // Fixed Assets
     fixedAssets: '/finance/fixed-assets',
     fixedAssetDetail: (id: string) => `/finance/fixed-assets/${id}`,
     fixedAssetNew: '/finance/fixed-assets/new',
+    depreciation: '/finance/fixed-assets/depreciation',
     depreciationRuns: '/finance/fixed-assets/depreciation-runs',
     depreciationRunNew: '/finance/fixed-assets/depreciation-runs/new',
     assetDisposals: '/finance/fixed-assets/disposals',
+    assetDisposalDetail: (id: string) => `/finance/fixed-assets/disposals/${id}`,
 
     // Intangible Assets
     intangibles: '/finance/intangibles',
@@ -91,24 +103,39 @@ export const routes = {
     projectDetail: (id: string) => `/finance/projects/${id}`,
     projectNew: '/finance/projects/new',
     projectBilling: (id: string) => `/finance/projects/${id}/billing`,
+    projectEdit: (id: string) => `/finance/projects/${id}/edit`,
+    projectWip: '/finance/projects/wip',
 
     // Cost Accounting
     costCenters: '/finance/cost-centers',
     costCenterDetail: (id: string) => `/finance/cost-centers/${id}`,
     costCenterNew: '/finance/cost-centers/new',
     costDrivers: '/finance/cost-centers/drivers',
+    costDriverNew: '/finance/cost-centers/drivers/new',
     allocationRuns: '/finance/cost-centers/allocation-runs',
+    allocations: '/finance/cost-centers/allocations',
+    allocationDetail: (id: string) => `/finance/cost-centers/allocations/${id}`,
+    allocationNew: '/finance/cost-centers/allocations/new',
 
     // Treasury
     treasury: '/finance/treasury',
     cashForecasts: '/finance/treasury/forecasts',
+    cashForecastDetail: (id: string) => `/finance/treasury/forecasts/${id}`,
+    cashForecastNew: '/finance/treasury/forecasts/new',
     covenants: '/finance/treasury/covenants',
+    covenantDetail: (id: string) => `/finance/treasury/covenants/${id}`,
+    covenantNew: '/finance/treasury/covenants/new',
     icLoans: '/finance/treasury/ic-loans',
     icLoanDetail: (id: string) => `/finance/treasury/ic-loans/${id}`,
+    treasuryLoans: '/finance/treasury/loans',
+    treasuryLoanDetail: (id: string) => `/finance/treasury/loans/${id}`,
+    treasuryLoanNew: '/finance/treasury/loans/new',
 
     // Credit Management
     creditLimits: '/finance/credit',
     creditLimitDetail: (id: string) => `/finance/credit/${id}`,
+    creditNew: '/finance/credit/new',
+    creditHoldDetail: (id: string) => `/finance/credit/holds/${id}`,
     creditReviews: '/finance/credit/reviews',
 
     // Lease Accounting (IFRS 16)
@@ -116,6 +143,8 @@ export const routes = {
     leaseDetail: (id: string) => `/finance/leases/${id}`,
     leaseNew: '/finance/leases/new',
     leaseModification: (id: string) => `/finance/leases/${id}/modify`,
+    leaseModifications: '/finance/leases/modifications',
+    leaseRunPeriod: '/finance/leases/run-period',
 
     // Provisions (IAS 37)
     provisions: '/finance/provisions',
@@ -137,9 +166,13 @@ export const routes = {
     deferredTax: '/finance/deferred-tax',
     deferredTaxDetail: (id: string) => `/finance/deferred-tax/${id}`,
     deferredTaxSummary: '/finance/deferred-tax/summary',
+    deferredTaxNew: '/finance/deferred-tax/new',
+    deferredTaxRecalculate: '/finance/deferred-tax/recalculate',
 
     // Consolidation
     consolidation: '/finance/consolidation',
+    consolidationRun: '/finance/consolidation/run',
+    consolidationEntityNew: '/finance/consolidation/entities/new',
     groupEntities: '/finance/consolidation',
     groupEntityDetail: (id: string) => `/finance/consolidation/entities/${id}`,
     ownership: '/finance/consolidation',
@@ -148,6 +181,8 @@ export const routes = {
 
     // Transfer Pricing
     transferPricing: '/finance/transfer-pricing',
+    transferPricingDetail: (id: string) => `/finance/transfer-pricing/${id}`,
+    transferPricingNew: '/finance/transfer-pricing/new',
     transferPricingPolicies: '/finance/transfer-pricing/policies',
     transferPricingBenchmarks: '/finance/transfer-pricing/benchmarks',
 
@@ -167,6 +202,28 @@ export const routes = {
     consolidationReport: '/finance/reports/consolidation',
   },
   settings: '/settings',
+
+  // Supplier Portal
+  portal: {
+    dashboard: '/portal',
+    invoices: '/portal/invoices',
+    invoiceDetail: (id: string) => `/portal/invoices/${id}`,
+    invoiceSubmit: '/portal/invoices/submit',
+    payments: '/portal/payments',
+    paymentDetail: (runId: string) => `/portal/payments/${runId}`,
+    remittance: (runId: string) => `/portal/payments/${runId}/remittance`,
+    profile: '/portal/profile',
+    bankAccounts: '/portal/bank-accounts',
+    documents: '/portal/documents',
+    disputes: '/portal/disputes',
+    disputeNew: '/portal/disputes/new',
+    disputeDetail: (id: string) => `/portal/disputes/${id}`,
+    reconciliation: '/portal/reconciliation',
+    wht: '/portal/wht',
+    whtDetail: (id: string) => `/portal/wht/${id}`,
+    compliance: '/portal/compliance',
+    notificationSettings: '/portal/settings/notifications',
+  },
 } as const;
 
 // ─── Status Colors (maps to shadcn Badge variants) ─────────────────────────
@@ -203,6 +260,14 @@ export const statusConfig: Record<
   ON_HOLD: { variant: 'secondary', label: 'On Hold' },
   FULLY_DEPRECIATED: { variant: 'secondary', label: 'Fully Depreciated' },
   DISPOSED: { variant: 'outline', label: 'Disposed' },
+  INCOMPLETE: { variant: 'destructive', label: 'Incomplete' },
+  IN_REVIEW: { variant: 'outline', label: 'In Review' },
+  RESOLVED: { variant: 'default', label: 'Resolved' },
+  VALID: { variant: 'default', label: 'Valid' },
+  EXPIRING_SOON: { variant: 'outline', label: 'Expiring Soon' },
+  MISSING: { variant: 'destructive', label: 'Missing' },
+  MATCHED: { variant: 'default', label: 'Matched' },
+  UNMATCHED: { variant: 'destructive', label: 'Unmatched' },
 };
 
 export function getStatusConfig(status: DocumentStatus) {
@@ -389,34 +454,47 @@ export const financeNavigationGroups: NavGroup[] = [
   },
 ];
 
+// ─── Portal Navigation Config ────────────────────────────────────────────────
+
+export const portalNavigationItems: NavItem[] = [
+  { title: 'Dashboard', href: routes.portal.dashboard, icon: 'LayoutDashboard' },
+  { title: 'Invoices', href: routes.portal.invoices, icon: 'Receipt' },
+  { title: 'Payments', href: routes.portal.payments, icon: 'Banknote' },
+  { title: 'Documents', href: routes.portal.documents, icon: 'FolderOpen' },
+  { title: 'Disputes', href: routes.portal.disputes, icon: 'MessageSquareWarning' },
+  { title: 'Reconciliation', href: routes.portal.reconciliation, icon: 'GitMerge' },
+  { title: 'Compliance', href: routes.portal.compliance, icon: 'ShieldCheck' },
+  { title: 'Settings', href: routes.portal.notificationSettings, icon: 'Settings' },
+];
+
 // Legacy flat navigation config for backwards compatibility
 export const navigationConfig: NavItem[] = [
   {
     title: 'Dashboard',
-    href: '/',
+    href: routes.dashboard,
     icon: 'LayoutDashboard',
   },
   {
     title: 'Finance',
-    href: '/finance',
+    href: routes.finance.dashboard,
     icon: 'BookOpen',
     children: [
-      { title: 'Journals', href: '/finance/journals', icon: 'FileText' },
-      { title: 'Payables', href: '/finance/payables', icon: 'Receipt' },
-      { title: 'Receivables', href: '/finance/receivables', icon: 'HandCoins' },
-      { title: 'Trial Balance', href: '/finance/trial-balance', icon: 'Scale' },
-      { title: 'Accounts', href: '/finance/accounts', icon: 'List' },
-      { title: 'Periods', href: '/finance/periods', icon: 'Calendar' },
-      { title: 'Ledgers', href: '/finance/ledgers', icon: 'BookOpen' },
-      { title: 'Intercompany', href: '/finance/intercompany', icon: 'ArrowLeftRight' },
-      { title: 'Recurring', href: '/finance/recurring', icon: 'RefreshCw' },
-      { title: 'FX Rates', href: '/finance/fx-rates', icon: 'ArrowRightLeft' },
-      { title: 'Reports', href: '/finance/reports', icon: 'BarChart3' },
+      { title: 'Journals', href: routes.finance.journals, icon: 'FileText' },
+      { title: 'Payables', href: routes.finance.payables, icon: 'Receipt' },
+      { title: 'Receivables', href: routes.finance.receivables, icon: 'HandCoins' },
+      { title: 'Trial Balance', href: routes.finance.trialBalance, icon: 'Scale' },
+      { title: 'Accounts', href: routes.finance.accounts, icon: 'List' },
+      { title: 'Periods', href: routes.finance.periods, icon: 'Calendar' },
+      { title: 'Ledgers', href: routes.finance.ledgers, icon: 'BookOpen' },
+      { title: 'Intercompany', href: routes.finance.icTransactions, icon: 'ArrowLeftRight' },
+      { title: 'Recurring', href: routes.finance.recurring, icon: 'RefreshCw' },
+      { title: 'FX Rates', href: routes.finance.fxRates, icon: 'ArrowRightLeft' },
+      { title: 'Reports', href: routes.finance.reports, icon: 'BarChart3' },
     ],
   },
   {
     title: 'Settings',
-    href: '/settings',
+    href: routes.settings,
     icon: 'Settings',
   },
 ];

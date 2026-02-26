@@ -7,6 +7,7 @@ import { Plus, FileText, Calculator } from 'lucide-react';
 import { getLeases, getLeaseSummary } from '@/features/finance/leases/queries/leases.queries';
 import { LeasesTable } from '@/features/finance/leases/blocks/leases-table';
 import { LeaseSummaryCards } from '@/features/finance/leases/blocks/lease-summary-cards';
+import { routes } from '@/lib/constants';
 
 async function SummarySection() {
   const result = await getLeaseSummary();
@@ -61,13 +62,13 @@ export default function LeasesPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href="/finance/leases/run-period">
+            <Link href={routes.finance.leaseRunPeriod}>
               <Calculator className="mr-2 h-4 w-4" />
               Run Period
             </Link>
           </Button>
           <Button asChild>
-            <Link href="/finance/leases/new">
+            <Link href={routes.finance.leaseNew}>
               <Plus className="mr-2 h-4 w-4" />
               New Lease
             </Link>

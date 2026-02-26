@@ -2,6 +2,7 @@ export interface OutboxEvent {
   readonly tenantId: string;
   readonly eventType: string;
   readonly payload: Record<string, unknown>;
+  readonly correlationId?: string | null;
 }
 
 export interface OutboxEntry {

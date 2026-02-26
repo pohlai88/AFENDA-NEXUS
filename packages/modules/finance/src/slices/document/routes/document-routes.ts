@@ -2,8 +2,6 @@
  * Document storage routes — init, presign, complete, list, download, delete.
  */
 import type { FastifyInstance } from 'fastify';
-import type { DbSession } from '@afenda/db';
-import type { IObjectStore } from '@afenda/storage';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import {
@@ -11,8 +9,11 @@ import {
   documentPresignRateLimitGuard,
 } from '../../../shared/routes/document-rate-limit.js';
 import { DocumentAttachmentService } from '../services/document-attachment-service.js';
-import type { LinkedEntityType } from '../../../shared/ports/document-attachment.js';
 import { z } from 'zod';
+import { extractIdentity } from '@afenda/api-kit';
+import { LinkedEntityTypeSchema } from '@afenda/contracts';
+
+type LinkedEntityType = z.infer<typeof LinkedEntityTypeSchema>;
 
 const DirectUploadFieldsSchema = z.object({
   fileName: z.string().min(1).max(255),
@@ -122,12 +123,9 @@ export function getAuditContext(req: {
 
 export function registerDocumentRoutes(
   app: FastifyInstance,
-  session: DbSession,
-  objectStore: IObjectStore,
+  service: DocumentAttachmentService,
   policy: IAuthorizationPolicy
 ): void {
-  const service = new DocumentAttachmentService(session, objectStore);
-
   // POST /documents/upload — direct upload (< 5MB), computes SHA-256, insert-first dedup
   // Requires @fastify/multipart registered on app
   const uploadRateLimit = documentUploadRateLimitGuard();
@@ -135,8 +133,7 @@ export function registerDocumentRoutes(
     '/documents/upload',
     { preHandler: [requirePermission(policy, 'document:create'), uploadRateLimit] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const reqWithFile = req as {
         file?: () => Promise<
           | {
@@ -206,8 +203,7 @@ export function registerDocumentRoutes(
     { preHandler: [requirePermission(policy, 'document:create')] },
     async (req, reply) => {
       const body = InitBodySchema.parse(req.body);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const idempotencyKey = req.headers['idempotency-key'] as string | undefined;
 
       try {
@@ -242,8 +238,7 @@ export function registerDocumentRoutes(
     { preHandler: [requirePermission(policy, 'document:create'), presignRateLimit] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const body = z
         .object({ expirySec: z.number().optional() })
         .optional()
@@ -276,8 +271,7 @@ export function registerDocumentRoutes(
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
       const body = CompleteBodySchema.parse(req.body);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const idempotencyKey = req.headers['idempotency-key'] as string | undefined;
 
       try {
@@ -309,8 +303,7 @@ export function registerDocumentRoutes(
     { preHandler: [requirePermission(policy, 'document:read')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const query =
         req.query && typeof req.query === 'object' ? (req.query as Record<string, unknown>) : {};
       const filename = 'filename' in query ? String(query.filename) : undefined;
@@ -342,7 +335,7 @@ export function registerDocumentRoutes(
     { preHandler: [requirePermission(policy, 'document:list')] },
     async (req, reply) => {
       const query = ListQuerySchema.parse(req.query);
-      const tenantId = req.headers['x-tenant-id'] as string;
+      const { tenantId } = extractIdentity(req);
 
       if (!query.entityType || !query.entityId) {
         return reply
@@ -368,8 +361,7 @@ export function registerDocumentRoutes(
     { preHandler: [requirePermission(policy, 'document:delete')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
 
       try {
         await service.remove(tenantId, userId, id, getAuditContext(req));

@@ -17,6 +17,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import type { CostAccountingSummary } from '../types';
+import { routes } from '@/lib/constants';
 
 interface CostSummaryCardsProps {
   summary: CostAccountingSummary;
@@ -36,7 +37,7 @@ export function CostSummaryCards({ summary }: CostSummaryCardsProps) {
       value: summary.totalDrivers.toString(),
       icon: Gauge,
       description: 'Allocation bases',
-      color: 'text-purple-500',
+      color: 'text-accent-foreground',
     },
     {
       title: 'Allocation Rules',
@@ -50,21 +51,21 @@ export function CostSummaryCards({ summary }: CostSummaryCardsProps) {
       value: formatCurrency(summary.totalAllocatedYTD, 'USD'),
       icon: Calculator,
       description: `Last run: ${summary.lastAllocationRun || 'Never'}`,
-      color: 'text-amber-500',
+      color: 'text-warning',
     },
     {
       title: 'Budget Variance',
       value: `${Math.abs(summary.budgetVariancePercent).toFixed(1)}%`,
       icon: summary.budgetVariancePercent >= 0 ? TrendingUp : TrendingDown,
       description: summary.budgetVariancePercent >= 0 ? 'Under budget' : 'Over budget',
-      color: summary.budgetVariancePercent >= 0 ? 'text-green-500' : 'text-red-500',
+      color: summary.budgetVariancePercent >= 0 ? 'text-success' : 'text-destructive',
     },
     {
       title: 'Pending',
       value: summary.pendingAllocations.toString(),
       icon: Clock,
       description: 'Allocations to run',
-      color: summary.pendingAllocations > 0 ? 'text-amber-500' : 'text-gray-400',
+      color: summary.pendingAllocations > 0 ? 'text-warning' : 'text-muted-foreground',
     },
   ];
 
@@ -92,10 +93,11 @@ export function CostSummaryCards({ summary }: CostSummaryCardsProps) {
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Pending Allocations</AlertTitle>
           <AlertDescription>
-            You have{' '}
-            <span className="font-medium">{summary.pendingAllocations} allocation run(s)</span>{' '}
-            waiting to be executed.{' '}
-            <Link href="/finance/cost-centers/allocations" className="underline">
+            You have{''}
+            <span className="font-medium">{summary.pendingAllocations} allocation run(s)</span>
+            {''}
+            waiting to be executed.{''}
+            <Link href={routes.finance.allocations} className="underline">
               View allocations
             </Link>
           </AlertDescription>
@@ -141,8 +143,11 @@ export function CompactCostSummary({ summary }: CompactCostSummaryProps) {
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Budget Variance</span>
             <span
-              className={cn('font-mono text-sm',
-                summary.budgetVariancePercent >= 0 ? 'text-variance-positive' : 'text-variance-negative'
+              className={cn(
+                'font-mono text-sm',
+                summary.budgetVariancePercent >= 0
+                  ? 'text-variance-positive'
+                  : 'text-variance-negative'
               )}
             >
               {summary.budgetVariancePercent >= 0 ? '+' : ''}
@@ -150,12 +155,12 @@ export function CompactCostSummary({ summary }: CompactCostSummaryProps) {
             </span>
           </div>
           {summary.pendingAllocations > 0 && (
-            <div className="flex items-center justify-between text-amber-600">
+            <div className="flex items-center justify-between text-warning">
               <span className="text-sm flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />
                 Pending Runs
               </span>
-              <Badge variant="outline" className="bg-amber-100 text-amber-800">
+              <Badge variant="outline" className="bg-warning/15 text-warning">
                 {summary.pendingAllocations}
               </Badge>
             </div>

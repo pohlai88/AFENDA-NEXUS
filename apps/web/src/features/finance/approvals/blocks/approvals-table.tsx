@@ -23,6 +23,7 @@ import type { ApprovalItem, ApprovalDocumentType, SLAStatus } from '../types';
 import { documentTypeLabels, slaStatusConfig } from '../types';
 import { approveItems, rejectItems } from '../actions/approvals.actions';
 import { toast } from 'sonner';
+import { routes } from '@/lib/constants';
 
 // ─── Icon Map ────────────────────────────────────────────────────────────────
 
@@ -127,7 +128,9 @@ function createColumns(): ColumnDef<ApprovalItem>[] {
     {
       id: 'sla',
       header: 'SLA',
-      accessorFn: (row) => <SLABadge status={row.slaStatus} hoursRemaining={row.slaHoursRemaining} />,
+      accessorFn: (row) => (
+        <SLABadge status={row.slaStatus} hoursRemaining={row.slaHoursRemaining} />
+      ),
       sortable: true,
       sortFn: (a, b) => a.slaHoursRemaining - b.slaHoursRemaining,
     },
@@ -224,15 +227,15 @@ export function ApprovalsTable({ items, pagination, loading }: ApprovalsTablePro
   const handleRowClick = (item: ApprovalItem) => {
     // Navigate to the source document
     const documentRoutes: Record<ApprovalDocumentType, string> = {
-      JOURNAL: `/finance/journals/${item.documentId}`,
-      AP_INVOICE: `/finance/payables/${item.documentId}`,
-      AR_INVOICE: `/finance/receivables/${item.documentId}`,
-      EXPENSE_CLAIM: `/finance/expenses/${item.documentId}`,
+      JOURNAL: routes.finance.journalDetail(item.documentId),
+      AP_INVOICE: routes.finance.payableDetail(item.documentId),
+      AR_INVOICE: routes.finance.receivableDetail(item.documentId),
+      EXPENSE_CLAIM: routes.finance.expenseDetail(item.documentId),
       PURCHASE_ORDER: `/purchasing/orders/${item.documentId}`,
-      PAYMENT: `/finance/payments/${item.documentId}`,
-      IC_TRANSACTION: `/finance/intercompany/${item.documentId}`,
-      ASSET_DISPOSAL: `/finance/fixed-assets/disposals/${item.documentId}`,
-      BUDGET_TRANSFER: `/finance/budgets/transfers/${item.documentId}`,
+      PAYMENT: routes.finance.paymentDetail(item.documentId),
+      IC_TRANSACTION: routes.finance.icTransactionDetail(item.documentId),
+      ASSET_DISPOSAL: routes.finance.assetDisposalDetail(item.documentId),
+      BUDGET_TRANSFER: routes.finance.budgetTransferDetail(item.documentId),
     };
     router.push(documentRoutes[item.documentType]);
   };
@@ -250,7 +253,9 @@ export function ApprovalsTable({ items, pagination, loading }: ApprovalsTablePro
       selectable
       selectedIds={selectedIds}
       onSelectionChange={setSelectedIds}
-      bulkActions={<BulkActions selectedIds={selectedIds} onClear={() => setSelectedIds(new Set())} />}
+      bulkActions={
+        <BulkActions selectedIds={selectedIds} onClear={() => setSelectedIds(new Set())} />
+      }
       searchPlaceholder="Search approvals..."
       searchFn={(item, query) => {
         const q = query.toLowerCase();
@@ -266,7 +271,7 @@ export function ApprovalsTable({ items, pagination, loading }: ApprovalsTablePro
           ? {
               page: pagination.page,
               totalPages: pagination.totalPages,
-              baseUrl: '/finance/approvals',
+              baseUrl: routes.finance.approvals,
               searchParams: pagination.searchParams,
             }
           : undefined

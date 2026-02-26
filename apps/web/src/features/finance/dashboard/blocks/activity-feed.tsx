@@ -24,12 +24,12 @@ import type { ActivityItem, ActivityType } from '../types';
 const activityConfig: Record<ActivityType, { icon: LucideIcon; color: string; label: string }> = {
   journal_posted: {
     icon: FileText,
-    color: 'text-blue-500 bg-blue-50 dark:bg-blue-950',
+    color: 'text-blue-500 bg-info/10 dark:bg-blue-950',
     label: 'Journal',
   },
   invoice_created: {
     icon: Receipt,
-    color: 'text-green-500 bg-green-50 dark:bg-green-950',
+    color: 'text-success bg-success/10 dark:bg-success/20',
     label: 'Invoice',
   },
   payment_received: {
@@ -39,27 +39,27 @@ const activityConfig: Record<ActivityType, { icon: LucideIcon; color: string; la
   },
   payment_sent: {
     icon: Banknote,
-    color: 'text-orange-500 bg-orange-50 dark:bg-orange-950',
+    color: 'text-warning bg-warning/10 dark:bg-warning/20',
     label: 'Payment',
   },
   approval_pending: {
     icon: Clock,
-    color: 'text-amber-500 bg-amber-50 dark:bg-amber-950',
+    color: 'text-warning bg-warning/10 dark:bg-warning/20',
     label: 'Approval',
   },
   reconciliation_complete: {
     icon: GitMerge,
-    color: 'text-purple-500 bg-purple-50 dark:bg-purple-950',
+    color: 'text-accent-foreground bg-accent/50 dark:bg-accent',
     label: 'Reconciliation',
   },
   period_closed: {
     icon: Calendar,
-    color: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-950',
+    color: 'text-info bg-info/10 dark:bg-info/20',
     label: 'Period',
   },
   report_generated: {
     icon: BarChart3,
-    color: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-950',
+    color: 'text-info bg-info/10 dark:bg-info/20',
     label: 'Report',
   },
 };
@@ -89,9 +89,7 @@ function ActivityItemRow({ item }: { item: ActivityItem }) {
               {formatCurrency(item.amount, item.currency)}
             </Badge>
           )}
-          {item.user && (
-            <span className="text-xs text-muted-foreground">by {item.user}</span>
-          )}
+          {item.user && <span className="text-xs text-muted-foreground">by {item.user}</span>}
         </div>
       </div>
     </div>

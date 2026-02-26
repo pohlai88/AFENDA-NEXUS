@@ -1,16 +1,19 @@
 import { desc } from 'drizzle-orm';
 import type { TenantTx } from '@afenda/db';
 import { outbox } from '@afenda/db';
+import { getOutboxMeta } from '@afenda/api-kit';
 import type { IOutboxWriter, OutboxEvent, OutboxEntry } from '../ports/outbox-writer.js';
 
 export class DrizzleOutboxWriter implements IOutboxWriter {
   constructor(private readonly tx: TenantTx) {}
 
   async write(event: OutboxEvent): Promise<void> {
+    const meta = getOutboxMeta();
     await this.tx.insert(outbox).values({
       tenantId: event.tenantId,
       eventType: event.eventType,
       payload: event.payload,
+      correlationId: event.correlationId ?? meta.correlationId ?? null,
     });
   }
 

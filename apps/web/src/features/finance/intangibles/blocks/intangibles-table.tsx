@@ -8,17 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { DataTable, type Column } from '@/components/erp/data-table';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { routes } from '@/lib/constants';
-import {
-  Lightbulb,
-  Plus,
-  FileCode,
-  Award,
-  Stamp,
-  Key,
-  Star,
-  Beaker,
-  Infinity,
-} from 'lucide-react';
+import { Lightbulb, Plus, FileCode, Award, Stamp, Key, Star, Beaker, Infinity } from 'lucide-react';
 import type { IntangibleAsset, IntangibleStatus, IntangibleType } from '../types';
 import { intangibleStatusConfig, intangibleTypeLabels } from '../types';
 
@@ -64,9 +54,8 @@ function AmortizationProgress({ asset }: { asset: IntangibleAsset }) {
   }
 
   const amortizableAmount = asset.originalCost - asset.residualValue;
-  const percentage = amortizableAmount > 0
-    ? (asset.accumulatedAmortization / amortizableAmount) * 100
-    : 0;
+  const percentage =
+    amortizableAmount > 0 ? (asset.accumulatedAmortization / amortizableAmount) * 100 : 0;
 
   return (
     <div className="space-y-1 w-28">
@@ -115,9 +104,7 @@ const columns: Column<IntangibleAsset>[] = [
     sortable: true,
     className: 'text-right',
     render: (asset) => (
-      <span className="font-mono">
-        {formatCurrency(asset.originalCost, asset.currency)}
-      </span>
+      <span className="font-mono">{formatCurrency(asset.originalCost, asset.currency)}</span>
     ),
   },
   {
@@ -137,10 +124,12 @@ const columns: Column<IntangibleAsset>[] = [
     sortable: true,
     className: 'text-right',
     render: (asset) => (
-      <span className={cn(
-        'font-mono font-medium',
-        asset.carryingAmount === 0 && 'text-muted-foreground'
-      )}>
+      <span
+        className={cn(
+          'font-mono font-medium',
+          asset.carryingAmount === 0 && 'text-muted-foreground'
+        )}
+      >
         {formatCurrency(asset.carryingAmount, asset.currency)}
       </span>
     ),
@@ -161,9 +150,10 @@ const columns: Column<IntangibleAsset>[] = [
       if (!asset.expiryDate) {
         return <span className="text-muted-foreground">-</span>;
       }
-      const isExpiringSoon = new Date(asset.expiryDate) < new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      const isExpiringSoon =
+        new Date(asset.expiryDate) < new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
       return (
-        <span className={cn(isExpiringSoon && 'text-amber-600 dark:text-amber-400')}>
+        <span className={cn(isExpiringSoon && 'text-warning dark:text-warning')}>
           {formatDate(asset.expiryDate)}
         </span>
       );

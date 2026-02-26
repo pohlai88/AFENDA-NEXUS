@@ -25,8 +25,7 @@ import type { IAuthorizationPolicy } from '../ports/authorization.js';
 import { requirePermission } from './authorization-guard.js';
 import { mapErrorToStatus } from './error-mapper.js';
 import { ApprovalWorkflowService } from '../services/approval-workflow-service.js';
-import { DrizzleApprovalPolicyRepo } from '../repos/drizzle-approval-policy-repo.js';
-import { DrizzleApprovalRequestRepo } from '../repos/drizzle-approval-request-repo.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerApprovalRoutes(
   app: FastifyInstance,
@@ -39,8 +38,7 @@ export function registerApprovalRoutes(
     { preHandler: [requirePermission(policy, 'journal:create')] },
     async (req, reply) => {
       const body = SubmitApprovalSchema.parse(req.body);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         const workflow = new ApprovalWorkflowService(
@@ -69,8 +67,7 @@ export function registerApprovalRoutes(
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const body = ApproveRejectSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -94,8 +91,7 @@ export function registerApprovalRoutes(
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const body = RejectApprovalSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -119,8 +115,7 @@ export function registerApprovalRoutes(
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
       const { id } = IdParamSchema.parse(req.params);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
       const body = DelegateApprovalSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -141,8 +136,7 @@ export function registerApprovalRoutes(
   // POST /approvals/:id/cancel
   app.post('/approvals/:id/cancel', async (req, reply) => {
     const { id } = IdParamSchema.parse(req.params);
-    const tenantId = req.headers['x-tenant-id'] as string;
-    const userId = req.headers['x-user-id'] as string;
+    const { tenantId, userId } = extractIdentity(req);
 
     const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
       const workflow = new ApprovalWorkflowService(
@@ -160,8 +154,7 @@ export function registerApprovalRoutes(
 
   // GET /approvals/pending
   app.get('/approvals/pending', async (req, reply) => {
-    const tenantId = req.headers['x-tenant-id'] as string;
-    const userId = req.headers['x-user-id'] as string;
+    const { tenantId, userId } = extractIdentity(req);
 
     const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
       const workflow = new ApprovalWorkflowService(
@@ -180,8 +173,7 @@ export function registerApprovalRoutes(
   // GET /approvals/entity/:entityType/:entityId
   app.get('/approvals/entity/:entityType/:entityId', async (req, reply) => {
     const { entityType, entityId } = req.params as { entityType: string; entityId: string };
-    const tenantId = req.headers['x-tenant-id'] as string;
-    const userId = req.headers['x-user-id'] as string;
+    const { tenantId, userId } = extractIdentity(req);
 
     const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
       const workflow = new ApprovalWorkflowService(
@@ -203,8 +195,7 @@ export function registerApprovalRoutes(
     { preHandler: [requirePermission(policy, 'admin:all')] },
     async (req, reply) => {
       const body = CreateApprovalPolicySchema.parse(req.body);
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = req.headers['x-user-id'] as string;
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.approvalPolicyRepo!.create({
@@ -225,8 +216,7 @@ export function registerApprovalRoutes(
   // GET /approval-policies/:entityType — list policies
   app.get('/approval-policies/:entityType', async (req, reply) => {
     const { entityType } = req.params as { entityType: string };
-    const tenantId = req.headers['x-tenant-id'] as string;
-    const userId = req.headers['x-user-id'] as string;
+    const { tenantId, userId } = extractIdentity(req);
 
     const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
       return deps.approvalPolicyRepo!.findByTenantAndEntityType(tenantId, entityType);

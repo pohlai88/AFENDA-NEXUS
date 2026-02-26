@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Fastify from 'fastify';
 import type { FastifyInstance } from 'fastify';
 import { ok } from '@afenda/core';
+import { admin as adminRole } from '@afenda/authz';
 import type { ApprovalRequest } from '../../entities/approval-request.js';
 import type { FinanceRuntime, FinanceDeps } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../ports/authorization.js';
@@ -110,6 +111,20 @@ describe('Approval Routes', () => {
 
   beforeEach(async () => {
     app = Fastify();
+    // Bridge test headers → req.authUser so extractIdentity(req) works
+    app.decorateRequest('authUser', undefined);
+    app.addHook('preHandler', async (req) => {
+      const tenantId = req.headers['x-tenant-id'] as string | undefined;
+      const userId = req.headers['x-user-id'] as string | undefined;
+      if (tenantId && userId) {
+        (req as typeof req & { authUser?: Record<string, unknown> }).authUser = {
+          tenantId,
+          userId,
+          roles: [adminRole] as const,
+          orgRoles: [] as readonly string[],
+        };
+      }
+    });
     registerApprovalRoutes(app, stubRuntime(), stubPolicy());
     await app.ready();
   });
@@ -210,6 +225,20 @@ describe('Approval Routes', () => {
       (forbiddenPolicy.hasPermission as ReturnType<typeof vi.fn>).mockResolvedValue(false);
 
       const forbiddenApp = Fastify();
+      // Bridge headers → req.authUser so the guard sees identity and checks permission
+      forbiddenApp.decorateRequest('authUser', undefined);
+      forbiddenApp.addHook('preHandler', async (req) => {
+        const tenantId = req.headers['x-tenant-id'] as string | undefined;
+        const userId = req.headers['x-user-id'] as string | undefined;
+        if (tenantId && userId) {
+          (req as typeof req & { authUser?: Record<string, unknown> }).authUser = {
+            tenantId,
+            userId,
+            roles: [] as const, // Empty roles → falls through to policy.hasPermission()
+            orgRoles: [] as readonly string[],
+          };
+        }
+      });
       registerApprovalRoutes(forbiddenApp, stubRuntime(), forbiddenPolicy);
       await forbiddenApp.ready();
 

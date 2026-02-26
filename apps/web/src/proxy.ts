@@ -49,7 +49,16 @@ export async function proxy(request: NextRequest) {
   // - Exchanges OAuth session verifier → session cookie on callback
   // - Validates existing session cookies (signed JWT cache)
   // - Redirects to /login if unauthenticated
-  return neonAuthProxy(request);
+  const response = await neonAuthProxy(request);
+
+  // Add security headers to all responses
+  if (response) {
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  }
+
+  return response;
 }
 
 export const config = {

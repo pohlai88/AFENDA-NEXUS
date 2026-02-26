@@ -33,14 +33,18 @@ const CHART_COLORS = {
 const AGING_COLORS = [
   'hsl(145, 50%, 45%)', // Current - green
   'hsl(200, 60%, 50%)', // 1-30 - blue
-  'hsl(45, 80%, 50%)',  // 31-60 - yellow
-  'hsl(25, 70%, 55%)',  // 61-90 - orange
-  'hsl(0, 65%, 55%)',   // 90+ - red
+  'hsl(45, 80%, 50%)', // 31-60 - yellow
+  'hsl(25, 70%, 55%)', // 61-90 - orange
+  'hsl(0, 65%, 55%)', // 90+ - red
 ];
 
 // ─── Custom Tooltip ──────────────────────────────────────────────────────────
 
-function CustomTooltip({ active, payload, label }: {
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: {
   active?: boolean;
   payload?: Array<{ name: string; value: number; color: string }>;
   label?: string;
@@ -52,14 +56,9 @@ function CustomTooltip({ active, payload, label }: {
       <p className="mb-2 font-medium">{label}</p>
       {payload.map((entry, index) => (
         <div key={index} className="flex items-center gap-2 text-sm">
-          <div
-            className="h-2 w-2 rounded-full"
-            style={{ backgroundColor: entry.color }}
-          />
+          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
           <span className="text-muted-foreground">{entry.name}:</span>
-          <span className="font-medium tabular-nums">
-            ${(entry.value / 1000).toFixed(0)}K
-          </span>
+          <span className="font-medium tabular-nums">${(entry.value / 1000).toFixed(0)}K</span>
         </div>
       ))}
     </div>
@@ -97,8 +96,18 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                 tickFormatter={(value) => `$${value / 1000}K`}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="inflows" name="Inflows" fill={CHART_COLORS.inflows} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="outflows" name="Outflows" fill={CHART_COLORS.outflows} radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="inflows"
+                name="Inflows"
+                fill={CHART_COLORS.inflows}
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="outflows"
+                name="Outflows"
+                fill={CHART_COLORS.outflows}
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -208,7 +217,10 @@ export function ARAgingChart({ data }: ARAgingChartProps) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number | undefined) => [`$${((value ?? 0) / 1000).toFixed(0)}K`, 'Amount']}
+                formatter={(value: number | undefined) => [
+                  `$${((value ?? 0) / 1000).toFixed(0)}K`,
+                  'Amount',
+                ]}
               />
             </PieChart>
           </ResponsiveContainer>

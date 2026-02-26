@@ -82,12 +82,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
                 <span className="text-xs text-muted-foreground">Error ID:</span>
                 <code className="flex-1 text-xs font-mono">{this.state.correlationId}</code>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6"
-                  onClick={this.handleCopyId}
-                >
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={this.handleCopyId}>
                   <Copy className="h-3 w-3" />
                   <span className="sr-only">Copy error ID</span>
                 </Button>
@@ -185,9 +180,7 @@ export function ErrorDisplay({
           <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
             Debug information
           </summary>
-          <pre className="mt-2 overflow-auto rounded-lg bg-muted p-4 text-xs">
-            {error.stack}
-          </pre>
+          <pre className="mt-2 overflow-auto rounded-lg bg-muted p-4 text-xs">{error.stack}</pre>
         </details>
       )}
     </div>

@@ -28,10 +28,10 @@ export class ApprovalWorkflowService implements IApprovalWorkflow {
       input.entityType
     );
 
-    // Route through pure calculator
-    const chain = routeApproval(policies, input.entityType, input.metadata);
+    // Route through pure calculator — W2-10: now returns policy snapshot info
+    const route = routeApproval(policies, input.entityType, input.metadata);
 
-    if (!chain || chain.length === 0) {
+    if (!route || route.chain.length === 0) {
       // No approval required — create an auto-approved request
       const reqResult = await this.requestRepo.createRequest(input);
       if (!reqResult.ok) return reqResult;
@@ -40,12 +40,16 @@ export class ApprovalWorkflowService implements IApprovalWorkflow {
       return approved;
     }
 
-    // Create request
-    const reqResult = await this.requestRepo.createRequest(input);
+    // W2-10: Snapshot matched policy ID + version on the request
+    const reqResult = await this.requestRepo.createRequest({
+      ...input,
+      policyId: route.policyId,
+      policyVersion: route.policyVersion,
+    });
     if (!reqResult.ok) return reqResult;
 
     // Create steps from chain
-    const stepInputs = chain.map((chainStep, idx) => ({
+    const stepInputs = route.chain.map((chainStep, idx) => ({
       requestId: reqResult.value.id,
       stepIndex: idx,
       approverId: chainStep.approverValue,
@@ -63,7 +67,7 @@ export class ApprovalWorkflowService implements IApprovalWorkflow {
         entityType: input.entityType,
         entityId: input.entityId,
         requestedBy: input.requestedBy,
-        stepsCount: chain.length,
+        stepsCount: route.chain.length,
       },
     });
 

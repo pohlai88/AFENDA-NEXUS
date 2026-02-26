@@ -14,6 +14,7 @@ interface OutboxDbRow {
   tenant_id: string;
   event_type: string;
   payload: Record<string, unknown>;
+  correlation_id: string | null;
   created_at: Date;
   processed_at: Date | null;
 }
@@ -24,7 +25,7 @@ export function createOutboxDrainer(db: DbClient): OutboxDrainer {
       // Use raw SQL for FOR UPDATE SKIP LOCKED — Drizzle query builder
       // doesn't expose .for() on all drivers.
       const result = await db.execute(
-        sql`SELECT id, tenant_id, event_type, payload, created_at, processed_at
+        sql`SELECT id, tenant_id, event_type, payload, correlation_id, created_at, processed_at
             FROM erp.outbox
             WHERE processed_at IS NULL
             ORDER BY created_at ASC
@@ -41,6 +42,7 @@ export function createOutboxDrainer(db: DbClient): OutboxDrainer {
         tenantId: r.tenant_id,
         eventType: r.event_type,
         payload: (r.payload ?? {}) as Record<string, unknown>,
+        correlationId: r.correlation_id,
         createdAt: r.created_at,
         processedAt: r.processed_at,
       }));

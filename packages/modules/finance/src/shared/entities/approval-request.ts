@@ -25,6 +25,8 @@ export interface ApprovalRequest {
   readonly tenantId: string;
   readonly entityType: string;
   readonly entityId: string;
+  readonly policyId: string | null;
+  readonly policyVersion: number | null;
   readonly requestedBy: string;
   readonly requestedAt: Date;
   readonly status: ApprovalRequestStatus;

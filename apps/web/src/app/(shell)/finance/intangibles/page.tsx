@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { routes } from '@/lib/constants';
 import { Plus, Calculator } from 'lucide-react';
-import { getIntangibleAssets, getIntangibleSummary } from '@/features/finance/intangibles/queries/intangibles.queries';
+import {
+  getIntangibleAssets,
+  getIntangibleSummary,
+} from '@/features/finance/intangibles/queries/intangibles.queries';
 import { IntangibleSummaryCards } from '@/features/finance/intangibles/blocks/intangible-summary-cards';
 import { IntangiblesTable } from '@/features/finance/intangibles/blocks/intangibles-table';
 

@@ -27,23 +27,23 @@ export const transitions = {
     duration: DURATION.normal,
     ease: EASING.easeOut,
   } satisfies Transition,
-  
+
   fast: {
     duration: DURATION.fast,
     ease: EASING.easeOut,
   } satisfies Transition,
-  
+
   slow: {
     duration: DURATION.slow,
     ease: EASING.easeInOut,
   } satisfies Transition,
-  
+
   spring: EASING.spring,
-  
+
   springBouncy: EASING.springBouncy,
-  
+
   springGentle: EASING.springGentle,
-  
+
   stagger: (staggerChildren = 0.05, delayChildren = 0) => ({
     staggerChildren,
     delayChildren,
@@ -301,10 +301,7 @@ export const reducedMotionVariants: Variants = {
   exit: { opacity: 0 },
 };
 
-export function getMotionVariants(
-  variants: Variants,
-  prefersReducedMotion: boolean
-): Variants {
+export function getMotionVariants(variants: Variants, prefersReducedMotion: boolean): Variants {
   return prefersReducedMotion ? reducedMotionVariants : variants;
 }
 
@@ -317,7 +314,7 @@ export const animationPresets = {
     animate: 'animate',
     exit: 'exit',
   },
-  
+
   card: {
     variants: cardVariants,
     initial: 'initial',
@@ -326,7 +323,7 @@ export const animationPresets = {
     whileHover: 'hover',
     whileTap: 'tap',
   },
-  
+
   list: {
     container: {
       variants: listContainerVariants,
@@ -341,14 +338,14 @@ export const animationPresets = {
       exit: 'exit',
     },
   },
-  
+
   fadeUp: {
     variants: fadeUpVariants,
     initial: 'initial',
     animate: 'animate',
     exit: 'exit',
   },
-  
+
   modal: {
     overlay: {
       variants: overlayVariants,

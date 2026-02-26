@@ -150,7 +150,8 @@ export default function ReportsPage() {
       <PageHeader>
         <PageHeaderHeading>Financial Reports</PageHeaderHeading>
         <PageHeaderDescription>
-          Standard financial statements, analysis, and compliance reports. Click any report to generate with your selected parameters.
+          Standard financial statements, analysis, and compliance reports. Click any report to
+          generate with your selected parameters.
         </PageHeaderDescription>
       </PageHeader>
 
@@ -173,7 +174,9 @@ export default function ReportsPage() {
                   </div>
                   <div className="space-y-0.5">
                     <h3 className="text-sm font-medium">{report.title}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{report.description}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {report.description}
+                    </p>
                   </div>
                 </Link>
               ))}

@@ -59,10 +59,22 @@ export function PageHeader({
   );
 }
 
-export function PageHeaderHeading({ children, className }: { children?: React.ReactNode; className?: string }) {
+export function PageHeaderHeading({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
   return <h1 className={cn('text-2xl font-bold tracking-tight', className)}>{children}</h1>;
 }
 
-export function PageHeaderDescription({ children, className }: { children?: React.ReactNode; className?: string }) {
+export function PageHeaderDescription({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
   return <p className={cn('text-sm text-muted-foreground', className)}>{children}</p>;
 }

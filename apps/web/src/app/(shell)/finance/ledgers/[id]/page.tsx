@@ -45,9 +45,7 @@ export default async function LedgerDetailPage({ params }: LedgerDetailPageProps
         <Separator orientation="vertical" className="hidden h-10 sm:block" />
         <div>
           <span className="text-xs text-muted-foreground">Company</span>
-          <div className="mt-1 text-sm font-medium">
-            {ledger.companyName ?? ledger.companyId}
-          </div>
+          <div className="mt-1 text-sm font-medium">{ledger.companyName ?? ledger.companyId}</div>
         </div>
         <Separator orientation="vertical" className="hidden h-10 sm:block" />
         <div>

@@ -8,6 +8,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { consolidate } from '../services/consolidate.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerConsolidationRoutes(
   app: FastifyInstance,
@@ -19,8 +20,7 @@ export function registerConsolidationRoutes(
     '/consolidation',
     { preHandler: [requirePermission(policy, 'admin:all')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const body = ConsolidationQuerySchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {

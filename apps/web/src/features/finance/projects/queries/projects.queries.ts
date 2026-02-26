@@ -269,11 +269,14 @@ export async function getProjects(params?: {
   search?: string;
   page?: number;
   perPage?: number;
-}): Promise<{
-  ok: true;
-  data: Project[];
-  pagination: { page: number; perPage: number; total: number; totalPages: number };
-} | { ok: false; error: string }> {
+}): Promise<
+  | {
+      ok: true;
+      data: Project[];
+      pagination: { page: number; perPage: number; total: number; totalPages: number };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 400));
 
   let filtered = [...mockProjects];

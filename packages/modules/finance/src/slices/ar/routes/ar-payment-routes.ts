@@ -5,6 +5,8 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { allocatePayment } from '../services/allocate-payment.js';
+import { extractIdentity } from '@afenda/api-kit';
+import { toMinorUnits } from '@afenda/core';
 
 export function registerArPaymentRoutes(
   app: FastifyInstance,
@@ -16,8 +18,7 @@ export function registerArPaymentRoutes(
     '/ar/payments',
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const body = AllocatePaymentSchema.parse(req.body);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
@@ -28,7 +29,7 @@ export function registerArPaymentRoutes(
             customerId: body.customerId,
             paymentDate: new Date(body.paymentDate),
             paymentRef: body.paymentRef,
-            paymentAmount: BigInt(Math.round(body.paymentAmount * 100)), // eslint-disable-line no-restricted-syntax
+            paymentAmount: toMinorUnits(body.paymentAmount, body.currencyCode),
             currencyCode: body.currencyCode,
           },
           deps

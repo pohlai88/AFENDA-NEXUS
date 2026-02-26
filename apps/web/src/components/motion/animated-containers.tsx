@@ -244,11 +244,7 @@ interface PresenceProps {
 }
 
 export function Presence({ children, show, mode = 'sync' }: PresenceProps) {
-  return (
-    <AnimatePresence mode={mode}>
-      {show && children}
-    </AnimatePresence>
-  );
+  return <AnimatePresence mode={mode}>{show && children}</AnimatePresence>;
 }
 
 // ─── Stagger Container ───────────────────────────────────────────────────────

@@ -388,7 +388,6 @@ export class DocumentAttachmentService {
           input.entityId,
           input.documentId
         );
-        const linked = !exists;
         if (exists) {
           await this.auditDocument(
             input.tenantId,

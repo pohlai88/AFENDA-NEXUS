@@ -48,13 +48,13 @@ export async function rateLimitPlugin(
   }
 
   app.addHook('onClose', async () => {
-    if (redis) await redis.quit().catch(() => {});
+    if (redis) await redis.quit().catch(() => { });
   });
 
   app.addHook('preHandler', async (req: FastifyRequest, reply: FastifyReply) => {
     if (req.url.startsWith('/health')) return;
 
-    const tenantId = req.headers['x-tenant-id'] as string | undefined;
+    const tenantId = (req as FastifyRequest & { authUser?: { tenantId?: string } }).authUser?.tenantId;
     if (!tenantId) return;
 
     const windowSec = Math.ceil(windowMs / 1000);

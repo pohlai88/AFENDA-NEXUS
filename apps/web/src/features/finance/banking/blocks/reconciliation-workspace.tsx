@@ -88,15 +88,21 @@ function ReconciliationSummary({ session }: ReconciliationSummaryProps) {
           </div>
         </div>
 
-        <div className={cn(
-          'rounded-lg p-3 text-center',
-          isBalanced ? 'bg-green-50 dark:bg-green-950' : 'bg-red-50 dark:bg-red-950'
-        )}>
+        <div
+          className={cn(
+            'rounded-lg p-3 text-center',
+            isBalanced
+              ? 'bg-success/10 dark:bg-success/20'
+              : 'bg-destructive/10 dark:bg-destructive/20'
+          )}
+        >
           <div className="text-xs text-muted-foreground">Difference</div>
-          <div className={cn(
-            'text-xl font-bold font-mono',
-            isBalanced ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-          )}>
+          <div
+            className={cn(
+              'text-xl font-bold font-mono',
+              isBalanced ? 'text-success' : 'text-destructive'
+            )}
+          >
             {formatCurrency(session.difference, 'USD')}
           </div>
         </div>
@@ -178,7 +184,7 @@ function BankTransactionRow({
           <span
             className={cn(
               'font-mono font-medium',
-              transaction.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+              transaction.type === 'credit' ? 'text-success' : 'text-destructive'
             )}
           >
             {transaction.type === 'credit' ? '+' : '-'}
@@ -234,7 +240,7 @@ function GLTransactionRow({ transaction, isSelected, onSelect }: GLTransactionRo
           <span
             className={cn(
               'font-mono font-medium',
-              transaction.amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+              transaction.amount > 0 ? 'text-success' : 'text-destructive'
             )}
           >
             {transaction.amount > 0 ? '+' : ''}
@@ -483,11 +489,20 @@ export function ReconciliationWorkspace({
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Bank Statement</CardTitle>
-                <Tabs value={filterStatus} onValueChange={(v) => setFilterStatus(v as MatchStatus | 'all')}>
+                <Tabs
+                  value={filterStatus}
+                  onValueChange={(v) => setFilterStatus(v as MatchStatus | 'all')}
+                >
                   <TabsList className="h-8">
-                    <TabsTrigger value="all" className="text-xs h-7">All</TabsTrigger>
-                    <TabsTrigger value="unmatched" className="text-xs h-7">Unmatched</TabsTrigger>
-                    <TabsTrigger value="matched" className="text-xs h-7">Matched</TabsTrigger>
+                    <TabsTrigger value="all" className="text-xs h-7">
+                      All
+                    </TabsTrigger>
+                    <TabsTrigger value="unmatched" className="text-xs h-7">
+                      Unmatched
+                    </TabsTrigger>
+                    <TabsTrigger value="matched" className="text-xs h-7">
+                      Matched
+                    </TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -546,7 +561,7 @@ export function ReconciliationWorkspace({
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-500" />
+              <Sparkles className="h-4 w-4 text-warning" />
               Smart Suggestions
             </CardTitle>
             <CardDescription>{suggestions.length} potential matches found</CardDescription>
@@ -555,7 +570,9 @@ export function ReconciliationWorkspace({
             <ScrollArea className="h-[200px]">
               <div className="space-y-2">
                 {suggestions.map((suggestion) => {
-                  const bankTxn = bankTransactions.find((t) => t.id === suggestion.bankTransactionId);
+                  const bankTxn = bankTransactions.find(
+                    (t) => t.id === suggestion.bankTransactionId
+                  );
                   if (!bankTxn) return null;
 
                   return (

@@ -1,5 +1,7 @@
 'use server';
 
+import type { IdParam } from '@afenda/contracts';
+
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
@@ -7,7 +9,7 @@ import type { ApiResult, CommandReceipt } from '@/lib/types';
 // ─── Period Lifecycle Actions ───────────────────────────────────────────────
 
 export async function closePeriodAction(
-  periodId: string,
+  periodId: IdParam['id'],
   reason?: string
 ): Promise<ApiResult<CommandReceipt>> {
   const ctx = await getRequestContext();

@@ -15,13 +15,14 @@ interface ProjectDetailPageProps {
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { id } = await params;
 
-  const [projectResult, costsResult, billingsResult, milestonesResult, wipResult] = await Promise.all([
-    getProjectById(id),
-    getProjectCosts(id),
-    getProjectBillings(id),
-    getProjectMilestones(id),
-    getWIPCalculation(id),
-  ]);
+  const [projectResult, costsResult, billingsResult, milestonesResult, wipResult] =
+    await Promise.all([
+      getProjectById(id),
+      getProjectCosts(id),
+      getProjectBillings(id),
+      getProjectMilestones(id),
+      getWIPCalculation(id),
+    ]);
 
   if (!projectResult.ok) {
     notFound();

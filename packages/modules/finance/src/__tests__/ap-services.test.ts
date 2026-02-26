@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { postApInvoice } from '../slices/ap/services/post-ap-invoice.js';
+import { approveApInvoice } from '../slices/ap/services/approve-ap-invoice.js';
+import { cancelApInvoice } from '../slices/ap/services/cancel-ap-invoice.js';
 import { executePaymentRun } from '../slices/ap/services/execute-payment-run.js';
 import { createDebitMemo } from '../slices/ap/services/create-debit-memo.js';
 import { getApAging } from '../slices/ap/services/get-ap-aging.js';
@@ -14,6 +16,7 @@ import {
   mockJournalRepo,
   mockOutboxWriter,
   mockDocumentNumberGenerator,
+  mockIdempotencyStore,
 } from './helpers.js';
 
 // ─── postApInvoice ─────────────────────────────────────────────────────────
@@ -39,6 +42,7 @@ describe('postApInvoice()', () => {
         journalRepo,
         outboxWriter: outbox,
         documentNumberGenerator: docGen,
+        idempotencyStore: mockIdempotencyStore(),
       }
     );
 
@@ -68,6 +72,7 @@ describe('postApInvoice()', () => {
         journalRepo: mockJournalRepo(),
         outboxWriter: mockOutboxWriter(),
         documentNumberGenerator: mockDocumentNumberGenerator(),
+        idempotencyStore: mockIdempotencyStore(),
       }
     );
 
@@ -89,10 +94,148 @@ describe('postApInvoice()', () => {
         journalRepo: mockJournalRepo(),
         outboxWriter: mockOutboxWriter(),
         documentNumberGenerator: mockDocumentNumberGenerator(),
+        idempotencyStore: mockIdempotencyStore(),
       }
     );
 
     expect(result.ok).toBe(false);
+  });
+});
+
+// ─── postApInvoice idempotency ─────────────────────────────────────────────
+
+describe('postApInvoice() idempotency', () => {
+  it('rejects duplicate post with IDEMPOTENCY_CONFLICT', async () => {
+    const invoice = makeApInvoice({ status: 'APPROVED' });
+    const invoiceRepo = mockApInvoiceRepo(new Map([[AP_IDS.invoice, invoice]]));
+
+    const alreadyClaimed = new Set([`t1:${AP_IDS.invoice}:POST_AP_INVOICE`]);
+    const result = await postApInvoice(
+      {
+        tenantId: 't1',
+        userId: 'u1',
+        invoiceId: AP_IDS.invoice,
+        fiscalPeriodId: 'period-1',
+        apAccountId: AP_IDS.apAccount,
+      },
+      {
+        apInvoiceRepo: invoiceRepo,
+        journalRepo: mockJournalRepo(),
+        outboxWriter: mockOutboxWriter(),
+        documentNumberGenerator: mockDocumentNumberGenerator(),
+        idempotencyStore: mockIdempotencyStore(alreadyClaimed),
+      }
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.message).toContain('already posted');
+  });
+});
+
+// ─── executePaymentRun idempotency ────────────────────────────────────────
+
+describe('executePaymentRun() idempotency', () => {
+  it('rejects duplicate execution with IDEMPOTENCY_CONFLICT', async () => {
+    const invoice = makeApInvoice({ status: 'POSTED' });
+    const invoiceRepo = mockApInvoiceRepo(new Map([[AP_IDS.invoice, invoice]]));
+    const run = makePaymentRun({
+      status: 'APPROVED',
+      items: [makePaymentRunItem({ invoiceId: AP_IDS.invoice })],
+    });
+    const runRepo = mockApPaymentRunRepo(new Map([[AP_IDS.paymentRun, run]]));
+
+    const alreadyClaimed = new Set([`t1:${AP_IDS.paymentRun}:EXECUTE_PAYMENT_RUN`]);
+    const result = await executePaymentRun(
+      { tenantId: 't1', userId: 'u1', paymentRunId: AP_IDS.paymentRun },
+      {
+        apPaymentRunRepo: runRepo,
+        apInvoiceRepo: invoiceRepo,
+        outboxWriter: mockOutboxWriter(),
+        idempotencyStore: mockIdempotencyStore(alreadyClaimed),
+      }
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.message).toContain('already processed');
+  });
+});
+
+// ─── approveApInvoice ─────────────────────────────────────────────────────
+
+describe('approveApInvoice()', () => {
+  it('approves a DRAFT invoice', async () => {
+    const invoice = makeApInvoice({ status: 'DRAFT' });
+    const invoiceRepo = mockApInvoiceRepo(new Map([[AP_IDS.invoice, invoice]]));
+    const outbox = mockOutboxWriter();
+
+    const result = await approveApInvoice(
+      { tenantId: 't1', userId: 'u1', invoiceId: AP_IDS.invoice },
+      { apInvoiceRepo: invoiceRepo, outboxWriter: outbox }
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.status).toBe('APPROVED');
+    expect(outbox.events).toHaveLength(1);
+    expect(outbox.events[0]!.eventType).toBe('AP_INVOICE_APPROVED');
+  });
+
+  it('rejects approval of POSTED invoice', async () => {
+    const invoice = makeApInvoice({ status: 'POSTED' });
+    const invoiceRepo = mockApInvoiceRepo(new Map([[AP_IDS.invoice, invoice]]));
+
+    const result = await approveApInvoice(
+      { tenantId: 't1', userId: 'u1', invoiceId: AP_IDS.invoice },
+      { apInvoiceRepo: invoiceRepo, outboxWriter: mockOutboxWriter() }
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.message).toContain('DRAFT');
+  });
+});
+
+// ─── cancelApInvoice ──────────────────────────────────────────────────────
+
+describe('cancelApInvoice()', () => {
+  it('cancels a DRAFT invoice', async () => {
+    const invoice = makeApInvoice({ status: 'DRAFT' });
+    const invoiceRepo = mockApInvoiceRepo(new Map([[AP_IDS.invoice, invoice]]));
+    const outbox = mockOutboxWriter();
+
+    const result = await cancelApInvoice(
+      { tenantId: 't1', userId: 'u1', invoiceId: AP_IDS.invoice, reason: 'Duplicate' },
+      { apInvoiceRepo: invoiceRepo, outboxWriter: outbox }
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.status).toBe('CANCELLED');
+    expect(outbox.events).toHaveLength(1);
+    expect(outbox.events[0]!.eventType).toBe('AP_INVOICE_CANCELLED');
+  });
+
+  it('rejects cancellation of PAID invoice', async () => {
+    const invoice = makeApInvoice({ status: 'PAID' });
+    const invoiceRepo = mockApInvoiceRepo(new Map([[AP_IDS.invoice, invoice]]));
+
+    const result = await cancelApInvoice(
+      { tenantId: 't1', userId: 'u1', invoiceId: AP_IDS.invoice, reason: 'Test' },
+      { apInvoiceRepo: invoiceRepo, outboxWriter: mockOutboxWriter() }
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.message).toContain('PAID');
+  });
+
+  it('rejects cancellation when partial payments exist', async () => {
+    const invoice = makeApInvoice({ status: 'PARTIALLY_PAID', paidAmount: money(5000n, 'USD') });
+    const invoiceRepo = mockApInvoiceRepo(new Map([[AP_IDS.invoice, invoice]]));
+
+    const result = await cancelApInvoice(
+      { tenantId: 't1', userId: 'u1', invoiceId: AP_IDS.invoice, reason: 'Test' },
+      { apInvoiceRepo: invoiceRepo, outboxWriter: mockOutboxWriter() }
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.message).toContain('partial payments');
   });
 });
 
@@ -112,7 +255,12 @@ describe('executePaymentRun()', () => {
 
     const result = await executePaymentRun(
       { tenantId: 't1', userId: 'u1', paymentRunId: AP_IDS.paymentRun },
-      { apPaymentRunRepo: runRepo, apInvoiceRepo: invoiceRepo, outboxWriter: outbox }
+      {
+        apPaymentRunRepo: runRepo,
+        apInvoiceRepo: invoiceRepo,
+        outboxWriter: outbox,
+        idempotencyStore: mockIdempotencyStore(),
+      }
     );
 
     expect(result.ok).toBe(true);
@@ -137,6 +285,7 @@ describe('executePaymentRun()', () => {
         apPaymentRunRepo: runRepo,
         apInvoiceRepo: mockApInvoiceRepo(),
         outboxWriter: mockOutboxWriter(),
+        idempotencyStore: mockIdempotencyStore(),
       }
     );
 
@@ -154,6 +303,7 @@ describe('executePaymentRun()', () => {
         apPaymentRunRepo: runRepo,
         apInvoiceRepo: mockApInvoiceRepo(),
         outboxWriter: mockOutboxWriter(),
+        idempotencyStore: mockIdempotencyStore(),
       }
     );
 

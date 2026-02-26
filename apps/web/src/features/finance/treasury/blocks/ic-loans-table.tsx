@@ -10,6 +10,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Plus, Landmark, Building2, ArrowRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import type { IntercompanyLoan, ICLoanStatus, ICLoanType } from '../types';
 import { icLoanStatusConfig, icLoanTypeLabels } from '../types';
+import { routes } from '@/lib/constants';
 
 function StatusBadge({ status }: { status: ICLoanStatus }) {
   const config = icLoanStatusConfig[status];
@@ -30,7 +31,12 @@ function TypeBadge({ type }: { type: ICLoanType }) {
 
 function ArmLengthIndicator({ isCompliant }: { isCompliant: boolean }) {
   return (
-    <span className={cn('flex items-center gap-1 text-xs', isCompliant ? 'text-success' : 'text-warning')}>
+    <span
+      className={cn(
+        'flex items-center gap-1 text-xs',
+        isCompliant ? 'text-success' : 'text-warning'
+      )}
+    >
       {isCompliant ? (
         <>
           <CheckCircle2 className="h-3.5 w-3.5" />
@@ -117,7 +123,7 @@ export function ICLoansTable({ loans }: ICLoansTableProps) {
       header: 'Accrued',
       align: 'right',
       render: (loan) => (
-        <span className="font-mono text-amber-600">
+        <span className="font-mono text-warning">
           {formatCurrency(loan.accruedInterest, loan.currency)}
         </span>
       ),
@@ -126,9 +132,7 @@ export function ICLoansTable({ loans }: ICLoansTableProps) {
       key: 'maturityDate',
       header: 'Maturity',
       sortable: true,
-      render: (loan) => (
-        <span className="text-sm">{formatDate(loan.maturityDate)}</span>
-      ),
+      render: (loan) => <span className="text-sm">{formatDate(loan.maturityDate)}</span>,
     },
     {
       key: 'isArmLength',
@@ -143,7 +147,7 @@ export function ICLoansTable({ loans }: ICLoansTableProps) {
   ];
 
   const handleRowClick = (loan: IntercompanyLoan) => {
-    router.push(`/finance/treasury/loans/${loan.id}`);
+    router.push(routes.finance.treasuryLoanDetail(loan.id));
   };
 
   return (
@@ -159,7 +163,7 @@ export function ICLoansTable({ loans }: ICLoansTableProps) {
         description: 'Set up intercompany loan tracking for transfer pricing compliance.',
         action: (
           <Button asChild>
-            <Link href="/finance/treasury/loans/new">
+            <Link href={routes.finance.treasuryLoanNew}>
               <Plus className="mr-2 h-4 w-4" />
               New IC Loan
             </Link>
@@ -168,7 +172,7 @@ export function ICLoansTable({ loans }: ICLoansTableProps) {
       }}
       actions={
         <Button asChild>
-          <Link href="/finance/treasury/loans/new">
+          <Link href={routes.finance.treasuryLoanNew}>
             <Plus className="mr-2 h-4 w-4" />
             New IC Loan
           </Link>

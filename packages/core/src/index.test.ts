@@ -12,6 +12,11 @@ import {
   NotFoundError,
   ValidationError,
   AuthorizationError,
+  CURRENCY_SCALE,
+  currencyScale,
+  toMinorUnits,
+  fromMinorUnits,
+  formatMinorUnits,
 } from './index.js';
 
 // ─── Result ────────────────────────────────────────────────────────────────────
@@ -84,6 +89,98 @@ describe('money()', () => {
   it('handles zero amount', () => {
     const m = money(0n, 'EUR');
     expect(m.amount).toBe(0n);
+  });
+});
+
+// ─── Currency Scale & Minor Units ─────────────────────────────────────────────
+
+describe('CURRENCY_SCALE', () => {
+  it('has 2 decimals for USD', () => {
+    expect(CURRENCY_SCALE.USD).toBe(2);
+  });
+
+  it('has 0 decimals for JPY', () => {
+    expect(CURRENCY_SCALE.JPY).toBe(0);
+  });
+
+  it('has 3 decimals for KWD', () => {
+    expect(CURRENCY_SCALE.KWD).toBe(3);
+  });
+});
+
+describe('currencyScale()', () => {
+  it('returns known scale', () => {
+    expect(currencyScale('IDR')).toBe(0);
+    expect(currencyScale('BHD')).toBe(3);
+  });
+
+  it('defaults to 2 for unknown currency', () => {
+    expect(currencyScale('XYZ')).toBe(2);
+  });
+});
+
+describe('toMinorUnits()', () => {
+  it('converts USD (2 decimals)', () => {
+    expect(toMinorUnits(100.50, 'USD')).toBe(10050n);
+  });
+
+  it('converts JPY (0 decimals)', () => {
+    expect(toMinorUnits(1500, 'JPY')).toBe(1500n);
+  });
+
+  it('converts IDR (0 decimals)', () => {
+    expect(toMinorUnits(50000, 'IDR')).toBe(50000n);
+  });
+
+  it('converts KWD (3 decimals)', () => {
+    expect(toMinorUnits(1.234, 'KWD')).toBe(1234n);
+  });
+
+  it('converts BHD (3 decimals)', () => {
+    expect(toMinorUnits(99.999, 'BHD')).toBe(99999n);
+  });
+
+  it('rounds correctly', () => {
+    expect(toMinorUnits(10.005, 'USD')).toBe(1001n);
+    expect(toMinorUnits(10.004, 'USD')).toBe(1000n);
+  });
+});
+
+describe('fromMinorUnits()', () => {
+  it('converts USD minor to major', () => {
+    expect(fromMinorUnits(10050n, 'USD')).toBe(100.50);
+  });
+
+  it('converts JPY minor to major (no decimals)', () => {
+    expect(fromMinorUnits(1500n, 'JPY')).toBe(1500);
+  });
+
+  it('converts KWD minor to major (3 decimals)', () => {
+    expect(fromMinorUnits(1234n, 'KWD')).toBe(1.234);
+  });
+
+  it('round-trips correctly', () => {
+    expect(fromMinorUnits(toMinorUnits(42.50, 'USD'), 'USD')).toBe(42.50);
+    expect(fromMinorUnits(toMinorUnits(1500, 'JPY'), 'JPY')).toBe(1500);
+    expect(fromMinorUnits(toMinorUnits(1.234, 'KWD'), 'KWD')).toBe(1.234);
+  });
+});
+
+describe('formatMinorUnits()', () => {
+  it('formats 2-decimal amount', () => {
+    expect(formatMinorUnits(10050n, 2)).toBe('100.50');
+  });
+
+  it('formats 0-decimal amount', () => {
+    expect(formatMinorUnits(1500n, 0)).toBe('1500');
+  });
+
+  it('formats 3-decimal amount', () => {
+    expect(formatMinorUnits(1234n, 3)).toBe('1.234');
+  });
+
+  it('pads fractional part', () => {
+    expect(formatMinorUnits(5n, 2)).toBe('0.05');
   });
 });
 

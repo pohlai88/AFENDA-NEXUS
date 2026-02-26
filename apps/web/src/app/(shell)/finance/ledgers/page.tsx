@@ -6,6 +6,7 @@ import { handleApiError } from '@/lib/api-error.server';
 import { getLedgers } from '@/features/finance/ledgers/queries/ledger.queries';
 import { LedgerTable } from '@/features/finance/ledgers/blocks/ledger-table';
 import { BookOpen } from 'lucide-react';
+import { routes } from '@/lib/constants';
 
 export const metadata = { title: 'Ledgers' };
 
@@ -38,7 +39,7 @@ export default async function LedgersPage({ searchParams }: LedgersPageProps) {
       <PageHeader
         title="Ledgers"
         description="Manage general ledgers for each company entity."
-        breadcrumbs={[{ label: 'Finance', href: '/finance/journals' }, { label: 'Ledgers' }]}
+        breadcrumbs={[{ label: 'Finance', href: routes.finance.journals }, { label: 'Ledgers' }]}
       />
 
       {ledgers.length === 0 ? (

@@ -12,6 +12,7 @@ import {
 } from '@/features/finance/intercompany/queries/ic.queries';
 import { getIcTransactionAuditAction } from '@/features/finance/intercompany/actions/ic.actions';
 import { IcSettleButton } from '@/features/finance/intercompany/blocks/ic-settle-button';
+import { routes } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -51,8 +52,8 @@ export default async function IcTransactionDetailPage({ params }: IcDetailPagePr
         title={tx.description}
         description={`IC transaction between ${tx.sourceCompanyName} and ${tx.mirrorCompanyName}.`}
         breadcrumbs={[
-          { label: 'Finance', href: '/finance/journals' },
-          { label: 'Intercompany', href: '/finance/intercompany' },
+          { label: 'Finance', href: routes.finance.journals },
+          { label: 'Intercompany', href: routes.finance.icTransactions },
           { label: tx.description },
         ]}
         actions={

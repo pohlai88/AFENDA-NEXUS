@@ -3,6 +3,8 @@ import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { signOffReconciliation } from '../services/sign-off-reconciliation.js';
+import { extractIdentity } from '@afenda/api-kit';
+import type { IdParam } from '@afenda/contracts';
 
 export function registerBankRoutes(
   app: FastifyInstance,
@@ -13,8 +15,7 @@ export function registerBankRoutes(
     '/bank-statements',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       const bankAccountId = (req.query as Record<string, string>).bankAccountId;
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         if (bankAccountId)
@@ -24,12 +25,11 @@ export function registerBankRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/bank-statements/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const stmt = await deps.bankStatementRepo.findById(req.params.id);
         if (!stmt) return reply.status(404).send({ error: 'Statement not found' });
@@ -38,12 +38,11 @@ export function registerBankRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/bank-statements/:id/lines',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const lines = await deps.bankStatementRepo.findLinesByStatement(req.params.id);
         return { data: lines };
@@ -55,8 +54,7 @@ export function registerBankRoutes(
     '/bank-reconciliations',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const list = await deps.bankReconciliationRepo.findAll();
         return { data: list };
@@ -64,12 +62,11 @@ export function registerBankRoutes(
     }
   );
 
-  app.get<{ Params: { id: string } }>(
+  app.get<{ Params: IdParam }>(
     '/bank-reconciliations/:id',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const recon = await deps.bankReconciliationRepo.findById(req.params.id);
         if (!recon) return reply.status(404).send({ error: 'Reconciliation not found' });
@@ -78,12 +75,11 @@ export function registerBankRoutes(
     }
   );
 
-  app.post<{ Params: { id: string } }>(
+  app.post<{ Params: IdParam }>(
     '/bank-reconciliations/:id/sign-off',
     { preHandler: [requirePermission(policy, 'journal:post')] },
     async (req, reply) => {
-      const tenantId = (req.headers as Record<string, string>)['x-tenant-id']!;
-      const userId = (req.headers as Record<string, string>)['x-user-id']!;
+      const { tenantId, userId } = extractIdentity(req);
       return runtime.withTenant({ tenantId, userId }, async (deps) => {
         const result = await signOffReconciliation(
           { tenantId, userId, reconciliationId: req.params.id },

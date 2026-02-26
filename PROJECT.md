@@ -296,12 +296,36 @@ single monolithic "cli" packages.
 | `pnpm gen:outbox-event <event>`                 | Outbox payload + worker handler stub                                                        |
 | `pnpm arch:guard`                               | Per-package ARCHITECTURE.md governance — CI gate, validates deps/imports/structure (E1-E15) |
 | `pnpm turbo test:coverage`                      | Run tests with coverage enforcement (thresholds: 80/80/75/80)                               |
+| `pnpm module:gates`                             | Run all 6 production hardening gates (see §13a below)                                       |
 | `node tools/drift-check/src/unused-exports.mjs` | Advisory scan for unused public API exports                                                 |
 
 **Drift gate:** CI runs `pnpm run drift` and `pnpm arch:guard` before
 lint/build. Structure changes require updating `tools/drift-check` and
 PROJECT.md together. Per-package boundary changes require updating the relevant
 `ARCHITECTURE.*.md` frontmatter (see `docs/ARCHITECTURE-SPEC.md`).
+
+### Production Hardening Gates (§13a)
+
+Six CI-enforced gates run via `pnpm module:gates` in the `guards` job of
+`.github/workflows/ci.yml`. All gates fail CI on violation (exit 1).
+
+| Gate              | Script                   | What It Enforces                                                                                                |
+| ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| **Identity SoT**  | `gate-identity-sot.mjs`  | Bans `x-tenant-id`/`x-user-id` header reads outside a 2-file allowlist. 621 files scanned.                      |
+| **API Module**    | `gate-api-module.mjs`    | 4 checks per route file: `requirePermission`, `extractIdentity`, `@afenda/contracts`, no `drizzle-orm` imports. |
+| **Worker Module** | `gate-worker-module.mjs` | Every Tier-1 event in `EVENT_REGISTRY` has a handler. `correlationId` propagated via `runWithContext`.          |
+| **Web Module**    | `gate-web-module.mjs`    | Every `page.tsx` has sibling `loading.tsx`. Feature modules use `@afenda/contracts`.                            |
+| **DB Module**     | `gate-db-module.mjs`     | Every tenant table has `ENABLE ROW LEVEL SECURITY` + `CREATE POLICY` across all migrations.                     |
+| **OpenAPI Drift** | `gate-openapi-drift.mjs` | Freshly generated spec must match committed `docs/openapi.json`.                                                |
+
+**Key packages:**
+
+- `@afenda/api-kit` — `extractIdentity`, `registerErrorHandler`,
+  `registerBigIntSerializer`, `registerGlobalRateLimit`, `getOutboxMeta`
+- `@afenda/contracts` — Zod schemas (`IdParamSchema`, `PaginationSchema`,
+  `LinkedEntityTypeSchema`, `ApproveRejectSchema`)
+- `EVENT_REGISTRY` in `packages/modules/finance/src/shared/events.ts` —
+  tier/family metadata for all domain events
 
 ### Generators (@afenda/generators)
 
@@ -508,8 +532,8 @@ metrics until needed.
 ### Monorepo (Turborepo + pnpm)
 
 - **pnpm-workspace.yaml:**
-  `packages: ['apps/*', 'packages/*', 'packages/modules/*', 'tools/*']`
-  — use `tools/*` not `tooling/*`
+  `packages: ['apps/*', 'packages/*', 'packages/modules/*', 'tools/*']` — use
+  `tools/*` not `tooling/*`
 - **Catalog:** Centralize versions in `pnpm-workspace.yaml`; use `catalog:` in
   package.json
 - **turbo.json:** `build` depends on `^build`; `dev` cache: false, persistent:
@@ -583,22 +607,22 @@ shadcn/ui configured. Graphile Worker wired.
 
 ### Scaffolding Status
 
-| Package                           | Status      | Notes                                                                                                                                    |
-| --------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/core`                   | ✅ Complete | Branded IDs, Money, Result, AppError, DateRange                                                                                          |
-| `packages/contracts`              | ✅ Complete | Zod DTOs (Pagination, Journal, PostJournal schemas)                                                                                      |
-| `packages/authz`                  | ✅ Complete | Roles, permissions, policy evaluation (`can`, `assertCan`)                                                                               |
-| `packages/db`                     | ✅ Complete | DbSession, Outbox (OutboxRow/Writer/Drainer), schema stubs, migrate util                                                                 |
-| `packages/platform`               | ✅ Complete | Real pino logger, Zod-validated config, feature flags                                                                                    |
-| `packages/modules/finance`        | ✅ Complete | Journal, Account, Ledger, FiscalPeriod, FxRate, GlBalance, TrialBalance, Intercompany; postJournal with balance validation + idempotency |
-| `packages/typescript-config`      | ✅ Complete | base, library, fastify, nextjs presets                                                                                                   |
-| `packages/eslint-config`          | ✅ Complete | Flat config + typescript-eslint parser                                                                                                   |
-| `apps/api`                        | ✅ Complete | Fastify server + `/health` + `/health/ready` routes                                                                                      |
-| `apps/web`                        | ✅ Complete | Next.js App Router + Tailwind + shadcn/ui configured                                                                                     |
-| `apps/worker`                     | ✅ Complete | Graphile Worker dep + background job processor                                                                                           |
-| `tools/drift-check`               | ✅ Complete | Manifest-driven structure validator                                                                                                      |
-| `tools/generators`                | ✅ Complete | gen:module, gen:table, gen:endpoint, gen:outbox-event (all functional)                                                                   |
-| `tools/scripts`                   | ✅ Created  | Ad-hoc scripts directory                                                                                                                 |
+| Package                      | Status      | Notes                                                                                                                                    |
+| ---------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/core`              | ✅ Complete | Branded IDs, Money, Result, AppError, DateRange                                                                                          |
+| `packages/contracts`         | ✅ Complete | Zod DTOs (Pagination, Journal, PostJournal schemas)                                                                                      |
+| `packages/authz`             | ✅ Complete | Roles, permissions, policy evaluation (`can`, `assertCan`)                                                                               |
+| `packages/db`                | ✅ Complete | DbSession, Outbox (OutboxRow/Writer/Drainer), schema stubs, migrate util                                                                 |
+| `packages/platform`          | ✅ Complete | Real pino logger, Zod-validated config, feature flags                                                                                    |
+| `packages/modules/finance`   | ✅ Complete | Journal, Account, Ledger, FiscalPeriod, FxRate, GlBalance, TrialBalance, Intercompany; postJournal with balance validation + idempotency |
+| `packages/typescript-config` | ✅ Complete | base, library, fastify, nextjs presets                                                                                                   |
+| `packages/eslint-config`     | ✅ Complete | Flat config + typescript-eslint parser                                                                                                   |
+| `apps/api`                   | ✅ Complete | Fastify server + `/health` + `/health/ready` routes                                                                                      |
+| `apps/web`                   | ✅ Complete | Next.js App Router + Tailwind + shadcn/ui configured                                                                                     |
+| `apps/worker`                | ✅ Complete | Graphile Worker dep + background job processor                                                                                           |
+| `tools/drift-check`          | ✅ Complete | Manifest-driven structure validator                                                                                                      |
+| `tools/generators`           | ✅ Complete | gen:module, gen:table, gen:endpoint, gen:outbox-event (all functional)                                                                   |
+| `tools/scripts`              | ✅ Created  | Ad-hoc scripts directory                                                                                                                 |
 
 ### Audit Status (2026-02-24)
 

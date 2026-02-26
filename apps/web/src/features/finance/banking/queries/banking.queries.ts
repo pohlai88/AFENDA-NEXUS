@@ -292,7 +292,9 @@ const mockSuggestions: MatchSuggestion[] = [
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getBankAccounts(): Promise<{ ok: true; data: BankAccount[] } | { ok: false; error: string }> {
+export async function getBankAccounts(): Promise<
+  { ok: true; data: BankAccount[] } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 300));
   return { ok: true, data: mockBankAccounts };
 }
@@ -311,11 +313,14 @@ export async function getBankStatements(params?: {
   status?: string;
   page?: number;
   perPage?: number;
-}): Promise<{
-  ok: true;
-  data: BankStatement[];
-  pagination: { page: number; perPage: number; total: number; totalPages: number };
-} | { ok: false; error: string }> {
+}): Promise<
+  | {
+      ok: true;
+      data: BankStatement[];
+      pagination: { page: number; perPage: number; total: number; totalPages: number };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 400));
 
   let filtered = [...mockStatements];
@@ -445,16 +450,19 @@ export async function getReconciliationSession(
   return { ok: true, data: session };
 }
 
-export async function getReconciliationStats(bankAccountId?: string): Promise<{
-  ok: true;
-  data: {
-    pendingStatements: number;
-    inProgressStatements: number;
-    unreconciledDays: number;
-    lastReconciledDate: Date | null;
-    totalUnmatchedItems: number;
-  };
-} | { ok: false; error: string }> {
+export async function getReconciliationStats(bankAccountId?: string): Promise<
+  | {
+      ok: true;
+      data: {
+        pendingStatements: number;
+        inProgressStatements: number;
+        unreconciledDays: number;
+        lastReconciledDate: Date | null;
+        totalUnmatchedItems: number;
+      };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 200));
 
   return {

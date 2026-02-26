@@ -5,6 +5,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { getApAging } from '../services/get-ap-aging.js';
+import { extractIdentity } from '@afenda/api-kit';
 
 export function registerApAgingRoutes(
   app: FastifyInstance,
@@ -16,8 +17,7 @@ export function registerApAgingRoutes(
     '/ap/aging',
     { preHandler: [requirePermission(policy, 'report:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
       const query = ApAgingQuerySchema.parse(req.query);
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {

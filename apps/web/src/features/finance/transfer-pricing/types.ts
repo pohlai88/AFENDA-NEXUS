@@ -1,6 +1,12 @@
 // ─── Transfer Pricing Types ──────────────────────────────────────────────────
 
-export type TransactionType = 'goods' | 'services' | 'royalties' | 'interest' | 'cost_sharing' | 'other';
+export type TransactionType =
+  | 'goods'
+  | 'services'
+  | 'royalties'
+  | 'interest'
+  | 'cost_sharing'
+  | 'other';
 export type PricingMethod = 'cup' | 'resale_minus' | 'cost_plus' | 'tnmm' | 'profit_split';
 export type PolicyStatus = 'active' | 'under_review' | 'expired' | 'draft';
 
@@ -72,8 +78,8 @@ export const pricingMethodLabels: Record<PricingMethod, string> = {
 };
 
 export const policyStatusConfig: Record<PolicyStatus, { label: string; color: string }> = {
-  active: { label: 'Active', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  under_review: { label: 'Under Review', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  expired: { label: 'Expired', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  draft: { label: 'Draft', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
+  active: { label: 'Active', color: 'bg-success/15 text-success dark:bg-success/20' },
+  under_review: { label: 'Under Review', color: 'bg-info/15 text-info dark:bg-info/20' },
+  expired: { label: 'Expired', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  draft: { label: 'Draft', color: 'bg-muted text-muted-foreground' },
 };

@@ -5,10 +5,7 @@ import { registerApInvoiceRoutes } from '../slices/ap/routes/ap-invoice-routes.j
 import { registerApPaymentRunRoutes } from '../slices/ap/routes/ap-payment-run-routes.js';
 import { registerApAgingRoutes } from '../slices/ap/routes/ap-aging-routes.js';
 import { DefaultAuthorizationPolicy } from '../shared/authorization/default-authorization-policy.js';
-import {
-  registerErrorHandler,
-  registerBigIntSerializer,
-} from '../shared/routes/fastify-plugins.js';
+import { registerErrorHandler, registerBigIntSerializer } from '@afenda/api-kit';
 import { money } from '@afenda/core';
 import {
   IDS,
@@ -38,6 +35,7 @@ import {
   mockApInvoiceRepo,
   mockPaymentTermsRepo,
   mockApPaymentRunRepo,
+  registerTestAuthPlugin,
 } from './helpers.js';
 
 const BASE_HEADERS = { 'x-tenant-id': 't1', 'x-user-id': 'u1' };
@@ -83,6 +81,7 @@ function buildApApp(depsOverrides: Partial<FinanceDeps> = {}): {
   };
 
   const app = Fastify({ logger: false });
+  registerTestAuthPlugin(app);
   registerErrorHandler(app);
   registerBigIntSerializer(app);
   const policy = new DefaultAuthorizationPolicy();

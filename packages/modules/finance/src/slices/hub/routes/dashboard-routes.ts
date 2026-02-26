@@ -2,6 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
+import { extractIdentity } from '@afenda/api-kit';
+import type { Pagination } from '@afenda/contracts';
 
 /** Use read replica when DATABASE_URL_READONLY is set; otherwise primary. */
 const withDashboardCtx = (runtime: FinanceRuntime) =>
@@ -18,16 +20,17 @@ export function registerDashboardRoutes(
     '/dashboard/summary',
     { preHandler: [requirePermission(policy, 'trialBalance:read')] },
     async (req, reply) => {
-      const tenantId = req.headers['x-tenant-id'] as string;
-      const userId = (req.headers['x-user-id'] as string) ?? 'system';
+      const { tenantId, userId } = extractIdentity(req);
 
       const result = await run({ tenantId, userId }, async (deps) => {
         // 1. Cash balance via trial balance — find the default ledger + open period,
         //    then sum ASSET rows whose account code starts with '1'.
         let cashBalance = 0;
         try {
-          const ledgerResult = await deps.ledgerRepo.findAll({ page: 1, limit: 1 });
-          const periodResult = await deps.periodRepo.findAll({ page: 1, limit: 100 });
+          const ledgerQuery: Pagination = { page: 1, limit: 1 };
+          const periodQuery: Pagination = { page: 1, limit: 100 };
+          const ledgerResult = await deps.ledgerRepo.findAll(ledgerQuery);
+          const periodResult = await deps.periodRepo.findAll(periodQuery);
 
           if (ledgerResult.ok && periodResult.ok) {
             const defaultLedger = ledgerResult.value.data[0];

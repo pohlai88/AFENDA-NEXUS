@@ -2,7 +2,14 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -28,7 +35,11 @@ import {
 } from 'lucide-react';
 import type { DepreciationRun } from '../types';
 import { depRunStatusConfig } from '../types';
-import { calculateDepreciation, postDepreciationRun, cancelDepreciationRun } from '../actions/assets.actions';
+import {
+  calculateDepreciation,
+  postDepreciationRun,
+  cancelDepreciationRun,
+} from '../actions/assets.actions';
 
 // ─── Step Indicator ──────────────────────────────────────────────────────────
 
@@ -48,8 +59,8 @@ function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
               index < currentStep
                 ? 'bg-primary text-primary-foreground'
                 : index === currentStep
-                ? 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2'
-                : 'bg-muted text-muted-foreground'
+                  ? 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2'
+                  : 'bg-muted text-muted-foreground'
             )}
           >
             {index < currentStep ? <CheckCircle className="h-4 w-4" /> : index + 1}
@@ -82,8 +93,18 @@ interface PeriodSelectionStepProps {
 function PeriodSelectionStep({ selectedPeriod, onPeriodChange, onNext }: PeriodSelectionStepProps) {
   const currentYear = new Date().getFullYear();
   const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   const periods = months.map((month, index) => ({
@@ -98,9 +119,7 @@ function PeriodSelectionStep({ selectedPeriod, onPeriodChange, onNext }: PeriodS
           <Calendar className="h-5 w-5" />
           Select Period
         </CardTitle>
-        <CardDescription>
-          Choose the accounting period for the depreciation run.
-        </CardDescription>
+        <CardDescription>Choose the accounting period for the depreciation run.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -119,13 +138,14 @@ function PeriodSelectionStep({ selectedPeriod, onPeriodChange, onNext }: PeriodS
           </Select>
         </div>
 
-        <div className="rounded-lg border p-4 bg-amber-50 dark:bg-amber-950 space-y-2">
-          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+        <div className="rounded-lg border p-4 bg-warning/10 dark:bg-warning/20 space-y-2">
+          <div className="flex items-center gap-2 text-warning dark:text-warning">
             <AlertTriangle className="h-4 w-4" />
             <span className="font-medium">Important</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Ensure the previous period's depreciation has been posted before running depreciation for a new period.
+            Ensure the previous period's depreciation has been posted before running depreciation
+            for a new period.
           </p>
         </div>
       </CardContent>
@@ -159,11 +179,7 @@ function CalculationStep({ selectedPeriod, onCalculated, onBack }: CalculationSt
       const result = await calculateDepreciation({ periodStart, periodEnd });
 
       if (result.ok) {
-        onCalculated(
-          result.data.runId,
-          result.data.assetCount,
-          result.data.totalDepreciation
-        );
+        onCalculated(result.data.runId, result.data.assetCount, result.data.totalDepreciation);
       } else {
         toast.error(result.error);
       }
@@ -218,7 +234,12 @@ interface ReviewPostStepProps {
   selectedPeriod: string;
 }
 
-function ReviewPostStep({ runId, assetCount, totalDepreciation, selectedPeriod }: ReviewPostStepProps) {
+function ReviewPostStep({
+  runId,
+  assetCount,
+  totalDepreciation,
+  selectedPeriod,
+}: ReviewPostStepProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -260,8 +281,8 @@ function ReviewPostStep({ runId, assetCount, totalDepreciation, selectedPeriod }
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="rounded-lg border p-6 bg-green-50 dark:bg-green-950">
-          <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-4">
+        <div className="rounded-lg border p-6 bg-success/10 dark:bg-success/20">
+          <div className="flex items-center gap-2 text-success mb-4">
             <CheckCircle className="h-5 w-5" />
             <span className="font-medium">Calculation Complete</span>
           </div>
@@ -272,7 +293,7 @@ function ReviewPostStep({ runId, assetCount, totalDepreciation, selectedPeriod }
               <div className="text-sm text-muted-foreground">Assets</div>
             </div>
             <div>
-              <div className="text-3xl font-bold font-mono text-red-600 dark:text-red-400">
+              <div className="text-3xl font-bold font-mono text-destructive">
                 {formatCurrency(totalDepreciation, 'USD')}
               </div>
               <div className="text-sm text-muted-foreground">Total Depreciation</div>
@@ -285,7 +306,8 @@ function ReviewPostStep({ runId, assetCount, totalDepreciation, selectedPeriod }
         </div>
 
         <div className="text-sm text-muted-foreground">
-          Posting will create a journal entry debiting depreciation expense accounts and crediting accumulated depreciation accounts for each asset category.
+          Posting will create a journal entry debiting depreciation expense accounts and crediting
+          accumulated depreciation accounts for each asset category.
         </div>
       </CardContent>
       <CardFooter className="justify-between">

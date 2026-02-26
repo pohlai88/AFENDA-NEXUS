@@ -14,6 +14,7 @@ import { CostCenterTree } from '@/features/finance/cost-accounting/blocks/cost-c
 import { CostDriversTable } from '@/features/finance/cost-accounting/blocks/cost-drivers-table';
 import { AllocationRunsTable } from '@/features/finance/cost-accounting/blocks/allocation-runs-table';
 import { CostSummaryCards } from '@/features/finance/cost-accounting/blocks/cost-summary-cards';
+import { routes } from '@/lib/constants';
 
 async function SummarySection() {
   const result = await getCostAccountingSummary();
@@ -82,19 +83,17 @@ export default function CostCentersPage() {
             <Building2 className="h-8 w-8" />
             Cost Accounting
           </h1>
-          <p className="text-muted-foreground">
-            Manage cost centers, drivers, and allocation runs
-          </p>
+          <p className="text-muted-foreground">Manage cost centers, drivers, and allocation runs</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href="/finance/cost-centers/allocations/new">
+            <Link href={routes.finance.allocationNew}>
               <Calculator className="mr-2 h-4 w-4" />
               Run Allocation
             </Link>
           </Button>
           <Button asChild>
-            <Link href="/finance/cost-centers/new">
+            <Link href={routes.finance.costCenterNew}>
               <Plus className="mr-2 h-4 w-4" />
               New Cost Center
             </Link>

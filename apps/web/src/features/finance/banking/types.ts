@@ -133,12 +133,7 @@ export interface ReconciliationSession {
 
 // ─── Reconciliation Action ───────────────────────────────────────────────────
 
-export type ReconciliationAction =
-  | 'match'
-  | 'unmatch'
-  | 'create_journal'
-  | 'exclude'
-  | 'include';
+export type ReconciliationAction = 'match' | 'unmatch' | 'create_journal' | 'exclude' | 'include';
 
 // ─── Import Config ───────────────────────────────────────────────────────────
 
@@ -159,22 +154,25 @@ export interface StatementImportConfig {
 // ─── Status Config ───────────────────────────────────────────────────────────
 
 export const statementStatusConfig: Record<StatementStatus, { label: string; color: string }> = {
-  pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  reconciled: { label: 'Reconciled', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  closed: { label: 'Closed', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
+  pending: { label: 'Pending', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  in_progress: { label: 'In Progress', color: 'bg-info/15 text-info dark:bg-info/20' },
+  reconciled: { label: 'Reconciled', color: 'bg-success/15 text-success dark:bg-success/20' },
+  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground' },
 };
 
 export const matchStatusConfig: Record<MatchStatus, { label: string; color: string }> = {
-  unmatched: { label: 'Unmatched', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
-  matched: { label: 'Matched', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  partially_matched: { label: 'Partial', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  created: { label: 'Created', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
-  excluded: { label: 'Excluded', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' },
+  unmatched: {
+    label: 'Unmatched',
+    color: 'bg-destructive/15 text-destructive dark:bg-destructive/20',
+  },
+  matched: { label: 'Matched', color: 'bg-success/15 text-success dark:bg-success/20' },
+  partially_matched: { label: 'Partial', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  created: { label: 'Created', color: 'bg-info/15 text-info dark:bg-info/20' },
+  excluded: { label: 'Excluded', color: 'bg-muted text-muted-foreground' },
 };
 
 export const matchConfidenceConfig: Record<MatchConfidence, { label: string; color: string }> = {
-  high: { label: 'High', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
-  medium: { label: 'Medium', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' },
-  low: { label: 'Low', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' },
+  high: { label: 'High', color: 'bg-success/15 text-success dark:bg-success/20' },
+  medium: { label: 'Medium', color: 'bg-warning/15 text-warning dark:bg-warning/20' },
+  low: { label: 'Low', color: 'bg-destructive/15 text-destructive dark:bg-destructive/20' },
 };

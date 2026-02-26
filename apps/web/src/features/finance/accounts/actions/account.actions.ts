@@ -1,24 +1,10 @@
 'use server';
 
+import type { IdParam, CreateAccountPayload, UpdateAccountPayload } from '@afenda/contracts';
+
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-export interface CreateAccountPayload {
-  code: string;
-  name: string;
-  type: 'ASSET' | 'LIABILITY' | 'EQUITY' | 'REVENUE' | 'EXPENSE';
-  normalBalance: 'DEBIT' | 'CREDIT';
-  isActive: boolean;
-}
-
-export interface UpdateAccountPayload {
-  name?: string;
-  type?: 'ASSET' | 'LIABILITY' | 'EQUITY' | 'REVENUE' | 'EXPENSE';
-  normalBalance?: 'DEBIT' | 'CREDIT';
-}
 
 // ─── Mutations ───────────────────────────────────────────────────────────────
 
@@ -31,7 +17,7 @@ export async function createAccountAction(
 }
 
 export async function updateAccountAction(
-  accountId: string,
+  accountId: IdParam['id'],
   data: UpdateAccountPayload
 ): Promise<ApiResult<CommandReceipt>> {
   const ctx = await getRequestContext();

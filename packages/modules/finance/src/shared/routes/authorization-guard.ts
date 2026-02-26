@@ -2,10 +2,8 @@
  * GAP-06: Authorization guard — Fastify preHandler that checks permissions
  * and SoD constraints before route handlers execute.
  *
- * Identity resolution order:
- *   1. `req.authUser` (set by auth middleware for real authenticated requests)
- *   2. `req.headers['x-user-id']` / `req.headers['x-tenant-id']` (fallback for
- *      unit tests and legacy callers that inject headers directly)
+ * Identity source: `req.authUser` (set by auth middleware).
+ * No header fallback — tests must mock req.authUser directly.
  *
  * Usage in route registration:
  *   app.post("/journals/:id/post", {
@@ -23,9 +21,8 @@ import { PERMISSION_MAP } from '../authorization/permission-map.js';
  */
 export function requirePermission(policy: IAuthorizationPolicy, permission: FinancePermission) {
   return async (req: FastifyRequest, reply: FastifyReply) => {
-    // 1. Prefer req.authUser (auth middleware), 2. Fall back to headers (tests / legacy)
-    const userId = req.authUser?.userId ?? (req.headers['x-user-id'] as string);
-    const tenantId = req.authUser?.tenantId ?? (req.headers['x-tenant-id'] as string) ?? '';
+    const userId = req.authUser?.userId;
+    const tenantId = req.authUser?.tenantId ?? '';
 
     if (!userId) {
       return reply.status(401).send({
@@ -51,11 +48,7 @@ export function requirePermission(policy: IAuthorizationPolicy, permission: Fina
         return;
       }
 
-      const allowed = can(
-        { tenantId, userId, roles },
-        mapping.resource,
-        mapping.action
-      );
+      const allowed = can({ tenantId, userId, roles }, mapping.resource, mapping.action);
       if (allowed) return;
 
       return reply.status(403).send({
@@ -89,8 +82,8 @@ export function requireSoD(
   entityType: string
 ) {
   return async (req: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = req.authUser?.tenantId ?? (req.headers['x-tenant-id'] as string) ?? '';
-    const userId = req.authUser?.userId ?? (req.headers['x-user-id'] as string);
+    const tenantId = req.authUser?.tenantId ?? '';
+    const userId = req.authUser?.userId;
 
     if (!userId) return; // permission guard handles this
 

@@ -503,6 +503,127 @@ export const ConsolidationQuerySchema = z.object({
   asOfDate: z.string().date(),
 });
 
+// ─── Supplier Schemas ──────────────────────────────────────────────────────
+
+export const SupplierStatusSchema = z.enum(['ACTIVE', 'ON_HOLD', 'INACTIVE']);
+export type SupplierStatus = z.infer<typeof SupplierStatusSchema>;
+
+export const PaymentMethodTypeSchema = z.enum([
+  'BANK_TRANSFER',
+  'CHECK',
+  'WIRE',
+  'SEPA',
+  'LOCAL_TRANSFER',
+]);
+export type PaymentMethodType = z.infer<typeof PaymentMethodTypeSchema>;
+
+export const CreateSupplierSchema = z.object({
+  companyId: z.string().uuid(),
+  code: z.string().min(1).max(20),
+  name: z.string().min(1).max(200),
+  taxId: z.string().max(50).nullable().optional(),
+  currencyCode: z.string().length(3),
+  defaultPaymentTermsId: z.string().uuid().nullable().optional(),
+  defaultPaymentMethod: PaymentMethodTypeSchema.nullable().optional(),
+  whtRateId: z.string().uuid().nullable().optional(),
+  remittanceEmail: z.string().email().max(255).nullable().optional(),
+});
+export type CreateSupplier = z.infer<typeof CreateSupplierSchema>;
+
+export const UpdateSupplierSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  taxId: z.string().max(50).nullable().optional(),
+  currencyCode: z.string().length(3).optional(),
+  defaultPaymentTermsId: z.string().uuid().nullable().optional(),
+  defaultPaymentMethod: PaymentMethodTypeSchema.nullable().optional(),
+  whtRateId: z.string().uuid().nullable().optional(),
+  remittanceEmail: z.string().email().max(255).nullable().optional(),
+  status: SupplierStatusSchema.optional(),
+});
+export type UpdateSupplier = z.infer<typeof UpdateSupplierSchema>;
+
+export const SupplierListQuerySchema = PaginationSchema.extend({
+  status: SupplierStatusSchema.optional(),
+});
+export type SupplierListQuery = z.infer<typeof SupplierListQuerySchema>;
+
+export const CreateSupplierSiteSchema = z.object({
+  siteCode: z.string().min(1).max(20),
+  name: z.string().min(1).max(200),
+  addressLine1: z.string().min(1).max(500),
+  addressLine2: z.string().max(500).nullable().optional(),
+  city: z.string().min(1).max(100),
+  region: z.string().max(100).nullable().optional(),
+  postalCode: z.string().max(20).nullable().optional(),
+  countryCode: z.string().length(3),
+  isPrimary: z.boolean().default(false),
+});
+export type CreateSupplierSite = z.infer<typeof CreateSupplierSiteSchema>;
+
+export const CreateSupplierBankAccountSchema = z.object({
+  bankName: z.string().min(1).max(200),
+  accountName: z.string().min(1).max(200),
+  accountNumber: z.string().min(1).max(50),
+  iban: z.string().max(34).nullable().optional(),
+  swiftBic: z.string().max(11).nullable().optional(),
+  localBankCode: z.string().max(20).nullable().optional(),
+  currencyCode: z.string().length(3),
+  isPrimary: z.boolean().default(false),
+});
+export type CreateSupplierBankAccount = z.infer<typeof CreateSupplierBankAccountSchema>;
+
+// ─── AP Supplier Recon Schema ──────────────────────────────────────────────
+
+export const SupplierStatementLineSchema = z.object({
+  lineRef: z.string().min(1).max(100),
+  date: z.string().date(),
+  description: z.string().max(500),
+  amount: z.coerce.number(),
+  currencyCode: z.string().length(3),
+});
+
+export const SupplierReconRequestSchema = z.object({
+  supplierId: z.string().uuid(),
+  asOfDate: z.string().date(),
+  statementLines: z.array(SupplierStatementLineSchema).min(1),
+  dateTolerance: z.coerce.number().int().min(0).max(30).default(3),
+});
+export type SupplierReconRequest = z.infer<typeof SupplierReconRequestSchema>;
+
+// ─── AP Hold Schemas ───────────────────────────────────────────────────────
+
+export const ApHoldTypeSchema = z.enum([
+  'DUPLICATE',
+  'MATCH_EXCEPTION',
+  'VALIDATION',
+  'SUPPLIER',
+  'FX_RATE',
+  'MANUAL',
+]);
+export type ApHoldType = z.infer<typeof ApHoldTypeSchema>;
+
+export const ApHoldStatusSchema = z.enum(['ACTIVE', 'RELEASED']);
+export type ApHoldStatus = z.infer<typeof ApHoldStatusSchema>;
+
+export const CreateApHoldSchema = z.object({
+  invoiceId: z.string().uuid(),
+  holdType: ApHoldTypeSchema,
+  holdReason: z.string().min(1).max(500),
+});
+export type CreateApHold = z.infer<typeof CreateApHoldSchema>;
+
+export const ReleaseApHoldSchema = z.object({
+  releaseReason: z.string().min(1).max(500),
+});
+export type ReleaseApHold = z.infer<typeof ReleaseApHoldSchema>;
+
+export const ApHoldListQuerySchema = PaginationSchema.extend({
+  status: ApHoldStatusSchema.optional(),
+  holdType: ApHoldTypeSchema.optional(),
+  supplierId: z.string().uuid().optional(),
+});
+export type ApHoldListQuery = z.infer<typeof ApHoldListQuerySchema>;
+
 // ─── AP Schemas (Phase 1a) ─────────────────────────────────────────────────
 
 export const ApInvoiceStatusSchema = z.enum([
@@ -585,10 +706,134 @@ export const AddPaymentRunItemSchema = z.object({
 });
 export type AddPaymentRunItem = z.infer<typeof AddPaymentRunItemSchema>;
 
+export const ReversePaymentRunSchema = z.object({
+  reason: z.string().min(1).max(500),
+});
+export type ReversePaymentRun = z.infer<typeof ReversePaymentRunSchema>;
+
 export const PaymentRunListQuerySchema = PaginationSchema.extend({
   status: PaymentRunStatusSchema.optional(),
 });
 export type PaymentRunListQuery = z.infer<typeof PaymentRunListQuerySchema>;
+
+// ─── AP Wave 3: Reporting & Proposal Schemas ────────────────────────────────
+
+export const ApPeriodCloseChecklistQuerySchema = z.object({});
+export type ApPeriodCloseChecklistQuery = z.infer<typeof ApPeriodCloseChecklistQuerySchema>;
+
+export const WhtReportQuerySchema = z.object({
+  fromDate: z.string().date(),
+  toDate: z.string().date(),
+  supplierId: z.string().uuid().optional(),
+  incomeType: z.string().max(100).optional(),
+});
+export type WhtReportQuery = z.infer<typeof WhtReportQuerySchema>;
+
+export const InvoiceAuditTimelineQuerySchema = z.object({});
+export type InvoiceAuditTimelineQuery = z.infer<typeof InvoiceAuditTimelineQuerySchema>;
+
+export const ApHoldListQueryWithDateRangeSchema = PaginationSchema.extend({
+  status: ApHoldStatusSchema.optional(),
+  holdType: ApHoldTypeSchema.optional(),
+  supplierId: z.string().uuid().optional(),
+  fromDate: z.string().date().optional(),
+  toDate: z.string().date().optional(),
+});
+export type ApHoldListQueryWithDateRange = z.infer<typeof ApHoldListQueryWithDateRangeSchema>;
+
+export const PaymentProposalRequestSchema = z.object({
+  paymentDate: z.string().date(),
+  cutoffDate: z.string().date(),
+  includeDiscountOpportunities: z.boolean().default(false),
+  supplierFilter: z.array(z.string().uuid()).optional(),
+  paymentMethodFilter: PaymentMethodTypeSchema.optional(),
+  currencyFilter: z.string().length(3).optional(),
+});
+export type PaymentProposalRequest = z.infer<typeof PaymentProposalRequestSchema>;
+
+export const ToleranceScopeSchema = z.enum(['ORG', 'COMPANY', 'SITE']);
+export type ToleranceScope = z.infer<typeof ToleranceScopeSchema>;
+
+export const CreateMatchToleranceSchema = z.object({
+  scope: ToleranceScopeSchema,
+  scopeEntityId: z.string().uuid().nullable().optional(),
+  companyId: z.string().uuid().nullable().optional(),
+  toleranceBps: z.coerce.number().int().min(0).max(10000),
+  quantityTolerancePercent: z.coerce.number().nonnegative().default(0),
+  autoHold: z.boolean().default(true),
+});
+export type CreateMatchTolerance = z.infer<typeof CreateMatchToleranceSchema>;
+
+export const UpdateMatchToleranceSchema = z.object({
+  toleranceBps: z.coerce.number().int().min(0).max(10000).optional(),
+  quantityTolerancePercent: z.coerce.number().nonnegative().optional(),
+  autoHold: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+});
+export type UpdateMatchTolerance = z.infer<typeof UpdateMatchToleranceSchema>;
+
+// ─── AP Wave 4: Capture, Integration & Feedback ─────────────────────────────
+
+export const ApInvoiceTypeSchema = z.enum(['STANDARD', 'DEBIT_MEMO', 'CREDIT_MEMO', 'PREPAYMENT']);
+export type ApInvoiceType = z.infer<typeof ApInvoiceTypeSchema>;
+
+export const CreateCreditMemoSchema = z.object({
+  originalInvoiceId: z.string().uuid(),
+  reason: z.string().min(1).max(500),
+});
+export type CreateCreditMemo = z.infer<typeof CreateCreditMemoSchema>;
+
+export const BatchInvoiceImportSchema = z.object({
+  rows: z.array(z.object({
+    companyId: z.string().uuid(),
+    supplierId: z.string().uuid(),
+    ledgerId: z.string().uuid(),
+    invoiceNumber: z.string().min(1).max(100),
+    supplierRef: z.string().max(200).nullable().optional(),
+    invoiceDate: z.string().date(),
+    dueDate: z.string().date(),
+    currencyCode: z.string().length(3),
+    description: z.string().max(500).nullable().optional(),
+    poRef: z.string().max(100).nullable().optional(),
+    receiptRef: z.string().max(100).nullable().optional(),
+    paymentTermsId: z.string().uuid().nullable().optional(),
+    lines: z.array(z.object({
+      accountId: z.string().uuid(),
+      description: z.string().max(500).nullable().optional(),
+      quantity: z.coerce.number().int().positive().default(1),
+      unitPrice: z.coerce.number().nonnegative(),
+      amount: z.coerce.number().nonnegative(),
+      taxAmount: z.coerce.number().nonnegative().default(0),
+    })).min(1),
+  })).min(1).max(500),
+});
+export type BatchInvoiceImport = z.infer<typeof BatchInvoiceImportSchema>;
+
+export const BankRejectionSchema = z.object({
+  rejectionCode: z.string().min(1).max(50),
+  rejectionReason: z.string().min(1).max(500),
+  rejectedItemIds: z.array(z.string().uuid()).optional(),
+});
+export type BankRejection = z.infer<typeof BankRejectionSchema>;
+
+export const ApplyPrepaymentSchema = z.object({
+  prepaymentId: z.string().uuid(),
+  targetInvoiceId: z.string().uuid(),
+  amount: z.coerce.number().nonnegative(),
+});
+export type ApplyPrepaymentDto = z.infer<typeof ApplyPrepaymentSchema>;
+
+export const WhtCertificateTypeSchema = z.enum(['STANDARD', 'EXEMPTION']);
+export type WhtCertificateType = z.infer<typeof WhtCertificateTypeSchema>;
+
+export const CreateWhtExemptionSchema = z.object({
+  supplierId: z.string().uuid(),
+  incomeType: z.string().min(1).max(100),
+  exemptionReason: z.string().min(1).max(500),
+  effectiveFrom: z.string().date(),
+  effectiveTo: z.string().date(),
+});
+export type CreateWhtExemption = z.infer<typeof CreateWhtExemptionSchema>;
 
 // ─── AR Schemas ─────────────────────────────────────────────────────────────
 
@@ -1084,6 +1329,9 @@ export const LinkedEntityTypeSchema = z.enum([
   'TAX_RETURN',
   'PROVISION',
   'IC_TRANSACTION',
+  'SUPPLIER',
+  'SUPPLIER_CONTRACT',
+  'SUPPLIER_STATEMENT',
 ]);
 
 export const DocumentAttachmentSchema = z.object({
@@ -1495,3 +1743,578 @@ export const InventoryBodySchema = z.object({
   stockCounts: z.array(StockCountSchema).optional(),
 });
 export type InventoryBody = z.infer<typeof InventoryBodySchema>;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Frontend Server Action Schemas (W04 compliance)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Chart of Accounts ──────────────────────────────────────────────────────
+
+export const AccountTypeSchema = z.enum(['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE']);
+export const NormalBalanceSchema = z.enum(['DEBIT', 'CREDIT']);
+
+export const CreateAccountPayloadSchema = z.object({
+  code: z.string().min(1),
+  name: z.string().min(1),
+  type: AccountTypeSchema,
+  normalBalance: NormalBalanceSchema,
+  isActive: z.boolean(),
+});
+export type CreateAccountPayload = z.infer<typeof CreateAccountPayloadSchema>;
+
+export const UpdateAccountPayloadSchema = z.object({
+  name: z.string().min(1).optional(),
+  type: AccountTypeSchema.optional(),
+  normalBalance: NormalBalanceSchema.optional(),
+});
+export type UpdateAccountPayload = z.infer<typeof UpdateAccountPayloadSchema>;
+
+// ─── Approvals ──────────────────────────────────────────────────────────────
+
+export const ApproveItemsInputSchema = z.object({
+  itemIds: z.array(z.string()).min(1),
+  comment: z.string().max(1000).optional(),
+});
+export type ApproveItemsInput = z.infer<typeof ApproveItemsInputSchema>;
+
+export const RejectItemsInputSchema = z.object({
+  itemIds: z.array(z.string()).min(1),
+  comment: z.string().min(1).max(1000),
+});
+export type RejectItemsInput = z.infer<typeof RejectItemsInputSchema>;
+
+export const DelegateItemsInputSchema = z.object({
+  itemIds: z.array(z.string()).min(1),
+  delegateTo: z.string().min(1),
+  comment: z.string().max(1000).optional(),
+});
+export type DelegateItemsInput = z.infer<typeof DelegateItemsInputSchema>;
+
+// ─── Consolidation ──────────────────────────────────────────────────────────
+
+export const EntityTypeEnum = z.enum(['subsidiary', 'associate', 'joint_venture', 'branch']);
+export const ConsolidationMethodEnum = z.enum(['full', 'proportional', 'equity_method']);
+
+export const AddEntityInputSchema = z.object({
+  entityCode: z.string().min(1),
+  name: z.string().min(1),
+  country: z.string().min(1),
+  currency: z.string().length(3),
+  entityType: EntityTypeEnum,
+  consolidationMethod: ConsolidationMethodEnum,
+  parentId: z.string().uuid(),
+  ownershipPercent: z.coerce.number().min(0).max(100),
+  votingRightsPercent: z.coerce.number().min(0).max(100),
+  acquisitionDate: z.coerce.date(),
+});
+export type AddEntityInput = z.infer<typeof AddEntityInputSchema>;
+
+// ─── Cost Accounting ────────────────────────────────────────────────────────
+
+export const CostCenterTypeEnum = z.enum(['production', 'service', 'administration', 'selling']);
+export const DriverTypeEnum = z.enum(['headcount', 'square_footage', 'machine_hours', 'revenue', 'custom']);
+export const AllocationMethodEnum = z.enum(['direct', 'step_down', 'reciprocal', 'activity_based']);
+
+export const CreateCostCenterInputSchema = z.object({
+  code: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string(),
+  type: CostCenterTypeEnum,
+  parentId: z.string().uuid().optional(),
+  managerId: z.string().uuid().optional(),
+  budgetAmount: z.coerce.number().nonnegative(),
+  currency: z.string().length(3),
+});
+export type CreateCostCenterInput = z.infer<typeof CreateCostCenterInputSchema>;
+
+export const UpdateCostCenterInputSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).optional(),
+  description: z.string().optional(),
+  managerId: z.string().uuid().optional(),
+  budgetAmount: z.coerce.number().nonnegative().optional(),
+});
+export type UpdateCostCenterInput = z.infer<typeof UpdateCostCenterInputSchema>;
+
+export const CreateDriverInputSchema = z.object({
+  code: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string(),
+  type: DriverTypeEnum,
+  unit: z.string().min(1),
+  effectiveFrom: z.coerce.date(),
+});
+export type CreateDriverInput = z.infer<typeof CreateDriverInputSchema>;
+
+export const AllocationTargetSchema = z.object({
+  costCenterId: z.string().uuid(),
+  percentage: z.coerce.number().min(0).max(100),
+});
+
+export const CreateRuleInputSchema = z.object({
+  name: z.string().min(1),
+  description: z.string(),
+  sourceCostCenterId: z.string().uuid(),
+  driverId: z.string().uuid(),
+  method: AllocationMethodEnum,
+  targets: z.array(AllocationTargetSchema).min(1),
+});
+export type CreateRuleInput = z.infer<typeof CreateRuleInputSchema>;
+
+export const CreateAllocationRunInputSchema = z.object({
+  period: z.string().min(1),
+  method: AllocationMethodEnum,
+  ruleIds: z.array(z.string().uuid()).optional(),
+});
+export type CreateAllocationRunInput = z.infer<typeof CreateAllocationRunInputSchema>;
+
+// ─── Credit ─────────────────────────────────────────────────────────────────
+
+export const ReviewFrequencyEnum = z.enum(['monthly', 'quarterly', 'annually']);
+export const CreditReviewTypeEnum = z.enum(['periodic', 'limit_increase', 'new_customer', 'risk_triggered']);
+export const CreditRiskRatingEnum = z.enum(['low', 'medium', 'high', 'very_high']);
+export const CreditHoldTypeEnum = z.enum(['credit_limit', 'overdue', 'manual', 'payment_terms']);
+
+export const SetCreditLimitInputSchema = z.object({
+  customerId: z.string().uuid(),
+  creditLimit: z.coerce.number().nonnegative(),
+  currency: z.string().length(3),
+  paymentTermsDays: z.coerce.number().int().positive(),
+  reviewFrequency: ReviewFrequencyEnum,
+  notes: z.string().max(2000).optional(),
+});
+export type SetCreditLimitInput = z.infer<typeof SetCreditLimitInputSchema>;
+
+export const CreateReviewInputSchema = z.object({
+  customerId: z.string().uuid(),
+  reviewType: CreditReviewTypeEnum,
+  proposedLimit: z.coerce.number().nonnegative(),
+  proposedRating: CreditRiskRatingEnum,
+  justification: z.string().min(1),
+});
+export type CreateReviewInput = z.infer<typeof CreateReviewInputSchema>;
+
+export const UpdateReviewInputSchema = z.object({
+  reviewId: z.string().uuid(),
+  financialAnalysis: z.string().optional(),
+  paymentHistory: z.string().optional(),
+  recommendation: z.string().optional(),
+  proposedLimit: z.coerce.number().nonnegative().optional(),
+  proposedRating: CreditRiskRatingEnum.optional(),
+});
+export type UpdateReviewInput = z.infer<typeof UpdateReviewInputSchema>;
+
+export const PlaceHoldInputSchema = z.object({
+  customerId: z.string().uuid(),
+  holdType: CreditHoldTypeEnum,
+  reason: z.string().min(1),
+  amount: z.coerce.number().nonnegative().optional(),
+});
+export type PlaceHoldInput = z.infer<typeof PlaceHoldInputSchema>;
+
+// ─── Deferred Tax ───────────────────────────────────────────────────────────
+
+export const DeferredTaxTypeEnum = z.enum(['asset', 'liability']);
+export const OriginTypeEnum = z.enum(['temporary_difference', 'tax_loss_carryforward', 'tax_credit']);
+
+export const CreateDTItemInputSchema = z.object({
+  description: z.string().min(1),
+  type: DeferredTaxTypeEnum,
+  originType: OriginTypeEnum,
+  bookBasis: z.coerce.number(),
+  taxBasis: z.coerce.number(),
+  taxRate: z.coerce.number().min(0).max(100),
+  jurisdiction: z.string().min(1),
+  glAccountId: z.string().uuid(),
+});
+export type CreateDTItemInput = z.infer<typeof CreateDTItemInputSchema>;
+
+// ─── Hedging ────────────────────────────────────────────────────────────────
+
+export const DesignateHedgeInputSchema = z.object({
+  name: z.string().min(1),
+  hedgeType: HedgeTypeSchema,
+  hedgedItemId: z.string().uuid(),
+  hedgingInstrumentId: z.string().uuid(),
+  hedgeRatio: z.coerce.number().positive(),
+  hedgedRisk: z.string().min(1),
+  designationDate: z.coerce.date(),
+});
+export type DesignateHedgeInput = z.infer<typeof DesignateHedgeInputSchema>;
+
+// ─── Financial Instruments ──────────────────────────────────────────────────
+
+export const InstrumentCategoryEnum = z.enum(['debt', 'equity', 'derivative', 'hybrid']);
+
+export const CreateInstrumentInputSchema = z.object({
+  name: z.string().min(1),
+  type: InstrumentTypeSchema,
+  category: InstrumentCategoryEnum,
+  issuer: z.string().min(1),
+  currency: z.string().length(3),
+  faceValue: z.coerce.number().nonnegative(),
+  acquisitionCost: z.coerce.number().nonnegative(),
+  acquisitionDate: z.coerce.date(),
+  interestRate: z.coerce.number().nonnegative().optional(),
+  maturityDate: z.coerce.date().optional(),
+  glAccountId: z.string().uuid(),
+});
+export type CreateInstrumentInput = z.infer<typeof CreateInstrumentInputSchema>;
+
+// ─── Leases ─────────────────────────────────────────────────────────────────
+
+export const LeaseTypeEnum = z.enum(['finance', 'operating', 'short_term', 'low_value']);
+export const AssetClassEnum = z.enum(['property', 'vehicle', 'equipment', 'it_equipment', 'other']);
+export const PaymentFrequencyEnum = z.enum(['monthly', 'quarterly', 'semi_annual', 'annual']);
+export const ModificationTypeEnum = z.enum(['scope_change', 'term_extension', 'payment_change', 'index_adjustment']);
+
+export const CreateLeaseInputSchema = z.object({
+  description: z.string().min(1),
+  lessorId: z.string().uuid(),
+  assetClass: AssetClassEnum,
+  assetDescription: z.string().min(1),
+  leaseType: LeaseTypeEnum,
+  commencementDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  paymentAmount: z.coerce.number().nonnegative(),
+  paymentFrequency: PaymentFrequencyEnum,
+  currency: z.string().length(3),
+  incrementalBorrowingRate: z.coerce.number().nonnegative(),
+  hasExtensionOption: z.boolean().optional(),
+  extensionPeriod: z.coerce.number().int().positive().optional(),
+  hasTerminationOption: z.boolean().optional(),
+  terminationPenalty: z.coerce.number().nonnegative().optional(),
+  hasPurchaseOption: z.boolean().optional(),
+  purchasePrice: z.coerce.number().nonnegative().optional(),
+  costCenterId: z.string().uuid().optional(),
+  glAccountAsset: z.string().uuid(),
+  glAccountLiability: z.string().uuid(),
+  glAccountInterest: z.string().uuid(),
+  glAccountDepreciation: z.string().uuid(),
+});
+export type CreateLeaseInput = z.infer<typeof CreateLeaseInputSchema>;
+
+export const CreateModificationInputSchema = z.object({
+  leaseId: z.string().uuid(),
+  effectiveDate: z.coerce.date(),
+  modificationType: ModificationTypeEnum,
+  description: z.string().min(1),
+  revisedPaymentAmount: z.coerce.number().nonnegative().optional(),
+  revisedEndDate: z.coerce.date().optional(),
+  revisedIBR: z.coerce.number().nonnegative().optional(),
+});
+export type CreateModificationInput = z.infer<typeof CreateModificationInputSchema>;
+
+// ─── Ledgers ────────────────────────────────────────────────────────────────
+
+export const CreateLedgerPayloadSchema = z.object({
+  name: z.string().min(1),
+  companyId: z.string().uuid(),
+  baseCurrencyCode: z.string().length(3),
+});
+export type CreateLedgerPayload = z.infer<typeof CreateLedgerPayloadSchema>;
+
+// ─── Projects ───────────────────────────────────────────────────────────────
+
+export const ProjectTypeEnum = z.enum(['fixed_price', 'time_materials', 'cost_plus', 'retainer', 'internal']);
+export const BillingMethodEnum = z.enum(['milestone', 'progress', 'time_materials', 'fixed_fee']);
+export const RevenueRecognitionEnum = z.enum(['percentage_completion', 'completed_contract', 'milestone', 'straight_line']);
+export const CostTypeEnum = z.enum(['labor', 'material', 'subcontractor', 'travel', 'equipment', 'overhead', 'other']);
+
+export const CreateProjectInputSchema = z.object({
+  projectNumber: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string(),
+  customerId: z.string().uuid().optional(),
+  projectType: ProjectTypeEnum,
+  billingMethod: BillingMethodEnum,
+  revenueRecognition: RevenueRecognitionEnum,
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date().optional(),
+  projectManager: z.string().min(1),
+  department: z.string().min(1),
+  contractValue: z.coerce.number().nonnegative(),
+  budgetedCost: z.coerce.number().nonnegative(),
+  currency: z.string().length(3),
+  costCenterId: z.string().uuid().optional(),
+});
+export type CreateProjectInput = z.infer<typeof CreateProjectInputSchema>;
+
+export const UpdateProjectInputSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).optional(),
+  description: z.string().optional(),
+  projectManager: z.string().min(1).optional(),
+  endDate: z.coerce.date().optional(),
+  budgetedCost: z.coerce.number().nonnegative().optional(),
+});
+export type UpdateProjectInput = z.infer<typeof UpdateProjectInputSchema>;
+
+export const AddCostInputSchema = z.object({
+  projectId: z.string().uuid(),
+  costType: CostTypeEnum,
+  date: z.coerce.date(),
+  description: z.string().min(1),
+  quantity: z.coerce.number().positive(),
+  unitCost: z.coerce.number().nonnegative(),
+  glAccountId: z.string().uuid(),
+  isBillable: z.boolean(),
+  employeeId: z.string().uuid().optional(),
+  vendorId: z.string().uuid().optional(),
+});
+export type AddCostInput = z.infer<typeof AddCostInputSchema>;
+
+export const CreateBillingInputSchema = z.object({
+  projectId: z.string().uuid(),
+  description: z.string().min(1),
+  billingDate: z.coerce.date(),
+  amount: z.coerce.number().nonnegative(),
+  milestoneId: z.string().uuid().optional(),
+  percentageComplete: z.coerce.number().min(0).max(100).optional(),
+});
+export type CreateBillingInput = z.infer<typeof CreateBillingInputSchema>;
+
+export const CreateMilestoneInputSchema = z.object({
+  projectId: z.string().uuid(),
+  name: z.string().min(1),
+  description: z.string(),
+  dueDate: z.coerce.date(),
+  billingAmount: z.coerce.number().nonnegative(),
+  percentageWeight: z.coerce.number().min(0).max(100),
+  deliverables: z.array(z.string().min(1)),
+});
+export type CreateMilestoneInput = z.infer<typeof CreateMilestoneInputSchema>;
+
+export const BillingWizardInputSchema = z.object({
+  projectId: z.string().uuid(),
+  billingType: z.enum(['milestone', 'progress', 'time_materials', 'final']),
+  selectedMilestones: z.array(z.string().uuid()).optional(),
+  progressPercentage: z.coerce.number().min(0).max(100).optional(),
+  dateRange: z.object({ from: z.coerce.date(), to: z.coerce.date() }).optional(),
+  customAmount: z.coerce.number().nonnegative().optional(),
+  notes: z.string().max(2000).optional(),
+});
+export type BillingWizardInput = z.infer<typeof BillingWizardInputSchema>;
+
+// ─── Provisions ─────────────────────────────────────────────────────────────
+
+export const ProvisionTypeEnum = z.enum(['warranty', 'restructuring', 'legal', 'decommissioning', 'onerous_contract', 'other']);
+
+export const CreateProvisionInputSchema = z.object({
+  name: z.string().min(1),
+  description: z.string(),
+  type: ProvisionTypeEnum,
+  recognitionDate: z.coerce.date(),
+  expectedSettlementDate: z.coerce.date().optional(),
+  initialAmount: z.coerce.number().nonnegative(),
+  currency: z.string().length(3),
+  discountRate: z.coerce.number().nonnegative().optional(),
+  glAccountId: z.string().uuid(),
+  costCenterId: z.string().uuid().optional(),
+});
+export type CreateProvisionInput = z.infer<typeof CreateProvisionInputSchema>;
+
+// ─── Transfer Pricing ───────────────────────────────────────────────────────
+
+export const TpTransactionTypeEnum = z.enum(['goods', 'services', 'royalties', 'financing', 'cost_sharing']);
+export const TpPricingMethodEnum = z.enum(['cup', 'resale_price', 'cost_plus', 'tnmm', 'profit_split']);
+
+export const CreatePolicyInputSchema = z.object({
+  name: z.string().min(1),
+  transactionType: TpTransactionTypeEnum,
+  pricingMethod: TpPricingMethodEnum,
+  entities: z.array(z.string().min(1)).min(1),
+  armLengthRange: z.object({ min: z.coerce.number(), max: z.coerce.number() }),
+  targetMargin: z.coerce.number(),
+  effectiveFrom: z.coerce.date(),
+});
+export type CreatePolicyInput = z.infer<typeof CreatePolicyInputSchema>;
+
+// ─── Treasury ───────────────────────────────────────────────────────────────
+
+export const ForecastPeriodTypeEnum = z.enum(['daily', 'weekly', 'monthly', 'quarterly']);
+export const ICLoanTypeEnum = z.enum(['term_loan', 'revolving', 'demand_loan', 'subordinated']);
+
+export const CreateForecastInputSchema = z.object({
+  name: z.string().min(1),
+  description: z.string(),
+  periodType: ForecastPeriodTypeEnum,
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  currency: z.string().length(3),
+  openingBalance: z.coerce.number(),
+});
+export type CreateForecastInput = z.infer<typeof CreateForecastInputSchema>;
+
+export const CreateCovenantInputSchema = z.object({
+  name: z.string().min(1),
+  description: z.string(),
+  type: z.enum(['financial', 'reporting', 'operational']),
+  facilityId: z.string().min(1),
+  metric: z.string().min(1),
+  operator: z.string().min(1),
+  threshold: z.coerce.number(),
+  thresholdMax: z.coerce.number().optional(),
+  testingFrequency: z.enum(['monthly', 'quarterly', 'annually']),
+  gracePeriodDays: z.coerce.number().int().nonnegative(),
+  consequences: z.string().min(1),
+});
+export type CreateCovenantInput = z.infer<typeof CreateCovenantInputSchema>;
+
+export const TestCovenantInputSchema = z.object({
+  covenantId: z.string().uuid(),
+  periodEnd: z.coerce.date(),
+  actualValue: z.coerce.number(),
+  notes: z.string(),
+});
+export type TestCovenantInput = z.infer<typeof TestCovenantInputSchema>;
+
+export const CreateICLoanInputSchema = z.object({
+  lenderEntityId: z.string().uuid(),
+  borrowerEntityId: z.string().uuid(),
+  type: ICLoanTypeEnum,
+  principal: z.coerce.number().positive(),
+  currency: z.string().length(3),
+  interestRate: z.coerce.number().nonnegative(),
+  rateType: z.enum(['fixed', 'floating']),
+  referenceRate: z.string().optional(),
+  spread: z.coerce.number().optional(),
+  startDate: z.coerce.date(),
+  maturityDate: z.coerce.date(),
+});
+export type CreateICLoanInput = z.infer<typeof CreateICLoanInputSchema>;
+
+// ─── Supplier Portal Schemas ──────────────────────────────────────────────
+
+export const SupplierPortalInvoiceLineSchema = z.object({
+  accountId: z.string().uuid(),
+  description: z.string().max(500).nullable().optional(),
+  quantity: z.coerce.number().positive(),
+  unitPrice: z.coerce.bigint(),
+  amount: z.coerce.bigint(),
+  taxAmount: z.coerce.bigint(),
+});
+
+export const SupplierPortalInvoiceRowSchema = z.object({
+  companyId: z.string().uuid(),
+  ledgerId: z.string().uuid(),
+  invoiceNumber: z.string().min(1).max(50),
+  supplierRef: z.string().max(100).nullable().optional(),
+  invoiceDate: z.string().date(),
+  dueDate: z.string().date(),
+  currencyCode: z.string().length(3),
+  description: z.string().max(500).nullable().optional(),
+  poRef: z.string().max(100).nullable().optional(),
+  receiptRef: z.string().max(100).nullable().optional(),
+  paymentTermsId: z.string().uuid().nullable().optional(),
+  lines: z.array(SupplierPortalInvoiceLineSchema).min(1),
+});
+
+export const SupplierPortalInvoiceSubmitSchema = z.object({
+  rows: z.array(SupplierPortalInvoiceRowSchema).min(1),
+  correlationId: z.string().uuid().optional(),
+});
+export type SupplierPortalInvoiceSubmit = z.infer<typeof SupplierPortalInvoiceSubmitSchema>;
+
+export const SupplierPortalProfileUpdateSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  taxId: z.string().max(50).nullable().optional(),
+  remittanceEmail: z.string().email().max(255).nullable().optional(),
+});
+export type SupplierPortalProfileUpdate = z.infer<typeof SupplierPortalProfileUpdateSchema>;
+
+export const SupplierPortalAgingQuerySchema = z.object({
+  asOfDate: z.string().date().optional(),
+});
+export type SupplierPortalAgingQuery = z.infer<typeof SupplierPortalAgingQuerySchema>;
+
+export const SupplierPortalWhtQuerySchema = PaginationSchema.extend({
+  taxYear: z.coerce.number().int().min(2000).max(2100).optional(),
+});
+export type SupplierPortalWhtQuery = z.infer<typeof SupplierPortalWhtQuerySchema>;
+
+// ── N7: Supplier Portal Statement Recon ───────────────────────────────────
+export const SupplierPortalStatementLineSchema = z.object({
+  lineRef: z.string().min(1).max(100),
+  date: z.string().date(),
+  description: z.string().min(1).max(500),
+  amount: z.coerce.bigint(),
+  currencyCode: z.string().length(3),
+});
+
+export const SupplierPortalStatementReconSchema = z.object({
+  asOfDate: z.string().date(),
+  statementLines: z.array(SupplierPortalStatementLineSchema).min(1),
+  dateTolerance: z.coerce.number().int().min(0).max(30).optional(),
+});
+export type SupplierPortalStatementRecon = z.infer<typeof SupplierPortalStatementReconSchema>;
+
+// ── N8: Supplier Document Vault ───────────────────────────────────────────
+export const SupplierDocumentCategorySchema = z.enum([
+  'CONTRACT',
+  'TAX_NOTICE',
+  'INSURANCE_POLICY',
+  'CORRESPONDENCE',
+  'OTHER',
+]);
+
+export const SupplierPortalDocumentUploadSchema = z.object({
+  category: SupplierDocumentCategorySchema,
+  title: z.string().min(1).max(255),
+  description: z.string().max(1000).nullable().optional(),
+  fileName: z.string().min(1).max(255),
+  mimeType: z.string().min(1).max(100),
+  expiresAt: z.string().date().nullable().optional(),
+});
+export type SupplierPortalDocumentUpload = z.infer<typeof SupplierPortalDocumentUploadSchema>;
+
+export const SupplierPortalDocumentListQuerySchema = z.object({
+  category: SupplierDocumentCategorySchema.optional(),
+});
+export type SupplierPortalDocumentListQuery = z.infer<typeof SupplierPortalDocumentListQuerySchema>;
+
+// ── N9: Supplier Dispute ──────────────────────────────────────────────────
+export const SupplierDisputeCategorySchema = z.enum([
+  'INCORRECT_AMOUNT',
+  'MISSING_PAYMENT',
+  'DUPLICATE_CHARGE',
+  'PRICING_DISCREPANCY',
+  'DELIVERY_ISSUE',
+  'QUALITY_ISSUE',
+  'OTHER',
+]);
+
+export const SupplierPortalCreateDisputeSchema = z.object({
+  invoiceId: z.string().uuid().nullable().optional(),
+  paymentRunId: z.string().uuid().nullable().optional(),
+  category: SupplierDisputeCategorySchema,
+  subject: z.string().min(1).max(255),
+  description: z.string().min(1).max(5000),
+});
+export type SupplierPortalCreateDispute = z.infer<typeof SupplierPortalCreateDisputeSchema>;
+
+// ── N10: Supplier Notification Preferences ────────────────────────────────
+export const SupplierNotificationEventTypeSchema = z.enum([
+  'INVOICE_POSTED',
+  'INVOICE_APPROVED',
+  'PAYMENT_EXECUTED',
+  'PAYMENT_REJECTED',
+  'HOLD_PLACED',
+  'HOLD_RELEASED',
+  'REMITTANCE_READY',
+  'DISPUTE_UPDATED',
+]);
+
+export const SupplierNotificationChannelSchema = z.enum(['EMAIL', 'WEBHOOK']);
+
+export const SupplierNotificationPrefItemSchema = z.object({
+  eventType: SupplierNotificationEventTypeSchema,
+  channel: SupplierNotificationChannelSchema,
+  enabled: z.boolean(),
+  webhookUrl: z.string().url().nullable().optional(),
+});
+
+export const SupplierPortalUpdateNotificationPrefsSchema = z.object({
+  preferences: z.array(SupplierNotificationPrefItemSchema).min(1),
+});
+export type SupplierPortalUpdateNotificationPrefs = z.infer<typeof SupplierPortalUpdateNotificationPrefsSchema>;

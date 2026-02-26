@@ -11,8 +11,8 @@ import {
   resetPresignRateLimitState,
 } from '../document-rate-limit.js';
 
-function mockReq(overrides: Partial<FastifyRequest> = {}): FastifyRequest {
-  return { headers: {}, ...overrides } as FastifyRequest;
+function mockReq(overrides: Record<string, unknown> = {}): FastifyRequest {
+  return { headers: {}, ...overrides } as unknown as FastifyRequest;
 }
 
 function mockReply(): FastifyReply & { statusCalledWith?: number } {
@@ -30,7 +30,7 @@ function mockReply(): FastifyReply & { statusCalledWith?: number } {
     get statusCalledWith() {
       return statusCalledWith[statusCalledWith.length - 1];
     },
-  } as FastifyReply & { statusCalledWith?: number };
+  } as unknown as FastifyReply & { statusCalledWith?: number };
 }
 
 describe('documentUploadRateLimitGuard', () => {
@@ -42,7 +42,8 @@ describe('documentUploadRateLimitGuard', () => {
       windowMs: 60_000,
     });
     const req = mockReq({
-      headers: { 'x-tenant-id': 't1', 'content-length': '500' },
+      authUser: { tenantId: 't1', userId: 'u1' },
+      headers: { 'content-length': '500' },
     });
     const reply = mockReply();
     await guard(req, reply);
@@ -55,7 +56,8 @@ describe('documentUploadRateLimitGuard', () => {
       windowMs: 60_000,
     });
     const req = mockReq({
-      headers: { 'x-tenant-id': 't1', 'content-length': '1500' },
+      authUser: { tenantId: 't1', userId: 'u1' },
+      headers: { 'content-length': '1500' },
     });
     const reply = mockReply();
     await guard(req, reply);
@@ -87,7 +89,7 @@ describe('documentPresignRateLimitGuard', () => {
       maxRequestsPerWindow: 5,
       windowMs: 60_000,
     });
-    const req = mockReq({ headers: { 'x-tenant-id': 't1' } });
+    const req = mockReq({ authUser: { tenantId: 't1', userId: 'u1' }, headers: {} });
     const reply = mockReply();
     for (let i = 0; i < 3; i++) await guard(req, reply);
     expect(reply.status).not.toHaveBeenCalled();
@@ -98,7 +100,7 @@ describe('documentPresignRateLimitGuard', () => {
       maxRequestsPerWindow: 2,
       windowMs: 60_000,
     });
-    const req = mockReq({ headers: { 'x-tenant-id': 't1' } });
+    const req = mockReq({ authUser: { tenantId: 't1', userId: 'u1' }, headers: {} });
     const reply1 = mockReply();
     const reply2 = mockReply();
     const reply3 = mockReply();

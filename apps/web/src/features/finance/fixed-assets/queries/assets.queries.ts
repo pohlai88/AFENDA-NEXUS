@@ -279,11 +279,14 @@ export async function getFixedAssets(params?: {
   search?: string;
   page?: number;
   perPage?: number;
-}): Promise<{
-  ok: true;
-  data: FixedAsset[];
-  pagination: { page: number; perPage: number; total: number; totalPages: number };
-} | { ok: false; error: string }> {
+}): Promise<
+  | {
+      ok: true;
+      data: FixedAsset[];
+      pagination: { page: number; perPage: number; total: number; totalPages: number };
+    }
+  | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 400));
 
   let filtered = [...mockAssets];
@@ -361,7 +364,10 @@ export async function getDepreciationSchedule(
       netBookValue: Math.max(asset.originalCost - accDep, asset.salvageValue),
       isPosted: periodEnd < new Date(),
       journalId: periodEnd < new Date() ? `jnl-${i}` : null,
-      journalNumber: periodEnd < new Date() ? `JE-${periodStart.getFullYear()}-${String(i + 100).padStart(4, '0')}` : null,
+      journalNumber:
+        periodEnd < new Date()
+          ? `JE-${periodStart.getFullYear()}-${String(i + 100).padStart(4, '0')}`
+          : null,
       postedDate: periodEnd < new Date() ? periodEnd : null,
     });
   }

@@ -1,5 +1,5 @@
 import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
-import type { DunningRun, DunningLetter } from '../entities/dunning.js';
+import type { DunningRun, DunningLetter, DunningRunStatus } from '../entities/dunning.js';
 
 export interface CreateDunningRunInput {
   readonly tenantId: string;
@@ -19,5 +19,5 @@ export interface IDunningRepo {
   findById(id: string): Promise<Result<DunningRun>>;
   findAll(params?: PaginationParams): Promise<PaginatedResult<DunningRun>>;
   addLetter(runId: string, letter: AddDunningLetterInput): Promise<Result<DunningLetter>>;
-  updateStatus(id: string, status: string): Promise<Result<DunningRun>>;
+  updateStatus(id: string, status: DunningRunStatus): Promise<Result<DunningRun>>;
 }

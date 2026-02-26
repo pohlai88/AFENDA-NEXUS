@@ -10,6 +10,7 @@
 
 export type FinancePermission =
   | 'journal:create'
+  | 'journal:approve'
   | 'journal:post'
   | 'journal:reverse'
   | 'journal:void'
@@ -29,7 +30,10 @@ export type FinancePermission =
   | 'document:read'
   | 'document:delete'
   | 'document:list'
-  | 'trialBalance:read';
+  | 'trialBalance:read'
+  | 'supplier:read'
+  | 'supplier:write'
+  | 'supplier:submit';
 
 export interface SoDViolation {
   readonly userId: string;

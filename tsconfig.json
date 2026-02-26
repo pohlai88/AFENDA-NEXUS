@@ -18,7 +18,8 @@
     { "path": "./packages/authz" },
     { "path": "./packages/db" },
     { "path": "./packages/platform" },
-    { "path": "./packages/modules/finance" }
+    { "path": "./packages/modules/finance" },
+    { "path": "./packages/api-kit" }
   ],
   "files": []
 }

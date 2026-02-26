@@ -185,11 +185,61 @@ const mockDrivers: CostDriver[] = [
 ];
 
 const mockDriverValues: CostDriverValue[] = [
-  { id: 'dv-1', driverId: 'drv-1', costCenterId: 'cc-2', costCenterCode: 'FIN', costCenterName: 'Finance', period: '2026-02', value: 25, percentage: 15, updatedAt: new Date() },
-  { id: 'dv-2', driverId: 'drv-1', costCenterId: 'cc-3', costCenterCode: 'HR', costCenterName: 'Human Resources', period: '2026-02', value: 12, percentage: 7, updatedAt: new Date() },
-  { id: 'dv-3', driverId: 'drv-1', costCenterId: 'cc-4', costCenterCode: 'IT', costCenterName: 'Information Technology', period: '2026-02', value: 45, percentage: 27, updatedAt: new Date() },
-  { id: 'dv-4', driverId: 'drv-1', costCenterId: 'cc-5', costCenterCode: 'SALES', costCenterName: 'Sales', period: '2026-02', value: 60, percentage: 36, updatedAt: new Date() },
-  { id: 'dv-5', driverId: 'drv-1', costCenterId: 'cc-6', costCenterCode: 'MFG', costCenterName: 'Manufacturing', period: '2026-02', value: 25, percentage: 15, updatedAt: new Date() },
+  {
+    id: 'dv-1',
+    driverId: 'drv-1',
+    costCenterId: 'cc-2',
+    costCenterCode: 'FIN',
+    costCenterName: 'Finance',
+    period: '2026-02',
+    value: 25,
+    percentage: 15,
+    updatedAt: new Date(),
+  },
+  {
+    id: 'dv-2',
+    driverId: 'drv-1',
+    costCenterId: 'cc-3',
+    costCenterCode: 'HR',
+    costCenterName: 'Human Resources',
+    period: '2026-02',
+    value: 12,
+    percentage: 7,
+    updatedAt: new Date(),
+  },
+  {
+    id: 'dv-3',
+    driverId: 'drv-1',
+    costCenterId: 'cc-4',
+    costCenterCode: 'IT',
+    costCenterName: 'Information Technology',
+    period: '2026-02',
+    value: 45,
+    percentage: 27,
+    updatedAt: new Date(),
+  },
+  {
+    id: 'dv-4',
+    driverId: 'drv-1',
+    costCenterId: 'cc-5',
+    costCenterCode: 'SALES',
+    costCenterName: 'Sales',
+    period: '2026-02',
+    value: 60,
+    percentage: 36,
+    updatedAt: new Date(),
+  },
+  {
+    id: 'dv-5',
+    driverId: 'drv-1',
+    costCenterId: 'cc-6',
+    costCenterCode: 'MFG',
+    costCenterName: 'Manufacturing',
+    period: '2026-02',
+    value: 25,
+    percentage: 15,
+    updatedAt: new Date(),
+  },
 ];
 
 const mockRules: AllocationRule[] = [
@@ -208,7 +258,12 @@ const mockRules: AllocationRule[] = [
     order: 1,
     targets: [
       { costCenterId: 'cc-2', costCenterCode: 'FIN', costCenterName: 'Finance', percentage: 26 },
-      { costCenterId: 'cc-3', costCenterCode: 'HR', costCenterName: 'Human Resources', percentage: 12 },
+      {
+        costCenterId: 'cc-3',
+        costCenterCode: 'HR',
+        costCenterName: 'Human Resources',
+        percentage: 12,
+      },
       { costCenterId: 'cc-5', costCenterCode: 'SALES', costCenterName: 'Sales', percentage: 62 },
     ],
     createdAt: new Date('2024-06-01'),
@@ -229,7 +284,12 @@ const mockRules: AllocationRule[] = [
     order: 2,
     targets: [
       { costCenterId: 'cc-2', costCenterCode: 'FIN', costCenterName: 'Finance', percentage: 19 },
-      { costCenterId: 'cc-4', costCenterCode: 'IT', costCenterName: 'Information Technology', percentage: 35 },
+      {
+        costCenterId: 'cc-4',
+        costCenterCode: 'IT',
+        costCenterName: 'Information Technology',
+        percentage: 35,
+      },
       { costCenterId: 'cc-5', costCenterCode: 'SALES', costCenterName: 'Sales', percentage: 46 },
     ],
     createdAt: new Date('2024-06-01'),
@@ -303,9 +363,7 @@ export async function getCostCenters(params?: {
   if (params?.search) {
     const search = params.search.toLowerCase();
     filtered = filtered.filter(
-      (cc) =>
-        cc.code.toLowerCase().includes(search) ||
-        cc.name.toLowerCase().includes(search)
+      (cc) => cc.code.toLowerCase().includes(search) || cc.name.toLowerCase().includes(search)
     );
   }
 
@@ -383,7 +441,9 @@ export async function getAllocationRuns(params?: {
 
 export async function getAllocationRunById(
   id: string
-): Promise<{ ok: true; data: AllocationRun; details: AllocationDetail[] } | { ok: false; error: string }> {
+): Promise<
+  { ok: true; data: AllocationRun; details: AllocationDetail[] } | { ok: false; error: string }
+> {
   await new Promise((r) => setTimeout(r, 350));
   const run = mockRuns.find((r) => r.id === id);
   if (!run) return { ok: false, error: 'Allocation run not found' };
