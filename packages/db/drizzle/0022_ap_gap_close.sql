@@ -222,3 +222,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_supplier_compliance_type
 ALTER TABLE erp.supplier_compliance_item ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation ON erp.supplier_compliance_item
   USING (tenant_id = current_setting('app.tenant_id')::uuid);
+
+-- ─── K4: Add hash columns to outbox for tamper-resistant chain ───────────────
+ALTER TABLE erp.outbox
+  ADD COLUMN IF NOT EXISTS content_hash  varchar(64),
+  ADD COLUMN IF NOT EXISTS previous_hash varchar(64);

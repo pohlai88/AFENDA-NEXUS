@@ -9,6 +9,7 @@ import type { ISupplierDocumentRepo } from '../services/supplier-portal-document
 import type { ISupplierDisputeRepo } from '../services/supplier-portal-dispute.js';
 import type { ISupplierNotificationPrefRepo } from '../services/supplier-portal-notifications.js';
 import type { ISupplierComplianceRepo } from '../services/supplier-portal-compliance.js';
+import type { IInvoiceAttachmentRepo } from '../entities/invoice-attachment.js';
 
 export interface ApDeps {
   readonly apInvoiceRepo: IApInvoiceRepo;
@@ -18,6 +19,7 @@ export interface ApDeps {
   readonly apHoldRepo: IApHoldRepo;
   readonly matchToleranceRepo: IMatchToleranceRepo;
   readonly apPrepaymentRepo: IApPrepaymentRepo;
+  readonly invoiceAttachmentRepo: IInvoiceAttachmentRepo;
   readonly supplierDocumentRepo: ISupplierDocumentRepo;
   readonly supplierDisputeRepo: ISupplierDisputeRepo;
   readonly supplierNotificationPrefRepo: ISupplierNotificationPrefRepo;

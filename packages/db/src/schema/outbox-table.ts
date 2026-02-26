@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { index, jsonb, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, jsonb, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { erpSchema } from './_schemas';
 import { pkId, tenantCol } from './_common';
 
@@ -13,6 +13,8 @@ export const outbox = erpSchema.table(
     eventType: text('event_type').notNull(),
     payload: jsonb('payload').notNull().default({}),
     correlationId: uuid('correlation_id'),
+    contentHash: varchar('content_hash', { length: 64 }),
+    previousHash: varchar('previous_hash', { length: 64 }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .default(sql`now()`),

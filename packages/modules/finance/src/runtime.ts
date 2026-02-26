@@ -24,7 +24,8 @@ import { DrizzleAccountRepo } from './slices/gl/repos/drizzle-account-repo.js';
 import { DrizzlePeriodRepo } from './slices/gl/repos/drizzle-period-repo.js';
 import { DrizzleBalanceRepo } from './slices/gl/repos/drizzle-balance-repo.js';
 import { DrizzleIdempotencyStore } from './shared/repos/drizzle-idempotency.js';
-import { DrizzleOutboxWriter } from './shared/repos/drizzle-outbox-writer.js';
+import { DrizzleHashedOutboxStore } from './shared/repos/drizzle-hashed-outbox-store.js';
+import { TamperResistantOutboxWriter } from './shared/services/tamper-resistant-outbox.js';
 import { DrizzleJournalAuditRepo } from './slices/gl/repos/drizzle-journal-audit-repo.js';
 import { DrizzleFxRateRepo } from './slices/fx/repos/drizzle-fx-rate-repo.js';
 import { DrizzleLedgerRepo } from './slices/gl/repos/drizzle-ledger-repo.js';
@@ -51,6 +52,7 @@ import { DrizzleSupplierDocumentRepo } from './slices/ap/repos/drizzle-supplier-
 import { DrizzleSupplierDisputeRepo } from './slices/ap/repos/drizzle-supplier-dispute-repo.js';
 import { DrizzleSupplierNotificationPrefRepo } from './slices/ap/repos/drizzle-supplier-notification-pref-repo.js';
 import { DrizzleSupplierComplianceRepo } from './slices/ap/repos/drizzle-supplier-compliance-repo.js';
+import { DrizzleInvoiceAttachmentRepo } from './slices/ap/repos/drizzle-invoice-attachment-repo.js';
 import { DrizzleArInvoiceRepo } from './slices/ar/repos/drizzle-ar-invoice-repo.js';
 import { DrizzleArPaymentAllocationRepo } from './slices/ar/repos/drizzle-ar-payment-allocation-repo.js';
 import { DrizzleDunningRepo } from './slices/ar/repos/drizzle-dunning-repo.js';
@@ -160,7 +162,7 @@ function buildDeps(tx: TenantTx): FinanceDeps {
     periodRepo: new DrizzlePeriodRepo(tx),
     balanceRepo: new DrizzleBalanceRepo(tx),
     idempotencyStore: new DrizzleIdempotencyStore(tx),
-    outboxWriter: new DrizzleOutboxWriter(tx),
+    outboxWriter: new TamperResistantOutboxWriter(new DrizzleHashedOutboxStore(tx)),
     journalAuditRepo: new DrizzleJournalAuditRepo(tx),
     fxRateRepo: new DrizzleFxRateRepo(tx),
     ledgerRepo: new DrizzleLedgerRepo(tx),
@@ -181,6 +183,7 @@ function buildDeps(tx: TenantTx): FinanceDeps {
     apHoldRepo: new DrizzleApHoldRepo(tx),
     matchToleranceRepo: new DrizzleMatchToleranceRepo(tx),
     apPrepaymentRepo: new DrizzleApPrepaymentRepo(tx),
+    invoiceAttachmentRepo: new DrizzleInvoiceAttachmentRepo(tx),
     supplierDocumentRepo: new DrizzleSupplierDocumentRepo(tx),
     supplierDisputeRepo: new DrizzleSupplierDisputeRepo(tx),
     supplierNotificationPrefRepo: new DrizzleSupplierNotificationPrefRepo(tx),
