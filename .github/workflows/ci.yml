@@ -79,11 +79,12 @@ jobs:
         env:
           CI: true
 
-  # ─── Architecture & Drift Guards ──────────────────────────────────────────
+  # ─── Governance & Drift Guards ────────────────────────────────────────────
+  # Enforces architecture, drift prevention, DB schema sync, and compliance.
   guards:
-    name: Arch · Drift · DB · SOX
+    name: Governance · Drift · DB · SOX
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -98,20 +99,118 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # T1: Architecture & structure
       - name: Architecture guard (E1–E16)
         run: pnpm arch:guard
 
       - name: Monorepo drift check
         run: pnpm drift
 
-      - name: Web drift check (W01–W15)
+      - name: Agent drift check (.agents ↔ PROJECT.md)
+        run: pnpm agents:drift
+
+      - name: Web drift check (W01–W16)
         run: pnpm web:drift
 
-      - name: DB schema drift check
-        run: pnpm db:ci
+      # T2: DB & Neon integration (neon:sync = db:check + db:ci)
+      - name: Neon integration sync (schema ↔ migrations)
+        run: pnpm neon:sync
 
+      # T3: Compliance audits
       - name: AIS benchmark audit
         run: pnpm audit:ais
 
       - name: SOX ITGC audit (strict)
         run: pnpm audit:sox --fail
+
+      # T4: Conventions & security
+      - name: Test directory convention check
+        run: pnpm check:test-dir
+
+      - name: Dependency audit (critical)
+        run: pnpm audit --audit-level=critical
+
+  # ─── Docker Build ──────────────────────────────────────────────────────────
+  docker:
+    name: Docker · Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [quality, test, guards]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: false
+          tags: afenda-web:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── E2E Tests ─────────────────────────────────────────────────────────────
+  e2e:
+    name: E2E · Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [quality, test]
+    env:
+      NODE_ENV: test
+      PORT_API: '3001'
+      # Leave NEON_AUTH_BASE_URL unset → activates API dev-fallback auth
+      # Required: DATABASE_URL_E2E (pooled), DATABASE_URL_UNPOOLED_E2E (direct; mapped to DATABASE_URL_DIRECT)
+      DATABASE_URL: ${{ secrets.DATABASE_URL_E2E }}
+      DATABASE_URL_DIRECT: ${{ secrets.DATABASE_URL_UNPOOLED_E2E }}
+      TEST_USER_EMAIL: ${{ secrets.E2E_TEST_USER_EMAIL }}
+      TEST_USER_PASSWORD: ${{ secrets.E2E_TEST_USER_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Build API and Web (Turbo caches these from the test job above)
+      - name: Build API
+        run: pnpm turbo build --filter=@afenda/api
+
+      - name: Build Web
+        run: pnpm turbo build --filter=@afenda/web
+
+      # Install only Chromium for CI (fastest + most compatible)
+      - name: Install Playwright browsers
+        run: pnpm --filter @afenda/e2e exec playwright install chromium --with-deps
+
+      # Run E2E suite (excludes @nightly tag in default run)
+      - name: Run E2E tests
+        run: pnpm --filter @afenda/e2e exec playwright test --grep-invert "@nightly" --reporter=blob
+        env:
+          CI: true
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-blob-${{ github.run_attempt }}
+          path: apps/e2e/playwright-report/
+          retention-days: 7
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results-${{ github.run_attempt }}
+          path: apps/e2e/test-results/
+          retention-days: 7

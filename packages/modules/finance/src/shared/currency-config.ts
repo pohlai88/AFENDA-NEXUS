@@ -14,39 +14,39 @@
 export interface CurrencyConfig {
   readonly code: string;
   readonly precision: number;
-  readonly rounding: "HALF_UP" | "HALF_EVEN" | "FLOOR" | "CEIL";
+  readonly rounding: 'HALF_UP' | 'HALF_EVEN' | 'FLOOR' | 'CEIL';
 }
 
 const REGISTRY: ReadonlyMap<string, CurrencyConfig> = new Map([
   // 0-decimal currencies
-  ["BIF", { code: "BIF", precision: 0, rounding: "HALF_UP" }],
-  ["CLP", { code: "CLP", precision: 0, rounding: "HALF_UP" }],
-  ["DJF", { code: "DJF", precision: 0, rounding: "HALF_UP" }],
-  ["GNF", { code: "GNF", precision: 0, rounding: "HALF_UP" }],
-  ["ISK", { code: "ISK", precision: 0, rounding: "HALF_UP" }],
-  ["JPY", { code: "JPY", precision: 0, rounding: "HALF_UP" }],
-  ["KMF", { code: "KMF", precision: 0, rounding: "HALF_UP" }],
-  ["KRW", { code: "KRW", precision: 0, rounding: "HALF_UP" }],
-  ["PYG", { code: "PYG", precision: 0, rounding: "HALF_UP" }],
-  ["RWF", { code: "RWF", precision: 0, rounding: "HALF_UP" }],
-  ["UGX", { code: "UGX", precision: 0, rounding: "HALF_UP" }],
-  ["VND", { code: "VND", precision: 0, rounding: "HALF_UP" }],
-  ["VUV", { code: "VUV", precision: 0, rounding: "HALF_UP" }],
-  ["XAF", { code: "XAF", precision: 0, rounding: "HALF_UP" }],
-  ["XOF", { code: "XOF", precision: 0, rounding: "HALF_UP" }],
-  ["XPF", { code: "XPF", precision: 0, rounding: "HALF_UP" }],
+  ['BIF', { code: 'BIF', precision: 0, rounding: 'HALF_UP' }],
+  ['CLP', { code: 'CLP', precision: 0, rounding: 'HALF_UP' }],
+  ['DJF', { code: 'DJF', precision: 0, rounding: 'HALF_UP' }],
+  ['GNF', { code: 'GNF', precision: 0, rounding: 'HALF_UP' }],
+  ['ISK', { code: 'ISK', precision: 0, rounding: 'HALF_UP' }],
+  ['JPY', { code: 'JPY', precision: 0, rounding: 'HALF_UP' }],
+  ['KMF', { code: 'KMF', precision: 0, rounding: 'HALF_UP' }],
+  ['KRW', { code: 'KRW', precision: 0, rounding: 'HALF_UP' }],
+  ['PYG', { code: 'PYG', precision: 0, rounding: 'HALF_UP' }],
+  ['RWF', { code: 'RWF', precision: 0, rounding: 'HALF_UP' }],
+  ['UGX', { code: 'UGX', precision: 0, rounding: 'HALF_UP' }],
+  ['VND', { code: 'VND', precision: 0, rounding: 'HALF_UP' }],
+  ['VUV', { code: 'VUV', precision: 0, rounding: 'HALF_UP' }],
+  ['XAF', { code: 'XAF', precision: 0, rounding: 'HALF_UP' }],
+  ['XOF', { code: 'XOF', precision: 0, rounding: 'HALF_UP' }],
+  ['XPF', { code: 'XPF', precision: 0, rounding: 'HALF_UP' }],
 
   // 3-decimal currencies
-  ["BHD", { code: "BHD", precision: 3, rounding: "HALF_UP" }],
-  ["IQD", { code: "IQD", precision: 3, rounding: "HALF_UP" }],
-  ["JOD", { code: "JOD", precision: 3, rounding: "HALF_UP" }],
-  ["KWD", { code: "KWD", precision: 3, rounding: "HALF_UP" }],
-  ["LYD", { code: "LYD", precision: 3, rounding: "HALF_UP" }],
-  ["OMR", { code: "OMR", precision: 3, rounding: "HALF_UP" }],
-  ["TND", { code: "TND", precision: 3, rounding: "HALF_UP" }],
+  ['BHD', { code: 'BHD', precision: 3, rounding: 'HALF_UP' }],
+  ['IQD', { code: 'IQD', precision: 3, rounding: 'HALF_UP' }],
+  ['JOD', { code: 'JOD', precision: 3, rounding: 'HALF_UP' }],
+  ['KWD', { code: 'KWD', precision: 3, rounding: 'HALF_UP' }],
+  ['LYD', { code: 'LYD', precision: 3, rounding: 'HALF_UP' }],
+  ['OMR', { code: 'OMR', precision: 3, rounding: 'HALF_UP' }],
+  ['TND', { code: 'TND', precision: 3, rounding: 'HALF_UP' }],
 ]);
 
-const DEFAULT_CONFIG: CurrencyConfig = { code: "USD", precision: 2, rounding: "HALF_UP" };
+const DEFAULT_CONFIG: CurrencyConfig = { code: 'USD', precision: 2, rounding: 'HALF_UP' };
 
 /**
  * Returns the precision config for a given ISO 4217 currency code.

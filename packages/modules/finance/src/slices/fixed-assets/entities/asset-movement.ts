@@ -3,13 +3,13 @@
  */
 
 export type MovementType =
-  | "ACQUISITION"
-  | "DEPRECIATION"
-  | "REVALUATION"
-  | "IMPAIRMENT"
-  | "DISPOSAL"
-  | "TRANSFER"
-  | "CAPITALIZATION";
+  | 'ACQUISITION'
+  | 'DEPRECIATION'
+  | 'REVALUATION'
+  | 'IMPAIRMENT'
+  | 'DISPOSAL'
+  | 'TRANSFER'
+  | 'CAPITALIZATION';
 
 export interface AssetMovement {
   readonly id: string;

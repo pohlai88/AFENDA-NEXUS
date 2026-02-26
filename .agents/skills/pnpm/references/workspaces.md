@@ -58,7 +58,8 @@ Reference local packages:
 
 ## Catalogs
 
-Centralized version management - define dependency versions once, reference everywhere.
+Centralized version management - define dependency versions once, reference
+everywhere.
 
 ```yaml
 # pnpm-workspace.yaml

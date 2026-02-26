@@ -2,8 +2,14 @@
  * Covenant entity — loan covenant monitoring.
  */
 
-export type CovenantType = "DEBT_TO_EQUITY" | "INTEREST_COVERAGE" | "CURRENT_RATIO" | "DEBT_SERVICE_COVERAGE" | "LEVERAGE" | "CUSTOM";
-export type CovenantStatus = "COMPLIANT" | "WARNING" | "BREACHED";
+export type CovenantType =
+  | 'DEBT_TO_EQUITY'
+  | 'INTEREST_COVERAGE'
+  | 'CURRENT_RATIO'
+  | 'DEBT_SERVICE_COVERAGE'
+  | 'LEVERAGE'
+  | 'CUSTOM';
+export type CovenantStatus = 'COMPLIANT' | 'WARNING' | 'BREACHED';
 
 export interface Covenant {
   readonly id: string;

@@ -1,11 +1,15 @@
-import type { Result } from "@afenda/core";
-import { err, AppError } from "@afenda/core";
-import type { IcSettlement } from "../../ic/entities/ic-settlement.js";
-import type { IIcSettlementRepo, CreateIcSettlementInput } from "../../../slices/ic/ports/ic-settlement-repo.js";
-import type { IIcTransactionRepo } from "../../../slices/ic/ports/ic-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import { err, AppError } from '@afenda/core';
+import type { IcSettlement } from '../../ic/entities/ic-settlement.js';
+import type {
+  IIcSettlementRepo,
+  CreateIcSettlementInput,
+} from '../../../slices/ic/ports/ic-settlement-repo.js';
+import type { IIcTransactionRepo } from '../../../slices/ic/ports/ic-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { ISoDActionLogRepo } from '../../../shared/ports/sod-action-log-repo.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface SettleIcDocumentsInput {
   readonly tenantId: string;
@@ -13,7 +17,7 @@ export interface SettleIcDocumentsInput {
   readonly sellerCompanyId: string;
   readonly buyerCompanyId: string;
   readonly documentIds: readonly string[];
-  readonly settlementMethod: "NETTING" | "CASH" | "JOURNAL";
+  readonly settlementMethod: 'NETTING' | 'CASH' | 'JOURNAL';
   readonly settlementAmount: bigint;
   readonly currency: string;
   readonly fxGainLoss: bigint;
@@ -34,27 +38,30 @@ export async function settleIcDocuments(
     icSettlementRepo: IIcSettlementRepo;
     icTransactionRepo: IIcTransactionRepo;
     outboxWriter: IOutboxWriter;
+    sodActionLogRepo?: ISoDActionLogRepo;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<IcSettlement>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
 
   if (input.documentIds.length === 0) {
-    return err(new AppError("VALIDATION_ERROR", "At least one IC document is required for settlement"));
+    return err(
+      new AppError('VALIDATION_ERROR', 'At least one IC document is required for settlement')
+    );
   }
 
   // Validate all documents exist and are in PAIRED status
   for (const docId of input.documentIds) {
     const docResult = await deps.icTransactionRepo.findById(docId);
     if (!docResult.ok) {
-      return err(new AppError("NOT_FOUND", `IC document ${docId} not found`));
+      return err(new AppError('NOT_FOUND', `IC document ${docId} not found`));
     }
-    if (docResult.value.status !== "PAIRED") {
+    if (docResult.value.status !== 'PAIRED') {
       return err(
         new AppError(
-          "INVALID_STATE",
-          `IC document ${docId} is in ${docResult.value.status} status, expected PAIRED`,
-        ),
+          'INVALID_STATE',
+          `IC document ${docId} is in ${docResult.value.status} status, expected PAIRED`
+        )
       );
     }
   }
@@ -90,6 +97,14 @@ export async function settleIcDocuments(
       sellerCompanyId: input.sellerCompanyId,
       buyerCompanyId: input.buyerCompanyId,
     },
+  });
+
+  await deps.sodActionLogRepo?.logAction({
+    tenantId,
+    entityType: 'icTransfer',
+    entityId: confirmResult.value.id,
+    actorId: ctx?.actor?.userId ?? input.userId,
+    action: 'ic:settle',
   });
 
   return confirmResult;

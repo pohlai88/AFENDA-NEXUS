@@ -5,10 +5,10 @@
  * Pure calculator — no I/O, no side effects.
  * Computes trial balance from raw GL balance rows, classifying by account type.
  */
-import type { Money } from "@afenda/core";
-import { money } from "@afenda/core";
-import type { AccountType } from "../entities/account.js";
-import type { CalculatorResult } from "./journal-balance.js";
+import type { Money } from '@afenda/core';
+import { money } from '@afenda/core';
+import type { AccountType } from '../entities/account.js';
+import type { CalculatorResult } from './journal-balance.js';
 
 export interface TrialBalanceInput {
   readonly accountCode: string;
@@ -37,7 +37,7 @@ export interface ClassifiedTrialBalance {
 
 export function computeTrialBalance(
   rows: readonly TrialBalanceInput[],
-  currency: string,
+  currency: string
 ): CalculatorResult<ClassifiedTrialBalance> {
   let totalDebits = 0n;
   let totalCredits = 0n;
@@ -79,9 +79,7 @@ export function computeTrialBalance(
  * Classifies trial balance rows by account type for financial reporting.
  * Replaces the brittle charAt(0) prefix matching.
  */
-export function classifyByAccountType(
-  rows: readonly ClassifiedTrialBalanceRow[],
-): {
+export function classifyByAccountType(rows: readonly ClassifiedTrialBalanceRow[]): {
   assets: ClassifiedTrialBalanceRow[];
   liabilities: ClassifiedTrialBalanceRow[];
   equity: ClassifiedTrialBalanceRow[];
@@ -96,19 +94,19 @@ export function classifyByAccountType(
 
   for (const row of rows) {
     switch (row.accountType) {
-      case "ASSET":
+      case 'ASSET':
         assets.push(row);
         break;
-      case "LIABILITY":
+      case 'LIABILITY':
         liabilities.push(row);
         break;
-      case "EQUITY":
+      case 'EQUITY':
         equity.push(row);
         break;
-      case "REVENUE":
+      case 'REVENUE':
         revenue.push(row);
         break;
-      case "EXPENSE":
+      case 'EXPENSE':
         expenses.push(row);
         break;
     }

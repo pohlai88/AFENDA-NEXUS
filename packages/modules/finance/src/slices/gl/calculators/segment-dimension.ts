@@ -6,9 +6,9 @@
  * Validates and resolves multi-dimensional coding on journal lines.
  * Ensures segment combinations are valid per the configured dimension hierarchy.
  */
-import type { CalculatorResult } from "./journal-balance.js";
+import type { CalculatorResult } from './journal-balance.js';
 
-export type DimensionType = "segment" | "cost_center" | "profit_center" | "project" | "custom";
+export type DimensionType = 'segment' | 'cost_center' | 'profit_center' | 'project' | 'custom';
 
 export interface DimensionValue {
   readonly dimensionType: DimensionType;
@@ -38,10 +38,10 @@ export interface DimensionValidationResult {
  */
 export function validateDimensions(
   lines: readonly JournalLineDimensions[],
-  validDimensions: readonly DimensionValue[],
+  validDimensions: readonly DimensionValue[]
 ): CalculatorResult<DimensionValidationResult> {
   if (lines.length === 0) {
-    throw new Error("Journal lines cannot be empty");
+    throw new Error('Journal lines cannot be empty');
   }
 
   const activeCodes = new Map<string, Set<string>>();
@@ -57,16 +57,16 @@ export function validateDimensions(
 
   for (const line of lines) {
     const errors: string[] = [];
-    if (line.segment && !activeCodes.get("segment")?.has(line.segment)) {
+    if (line.segment && !activeCodes.get('segment')?.has(line.segment)) {
       errors.push(`Invalid segment: ${line.segment}`);
     }
-    if (line.costCenter && !activeCodes.get("cost_center")?.has(line.costCenter)) {
+    if (line.costCenter && !activeCodes.get('cost_center')?.has(line.costCenter)) {
       errors.push(`Invalid cost center: ${line.costCenter}`);
     }
-    if (line.profitCenter && !activeCodes.get("profit_center")?.has(line.profitCenter)) {
+    if (line.profitCenter && !activeCodes.get('profit_center')?.has(line.profitCenter)) {
       errors.push(`Invalid profit center: ${line.profitCenter}`);
     }
-    if (line.project && !activeCodes.get("project")?.has(line.project)) {
+    if (line.project && !activeCodes.get('project')?.has(line.project)) {
       errors.push(`Invalid project: ${line.project}`);
     }
     if (errors.length > 0) {

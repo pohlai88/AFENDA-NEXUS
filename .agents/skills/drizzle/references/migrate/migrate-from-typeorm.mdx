@@ -1,8 +1,9 @@
 ---
-title: "Migrate from TypeORM to Drizzle"
+title: 'Migrate from TypeORM to Drizzle'
 ---
-import Npm from "@mdx/Npm.astro";
-import Steps from "@mdx/Steps.astro";
+
+import Npm from '@mdx/Npm.astro';
+import Steps from '@mdx/Steps.astro';
 
 ## Getting Started
 
@@ -143,31 +144,50 @@ For `many-to-many` relation we will create a join table `order_details`, so `Ord
 The corresponding tables have been created using a generated TypeORM migration.
 
 ```typescript copy filename="src/db/migrations/1702216840703-init.ts"
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Init1702216840703 implements MigrationInterface {
-    name = 'Init1702216840703'
+  name = 'Init1702216840703';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TABLE "orders" ("id" SERIAL NOT NULL, "orderDate" date NOT NULL, "shippedDate" date, "shipAddress" text NOT NULL, "shipPostalCode" text, "shipCountry" text NOT NULL, CONSTRAINT "PK_710e2d4957aa5878dfe94e4ac2f" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "suppliers" ("id" SERIAL NOT NULL, "companyName" text NOT NULL, "city" text, "country" text NOT NULL, CONSTRAINT "PK_b70ac51766a9e3144f778cfe81e" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "products" ("id" SERIAL NOT NULL, "name" text NOT NULL, "supplierId" integer NOT NULL, "unitPrice" numeric(10,4) NOT NULL, "unitsInStock" integer NOT NULL, CONSTRAINT "PK_0806c755e0aca124e67c0cf6d7d" PRIMARY KEY ("id"))`);
-        await queryRunner.query(`CREATE TABLE "order_details" ("orderId" integer NOT NULL, "productId" integer NOT NULL, "quantity" integer NOT NULL, CONSTRAINT "PK_e08ee153eb9c98ee497c1d1287e" PRIMARY KEY ("orderId", "productId"))`);
-        await queryRunner.query(`ALTER TABLE "products" ADD CONSTRAINT "FK_c143cbc0299e1f9220c4b5debd8" FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "order_details" ADD CONSTRAINT "FK_147bc15de4304f89a93c7eee969" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-        await queryRunner.query(`ALTER TABLE "order_details" ADD CONSTRAINT "FK_c67ebaba3e5085b6401911acc70" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`);
-    }
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `CREATE TABLE "orders" ("id" SERIAL NOT NULL, "orderDate" date NOT NULL, "shippedDate" date, "shipAddress" text NOT NULL, "shipPostalCode" text, "shipCountry" text NOT NULL, CONSTRAINT "PK_710e2d4957aa5878dfe94e4ac2f" PRIMARY KEY ("id"))`
+    );
+    await queryRunner.query(
+      `CREATE TABLE "suppliers" ("id" SERIAL NOT NULL, "companyName" text NOT NULL, "city" text, "country" text NOT NULL, CONSTRAINT "PK_b70ac51766a9e3144f778cfe81e" PRIMARY KEY ("id"))`
+    );
+    await queryRunner.query(
+      `CREATE TABLE "products" ("id" SERIAL NOT NULL, "name" text NOT NULL, "supplierId" integer NOT NULL, "unitPrice" numeric(10,4) NOT NULL, "unitsInStock" integer NOT NULL, CONSTRAINT "PK_0806c755e0aca124e67c0cf6d7d" PRIMARY KEY ("id"))`
+    );
+    await queryRunner.query(
+      `CREATE TABLE "order_details" ("orderId" integer NOT NULL, "productId" integer NOT NULL, "quantity" integer NOT NULL, CONSTRAINT "PK_e08ee153eb9c98ee497c1d1287e" PRIMARY KEY ("orderId", "productId"))`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "products" ADD CONSTRAINT "FK_c143cbc0299e1f9220c4b5debd8" FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "order_details" ADD CONSTRAINT "FK_147bc15de4304f89a93c7eee969" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "order_details" ADD CONSTRAINT "FK_c67ebaba3e5085b6401911acc70" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "order_details" DROP CONSTRAINT "FK_c67ebaba3e5085b6401911acc70"`);
-        await queryRunner.query(`ALTER TABLE "order_details" DROP CONSTRAINT "FK_147bc15de4304f89a93c7eee969"`);
-        await queryRunner.query(`ALTER TABLE "products" DROP CONSTRAINT "FK_c143cbc0299e1f9220c4b5debd8"`);
-        await queryRunner.query(`DROP TABLE "order_details"`);
-        await queryRunner.query(`DROP TABLE "products"`);
-        await queryRunner.query(`DROP TABLE "suppliers"`);
-        await queryRunner.query(`DROP TABLE "orders"`);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      `ALTER TABLE "order_details" DROP CONSTRAINT "FK_c67ebaba3e5085b6401911acc70"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "order_details" DROP CONSTRAINT "FK_147bc15de4304f89a93c7eee969"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "products" DROP CONSTRAINT "FK_c143cbc0299e1f9220c4b5debd8"`
+    );
+    await queryRunner.query(`DROP TABLE "order_details"`);
+    await queryRunner.query(`DROP TABLE "products"`);
+    await queryRunner.query(`DROP TABLE "suppliers"`);
+    await queryRunner.query(`DROP TABLE "orders"`);
+  }
 }
 ```
 
@@ -203,12 +223,9 @@ This guide uses the following file structure:
 
 #### Install Drizzle ORM & Drizzle Kit
 
-The first step is to install **Drizzle ORM** and `pg` package which we will use as a driver. The second step is to install **Drizzle Kit** and types for `pg`. [Drizzle Kit](/docs/kit-overview) - CLI companion for automatic SQL migrations generation and rapid prototyping. 
+The first step is to install **Drizzle ORM** and `pg` package which we will use as a driver. The second step is to install **Drizzle Kit** and types for `pg`. [Drizzle Kit](/docs/kit-overview) - CLI companion for automatic SQL migrations generation and rapid prototyping.
 
-<Npm>
-drizzle-orm pg
--D drizzle-kit @types/pg
-</Npm>
+<Npm>drizzle-orm pg -D drizzle-kit @types/pg</Npm>
 
 #### Setup Drizzle config file
 
@@ -248,7 +265,7 @@ npx drizzle-kit introspect
 
 This command will generate a schema.ts file, along with snapshots and migrations in the src/drizzle folder.
 
-```typescript collapsable copy filename="src/drizzle/schema.ts" 
+```typescript collapsable copy filename="src/drizzle/schema.ts"
 import {
   pgTable,
   serial,
@@ -311,8 +328,8 @@ export const orderDetails = pgTable(
     primaryKey({
       columns: [table.orderId, table.productId],
       name: 'PK_e08ee153eb9c98ee497c1d1287e',
-    })
-  ],
+    }),
+  ]
 );
 ```
 
@@ -381,7 +398,7 @@ Also, if you want to use relational queries, you have to update your schema file
 // ...other imports
 import { relations } from 'drizzle-orm';
 
-// ...other tables 
+// ...other tables
 export const suppliersRelations = relations(suppliers, ({ many }) => ({
   products: many(products),
 }));
@@ -454,7 +471,6 @@ import { client, db } from './drizzle/db';
 import { resolve } from 'node:path';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
-
 (async () => {
   await client.connect();
 
@@ -474,6 +490,7 @@ In this section, we will show you how to replace several queries from **TypeORM*
 We will show how to insert new rows into `suppliers` and `products` tables.
 
 1. `POST /suppliers`
+
 ```typescript copy filename="src/controllers/supplier.controller.ts"
 import dataSource from '../db/typeorm.config';
 import { Supplier } from '../entities/supplier.entity';
@@ -654,7 +671,7 @@ const response: {
     city: string | null;
     country: string;
   } | null;
-}[]
+}[];
 ```
 
 2. `GET /products`
@@ -736,7 +753,7 @@ const response: {
   name: string;
   unitPrice: string;
   unitsInStock: number;
-}[]
+}[];
 ```
 
 3. `GET /orders/:id`
@@ -781,19 +798,19 @@ import { orders, orderDetails, products } from '../drizzle/schema';
 const { id } = req.params;
 
 const response = await db
-      .select({
-        id: orders.id,
-        shipCountry: orders.shipCountry,
-        orderDate: orders.orderDate,
-        totalPrice: sql<number>`cast(sum(${orderDetails.quantity} * ${products.unitPrice}) as float)`,
-        totalQuantity: sql<number>`cast(sum(${orderDetails.quantity}) as int)`,
-        totalProducts: sql<number>`cast(count(${orderDetails.productId}) as int)`,
-      })
-      .from(orders)
-      .where(eq(orders.id, id))
-      .groupBy(orders.id)
-      .leftJoin(orderDetails, eq(orderDetails.orderId, orders.id))
-      .leftJoin(products, eq(products.id, orderDetails.productId));
+  .select({
+    id: orders.id,
+    shipCountry: orders.shipCountry,
+    orderDate: orders.orderDate,
+    totalPrice: sql<number>`cast(sum(${orderDetails.quantity} * ${products.unitPrice}) as float)`,
+    totalQuantity: sql<number>`cast(sum(${orderDetails.quantity}) as int)`,
+    totalProducts: sql<number>`cast(count(${orderDetails.productId}) as int)`,
+  })
+  .from(orders)
+  .where(eq(orders.id, id))
+  .groupBy(orders.id)
+  .leftJoin(orderDetails, eq(orderDetails.orderId, orders.id))
+  .leftJoin(products, eq(products.id, orderDetails.productId));
 ```
 
 In **Drizzle ORM**, the result will be type-safe with aggregations too.
@@ -807,7 +824,7 @@ const response: {
   totalPrice: number;
   totalQuantity: number;
   totalProducts: number;
-}[]
+}[];
 ```
 
 **Note:** as of now aggregations are not supported in relational queries, so you have to use `core queries`.
@@ -847,12 +864,12 @@ import { suppliers } from '../drizzle/schema';
 const { id } = req.params;
 
 await db
-    .update(suppliers)
-    .set({
-      city: 'TestCity1Updated',
-      country: 'TestCountry1Updated',
-    })
-    .where(eq(suppliers.id, id));
+  .update(suppliers)
+  .set({
+    city: 'TestCity1Updated',
+    country: 'TestCountry1Updated',
+  })
+  .where(eq(suppliers.id, id));
 ```
 
 ##### Replace delete queries

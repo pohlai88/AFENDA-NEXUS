@@ -9,20 +9,22 @@ description: Added 'setWhere' and 'targetWhere' fields to '.onConflictDoUpdate()
 - Added `setWhere` and `targetWhere` fields to `.onConflictDoUpdate()` config in SQLite instead of single `where` field:
 
 ```ts copy
-await db.insert(employees)
+await db
+  .insert(employees)
   .values({ employeeId: 123, name: 'John Doe' })
   .onConflictDoUpdate({
     target: employees.employeeId,
     targetWhere: sql`name <> 'John Doe'`,
-    set: { name: sql`excluded.name` }
+    set: { name: sql`excluded.name` },
   });
-  
-await db.insert(employees)
+
+await db
+  .insert(employees)
   .values({ employeeId: 123, name: 'John Doe' })
   .onConflictDoUpdate({
     target: employees.employeeId,
     set: { name: 'John Doe' },
-    setWhere: sql`name <> 'John Doe'`
+    setWhere: sql`name <> 'John Doe'`,
   });
 ```
 

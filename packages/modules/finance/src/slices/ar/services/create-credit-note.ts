@@ -1,10 +1,10 @@
-import type { Result } from "@afenda/core";
-import { err, AppError } from "@afenda/core";
-import type { ArInvoice } from "../entities/ar-invoice.js";
-import type { IArInvoiceRepo, CreateArInvoiceInput } from "../ports/ar-invoice-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import { err, AppError } from '@afenda/core';
+import type { ArInvoice } from '../entities/ar-invoice.js';
+import type { IArInvoiceRepo, CreateArInvoiceInput } from '../ports/ar-invoice-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface CreateCreditNoteInput {
   readonly tenantId: string;
@@ -24,7 +24,7 @@ export async function createCreditNote(
     arInvoiceRepo: IArInvoiceRepo;
     outboxWriter: IOutboxWriter;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<ArInvoice>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor.userId ?? input.userId;
@@ -34,17 +34,22 @@ export async function createCreditNote(
 
   const original = found.value;
 
-  if (original.status === "CANCELLED" || original.status === "DRAFT") {
-    return err(new AppError("VALIDATION", `Cannot create credit note for invoice with status: ${original.status}`));
+  if (original.status === 'CANCELLED' || original.status === 'DRAFT') {
+    return err(
+      new AppError(
+        'VALIDATION',
+        `Cannot create credit note for invoice with status: ${original.status}`
+      )
+    );
   }
 
   const creditLines = original.lines.map((line) => ({
     accountId: line.accountId,
     description: `Credit note for ${original.invoiceNumber}: ${input.reason}`,
     quantity: line.quantity,
-    unitPrice: -(line.unitPrice.amount),
-    amount: -(line.amount.amount),
-    taxAmount: -(line.taxAmount.amount),
+    unitPrice: -line.unitPrice.amount,
+    amount: -line.amount.amount,
+    taxAmount: -line.taxAmount.amount,
   }));
 
   const creditInput: CreateArInvoiceInput = {

@@ -5,15 +5,14 @@ import Callout from '@mdx/Callout.astro';
 Starting from `drizzle-orm@1.0.0-beta.15`, `drizzle-valibot` has been deprecated in favor of first-class schema generation support within Drizzle ORM itself
 
 You can still use `drizzle-valibot` package but all new update will be added to Drizzle ORM directly
+
 </Callout>
 
 # valibot
 
 ### Install the dependencies
 
-<Npm>
-valibot
-</Npm>
+<Npm>valibot</Npm>
 
 ### Select schema
 
@@ -27,7 +26,7 @@ import { parse } from 'valibot';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userSelectSchema = createSelectSchema(users);
@@ -67,16 +66,16 @@ import { parse } from 'valibot';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userInsertSchema = createInsertSchema(users);
 
 const user = { name: 'John' };
-const parsed: { name: string, age: number } = parse(userInsertSchema, user); // Error: `age` is not defined
+const parsed: { name: string; age: number } = parse(userInsertSchema, user); // Error: `age` is not defined
 
 const user = { name: 'Jane', age: 30 };
-const parsed: { name: string, age: number } = parse(userInsertSchema, user); // Will parse successfully
+const parsed: { name: string; age: number } = parse(userInsertSchema, user); // Will parse successfully
 await db.insert(users).values(parsed);
 ```
 
@@ -92,16 +91,22 @@ import { parse } from 'valibot';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userUpdateSchema = createUpdateSchema(users);
 
 const user = { id: 5, name: 'John' };
-const parsed: { name?: string | undefined, age?: number | undefined } = parse(userUpdateSchema, user); // Error: `id` is a generated column, it can't be updated
+const parsed: { name?: string | undefined; age?: number | undefined } = parse(
+  userUpdateSchema,
+  user
+); // Error: `id` is a generated column, it can't be updated
 
 const user = { age: 35 };
-const parsed: { name?: string | undefined, age?: number | undefined } = parse(userUpdateSchema, user); // Will parse successfully
+const parsed: { name?: string | undefined; age?: number | undefined } = parse(
+  userUpdateSchema,
+  user
+); // Will parse successfully
 await db.update(users).set(parsed).where(eq(users.name, 'Jane'));
 ```
 

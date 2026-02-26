@@ -32,11 +32,7 @@
     "emoji": "🤝",
     "category": "security",
     "requires": {
-      "bins": [
-        "curl",
-        "git",
-        "gh"
-      ]
+      "bins": ["curl", "git", "gh"]
     },
     "triggers": [
       "report vulnerability",

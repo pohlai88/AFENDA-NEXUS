@@ -174,43 +174,24 @@
         "description": "Advisory monitoring is now embedded in clawsec-suite",
         "integrated_in_suite": true,
         "standalone_available": true,
-        "compatible": [
-          "openclaw",
-          "moltbot",
-          "clawdbot",
-          "other"
-        ]
+        "compatible": ["openclaw", "moltbot", "clawdbot", "other"]
       },
       "openclaw-audit-watchdog": {
         "description": "Automated daily audits with email reporting",
         "default_install": true,
-        "compatible": [
-          "openclaw",
-          "moltbot",
-          "clawdbot"
-        ],
+        "compatible": ["openclaw", "moltbot", "clawdbot"],
         "note": "Tailored for OpenClaw/MoltBot family"
       },
       "soul-guardian": {
         "description": "Drift detection and file integrity guard",
         "default_install": false,
-        "compatible": [
-          "openclaw",
-          "moltbot",
-          "clawdbot",
-          "other"
-        ]
+        "compatible": ["openclaw", "moltbot", "clawdbot", "other"]
       },
       "clawtributor": {
         "description": "Community incident reporting (shares anonymized data)",
         "default_install": false,
         "requires_explicit_consent": true,
-        "compatible": [
-          "openclaw",
-          "moltbot",
-          "clawdbot",
-          "other"
-        ]
+        "compatible": ["openclaw", "moltbot", "clawdbot", "other"]
       }
     }
   },
@@ -218,12 +199,7 @@
     "emoji": "📦",
     "category": "security",
     "requires": {
-      "bins": [
-        "curl",
-        "jq",
-        "shasum",
-        "openssl"
-      ]
+      "bins": ["curl", "jq", "shasum", "openssl"]
     },
     "triggers": [
       "clawsec suite",

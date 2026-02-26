@@ -2,17 +2,17 @@
  * FI-01: Financial instrument entity — IFRS 9.
  */
 
-export type InstrumentClassification = "AMORTIZED_COST" | "FVOCI" | "FVTPL";
+export type InstrumentClassification = 'AMORTIZED_COST' | 'FVOCI' | 'FVTPL';
 
 export type InstrumentType =
-  | "DEBT_HELD"
-  | "DEBT_ISSUED"
-  | "EQUITY_INVESTMENT"
-  | "DERIVATIVE"
-  | "LOAN_RECEIVABLE"
-  | "TRADE_RECEIVABLE";
+  | 'DEBT_HELD'
+  | 'DEBT_ISSUED'
+  | 'EQUITY_INVESTMENT'
+  | 'DERIVATIVE'
+  | 'LOAN_RECEIVABLE'
+  | 'TRADE_RECEIVABLE';
 
-export type FairValueLevel = "LEVEL_1" | "LEVEL_2" | "LEVEL_3";
+export type FairValueLevel = 'LEVEL_1' | 'LEVEL_2' | 'LEVEL_3';
 
 export interface FinancialInstrument {
   readonly id: string;

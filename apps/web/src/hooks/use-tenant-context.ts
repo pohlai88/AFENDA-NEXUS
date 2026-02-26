@@ -1,1 +1,1 @@
-export { useTenantContext } from "@/providers/tenant-provider";
+export { useTenantContext } from '@/providers/tenant-provider';

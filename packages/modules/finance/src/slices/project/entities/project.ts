@@ -2,8 +2,8 @@
  * Project entity — project master with budget, dates, and billing type.
  */
 
-export type ProjectStatus = "PLANNING" | "ACTIVE" | "ON_HOLD" | "COMPLETED" | "CANCELLED";
-export type BillingType = "FIXED_FEE" | "TIME_AND_MATERIALS" | "MILESTONE" | "COST_PLUS";
+export type ProjectStatus = 'PLANNING' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED';
+export type BillingType = 'FIXED_FEE' | 'TIME_AND_MATERIALS' | 'MILESTONE' | 'COST_PLUS';
 
 export interface Project {
   readonly id: string;

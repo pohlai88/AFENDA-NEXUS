@@ -1,5 +1,5 @@
-export { platformSchema, erpSchema, auditSchema } from "./_schemas";
-export { pkId, tenantCol, timestamps, moneyBigint } from "./_common";
+export { platformSchema, erpSchema, auditSchema } from './_schemas';
+export { pkId, tenantCol, companyCol, timestamps, moneyBigint, uuidV7ToTimestamp } from './_common';
 export {
   tenantStatusEnum,
   journalStatusEnum,
@@ -70,8 +70,13 @@ export {
   hedgeTestMethodEnum,
   hedgeTestResultEnum,
   tpMethodEnum,
-} from "./_enums";
-export { tenants, companies, users } from "./platform";
+  documentStatusEnum,
+  integrityStatusEnum,
+  scanStatusEnum,
+  linkedEntityTypeEnum,
+  documentCategoryEnum,
+} from './_enums';
+export { tenants, companies, users } from './platform';
 export {
   accounts,
   counterparties,
@@ -153,9 +158,12 @@ export {
   fairValueMeasurements,
   hedgeEffectivenessTests,
   tpBenchmarks,
-} from "./erp";
-export { auditLogs } from "./audit";
-export { outbox } from "./outbox-table";
-export { idempotencyStore } from "./idempotency-store";
-export type { OutboxRow, OutboxWriter, OutboxDrainer } from "./outbox";
-export * from "./relations";
+} from './erp';
+export { documentAttachments, documentLinks } from './erp-document';
+export { auditLogs } from './audit';
+export { sodActionLog } from './erp-sod';
+export { approvalPolicies, approvalRequests, approvalSteps } from './erp-approval';
+export { outbox } from './outbox-table';
+export { idempotencyStore } from './idempotency-store';
+export type { OutboxRow, OutboxWriter, OutboxDrainer } from './outbox';
+export * from './relations';

@@ -19,14 +19,18 @@ const table = pgTable('table', {
   field: char('field', { length: 2 }).unique('custom_field', { nulls: 'not distinct' }),
 });
 // multiple columns
-const table = pgTable('table', {
-  id: serial('id').primaryKey(),
-  name: text('name').notNull(),
-  state: char('state', { length: 2 }),
-}, (t) => ({
-  first: unique('custom_name').on(t.name, t.state).nullsNotDistinct(),
-  second: unique('custom_name1').on(t.name, t.state),
-}));
+const table = pgTable(
+  'table',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    state: char('state', { length: 2 }),
+  },
+  (t) => ({
+    first: unique('custom_name').on(t.name, t.state).nullsNotDistinct(),
+    second: unique('custom_name1').on(t.name, t.state),
+  })
+);
 ```
 
 For MySQL, everything will be the same except for the `NULLS NOT DISTINCT` option. It appears that MySQL does not support it
@@ -36,20 +40,24 @@ Examples that just shows a different `unique` usage. Please don't search a real 
 ```ts copy
 // single column
 const table = mysqlTable('table', {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull().unique(),
-    state: text('state').unique('custom'),
-    field: text('field').unique('custom_field'),
+  id: serial('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  state: text('state').unique('custom'),
+  field: text('field').unique('custom_field'),
 });
 // multiple columns
-const table = mysqlTable('cities1', {
+const table = mysqlTable(
+  'cities1',
+  {
     id: serial('id').primaryKey(),
     name: text('name').notNull(),
     state: text('state'),
-}, (t) => ({
+  },
+  (t) => ({
     first: unique().on(t.name, t.state),
     second: unique('custom_name1').on(t.name, t.state),
-}));
+  })
+);
 ```
 
 In SQLite unique constraints are the same as unique indexes. As long as you can specify a name for the unique index in SQLite - we will treat all unique constraints as unique indexes in internal implementation
@@ -57,18 +65,22 @@ In SQLite unique constraints are the same as unique indexes. As long as you can 
 ```ts copy
 // single column
 const table = sqliteTable('table', {
-    id: int('id').primaryKey(),
-    name: text('name').notNull().unique(),
-    state: text('state').unique('custom'),
-    field: text('field').unique(),
+  id: int('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  state: text('state').unique('custom'),
+  field: text('field').unique(),
 });
 // multiple columns
-const table = sqliteTable('table', {
+const table = sqliteTable(
+  'table',
+  {
     id: int('id').primaryKey(),
     name: text('name').notNull(),
     state: text('state'),
-}, (t) => ({
+  },
+  (t) => ({
     first: unique().on(t.name, t.state),
     second: unique('custom').on(t.name, t.state),
-}));
+  })
+);
 ```

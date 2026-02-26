@@ -4,7 +4,7 @@ pubDate: 2024-03-06
 description: Added with update, with delete, with insert, possibility to specify custom schema and custom name for migrations table, sqlite proxy batch and relational queries support.
 ---
 
-import Section from "@mdx/Section.astro";
+import Section from '@mdx/Section.astro';
 
 ## New Features
 
@@ -21,20 +21,22 @@ const averageAmount = db.$with('average_amount').as(
 );
 
 const result = await db
-	.with(averageAmount)
-	.delete(orders)
-	.where(gt(orders.amount, sql`(select * from ${averageAmount})`))
-	.returning({
-		id: orders.id,
-	});
-```
+.with(averageAmount)
+.delete(orders)
+.where(gt(orders.amount, sql`(select * from ${averageAmount})`))
+.returning({
+id: orders.id,
+});
+
+````
 
 ```sql
-with "average_amount" as (select avg("amount") as "value" from "orders") 
-delete from "orders" 
-where "orders"."amount" > (select * from "average_amount") 
+with "average_amount" as (select avg("amount") as "value" from "orders")
+delete from "orders"
+where "orders"."amount" > (select * from "average_amount")
 returning "id";
-```
+````
+
 </Section>
 
 For more examples for all statements, check docs:
@@ -56,8 +58,8 @@ Usage example
 
 ```ts copy {3}
 await migrate(db, {
-	migrationsFolder: './drizzle',
-	migrationsTable: 'my_migrations',
+  migrationsFolder: './drizzle',
+  migrationsTable: 'my_migrations',
 });
 ```
 
@@ -71,8 +73,8 @@ Usage example
 
 ```ts copy {3}
 await migrate(db, {
-	migrationsFolder: './drizzle',
-	migrationsSchema: 'custom',
+  migrationsFolder: './drizzle',
+  migrationsSchema: 'custom',
 });
 ```
 
@@ -92,29 +94,26 @@ import { drizzle } from 'drizzle-orm/sqlite-proxy';
 type ResponseType = { rows: any[][] | any[] }[];
 
 const db = drizzle(
-	async (sql, params, method) => {
-		// single query logic
-	},
-	// new batch callback
-	async (
-		queries: {
-			sql: string;
-			params: any[];
-			method: 'all' | 'run' | 'get' | 'values';
-		}[],
-	) => {
-		try {
-			const result: ResponseType = await axios.post(
-				'http://localhost:3000/batch',
-				{ queries },
-			);
+  async (sql, params, method) => {
+    // single query logic
+  },
+  // new batch callback
+  async (
+    queries: {
+      sql: string;
+      params: any[];
+      method: 'all' | 'run' | 'get' | 'values';
+    }[]
+  ) => {
+    try {
+      const result: ResponseType = await axios.post('http://localhost:3000/batch', { queries });
 
-			return result;
-		} catch (e: any) {
-			console.error('Error from sqlite proxy server:', e);
-			throw e;
-		}
-	},
+      return result;
+    } catch (e: any) {
+      console.error('Error from sqlite proxy server:', e);
+      throw e;
+    }
+  }
 );
 ```
 

@@ -3,11 +3,11 @@
  * Creates journal entries for confirmed bank matches.
  */
 
-import { err, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IBankMatchRepo } from "../ports/bank-match-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IBankMatchRepo } from '../ports/bank-match-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface AutoPostMatchesInput {
   readonly tenantId: string;
@@ -24,9 +24,9 @@ export interface AutoPostResult {
 
 export async function autoPostMatches(
   input: AutoPostMatchesInput,
-  deps: { bankMatchRepo: IBankMatchRepo; outboxWriter: IOutboxWriter },
+  deps: { bankMatchRepo: IBankMatchRepo; outboxWriter: IOutboxWriter }
 ): Promise<Result<AutoPostResult>> {
-  if (input.matchIds.length === 0) return err(new ValidationError("No matches to post"));
+  if (input.matchIds.length === 0) return err(new ValidationError('No matches to post'));
 
   let posted = 0;
   let skipped = 0;

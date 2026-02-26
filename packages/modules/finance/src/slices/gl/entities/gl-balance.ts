@@ -1,5 +1,5 @@
-import type { CompanyId, LedgerId, Money } from "@afenda/core";
-import type { AccountType } from "./account.js";
+import type { CompanyId, LedgerId, Money } from '@afenda/core';
+import type { AccountType } from './account.js';
 
 export interface GlBalance {
   readonly companyId: CompanyId;

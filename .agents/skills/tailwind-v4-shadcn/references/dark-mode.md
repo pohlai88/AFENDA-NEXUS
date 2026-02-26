@@ -3,6 +3,7 @@
 ## Overview
 
 Tailwind v4 + shadcn/ui dark mode requires:
+
 1. `ThemeProvider` component to manage state
 2. `.dark` class toggling on `<html>` element
 3. localStorage persistence
@@ -186,9 +187,10 @@ UI updates automatically
 
 ```typescript
 if (theme === 'system') {
-  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-    .matches ? 'dark' : 'light'
-  root.classList.add(systemTheme)
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+  root.classList.add(systemTheme);
 }
 ```
 
@@ -200,23 +202,23 @@ This respects the user's OS preference when "System" is selected.
 
 ### Issue: Dark mode not switching
 
-**Cause:** Theme provider not wrapping app
-**Fix:** Ensure `<ThemeProvider>` wraps your app in `main.tsx`
+**Cause:** Theme provider not wrapping app **Fix:** Ensure `<ThemeProvider>`
+wraps your app in `main.tsx`
 
 ### Issue: Theme resets on page refresh
 
-**Cause:** localStorage not working
-**Fix:** Check browser privacy settings, add sessionStorage fallback
+**Cause:** localStorage not working **Fix:** Check browser privacy settings, add
+sessionStorage fallback
 
 ### Issue: Flash of wrong theme on load
 
-**Cause:** Theme applied after initial render
-**Fix:** Add inline script to `index.html` (advanced)
+**Cause:** Theme applied after initial render **Fix:** Add inline script to
+`index.html` (advanced)
 
 ### Issue: Icons not changing
 
-**Cause:** CSS transitions not working
-**Fix:** Verify icon classes use `dark:` variants for animations
+**Cause:** CSS transitions not working **Fix:** Verify icon classes use `dark:`
+variants for animations
 
 ---
 

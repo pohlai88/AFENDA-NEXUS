@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { CheckCircle, X, ExternalLink, ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { formatDateTime, truncateId } from "@/lib/format";
-import type { CommandReceipt } from "@/lib/types";
+import { CheckCircle, X, ExternalLink, ArrowLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { formatDateTime, truncateId } from '@/lib/format';
+import type { CommandReceipt } from '@/lib/types';
 
 interface ReceiptPanelProps {
   receipt: CommandReceipt;
@@ -26,17 +26,12 @@ export function ReceiptPanel({
     <div
       role="status"
       aria-live="polite"
-      className={cn(
-        "rounded-lg border border-success/30 bg-success/10 p-6",
-        className,
-      )}
+      className={cn('rounded-lg border border-success/30 bg-success/10 p-6', className)}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
           <CheckCircle className="h-5 w-5 text-success" aria-hidden="true" />
-          <h3 className="text-sm font-semibold text-success-foreground">
-            {title}
-          </h3>
+          <h3 className="text-sm font-semibold text-success-foreground">{title}</h3>
         </div>
         <button
           type="button"
@@ -51,22 +46,16 @@ export function ReceiptPanel({
       <dl className="mt-4 space-y-2 text-sm">
         <div className="flex justify-between">
           <dt className="text-success">Document</dt>
-          <dd className="font-mono text-success-foreground">
-            {receipt.resultRef}
-          </dd>
+          <dd className="font-mono text-success-foreground">{receipt.resultRef}</dd>
         </div>
         <div className="flex justify-between">
           <dt className="text-success">Completed at</dt>
-          <dd className="text-success-foreground">
-            {formatDateTime(receipt.completedAt)}
-          </dd>
+          <dd className="text-success-foreground">{formatDateTime(receipt.completedAt)}</dd>
         </div>
         {receipt.auditRef && (
           <div className="flex justify-between">
             <dt className="text-success">Audit ref</dt>
-            <dd className="font-mono text-success-foreground">
-              {receipt.auditRef}
-            </dd>
+            <dd className="font-mono text-success-foreground">{receipt.auditRef}</dd>
           </div>
         )}
         <div className="flex justify-between">

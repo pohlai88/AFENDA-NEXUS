@@ -23,7 +23,7 @@ export interface ApLedgerEntry {
   readonly supplierRef: string | null;
 }
 
-export type ReconMatchStatus = "MATCHED" | "STATEMENT_ONLY" | "LEDGER_ONLY";
+export type ReconMatchStatus = 'MATCHED' | 'STATEMENT_ONLY' | 'LEDGER_ONLY';
 
 export interface ReconMatch {
   readonly status: ReconMatchStatus;
@@ -53,7 +53,7 @@ export function reconcileSupplierStatement(
   asOfDate: Date,
   statementLines: readonly SupplierStatementLine[],
   ledgerEntries: readonly ApLedgerEntry[],
-  dateTolerance: number = 3,
+  dateTolerance: number = 3
 ): ReconResult {
   const usedLedger = new Set<string>();
   const matches: ReconMatch[] = [];
@@ -67,12 +67,12 @@ export function reconcileSupplierStatement(
       if (sl.currencyCode !== le.currencyCode) continue;
 
       const daysDiff = Math.abs(
-        (sl.date.getTime() - le.invoiceDate.getTime()) / (1000 * 60 * 60 * 24),
+        (sl.date.getTime() - le.invoiceDate.getTime()) / (1000 * 60 * 60 * 24)
       );
       if (daysDiff > dateTolerance) continue;
 
       matches.push({
-        status: "MATCHED",
+        status: 'MATCHED',
         statementLine: sl,
         ledgerEntry: le,
         amountDifference: 0n,
@@ -84,7 +84,7 @@ export function reconcileSupplierStatement(
 
     if (!matched) {
       matches.push({
-        status: "STATEMENT_ONLY",
+        status: 'STATEMENT_ONLY',
         statementLine: sl,
         ledgerEntry: null,
         amountDifference: sl.amount,
@@ -96,16 +96,16 @@ export function reconcileSupplierStatement(
   for (const le of ledgerEntries) {
     if (usedLedger.has(le.invoiceId)) continue;
     matches.push({
-      status: "LEDGER_ONLY",
+      status: 'LEDGER_ONLY',
       statementLine: null,
       ledgerEntry: le,
       amountDifference: -le.amount,
     });
   }
 
-  const matchedCount = matches.filter((m) => m.status === "MATCHED").length;
-  const statementOnlyCount = matches.filter((m) => m.status === "STATEMENT_ONLY").length;
-  const ledgerOnlyCount = matches.filter((m) => m.status === "LEDGER_ONLY").length;
+  const matchedCount = matches.filter((m) => m.status === 'MATCHED').length;
+  const statementOnlyCount = matches.filter((m) => m.status === 'STATEMENT_ONLY').length;
+  const ledgerOnlyCount = matches.filter((m) => m.status === 'LEDGER_ONLY').length;
   const statementTotal = statementLines.reduce((s, l) => s + l.amount, 0n);
   const ledgerTotal = ledgerEntries.reduce((s, e) => s + e.amount, 0n);
 

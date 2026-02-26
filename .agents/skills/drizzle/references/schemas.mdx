@@ -6,7 +6,16 @@ import Callout from '@mdx/Callout.astro';
 
 # Table schemas
 
-<IsSupportedChipGroup chips={{ 'PostgreSQL': true, 'MySQL': true, 'SQLite': false, 'SingleStore': true, 'MSSQL': true, 'CockroachDB': true }} />
+<IsSupportedChipGroup
+  chips={{
+    PostgreSQL: true,
+    MySQL: true,
+    SQLite: false,
+    SingleStore: true,
+    MSSQL: true,
+    CockroachDB: true,
+  }}
+/>
 
 If you declare an entity within a schema, query builder will prepend schema names in queries:<br/>
 `select * from "schema"."users"`
@@ -27,7 +36,7 @@ If you declare an entity within a schema, query builder will prepend schema name
       color: colors('color').default('red'),
     });
 
-    
+
     ```
     ```sql
     CREATE SCHEMA "my_schema";
@@ -41,6 +50,7 @@ If you declare an entity within a schema, query builder will prepend schema name
     );
     ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -63,6 +73,7 @@ If you declare an entity within a schema, query builder will prepend schema name
     );
     ```
     </Section>
+
   </Tab>
   <Tab>
   SQLite does not have support for schemas 😕
@@ -88,6 +99,7 @@ If you declare an entity within a schema, query builder will prepend schema name
     );
     ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -110,6 +122,7 @@ If you declare an entity within a schema, query builder will prepend schema name
     );
     ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -126,7 +139,7 @@ If you declare an entity within a schema, query builder will prepend schema name
       color: colors().default('red'),
     });
 
-    
+
     ```
     ```sql
     CREATE SCHEMA "my_schema";
@@ -140,10 +153,12 @@ If you declare an entity within a schema, query builder will prepend schema name
     );
     ```
     </Section>
+
   </Tab>
 </Tabs>
 
-{/* TODO: ??? example > **Warning**
+{/\* TODO: ??? example > **Warning**
+
 > If you will have tables with same names in different schemas then drizzle will respond with `never[]` error in result types and error from database
 >
-> In this case you may use [alias syntax](./joins#join-aliases-and-self-joins) */}
+> In this case you may use [alias syntax](./joins#join-aliases-and-self-joins) \*/}

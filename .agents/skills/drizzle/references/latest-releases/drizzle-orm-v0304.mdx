@@ -1,10 +1,10 @@
 ---
 title: DrizzleORM v0.30.4 release
 pubDate: 2024-03-19 12:00:00
-description: Added support for Xata driver. 
+description: Added support for Xata driver.
 ---
 
-import Npm from "@mdx/Npm.astro";
+import Npm from '@mdx/Npm.astro';
 
 ## New Features
 
@@ -16,10 +16,7 @@ Drizzle ORM natively supports both the `xata` driver with `drizzle-orm/xata` pac
 
 The following example use the Xata generated client, which you obtain by running the [xata init](https://xata.io/docs/getting-started/installation) CLI command.
 
-<Npm>
-drizzle-orm @xata.io/client
--D drizzle-kit
-</Npm>
+<Npm>drizzle-orm @xata.io/client -D drizzle-kit</Npm>
 
 ```ts
 import { drizzle } from 'drizzle-orm/xata-http';

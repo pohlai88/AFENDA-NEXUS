@@ -1,8 +1,9 @@
 ---
-title: "Migrate from Prisma to Drizzle"
+title: 'Migrate from Prisma to Drizzle'
 ---
-import Steps from "@mdx/Steps.astro";
-import Npm from "@mdx/Npm.astro";
+
+import Steps from '@mdx/Steps.astro';
+import Npm from '@mdx/Npm.astro';
 
 ## Getting Started
 
@@ -24,7 +25,7 @@ These steps are applicable whether you're developing a REST API (for example, wi
 
 For this guide, we'll use a REST API built with `Express` as a sample project to migrate to **Drizzle ORM**. It has four entities:
 
-```prisma  copy filename="prisma/schema.prisma" collapsable
+```prisma copy filename="prisma/schema.prisma" collapsable
 generator client {
   provider = "prisma-client-js"
 }
@@ -93,7 +94,6 @@ The models have the following relations:
 For `many-to-many` relation we will create a join table `order_details`, so `Order` and `Product` entities will have `one-to-many` relations with `OrderDetail` entity.
 
 The corresponding tables have been created using a generated Prisma migration.
-
 
 ```sql copy filename="prisma/migrations/20240101200233_init/migration.sql" collapsable
 -- CreateTable
@@ -179,12 +179,9 @@ This guide uses the following file structure:
 
 #### Install Drizzle ORM & Drizzle Kit
 
-The first step is to install **Drizzle ORM** and `pg` package which we will use as a driver. The second step is to install **Drizzle Kit** and types for `pg`. [Drizzle Kit](/docs/kit-overview) - CLI companion for automatic SQL migrations generation and rapid prototyping. 
+The first step is to install **Drizzle ORM** and `pg` package which we will use as a driver. The second step is to install **Drizzle Kit** and types for `pg`. [Drizzle Kit](/docs/kit-overview) - CLI companion for automatic SQL migrations generation and rapid prototyping.
 
-<Npm>
-drizzle-orm pg
--D drizzle-kit @types/pg
-</Npm>
+<Npm>drizzle-orm pg -D drizzle-kit @types/pg</Npm>
 
 #### Setup Drizzle config file
 
@@ -287,9 +284,7 @@ export const orderDetails = pgTable(
       .references(() => products.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
     quantity: integer('quantity').notNull(),
   },
-  (table) => [
-    primaryKey({ columns: [table.orderId, table.productId], name: 'order_details_pkey' })
-  ]
+  (table) => [primaryKey({ columns: [table.orderId, table.productId], name: 'order_details_pkey' })]
 );
 ```
 
@@ -434,7 +429,6 @@ import { client, db } from './drizzle/db';
 import { resolve } from 'node:path';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
-
 (async () => {
   await client.connect();
 
@@ -454,6 +448,7 @@ In this section, we will show you how to replace several queries from **Prisma**
 We will show how to insert new rows into `suppliers` and `products` tables.
 
 1. `POST /suppliers`
+
 ```typescript copy filename="src/controllers/supplier.controller.ts"
 import { prisma } from '../db/db';
 
@@ -492,7 +487,7 @@ import { prisma } from '../db/db';
 
 await prisma.product.createMany({
   data: [
-    { 
+    {
       name: 'TestProductName1',
       supplierId: 1,
       unitPrice: 10,
@@ -617,7 +612,7 @@ const response: {
     city: string | null;
     country: string;
   } | null;
-}[]
+}[];
 ```
 
 2. `GET /products`
@@ -704,7 +699,7 @@ const response: {
   name: string;
   unitPrice: string;
   unitsInStock: number;
-}[]
+}[];
 ```
 
 3. `GET /orders/:id`
@@ -764,19 +759,19 @@ import { orders, orderDetails, products } from '../drizzle/schema';
 const { id } = req.params;
 
 const response = await db
-      .select({
-        id: orders.id,
-        shipCountry: orders.shipCountry,
-        orderDate: orders.orderDate,
-        totalPrice: sql<number>`cast(sum(${orderDetails.quantity} * ${products.unitPrice}) as float)`,
-        totalQuantity: sql<number>`cast(sum(${orderDetails.quantity}) as int)`,
-        totalProducts: sql<number>`cast(count(${orderDetails.productId}) as int)`,
-      })
-      .from(orders)
-      .where(eq(orders.id, id))
-      .groupBy(orders.id)
-      .leftJoin(orderDetails, eq(orderDetails.orderId, orders.id))
-      .leftJoin(products, eq(products.id, orderDetails.productId));
+  .select({
+    id: orders.id,
+    shipCountry: orders.shipCountry,
+    orderDate: orders.orderDate,
+    totalPrice: sql<number>`cast(sum(${orderDetails.quantity} * ${products.unitPrice}) as float)`,
+    totalQuantity: sql<number>`cast(sum(${orderDetails.quantity}) as int)`,
+    totalProducts: sql<number>`cast(count(${orderDetails.productId}) as int)`,
+  })
+  .from(orders)
+  .where(eq(orders.id, id))
+  .groupBy(orders.id)
+  .leftJoin(orderDetails, eq(orderDetails.orderId, orders.id))
+  .leftJoin(products, eq(products.id, orderDetails.productId));
 ```
 
 In **Drizzle ORM**, the result will be type-safe with aggregations too.
@@ -790,7 +785,7 @@ const response: {
   totalPrice: number;
   totalQuantity: number;
   totalProducts: number;
-}[]
+}[];
 ```
 
 **Note:** as of now aggregations are not supported in relational queries, so you have to use `core queries`.
@@ -800,7 +795,7 @@ const response: {
 In this section, we will show you how to update multiple rows.
 
 1. `PATCH /suppliers/:id`
-  
+
 ```typescript copy filename="src/controllers/supplier.controller.ts"
 import { prisma } from '../db/db';
 
@@ -822,12 +817,12 @@ import { suppliers } from '../drizzle/schema';
 const { id } = req.params;
 
 await db
-    .update(suppliers)
-    .set({
-      city: 'TestCity1Updated',
-      country: 'TestCountry1Updated',
-    })
-    .where(eq(suppliers.id, id));
+  .update(suppliers)
+  .set({
+    city: 'TestCity1Updated',
+    country: 'TestCountry1Updated',
+  })
+  .where(eq(suppliers.id, id));
 ```
 
 ##### Replace delete queries
@@ -871,4 +866,5 @@ try {
   console.error(e);
 }
 ```
+
 </Steps>

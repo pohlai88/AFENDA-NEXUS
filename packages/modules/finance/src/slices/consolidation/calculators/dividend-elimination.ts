@@ -3,7 +3,7 @@
  * Pure calculator — eliminates intra-group dividends declared by subsidiaries.
  * Parent's dividend income is reversed against subsidiary's retained earnings.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface DividendEliminationInput {
   readonly childEntityId: string;
@@ -27,13 +27,13 @@ export interface DividendEliminationEntry {
  * NCI share = totalDividend - parent's share
  */
 export function computeDividendEliminations(
-  inputs: readonly DividendEliminationInput[],
+  inputs: readonly DividendEliminationInput[]
 ): CalculatorResult<readonly DividendEliminationEntry[]> {
   if (inputs.length === 0) {
     return {
       result: [],
       inputs: { count: 0 },
-      explanation: "No dividends to eliminate",
+      explanation: 'No dividends to eliminate',
     };
   }
 
@@ -41,13 +41,11 @@ export function computeDividendEliminations(
 
   for (const input of inputs) {
     if (input.totalDividendDeclared < 0n) {
-      throw new Error(
-        `Dividend must be non-negative for ${input.childEntityId}`,
-      );
+      throw new Error(`Dividend must be non-negative for ${input.childEntityId}`);
     }
     if (input.parentOwnershipPctBps < 0 || input.parentOwnershipPctBps > 10000) {
       throw new Error(
-        `Invalid ownership BPS ${input.parentOwnershipPctBps} for ${input.childEntityId}`,
+        `Invalid ownership BPS ${input.parentOwnershipPctBps} for ${input.childEntityId}`
       );
     }
 

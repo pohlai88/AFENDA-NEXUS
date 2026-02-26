@@ -1,11 +1,11 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ["src/index.ts"],
-  format: ["esm"],
+  entry: ['src/index.ts'],
+  format: ['esm'],
   dts: false,
   sourcemap: true,
   clean: true,
-  tsconfig: "./tsconfig.build.json",
-  external: ["@afenda/core", "pino", "zod"],
+  tsconfig: './tsconfig.build.json',
+  external: ['@afenda/core', 'pino', 'zod'],
 });

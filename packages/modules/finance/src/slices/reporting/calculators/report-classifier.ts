@@ -8,11 +8,11 @@
  * Classifies trial balance rows into financial report sections
  * using account.type instead of brittle charAt(0) prefix matching.
  */
-import type { Money } from "@afenda/core";
-import { money } from "@afenda/core";
-import type { AccountType } from "../../../shared/types.js";
-import type { ReportRow, ReportSection } from "../entities/financial-reports.js";
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { Money } from '@afenda/core';
+import { money } from '@afenda/core';
+import type { AccountType } from '../../../shared/types.js';
+import type { ReportRow, ReportSection } from '../entities/financial-reports.js';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface ClassifiableRow {
   readonly accountCode: string;
@@ -41,11 +41,7 @@ export interface CashFlowSections {
   readonly netCashFlow: Money;
 }
 
-function buildSection(
-  label: string,
-  rows: ReportRow[],
-  currency: string,
-): ReportSection {
+function buildSection(label: string, rows: ReportRow[], currency: string): ReportSection {
   const total = rows.reduce((sum, r) => sum + r.balance.amount, 0n);
   return { label, rows, total: money(total, currency) };
 }
@@ -65,7 +61,7 @@ function toReportRow(row: ClassifiableRow, currency: string): ReportRow {
  */
 export function classifyBalanceSheet(
   rows: readonly ClassifiableRow[],
-  currency: string,
+  currency: string
 ): CalculatorResult<BalanceSheetSections> {
   const assetRows: ReportRow[] = [];
   const liabilityRows: ReportRow[] = [];
@@ -74,13 +70,13 @@ export function classifyBalanceSheet(
   for (const row of rows) {
     const reportRow = toReportRow(row, currency);
     switch (row.accountType) {
-      case "ASSET":
+      case 'ASSET':
         assetRows.push(reportRow);
         break;
-      case "LIABILITY":
+      case 'LIABILITY':
         liabilityRows.push(reportRow);
         break;
-      case "EQUITY":
+      case 'EQUITY':
         equityRows.push(reportRow);
         break;
       default:
@@ -88,9 +84,9 @@ export function classifyBalanceSheet(
     }
   }
 
-  const assets = buildSection("Assets", assetRows, currency);
-  const liabilities = buildSection("Liabilities", liabilityRows, currency);
-  const equity = buildSection("Equity", equityRows, currency);
+  const assets = buildSection('Assets', assetRows, currency);
+  const liabilities = buildSection('Liabilities', liabilityRows, currency);
+  const equity = buildSection('Equity', equityRows, currency);
   const isBalanced = assets.total.amount === liabilities.total.amount + equity.total.amount;
 
   return {
@@ -106,7 +102,7 @@ export function classifyBalanceSheet(
  */
 export function classifyIncomeStatement(
   rows: readonly ClassifiableRow[],
-  currency: string,
+  currency: string
 ): CalculatorResult<IncomeStatementSections> {
   const revenueRows: ReportRow[] = [];
   const expenseRows: ReportRow[] = [];
@@ -114,10 +110,10 @@ export function classifyIncomeStatement(
   for (const row of rows) {
     const reportRow = toReportRow(row, currency);
     switch (row.accountType) {
-      case "REVENUE":
+      case 'REVENUE':
         revenueRows.push(reportRow);
         break;
-      case "EXPENSE":
+      case 'EXPENSE':
         expenseRows.push(reportRow);
         break;
       default:
@@ -125,8 +121,8 @@ export function classifyIncomeStatement(
     }
   }
 
-  const revenue = buildSection("Revenue", revenueRows, currency);
-  const expenses = buildSection("Expenses", expenseRows, currency);
+  const revenue = buildSection('Revenue', revenueRows, currency);
+  const expenses = buildSection('Expenses', expenseRows, currency);
   const netIncome = money(revenue.total.amount - expenses.total.amount, currency);
 
   return {
@@ -150,7 +146,7 @@ export function classifyIncomeStatement(
 export function classifyCashFlow(
   rows: readonly ClassifiableRow[],
   currency: string,
-  cashAccountCodes: readonly string[] = ["1000"],
+  cashAccountCodes: readonly string[] = ['1000']
 ): CalculatorResult<CashFlowSections> {
   const cashSet = new Set(cashAccountCodes);
   let operating = 0n;
@@ -161,15 +157,15 @@ export function classifyCashFlow(
     if (cashSet.has(row.accountCode)) continue;
 
     switch (row.accountType) {
-      case "REVENUE":
-      case "EXPENSE":
+      case 'REVENUE':
+      case 'EXPENSE':
         operating += row.netBalance;
         break;
-      case "ASSET":
+      case 'ASSET':
         investing -= row.netBalance;
         break;
-      case "LIABILITY":
-      case "EQUITY":
+      case 'LIABILITY':
+      case 'EQUITY':
         financing += row.netBalance;
         break;
     }

@@ -3,18 +3,15 @@ title: Full-text search with Generated Columns
 slug: full-text-search-with-generated-columns
 ---
 
-import Section from "@mdx/Section.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Section from '@mdx/Section.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 import CodeTabs from '@mdx/CodeTabs.astro';
 import CodeTab from '@mdx/CodeTab.astro';
 
 <Prerequisites>
-- Get started with [PostgreSQL](/docs/get-started-postgresql)
-- [Select statement](/docs/select)
-- [Indexes](/docs/indexes-constraints#indexes)
-- [sql operator](/docs/sql) 
-- [Full-text search](/learn/guides/postgresql-full-text-search)
-- [Generated columns](/docs/generated-columns)
+  - Get started with [PostgreSQL](/docs/get-started-postgresql) - [Select statement](/docs/select) -
+  [Indexes](/docs/indexes-constraints#indexes) - [sql operator](/docs/sql) - [Full-text
+  search](/learn/guides/postgresql-full-text-search) - [Generated columns](/docs/generated-columns)
 </Prerequisites>
 
 This guide demonstrates how to implement full-text search in PostgreSQL with Drizzle and generated columns. A generated column is a special column that is always computed from other columns. It is useful because you don't have to compute the value of the column every time you query the table:
@@ -72,11 +69,12 @@ const db = drizzle(...);
 const body = "Golden leaves cover the quiet streets as a crisp breeze fills the air, bringing the scent of rain and the promise of change"
 
 await db.insert(posts).values({
-    body,
-    title: "The Beauty of Autumn",
-  }
+body,
+title: "The Beauty of Autumn",
+}
 ).returning();
-```
+
+````
 
 ```json
 [
@@ -87,24 +85,27 @@ await db.insert(posts).values({
     bodySearch: "'air':13 'breez':10 'bring':14 'chang':23 'cover':3 'crisp':9 'fill':11 'golden':1 'leav':2 'promis':21 'quiet':5 'rain':18 'scent':16 'street':6"
   }
 ]
-```
+````
+
 </Section>
 
-This is how you can implement full-text search with generated columns in PostgreSQL with Drizzle ORM.  The `@@` operator is used for direct matches:
+This is how you can implement full-text search with generated columns in PostgreSQL with Drizzle ORM. The `@@` operator is used for direct matches:
 
 <Section>
 ```ts copy {6}
 const searchParam = "bring";
 
 await db
-  .select()
-  .from(posts)
-  .where(sql`${posts.bodySearch} @@ to_tsquery('english', ${searchParam})`);
-```
+.select()
+.from(posts)
+.where(sql`${posts.bodySearch} @@ to_tsquery('english', ${searchParam})`);
+
+````
 
 ```sql
 select * from posts where body_search @@ to_tsquery('english', 'bring');
-```
+````
+
 </Section>
 
 This is more advanced schema with a generated column. The `search` column is generated from the `title` and `body` columns and `setweight()` function is used to assign different weights to the columns for full-text search.
@@ -166,12 +167,14 @@ This is how you can query the table with full-text search:
 const search = 'travel';
 
 await db
-  .select()
-  .from(posts)
-  .where(sql`${posts.search} @@ to_tsquery('english', ${search})`);
-```
+.select()
+.from(posts)
+.where(sql`${posts.search} @@ to_tsquery('english', ${search})`);
+
+````
 
 ```sql
 select * from posts where search @@ to_tsquery('english', 'travel');
-```
+````
+
 </Section>

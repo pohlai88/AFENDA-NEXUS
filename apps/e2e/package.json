@@ -1,0 +1,21 @@
+{
+  "name": "@afenda/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report playwright-report",
+    "install:browsers": "playwright install chromium firefox"
+  },
+  "devDependencies": {
+    "@afenda/typescript-config": "workspace:*",
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.51.0",
+    "@types/node": "^22.0.0",
+    "axe-playwright": "^2.0.3",
+    "dotenv": "^17.3.1"
+  }
+}

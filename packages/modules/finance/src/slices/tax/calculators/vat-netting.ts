@@ -9,7 +9,7 @@
 
 export interface TaxEntry {
   readonly documentId: string;
-  readonly documentType: "SALES_INVOICE" | "PURCHASE_INVOICE" | "CREDIT_NOTE" | "DEBIT_NOTE";
+  readonly documentType: 'SALES_INVOICE' | 'PURCHASE_INVOICE' | 'CREDIT_NOTE' | 'DEBIT_NOTE';
   readonly taxCodeId: string;
   readonly jurisdictionCode: string;
   readonly taxableAmount: bigint;
@@ -46,19 +46,22 @@ export interface VatNettingSummary {
 export function computeVatNetting(
   entries: readonly TaxEntry[],
   periodStart: Date,
-  periodEnd: Date,
+  periodEnd: Date
 ): VatNettingSummary {
   const periodEntries = entries.filter(
-    (e) => e.documentDate >= periodStart && e.documentDate <= periodEnd,
+    (e) => e.documentDate >= periodStart && e.documentDate <= periodEnd
   );
 
-  const byJurisdiction = new Map<string, {
-    outputTax: bigint;
-    inputTax: bigint;
-    currencyCode: string;
-    outputCount: number;
-    inputCount: number;
-  }>();
+  const byJurisdiction = new Map<
+    string,
+    {
+      outputTax: bigint;
+      inputTax: bigint;
+      currencyCode: string;
+      outputCount: number;
+      inputCount: number;
+    }
+  >();
 
   for (const entry of periodEntries) {
     const key = entry.jurisdictionCode;
@@ -70,7 +73,7 @@ export function computeVatNetting(
       inputCount: 0,
     };
 
-    if (entry.documentType === "SALES_INVOICE" || entry.documentType === "DEBIT_NOTE") {
+    if (entry.documentType === 'SALES_INVOICE' || entry.documentType === 'DEBIT_NOTE') {
       existing.outputTax += entry.taxAmount;
       existing.outputCount += 1;
     } else {

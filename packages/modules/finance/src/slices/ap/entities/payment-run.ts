@@ -1,6 +1,6 @@
-import type { Money } from "@afenda/core";
+import type { Money } from '@afenda/core';
 
-export type PaymentRunStatus = "DRAFT" | "APPROVED" | "EXECUTED" | "CANCELLED";
+export type PaymentRunStatus = 'DRAFT' | 'APPROVED' | 'EXECUTED' | 'CANCELLED';
 
 export interface PaymentRun {
   readonly id: string;

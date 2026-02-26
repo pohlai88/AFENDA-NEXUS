@@ -20,7 +20,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup && tsc -p tsconfig.build.json --emitDeclarationOnly",
-    "dev": "tsup --watch",
+    "dev": "tsup",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "vitest run",

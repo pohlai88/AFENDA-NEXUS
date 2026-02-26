@@ -1,35 +1,69 @@
-import { PageHeader } from "@/components/erp/page-header";
-import { routes } from "@/lib/constants";
+import { notFound } from 'next/navigation';
+import { PageHeader } from '@/components/erp/page-header';
+import { BusinessDocument } from '@/components/erp/business-document';
+import { AuditPanel } from '@/components/erp/audit-panel';
+import { JournalDetailHeader } from '@/features/finance/journals/blocks/journal-detail-header';
+import { JournalLinesTable } from '@/features/finance/journals/blocks/journal-lines-table';
+import { JournalActions } from '@/features/finance/journals/blocks/journal-actions';
+import { getRequestContext } from '@/lib/auth';
+import { handleApiError } from '@/lib/api-error.server';
+import { getJournal } from '@/features/finance/journals/queries/journal.queries';
+import { getJournalAuditAction } from '@/features/finance/journals/actions/journal.actions';
+import { routes } from '@/lib/constants';
 
-export const metadata = { title: "Journal Detail" };
+export const metadata = { title: 'Journal Detail' };
 
-export default async function JournalDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function JournalDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const ctx = await getRequestContext();
+  const result = await getJournal(ctx, id);
 
-  // TODO: Wire to API via getJournal() once auth context is available
-  // const ctx = await getRequestContext();
-  // const result = await getJournal(ctx, id);
+  if (!result.ok) {
+    if (result.error.statusCode === 404) notFound();
+    handleApiError(result, 'Failed to load journal');
+  }
+
+  const journal = result.value;
+
+  // Fetch audit trail in parallel
+  const auditResult = await getJournalAuditAction(id);
+  const auditEntries = auditResult.ok ? auditResult.value : [];
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Journal ${id.slice(0, 8)}…`}
+        title={journal.documentNumber}
         breadcrumbs={[
-          { label: "Finance" },
-          { label: "Journals", href: routes.finance.journals },
-          { label: "Detail" },
+          { label: 'Finance' },
+          { label: 'Journals', href: routes.finance.journals },
+          { label: journal.documentNumber },
         ]}
       />
 
-      <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
-        Journal detail view will render here once the API is connected.
-        <br />
-        <span className="font-mono text-xs">ID: {id}</span>
-      </div>
+      <BusinessDocument
+        header={<JournalDetailHeader journal={journal} />}
+        tabs={[
+          {
+            value: 'lines',
+            label: 'Lines',
+            content: (
+              <JournalLinesTable
+                lines={journal.lines}
+                currency={journal.currency}
+                totalDebit={journal.totalDebit}
+                totalCredit={journal.totalCredit}
+              />
+            ),
+          },
+          {
+            value: 'audit',
+            label: 'Audit Trail',
+            content: <AuditPanel entries={auditEntries} />,
+          },
+        ]}
+        defaultTab="lines"
+        rightRail={<JournalActions journalId={journal.id} status={journal.status} />}
+      />
     </div>
   );
 }

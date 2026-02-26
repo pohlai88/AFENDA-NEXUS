@@ -2,7 +2,7 @@
  * Tax return period entity — tracks tax filing periods and aggregated amounts.
  */
 
-export type TaxReturnStatus = "DRAFT" | "CALCULATED" | "FILED" | "AMENDED";
+export type TaxReturnStatus = 'DRAFT' | 'CALCULATED' | 'FILED' | 'AMENDED';
 
 export interface TaxReturnPeriod {
   readonly id: string;

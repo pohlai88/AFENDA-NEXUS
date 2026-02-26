@@ -4,7 +4,8 @@ Add SEO metadata to Next.js pages using the Metadata API.
 
 ## Important: Server Components Only
 
-The `metadata` object and `generateMetadata` function are **only supported in Server Components**. They cannot be used in Client Components.
+The `metadata` object and `generateMetadata` function are **only supported in
+Server Components**. They cannot be used in Client Components.
 
 If the target page has `'use client'`:
 
@@ -80,7 +81,8 @@ export const metadata: Metadata = {
 
 ## Metadata File Conventions
 
-Reference: https://nextjs.org/docs/app/getting-started/project-structure#metadata-file-conventions
+Reference:
+https://nextjs.org/docs/app/getting-started/project-structure#metadata-file-conventions
 
 Place these files in `app/` directory (or route segments):
 
@@ -110,8 +112,10 @@ app/
 
 **Tips:**
 
-- A single `opengraph-image.png` covers both Open Graph and Twitter (Twitter falls back to OG)
-- Static `title` and `description` in layout metadata is sufficient for most pages
+- A single `opengraph-image.png` covers both Open Graph and Twitter (Twitter
+  falls back to OG)
+- Static `title` and `description` in layout metadata is sufficient for most
+  pages
 - Only use dynamic `generateMetadata` when content varies per page
 
 ---
@@ -123,7 +127,8 @@ Generate dynamic Open Graph images using `next/og`.
 ## Important Rules
 
 1. **Use `next/og`** - not `@vercel/og` (it's built into Next.js)
-2. **No searchParams** - OG images can't access search params, use route params instead
+2. **No searchParams** - OG images can't access search params, use route params
+   instead
 3. **Avoid Edge runtime** - Use default Node.js runtime
 
 ```tsx
@@ -160,7 +165,7 @@ export default function Image() {
     >
       Hello World
     </div>,
-    { ...size },
+    { ...size }
   );
 }
 ```
@@ -199,7 +204,7 @@ export default async function Image({ params }: Props) {
       <div style={{ fontSize: 64, fontWeight: 'bold' }}>{post.title}</div>
       <div style={{ marginTop: 24, opacity: 0.8 }}>{post.description}</div>
     </div>,
-    { ...size },
+    { ...size }
   );
 }
 ```
@@ -221,7 +226,7 @@ export default async function Image() {
       width: 1200,
       height: 630,
       fonts: [{ name: 'Inter', data: fontData, style: 'normal' }],
-    },
+    }
   );
 }
 ```
@@ -277,7 +282,11 @@ export async function generateSitemaps() {
   return [{ id: 0 }, { id: 1 }, { id: 2 }];
 }
 
-export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap({
+  id,
+}: {
+  id: number;
+}): Promise<MetadataRoute.Sitemap> {
   const start = id * 50000;
   const end = start + 50000;
   const products = await getProducts(start, end);

@@ -10,7 +10,7 @@ export interface OutstandingItem {
   readonly documentDate: Date;
   readonly amount: bigint;
   readonly currencyCode: string;
-  readonly type: "CHECK" | "DEPOSIT";
+  readonly type: 'CHECK' | 'DEPOSIT';
 }
 
 export interface OutstandingItemsResult {
@@ -27,10 +27,10 @@ export interface OutstandingItemsResult {
  */
 export function computeOutstandingItems(
   statementBalance: bigint,
-  items: readonly OutstandingItem[],
+  items: readonly OutstandingItem[]
 ): OutstandingItemsResult {
-  const checks = items.filter((i) => i.type === "CHECK");
-  const deposits = items.filter((i) => i.type === "DEPOSIT");
+  const checks = items.filter((i) => i.type === 'CHECK');
+  const deposits = items.filter((i) => i.type === 'DEPOSIT');
 
   let totalChecks = 0n;
   for (const c of checks) totalChecks += c.amount;

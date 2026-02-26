@@ -1,8 +1,8 @@
-import type { AssetMovement } from "../entities/asset-movement.js";
+import type { AssetMovement } from '../entities/asset-movement.js';
 
 export interface CreateAssetMovementInput {
   readonly assetId: string;
-  readonly movementType: AssetMovement["movementType"];
+  readonly movementType: AssetMovement['movementType'];
   readonly movementDate: Date;
   readonly amount: bigint;
   readonly currencyCode: string;

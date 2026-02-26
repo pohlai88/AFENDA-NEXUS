@@ -2,12 +2,12 @@
  * FA-09 service: Transfer an asset between companies (creates IC journal pair).
  */
 
-import { err, NotFoundError, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IAssetRepo } from "../ports/asset-repo.js";
-import type { IAssetMovementRepo } from "../ports/asset-movement-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, NotFoundError, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IAssetRepo } from '../ports/asset-repo.js';
+import type { IAssetMovementRepo } from '../ports/asset-movement-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface TransferAssetInput {
   readonly tenantId: string;
@@ -33,16 +33,14 @@ export async function transferAsset(
     assetRepo: IAssetRepo;
     assetMovementRepo: IAssetMovementRepo;
     outboxWriter: IOutboxWriter;
-  },
+  }
 ): Promise<Result<TransferAssetResult>> {
   const asset = await deps.assetRepo.findById(input.assetId);
-  if (!asset) return err(new NotFoundError("Asset", input.assetId));
-  if (asset.status === "DISPOSED")
-    return err(new ValidationError("Cannot transfer a disposed asset"));
+  if (!asset) return err(new NotFoundError('Asset', input.assetId));
+  if (asset.status === 'DISPOSED')
+    return err(new ValidationError('Cannot transfer a disposed asset'));
   if (asset.companyId === input.toCompanyId)
-    return err(
-      new ValidationError("Source and destination company must differ"),
-    );
+    return err(new ValidationError('Source and destination company must differ'));
 
   const gainOrLoss = input.transferValue - asset.netBookValue;
 
@@ -52,7 +50,7 @@ export async function transferAsset(
 
   await deps.assetMovementRepo.create(input.tenantId, {
     assetId: asset.id,
-    movementType: "TRANSFER",
+    movementType: 'TRANSFER',
     movementDate: input.transferDate,
     amount: input.transferValue,
     currencyCode: asset.currencyCode,

@@ -1,7 +1,11 @@
-import { eq, desc } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { fairValueMeasurements } from "@afenda/db";
-import type { FairValueMeasurement, IFairValueMeasurementRepo, CreateFairValueMeasurementInput } from "../ports/fair-value-measurement-repo.js";
+import { eq, desc } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { fairValueMeasurements } from '@afenda/db';
+import type {
+  FairValueMeasurement,
+  IFairValueMeasurementRepo,
+  CreateFairValueMeasurementInput,
+} from '../ports/fair-value-measurement-repo.js';
 
 type Row = typeof fairValueMeasurements.$inferSelect;
 
@@ -11,7 +15,7 @@ function mapToDomain(row: Row): FairValueMeasurement {
     tenantId: row.tenantId,
     instrumentId: row.instrumentId,
     measurementDate: row.measurementDate,
-    fairValueLevel: row.fairValueLevel as FairValueMeasurement["fairValueLevel"],
+    fairValueLevel: row.fairValueLevel as FairValueMeasurement['fairValueLevel'],
     fairValue: row.fairValue,
     previousFairValue: row.previousFairValue,
     valuationMethod: row.valuationMethod,
@@ -46,8 +50,14 @@ export class DrizzleFairValueMeasurementRepo implements IFairValueMeasurementRep
     return rows[0] ? mapToDomain(rows[0]) : null;
   }
 
-  async create(tenantId: string, input: CreateFairValueMeasurementInput): Promise<FairValueMeasurement> {
-    const [row] = await this.db.insert(fairValueMeasurements).values({ tenantId, ...input }).returning();
+  async create(
+    tenantId: string,
+    input: CreateFairValueMeasurementInput
+  ): Promise<FairValueMeasurement> {
+    const [row] = await this.db
+      .insert(fairValueMeasurements)
+      .values({ tenantId, ...input })
+      .returning();
     return mapToDomain(row!);
   }
 }

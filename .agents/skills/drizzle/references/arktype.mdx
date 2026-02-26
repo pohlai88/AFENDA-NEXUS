@@ -5,15 +5,14 @@ import Callout from '@mdx/Callout.astro';
 Starting from `drizzle-orm@1.0.0-beta.15`, `drizzle-arktype` has been deprecated in favor of first-class schema generation support within Drizzle ORM itself
 
 You can still use `drizzle-arktype` package but all new update will be added to Drizzle ORM directly
+
 </Callout>
 
 # arktype
 
 ### Install the dependencies
 
-<Npm>
-arktype
-</Npm>
+<Npm>arktype</Npm>
 
 ### Select schema
 
@@ -26,7 +25,7 @@ import { createSelectSchema } from 'drizzle-orm/arktype';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userSelectSchema = createSelectSchema(users);
@@ -64,16 +63,16 @@ import { createInsertSchema } from 'drizzle-orm/arktype';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userInsertSchema = createInsertSchema(users);
 
 const user = { name: 'John' };
-const parsed: { name: string, age: number } = userInsertSchema(user); // Error: `age` is not defined
+const parsed: { name: string; age: number } = userInsertSchema(user); // Error: `age` is not defined
 
 const user = { name: 'Jane', age: 30 };
-const parsed: { name: string, age: number } = userInsertSchema(user); // Will parse successfully
+const parsed: { name: string; age: number } = userInsertSchema(user); // Will parse successfully
 await db.insert(users).values(parsed);
 ```
 
@@ -89,16 +88,16 @@ import { parse } from 'arktype';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userUpdateSchema = createUpdateSchema(users);
 
 const user = { id: 5, name: 'John' };
-const parsed: { name?: string | undefined, age?: number | undefined } = userUpdateSchema(user); // Error: `id` is a generated column, it can't be updated
+const parsed: { name?: string | undefined; age?: number | undefined } = userUpdateSchema(user); // Error: `id` is a generated column, it can't be updated
 
 const user = { age: 35 };
-const parsed: { name?: string | undefined, age?: number | undefined } = userUpdateSchema(user); // Will parse successfully
+const parsed: { name?: string | undefined; age?: number | undefined } = userUpdateSchema(user); // Will parse successfully
 await db.update(users).set(parsed).where(eq(users.name, 'Jane'));
 ```
 
@@ -397,8 +396,12 @@ mysql.bigint({ mode: 'bigint' });
 sqlite.blob({ mode: 'bigint' });
 
 // Schema
-type.bigint.narrow(
-  (value, ctx) => value < -9_223_372_036_854_775_808n ? ctx.mustBe('greater than') : value > 9_223_372_036_854_775_807n ? ctx.mustBe('less than') : true
+type.bigint.narrow((value, ctx) =>
+  value < -9_223_372_036_854_775_808n
+    ? ctx.mustBe('greater than')
+    : value > 9_223_372_036_854_775_807n
+      ? ctx.mustBe('less than')
+      : true
 ); // 64-bit integer lower and upper limit
 ```
 
@@ -406,8 +409,12 @@ type.bigint.narrow(
 mysql.bigint({ mode: 'bigint', unsigned: true });
 
 // Schema
-type.bigint.narrow(
-  (value, ctx) => value < 0n ? ctx.mustBe('greater than') : value > 18_446_744_073_709_551_615n ? ctx.mustBe('less than') : true
+type.bigint.narrow((value, ctx) =>
+  value < 0n
+    ? ctx.mustBe('greater than')
+    : value > 18_446_744_073_709_551_615n
+      ? ctx.mustBe('less than')
+      : true
 ); // unsigned 64-bit integer lower and upper limit
 ```
 

@@ -12,8 +12,8 @@
  *   + Financing activities (Δ debt, Δ equity, dividends)
  *   = Net Cash Flow
  */
-import type { AccountType } from "../../../shared/types.js";
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { AccountType } from '../../../shared/types.js';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface TrialBalanceMovement {
   readonly accountId: string;
@@ -27,30 +27,30 @@ export interface TrialBalanceMovement {
 }
 
 export type CashFlowSubType =
-  | "cash"
-  | "receivable"
-  | "inventory"
-  | "prepaid"
-  | "fixed_asset"
-  | "intangible_asset"
-  | "investment"
-  | "payable"
-  | "accrued_liability"
-  | "short_term_debt"
-  | "long_term_debt"
-  | "equity_common"
-  | "equity_retained"
-  | "revenue"
-  | "cost_of_sales"
-  | "operating_expense"
-  | "depreciation"
-  | "amortization"
-  | "interest_expense"
-  | "tax_expense"
-  | "other_income"
-  | "other_expense"
-  | "dividend"
-  | "other";
+  | 'cash'
+  | 'receivable'
+  | 'inventory'
+  | 'prepaid'
+  | 'fixed_asset'
+  | 'intangible_asset'
+  | 'investment'
+  | 'payable'
+  | 'accrued_liability'
+  | 'short_term_debt'
+  | 'long_term_debt'
+  | 'equity_common'
+  | 'equity_retained'
+  | 'revenue'
+  | 'cost_of_sales'
+  | 'operating_expense'
+  | 'depreciation'
+  | 'amortization'
+  | 'interest_expense'
+  | 'tax_expense'
+  | 'other_income'
+  | 'other_expense'
+  | 'dividend'
+  | 'other';
 
 export interface CashFlowSection {
   readonly label: string;
@@ -78,30 +78,27 @@ export interface IndirectCashFlowResult {
   readonly currency: string;
 }
 
-const NON_CASH_SUBTYPES: ReadonlySet<CashFlowSubType> = new Set([
-  "depreciation",
-  "amortization",
-]);
+const NON_CASH_SUBTYPES: ReadonlySet<CashFlowSubType> = new Set(['depreciation', 'amortization']);
 
 const WORKING_CAPITAL_SUBTYPES: ReadonlySet<CashFlowSubType> = new Set([
-  "receivable",
-  "inventory",
-  "prepaid",
-  "payable",
-  "accrued_liability",
+  'receivable',
+  'inventory',
+  'prepaid',
+  'payable',
+  'accrued_liability',
 ]);
 
 const INVESTING_SUBTYPES: ReadonlySet<CashFlowSubType> = new Set([
-  "fixed_asset",
-  "intangible_asset",
-  "investment",
+  'fixed_asset',
+  'intangible_asset',
+  'investment',
 ]);
 
 const FINANCING_SUBTYPES: ReadonlySet<CashFlowSubType> = new Set([
-  "short_term_debt",
-  "long_term_debt",
-  "equity_common",
-  "dividend",
+  'short_term_debt',
+  'long_term_debt',
+  'equity_common',
+  'dividend',
 ]);
 
 function movement(m: TrialBalanceMovement): bigint {
@@ -112,7 +109,7 @@ function buildSection(
   label: string,
   movements: readonly TrialBalanceMovement[],
   subtypes: ReadonlySet<CashFlowSubType>,
-  signFn: (m: TrialBalanceMovement) => bigint,
+  signFn: (m: TrialBalanceMovement) => bigint
 ): CashFlowSection {
   const matching = movements.filter((m) => subtypes.has(m.accountSubType));
   const lines: CashFlowLine[] = matching.map((m) => ({
@@ -135,10 +132,10 @@ function buildSection(
  * - Non-cash expenses (depreciation) are added back
  */
 export function deriveCashFlowIndirect(
-  movements: readonly TrialBalanceMovement[],
+  movements: readonly TrialBalanceMovement[]
 ): CalculatorResult<IndirectCashFlowResult> {
   if (movements.length === 0) {
-    throw new Error("At least one trial balance movement required");
+    throw new Error('At least one trial balance movement required');
   }
 
   const currency = movements[0]!.currency;
@@ -146,15 +143,15 @@ export function deriveCashFlowIndirect(
   // Net income = revenue - expenses (all P&L accounts)
   let netIncome = 0n;
   for (const m of movements) {
-    if (m.accountType === "REVENUE" || m.accountSubType === "other_income") {
+    if (m.accountType === 'REVENUE' || m.accountSubType === 'other_income') {
       netIncome += movement(m);
     } else if (
-      m.accountType === "EXPENSE" ||
-      m.accountSubType === "cost_of_sales" ||
-      m.accountSubType === "operating_expense" ||
-      m.accountSubType === "interest_expense" ||
-      m.accountSubType === "tax_expense" ||
-      m.accountSubType === "other_expense"
+      m.accountType === 'EXPENSE' ||
+      m.accountSubType === 'cost_of_sales' ||
+      m.accountSubType === 'operating_expense' ||
+      m.accountSubType === 'interest_expense' ||
+      m.accountSubType === 'tax_expense' ||
+      m.accountSubType === 'other_expense'
     ) {
       netIncome -= movement(m);
     }
@@ -162,21 +159,21 @@ export function deriveCashFlowIndirect(
 
   // Non-cash adjustments: add back depreciation/amortization
   const nonCashAdjustments = buildSection(
-    "Non-Cash Adjustments",
+    'Non-Cash Adjustments',
     movements,
     NON_CASH_SUBTYPES,
-    (m) => movement(m), // positive = add back
+    (m) => movement(m) // positive = add back
   );
 
   // Working capital changes: asset increase = outflow, liability increase = inflow
   const workingCapitalChanges = buildSection(
-    "Changes in Working Capital",
+    'Changes in Working Capital',
     movements,
     WORKING_CAPITAL_SUBTYPES,
     (m) => {
-      if (m.accountType === "ASSET") return -movement(m); // asset increase = cash outflow
+      if (m.accountType === 'ASSET') return -movement(m); // asset increase = cash outflow
       return movement(m); // liability increase = cash inflow
-    },
+    }
   );
 
   const operatingCashFlow =
@@ -184,38 +181,30 @@ export function deriveCashFlowIndirect(
 
   // Investing: asset purchases are outflows
   const investingActivities = buildSection(
-    "Investing Activities",
+    'Investing Activities',
     movements,
     INVESTING_SUBTYPES,
-    (m) => -movement(m), // asset increase = cash outflow
+    (m) => -movement(m) // asset increase = cash outflow
   );
 
   // Financing: debt/equity increases are inflows, dividends are outflows
   const financingActivities = buildSection(
-    "Financing Activities",
+    'Financing Activities',
     movements,
     FINANCING_SUBTYPES,
     (m) => {
-      if (m.accountSubType === "dividend") return -movement(m);
+      if (m.accountSubType === 'dividend') return -movement(m);
       return movement(m); // debt/equity increase = inflow
-    },
+    }
   );
 
   const netCashFlow =
-    operatingCashFlow +
-    investingActivities.totalMinor +
-    financingActivities.totalMinor;
+    operatingCashFlow + investingActivities.totalMinor + financingActivities.totalMinor;
 
   // Cash accounts
-  const cashAccounts = movements.filter((m) => m.accountSubType === "cash");
-  const openingCash = cashAccounts.reduce(
-    (sum, m) => sum + m.openingBalanceMinor,
-    0n,
-  );
-  const closingCash = cashAccounts.reduce(
-    (sum, m) => sum + m.closingBalanceMinor,
-    0n,
-  );
+  const cashAccounts = movements.filter((m) => m.accountSubType === 'cash');
+  const openingCash = cashAccounts.reduce((sum, m) => sum + m.openingBalanceMinor, 0n);
+  const closingCash = cashAccounts.reduce((sum, m) => sum + m.closingBalanceMinor, 0n);
 
   return {
     result: {

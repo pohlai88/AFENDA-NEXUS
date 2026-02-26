@@ -1,12 +1,12 @@
-import type { Result } from "@afenda/core";
-import { err, AppError } from "@afenda/core";
-import type { DunningRun } from "../entities/dunning.js";
-import type { IArInvoiceRepo } from "../ports/ar-invoice-repo.js";
-import type { IDunningRepo } from "../ports/dunning-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
-import { computeDunningScores, type DunningInput } from "../calculators/dunning-score.js";
+import type { Result } from '@afenda/core';
+import { err, AppError } from '@afenda/core';
+import type { DunningRun } from '../entities/dunning.js';
+import type { IArInvoiceRepo } from '../ports/ar-invoice-repo.js';
+import type { IDunningRepo } from '../ports/dunning-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
+import { computeDunningScores, type DunningInput } from '../calculators/dunning-score.js';
 
 export interface RunDunningInput {
   readonly tenantId: string;
@@ -22,7 +22,7 @@ export async function runDunning(
     dunningRepo: IDunningRepo;
     outboxWriter: IOutboxWriter;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<DunningRun>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor.userId ?? input.userId;
@@ -31,7 +31,7 @@ export async function runDunning(
   const overdue = unpaid.filter((inv) => inv.dueDate < input.runDate);
 
   if (overdue.length === 0) {
-    return err(new AppError("VALIDATION", "No overdue invoices found for dunning"));
+    return err(new AppError('VALIDATION', 'No overdue invoices found for dunning'));
   }
 
   const dunningInputs: DunningInput[] = overdue.map((inv) => ({
@@ -53,7 +53,7 @@ export async function runDunning(
   if (!runResult.ok) return runResult;
 
   // Group by customer and create letters
-  const byCustomer = new Map<string, typeof scores[number][]>();
+  const byCustomer = new Map<string, (typeof scores)[number][]>();
   for (const score of scores) {
     const existing = byCustomer.get(score.customerId) ?? [];
     existing.push(score);

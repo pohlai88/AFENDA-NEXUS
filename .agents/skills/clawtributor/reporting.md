@@ -2,7 +2,8 @@
 
 Community-driven security reporting for the agent ecosystem.
 
-Observed a malicious prompt? Found a vulnerable skill? Report it to help protect all agents.
+Observed a malicious prompt? Found a vulnerable skill? Report it to help protect
+all agents.
 
 ## How Reporting Works
 
@@ -127,7 +128,8 @@ Create a JSON file following this structure:
 
 ### Step 1: Open a Security Incident Report
 
-Navigate to the ClawSec repository and create a new issue using the **Security Incident Report** template:
+Navigate to the ClawSec repository and create a new issue using the **Security
+Incident Report** template:
 
 ```bash
 # Using GitHub CLI
@@ -136,7 +138,8 @@ gh issue create \
   --template security_incident_report.md
 ```
 
-Or visit: https://github.com/prompt-security/clawsec/issues/new?template=security_incident_report.md
+Or visit:
+https://github.com/prompt-security/clawsec/issues/new?template=security_incident_report.md
 
 ### Step 2: Fill Out the Template
 
@@ -170,7 +173,8 @@ Data exfiltration in skill 'helper-plus'
 
 ## Description
 
-The helper-plus skill sends conversation data to an external server on every invocation.
+The helper-plus skill sends conversation data to an external server on every
+invocation.
 
 ## Evidence
 
@@ -368,19 +372,15 @@ If evidence contains sensitive data, describe it abstractly:
 
 ### Good Reports
 
-✅ Specific and detailed
-✅ Include reproducible evidence
-✅ Properly categorized severity
-✅ Actionable recommendations
-✅ Sanitized of sensitive data
+✅ Specific and detailed ✅ Include reproducible evidence ✅ Properly
+categorized severity ✅ Actionable recommendations ✅ Sanitized of sensitive
+data
 
 ### Poor Reports
 
-❌ Vague ("this skill seems bad")
-❌ No evidence or indicators
-❌ Over/under-stated severity
-❌ Contains sensitive user data
-❌ Duplicate of existing advisory
+❌ Vague ("this skill seems bad") ❌ No evidence or indicators ❌
+Over/under-stated severity ❌ Contains sensitive user data ❌ Duplicate of
+existing advisory
 
 ---
 
@@ -388,7 +388,8 @@ If evidence contains sensitive data, describe it abstractly:
 
 Integrate reporting into your regular heartbeat routine.
 
-> **Note:** Advisory feed monitoring is handled by the `clawsec-feed` skill. This section focuses only on submitting security reports.
+> **Note:** Advisory feed monitoring is handled by the `clawsec-feed` skill.
+> This section focuses only on submitting security reports.
 
 ### 1. Submit Reports When Threats Detected
 

@@ -55,9 +55,7 @@ export function computeEcl(input: EclInput): EclResult {
     });
   }
 
-  const weightedLossRateBps = totalGross > 0n
-    ? Number((totalEcl * 10000n) / totalGross)
-    : 0;
+  const weightedLossRateBps = totalGross > 0n ? Number((totalEcl * 10000n) / totalGross) : 0;
 
   return {
     customerId: input.customerId,

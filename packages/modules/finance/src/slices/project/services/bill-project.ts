@@ -3,12 +3,12 @@
  * Creates billing records for milestone, T&M, or fixed-fee projects.
  */
 
-import { err, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IProjectRepo } from "../ports/project-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { ProjectBilling } from "../entities/project-billing.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IProjectRepo } from '../ports/project-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { ProjectBilling } from '../entities/project-billing.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface BillProjectInput {
   readonly tenantId: string;
@@ -23,13 +23,14 @@ export interface BillProjectInput {
 
 export async function billProject(
   input: BillProjectInput,
-  deps: { projectRepo: IProjectRepo; outboxWriter: IOutboxWriter },
+  deps: { projectRepo: IProjectRepo; outboxWriter: IOutboxWriter }
 ): Promise<Result<ProjectBilling>> {
-  if (input.amount <= 0n) return err(new ValidationError("Billing amount must be positive"));
+  if (input.amount <= 0n) return err(new ValidationError('Billing amount must be positive'));
 
   const project = await deps.projectRepo.findById(input.projectId);
-  if (!project) return err(new ValidationError("Project not found"));
-  if (project.status !== "ACTIVE") return err(new ValidationError("Project must be active for billing"));
+  if (!project) return err(new ValidationError('Project not found'));
+  if (project.status !== 'ACTIVE')
+    return err(new ValidationError('Project must be active for billing'));
 
   const billing = await deps.projectRepo.createBilling(input.tenantId, {
     projectId: input.projectId,

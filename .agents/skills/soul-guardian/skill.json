@@ -43,9 +43,7 @@
     "emoji": "👻",
     "category": "security",
     "requires": {
-      "bins": [
-        "python3"
-      ]
+      "bins": ["python3"]
     },
     "triggers": [
       "soul guardian",

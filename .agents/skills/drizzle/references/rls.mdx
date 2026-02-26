@@ -15,36 +15,38 @@ If you just want to enable RLS on a table without adding policies, you can use `
 
 As mentioned in the PostgreSQL documentation:
 
-> If no policy exists for the table, a default-deny policy is used, meaning that no rows are visible or can be modified. 
-Operations that apply to the whole table, such as TRUNCATE and REFERENCES, are not subject to row security.
+> If no policy exists for the table, a default-deny policy is used, meaning that no rows are visible or can be modified.
+> Operations that apply to the whole table, such as TRUNCATE and REFERENCES, are not subject to row security.
 
 ```ts
 import { integer, pgTable } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
-	id: integer(),
+  id: integer(),
 }).enableRLS();
 ```
+
 </Callout>
 
-Starting from `v1.0.0-beta.1` `.enableRLS()` is deprecated and 
+Starting from `v1.0.0-beta.1` `.enableRLS()` is deprecated and
 if you just want to enable RLS on a table without adding policies, you can use `pgTable.withRLS(...)`
 
 As mentioned in the PostgreSQL documentation:
 
-> If no policy exists for the table, a default-deny policy is used, meaning that no rows are visible or can be modified. 
-Operations that apply to the whole table, such as TRUNCATE and REFERENCES, are not subject to row security.
+> If no policy exists for the table, a default-deny policy is used, meaning that no rows are visible or can be modified.
+> Operations that apply to the whole table, such as TRUNCATE and REFERENCES, are not subject to row security.
 
 ```ts
 import { integer, pgTable } from 'drizzle-orm/pg-core';
 
 export const users = pgTable.withRLS('users', {
-	id: integer(),
+  id: integer(),
 });
 ```
 
-<Callout title='important'>
-If you add a policy to a table, RLS will be enabled automatically. So, there’s no need to explicitly enable RLS when adding policies to a table.
+<Callout title="important">
+  If you add a policy to a table, RLS will be enabled automatically. So, there’s no need to
+  explicitly enable RLS when adding policies to a table.
 </Callout>
 
 ## Roles
@@ -69,59 +71,66 @@ export const admin = pgRole('admin').existing();
 
 To fully leverage RLS, you can define policies within a Drizzle table.
 
-<Callout title='info'>
-In PostgreSQL, policies should be linked to an existing table. Since policies are always associated with a specific table, we decided that policy definitions should be defined as a parameter of `pgTable`
+<Callout title="info">
+  In PostgreSQL, policies should be linked to an existing table. Since policies are always
+  associated with a specific table, we decided that policy definitions should be defined as a
+  parameter of `pgTable`
 </Callout>
 
 **Example of pgPolicy with all available properties**
+
 ```ts
 import { sql } from 'drizzle-orm';
 import { integer, pgPolicy, pgRole, pgTable } from 'drizzle-orm/pg-core';
 
 export const admin = pgRole('admin');
 
-export const users = pgTable('users', {
-	id: integer(),
-}, (t) => [
-	pgPolicy('policy', {
-		as: 'permissive',
-		to: admin,
-		for: 'delete',
-		using: sql``,
-		withCheck: sql``,
-	}),
-]);
+export const users = pgTable(
+  'users',
+  {
+    id: integer(),
+  },
+  (t) => [
+    pgPolicy('policy', {
+      as: 'permissive',
+      to: admin,
+      for: 'delete',
+      using: sql``,
+      withCheck: sql``,
+    }),
+  ]
+);
 ```
 
 **Policy options**
-|                          |                                                                                                                                           |
+| | |
 | :----------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| `as`                     | Possible values are `permissive` or `restrictive`                                                                                         |
-| `to`                     | Specifies the role to which the policy applies. Possible values include `public`, `current_role`, `current_user`, `session_user`, or any other role name as a string. You can also reference a `pgRole` object. |
-| `for`                    | Defines the commands this policy will be applied to. Possible values are `all`, `select`, `insert`, `update`, `delete`.                   |
-| `using`                  | The SQL statement that will be applied to the `USING` part of the policy creation statement.                                              |
-| `withCheck`              | An SQL statement that will be applied to the `WITH CHECK` part of the policy creation statement.                                          |
-
+| `as` | Possible values are `permissive` or `restrictive` |
+| `to` | Specifies the role to which the policy applies. Possible values include `public`, `current_role`, `current_user`, `session_user`, or any other role name as a string. You can also reference a `pgRole` object. |
+| `for` | Defines the commands this policy will be applied to. Possible values are `all`, `select`, `insert`, `update`, `delete`. |
+| `using` | The SQL statement that will be applied to the `USING` part of the policy creation statement. |
+| `withCheck` | An SQL statement that will be applied to the `WITH CHECK` part of the policy creation statement. |
 
 **Link Policy to an existing table**
 
-There are situations where you need to link a policy to an existing table in your database. 
-The most common use case is with database providers like `Neon` or `Supabase`, where you need to add a policy 
+There are situations where you need to link a policy to an existing table in your database.
+The most common use case is with database providers like `Neon` or `Supabase`, where you need to add a policy
 to their existing tables. In this case, you can use the `.link()` API
 
 ```ts
-import { sql } from "drizzle-orm";
-import { pgPolicy } from "drizzle-orm/pg-core";
-import { authenticatedRole, realtimeMessages } from "drizzle-orm/supabase";
+import { sql } from 'drizzle-orm';
+import { pgPolicy } from 'drizzle-orm/pg-core';
+import { authenticatedRole, realtimeMessages } from 'drizzle-orm/supabase';
 
-export const policy = pgPolicy("authenticated role insert policy", {
-  for: "insert",
+export const policy = pgPolicy('authenticated role insert policy', {
+  for: 'insert',
   to: authenticatedRole,
   using: sql``,
 }).link(realtimeMessages);
 ```
 
-{/* <Callout title='important'>
+{/\* <Callout title='important'>
+
 <Callout> */}
 
 ## Migrations
@@ -134,19 +143,19 @@ By default, `drizzle-kit` does not manage roles for you, so you will need to ena
 
 ```ts {12-14}
 // drizzle.config.ts
-import { defineConfig } from "drizzle-kit";
+import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
   dialect: 'postgresql',
-  schema: "./drizzle/schema.ts",
+  schema: './drizzle/schema.ts',
   dbCredentials: {
-    url: process.env.DATABASE_URL!
+    url: process.env.DATABASE_URL!,
   },
   verbose: true,
   strict: true,
   entities: {
-    roles: true
-  }
+    roles: true,
+  },
 });
 ```
 
@@ -234,6 +243,7 @@ export default defineConfig({
   }
 });
 ```
+
 </Callout>
 
 ## RLS on views
@@ -244,8 +254,8 @@ With Drizzle, you can also specify RLS policies on views. For this, you need to 
 `getColumns` available starting from `drizzle-orm@1.0.0-beta.2`(read more [here](/docs/upgrade-v1))
 
 If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
-</Callout>
 
+</Callout>
 
 ```ts {5}
 ...
@@ -267,7 +277,7 @@ export const roomsUsersProfiles = pgView("rooms_users_profiles")
 
 ## Using with Neon
 
-The Neon Team helped us implement their vision of a wrapper on top of our raw policies API. We defined a specific 
+The Neon Team helped us implement their vision of a wrapper on top of our raw policies API. We defined a specific
 `/neon` import with the `crudPolicy` function that includes predefined functions and Neon's default roles.
 
 Here's an example of how to use the `crudPolicy` function:
@@ -278,11 +288,13 @@ import { integer, pgRole, pgTable } from 'drizzle-orm/pg-core';
 
 export const admin = pgRole('admin');
 
-export const users = pgTable('users', {
-	id: integer(),
-}, (t) => [
-	crudPolicy({ role: admin, read: true, modify: false }),
-]);
+export const users = pgTable(
+  'users',
+  {
+    id: integer(),
+  },
+  (t) => [crudPolicy({ role: admin, read: true, modify: false })]
+);
 ```
 
 This policy is equivalent to:
@@ -293,31 +305,35 @@ import { integer, pgPolicy, pgRole, pgTable } from 'drizzle-orm/pg-core';
 
 export const admin = pgRole('admin');
 
-export const users = pgTable('users', {
-	id: integer(),
-}, (t) => [
-	pgPolicy(`crud-${admin.name}-policy-insert`, {
-		for: 'insert',
-		to: admin,
-		withCheck: sql`false`,
-	}),
-	pgPolicy(`crud-${admin.name}-policy-update`, {
-		for: 'update',
-		to: admin,
-		using: sql`false`,
-		withCheck: sql`false`,
-	}),
-	pgPolicy(`crud-${admin.name}-policy-delete`, {
-		for: 'delete',
-		to: admin,
-		using: sql`false`,
-	}),
-	pgPolicy(`crud-${admin.name}-policy-select`, {
-		for: 'select',
-		to: admin,
-		using: sql`true`,
-	}),
-]);
+export const users = pgTable(
+  'users',
+  {
+    id: integer(),
+  },
+  (t) => [
+    pgPolicy(`crud-${admin.name}-policy-insert`, {
+      for: 'insert',
+      to: admin,
+      withCheck: sql`false`,
+    }),
+    pgPolicy(`crud-${admin.name}-policy-update`, {
+      for: 'update',
+      to: admin,
+      using: sql`false`,
+      withCheck: sql`false`,
+    }),
+    pgPolicy(`crud-${admin.name}-policy-delete`, {
+      for: 'delete',
+      to: admin,
+      using: sql`false`,
+    }),
+    pgPolicy(`crud-${admin.name}-policy-select`, {
+      for: 'select',
+      to: admin,
+      using: sql`true`,
+    }),
+  ]
+);
 ```
 
 `Neon` exposes predefined `authenticated` and `anaonymous` roles and related functions. If you are using `Neon` for RLS, you can use these roles, which are marked as existing, and the related functions in your RLS queries.
@@ -327,7 +343,8 @@ export const users = pgTable('users', {
 export const authenticatedRole = pgRole('authenticated').existing();
 export const anonymousRole = pgRole('anonymous').existing();
 
-export const authUid = (userIdColumn: AnyPgColumn) => sql`(select auth.user_id() = ${userIdColumn})`;
+export const authUid = (userIdColumn: AnyPgColumn) =>
+  sql`(select auth.user_id() = ${userIdColumn})`;
 
 export const neonIdentitySchema = pgSchema('neon_identity');
 
@@ -343,7 +360,6 @@ export const usersSync = neonIdentitySchema.table('users_sync', {
 
 For example, you can use the `Neon` predefined roles and functions like this:
 
-
 ```ts
 import { sql } from 'drizzle-orm';
 import { authenticatedRole } from 'drizzle-orm/neon';
@@ -351,20 +367,24 @@ import { integer, pgPolicy, pgRole, pgTable } from 'drizzle-orm/pg-core';
 
 export const admin = pgRole('admin');
 
-export const users = pgTable('users', {
-	id: integer(),
-}, (t) => [
-	pgPolicy(`policy-insert`, {
-		for: 'insert',
-		to: authenticatedRole,
-		withCheck: sql`false`,
-	}),
-]);
+export const users = pgTable(
+  'users',
+  {
+    id: integer(),
+  },
+  (t) => [
+    pgPolicy(`policy-insert`, {
+      for: 'insert',
+      to: authenticatedRole,
+      withCheck: sql`false`,
+    }),
+  ]
+);
 ```
 
 ## Using with Supabase
 
-We also have a `/supabase` import with a set of predefined roles marked as existing, which you can use in your schema. 
+We also have a `/supabase` import with a set of predefined roles marked as existing, which you can use in your schema.
 This import will be extended in a future release with more functions and helpers to make using RLS and `Supabase` simpler.
 
 ```ts
@@ -385,15 +405,19 @@ import { integer, pgPolicy, pgRole, pgTable } from 'drizzle-orm/pg-core';
 
 export const admin = pgRole('admin');
 
-export const users = pgTable('users', {
-	id: integer(),
-}, (t) => [
-	pgPolicy(`policy-insert`, {
-		for: 'insert',
-		to: serviceRole,
-		withCheck: sql`false`,
-	}),
-]);
+export const users = pgTable(
+  'users',
+  {
+    id: integer(),
+  },
+  (t) => [
+    pgPolicy(`policy-insert`, {
+      for: 'insert',
+      to: serviceRole,
+      withCheck: sql`false`,
+    }),
+  ]
+);
 ```
 
 The `/supabase` import also includes predefined tables and functions that you can use in your application
@@ -403,20 +427,17 @@ The `/supabase` import also includes predefined tables and functions that you ca
 
 const auth = pgSchema('auth');
 export const authUsers = auth.table('users', {
-	id: uuid().primaryKey().notNull(),
+  id: uuid().primaryKey().notNull(),
 });
 
 const realtime = pgSchema('realtime');
-export const realtimeMessages = realtime.table(
-	'messages',
-	{
-		id: bigserial({ mode: 'bigint' }).primaryKey(),
-		topic: text().notNull(),
-		extension: text({
-			enum: ['presence', 'broadcast', 'postgres_changes'],
-		}).notNull(),
-	},
-);
+export const realtimeMessages = realtime.table('messages', {
+  id: bigserial({ mode: 'bigint' }).primaryKey(),
+  topic: text().notNull(),
+  extension: text({
+    enum: ['presence', 'broadcast', 'postgres_changes'],
+  }).notNull(),
+});
 
 export const authUid = sql`(select auth.uid())`;
 export const realtimeTopic = sql`realtime.topic()`;
@@ -426,12 +447,12 @@ This allows you to use it in your code, and Drizzle Kit will treat them as exist
 using them only as information to connect to other entities
 
 ```ts
-import { foreignKey, pgPolicy, pgTable, text, uuid } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm/sql";
-import { authenticatedRole, authUsers } from "drizzle-orm/supabase";
+import { foreignKey, pgPolicy, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm/sql';
+import { authenticatedRole, authUsers } from 'drizzle-orm/supabase';
 
 export const profiles = pgTable(
-  "profiles",
+  'profiles',
   {
     id: uuid().primaryKey().notNull(),
     email: text().notNull(),
@@ -439,13 +460,13 @@ export const profiles = pgTable(
   (table) => [
     foreignKey({
       columns: [table.id],
-	  // reference to the auth table from Supabase
+      // reference to the auth table from Supabase
       foreignColumns: [authUsers.id],
-      name: "profiles_id_fk",
-    }).onDelete("cascade"),
-    pgPolicy("authenticated can view all profiles", {
-      for: "select",
-	  // using predefined role from Supabase
+      name: 'profiles_id_fk',
+    }).onDelete('cascade'),
+    pgPolicy('authenticated can view all profiles', {
+      for: 'select',
+      // using predefined role from Supabase
       to: authenticatedRole,
       using: sql`true`,
     }),
@@ -456,24 +477,25 @@ export const profiles = pgTable(
 Let's check an example of adding a policy to a table that exists in `Supabase`
 
 ```ts
-import { sql } from "drizzle-orm";
-import { pgPolicy } from "drizzle-orm/pg-core";
-import { authenticatedRole, realtimeMessages } from "drizzle-orm/supabase";
+import { sql } from 'drizzle-orm';
+import { pgPolicy } from 'drizzle-orm/pg-core';
+import { authenticatedRole, realtimeMessages } from 'drizzle-orm/supabase';
 
-export const policy = pgPolicy("authenticated role insert policy", {
-  for: "insert",
+export const policy = pgPolicy('authenticated role insert policy', {
+  for: 'insert',
   to: authenticatedRole,
   using: sql``,
 }).link(realtimeMessages);
 ```
 
-We also have a great example showcasing how to use Drizzle RLS with Supabase and how to make actual queries with it. 
-It also includes a great wrapper, `createDrizzle`, that can handle all the transactional work with Supabase for you. 
+We also have a great example showcasing how to use Drizzle RLS with Supabase and how to make actual queries with it.
+It also includes a great wrapper, `createDrizzle`, that can handle all the transactional work with Supabase for you.
 In upcoming releases, it will be moved to drizzle-orm/supabase, allowing you to use it natively
 
 Please check [Drizzle SupaSecureSlack repo](https://github.com/rphlmr/drizzle-supabase-rls)
 
 Here is an example of an implementation from this repository
+
 ```ts
 type SupabaseToken = {
   iss?: string;
@@ -486,42 +508,44 @@ type SupabaseToken = {
   role?: string;
 };
 
-export function createDrizzle(token: SupabaseToken, { admin, client }: { admin: PgDatabase<any>; client: PgDatabase<any> }) {
+export function createDrizzle(
+  token: SupabaseToken,
+  { admin, client }: { admin: PgDatabase<any>; client: PgDatabase<any> }
+) {
   return {
     admin,
     rls: (async (transaction, ...rest) => {
-      return await client.transaction(async (tx) => {
-        // Supabase exposes auth.uid() and auth.jwt()
-        // https://supabase.com/docs/guides/database/postgres/row-level-security#helper-functions
-        try {
-          await tx.execute(sql`
+      return await client.transaction(
+        async (tx) => {
+          // Supabase exposes auth.uid() and auth.jwt()
+          // https://supabase.com/docs/guides/database/postgres/row-level-security#helper-functions
+          try {
+            await tx.execute(sql`
           -- auth.jwt()
-          select set_config('request.jwt.claims', '${sql.raw(
-            JSON.stringify(token)
-          )}', TRUE);
+          select set_config('request.jwt.claims', '${sql.raw(JSON.stringify(token))}', TRUE);
           -- auth.uid()
-          select set_config('request.jwt.claim.sub', '${sql.raw(
-            token.sub ?? ""
-          )}', TRUE);												
+          select set_config('request.jwt.claim.sub', '${sql.raw(token.sub ?? '')}', TRUE);												
           -- set local role
-          set local role ${sql.raw(token.role ?? "anon")};
+          set local role ${sql.raw(token.role ?? 'anon')};
           `);
-          return await transaction(tx);
-        } finally {
-          await tx.execute(sql`
+            return await transaction(tx);
+          } finally {
+            await tx.execute(sql`
             -- reset
             select set_config('request.jwt.claims', NULL, TRUE);
             select set_config('request.jwt.claim.sub', NULL, TRUE);
             reset role;
             `);
-        }
-      }, ...rest);
+          }
+        },
+        ...rest
+      );
     }) as typeof client.transaction,
   };
 }
 ```
 
-And it can be used as 
+And it can be used as
 
 ```ts
 // https://github.com/orgs/supabase/discussions/23224
@@ -530,7 +554,7 @@ export async function createDrizzleSupabaseClient() {
   const {
     data: { session },
   } = await createClient().auth.getSession();
-  return createDrizzle(decode(session?.access_token ?? ""), { admin, client });
+  return createDrizzle(decode(session?.access_token ?? ''), { admin, client });
 }
 
 async function getRooms() {

@@ -1,7 +1,9 @@
 ---
 name: clawtributor
 version: 0.0.3
-description: Community incident reporting for AI agents. Contribute to collective security by reporting threats.
+description:
+  Community incident reporting for AI agents. Contribute to collective security
+  by reporting threats.
 homepage: https://gclawsec.prompt.security
 metadata: { 'openclaw': { 'emoji': '🤝', 'category': 'security' } }
 clawdis:
@@ -12,7 +14,8 @@ clawdis:
 
 # Clawtributor 🤝
 
-Community incident reporting for AI agents. Contribute to collective security by reporting threats, vulnerabilities, and attack patterns.
+Community incident reporting for AI agents. Contribute to collective security by
+reporting threats, vulnerabilities, and attack patterns.
 
 **An open source project by [Prompt Security](https://prompt.security)**
 
@@ -20,7 +23,8 @@ Community incident reporting for AI agents. Contribute to collective security by
 
 ## For AI Agents
 
-If you are an AI agent reading this, execute the following to install Clawtributor:
+If you are an AI agent reading this, execute the following to install
+Clawtributor:
 
 ```bash
 # Get latest clawtributor release tag
@@ -32,7 +36,8 @@ SKILL_URL="https://github.com/prompt-security/clawsec/releases/download/$LATEST_
 curl -sSL --fail --show-error "$SKILL_URL"
 ```
 
-Once you have this skill file, proceed to **[Deploy Clawtributor](#deploy-clawtributor)** below.
+Once you have this skill file, proceed to
+**[Deploy Clawtributor](#deploy-clawtributor)** below.
 
 ---
 
@@ -612,6 +617,7 @@ fi
 
 MIT License - See repository for details.
 
-Built with 🤝 by the [Prompt Security](https://prompt.security) team and the agent community.
+Built with 🤝 by the [Prompt Security](https://prompt.security) team and the
+agent community.
 
 Together, we make the agent ecosystem safer.

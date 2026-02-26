@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import { formatMoney } from "@/lib/format";
+import { cn } from '@/lib/utils';
+import { formatMoney } from '@/lib/format';
 
 interface MoneyCellProps {
   amount: number | bigint | string;
@@ -10,20 +10,24 @@ interface MoneyCellProps {
 
 export function MoneyCell({
   amount,
-  currency = "USD",
+  currency = 'USD',
   className,
   showCode = false,
 }: MoneyCellProps) {
   const numericAmount =
-    typeof amount === "bigint" ? Number(amount) : typeof amount === "string" ? parseFloat(amount) : amount;
+    typeof amount === 'bigint'
+      ? Number(amount)
+      : typeof amount === 'string'
+        ? parseFloat(amount)
+        : amount;
   const isNegative = numericAmount < 0;
 
   return (
     <span
       className={cn(
-        "tabular-nums text-right font-mono text-sm",
-        isNegative && "text-destructive",
-        className,
+        'tabular-nums text-right font-mono text-sm',
+        isNegative && 'text-destructive',
+        className
       )}
     >
       {formatMoney(amount, currency, { showCode })}

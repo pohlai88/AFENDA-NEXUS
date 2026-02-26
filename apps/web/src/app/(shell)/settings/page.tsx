@@ -1,19 +1,21 @@
-import { PageHeader } from "@/components/erp/page-header";
+import { PageHeader } from '@/components/erp/page-header';
+import { getRequestContext } from '@/lib/auth';
+import { SettingsTabs } from './_components/settings-tabs';
 
-export const metadata = { title: "Settings" };
+export const metadata = { title: 'Settings' };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await getRequestContext();
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Settings"
-        description="Tenant and company configuration."
-        breadcrumbs={[{ label: "Settings" }]}
+        description="Manage your account security, API keys, and preferences."
+        breadcrumbs={[{ label: 'Settings' }]}
       />
 
-      <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
-        Settings will be available once tenant management is implemented.
-      </div>
+      <SettingsTabs />
     </div>
   );
 }

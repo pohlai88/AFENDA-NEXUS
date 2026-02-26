@@ -42,7 +42,7 @@ export interface ReciprocalResult {
  * Converges when the change between iterations falls below threshold.
  */
 export function computeReciprocalAllocation(input: ReciprocalInput): ReciprocalResult {
-  if (input.pools.length === 0) throw new Error("At least one allocation pool is required");
+  if (input.pools.length === 0) throw new Error('At least one allocation pool is required');
 
   const maxIter = input.maxIterations ?? 50;
   const threshold = input.convergenceThreshold ?? 1n; // 1 minor unit

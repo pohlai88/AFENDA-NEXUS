@@ -1,4 +1,4 @@
-import type { LeaseSchedule } from "../entities/lease-schedule.js";
+import type { LeaseSchedule } from '../entities/lease-schedule.js';
 
 export interface CreateLeaseScheduleInput {
   readonly leaseContractId: string;
@@ -15,6 +15,9 @@ export interface CreateLeaseScheduleInput {
 
 export interface ILeaseScheduleRepo {
   findByLease(leaseContractId: string): Promise<readonly LeaseSchedule[]>;
-  createBatch(tenantId: string, lines: readonly CreateLeaseScheduleInput[]): Promise<readonly LeaseSchedule[]>;
+  createBatch(
+    tenantId: string,
+    lines: readonly CreateLeaseScheduleInput[]
+  ): Promise<readonly LeaseSchedule[]>;
   deleteByLease(leaseContractId: string): Promise<void>;
 }

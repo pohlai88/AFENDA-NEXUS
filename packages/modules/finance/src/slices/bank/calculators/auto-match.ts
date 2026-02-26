@@ -4,7 +4,7 @@
  * Uses integer scoring (0–100) to rank match candidates.
  */
 
-import type { BankStatementLine } from "../entities/bank-statement-line.js";
+import type { BankStatementLine } from '../entities/bank-statement-line.js';
 
 export interface GlCandidate {
   readonly id: string;
@@ -56,14 +56,14 @@ const DEFAULT_CONFIG: AutoMatchConfig = {
 export function autoMatchLines(
   lines: readonly BankStatementLine[],
   candidates: readonly GlCandidate[],
-  config: AutoMatchConfig = DEFAULT_CONFIG,
+  config: AutoMatchConfig = DEFAULT_CONFIG
 ): AutoMatchResult {
   const matched: MatchCandidate[] = [];
   const unmatched: string[] = [];
   const usedCandidates = new Set<string>();
 
   for (const line of lines) {
-    if (line.matchStatus !== "UNMATCHED") continue;
+    if (line.matchStatus !== 'UNMATCHED') continue;
 
     let bestMatch: MatchCandidate | null = null;
 
@@ -72,8 +72,17 @@ export function autoMatchLines(
       if (candidate.currencyCode !== line.currencyCode) continue;
 
       const amountMatch = candidate.amount === line.amount;
-      const dateMatch = isWithinDays(line.transactionDate, candidate.transactionDate, config.dateToleranceDays);
-      const referenceMatch = matchReference(line.reference, line.description, candidate.reference, candidate.description);
+      const dateMatch = isWithinDays(
+        line.transactionDate,
+        candidate.transactionDate,
+        config.dateToleranceDays
+      );
+      const referenceMatch = matchReference(
+        line.reference,
+        line.description,
+        candidate.reference,
+        candidate.description
+      );
 
       let score = 0;
       if (amountMatch) score += config.amountWeight;
@@ -101,7 +110,7 @@ export function autoMatchLines(
     }
   }
 
-  const totalLines = lines.filter((l) => l.matchStatus === "UNMATCHED").length;
+  const totalLines = lines.filter((l) => l.matchStatus === 'UNMATCHED').length;
   return {
     matched,
     unmatched,
@@ -120,7 +129,7 @@ function matchReference(
   lineRef: string | null,
   lineDesc: string,
   candidateRef: string | null,
-  candidateDesc: string,
+  candidateDesc: string
 ): boolean {
   if (lineRef && candidateRef && lineRef.toLowerCase() === candidateRef.toLowerCase()) return true;
   if (lineRef && candidateDesc.toLowerCase().includes(lineRef.toLowerCase())) return true;

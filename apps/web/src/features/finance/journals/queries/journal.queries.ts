@@ -1,6 +1,6 @@
-import { createApiClient } from "@/lib/api-client";
-import type { ApiResult, PaginatedResponse, CommandReceipt } from "@/lib/types";
-import type { JournalStatus } from "@afenda/contracts";
+import { createApiClient } from '@/lib/api-client';
+import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
+import type { JournalStatus } from '@afenda/contracts';
 
 // ─── View Models (what the UI receives from the API) ────────────────────────
 
@@ -49,7 +49,7 @@ export interface JournalLineView {
 
 export async function getJournals(
   ctx: { tenantId: string; userId: string; token: string },
-  params: { periodId?: string; status?: string; page?: string; limit?: string },
+  params: { periodId?: string; status?: string; page?: string; limit?: string }
 ): Promise<ApiResult<PaginatedResponse<JournalListItem>>> {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
@@ -58,12 +58,12 @@ export async function getJournals(
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
 
-  return client.get<PaginatedResponse<JournalListItem>>("/journals", query);
+  return client.get<PaginatedResponse<JournalListItem>>('/journals', query);
 }
 
 export async function getJournal(
   ctx: { tenantId: string; userId: string; token: string },
-  id: string,
+  id: string
 ): Promise<ApiResult<JournalDetail>> {
   const client = createApiClient(ctx);
   return client.get<JournalDetail>(`/journals/${id}`);
@@ -71,16 +71,16 @@ export async function getJournal(
 
 export async function createJournal(
   ctx: { tenantId: string; userId: string; token: string },
-  body: unknown,
+  body: unknown
 ): Promise<ApiResult<CommandReceipt>> {
   const client = createApiClient(ctx);
-  return client.post<CommandReceipt>("/journals", body);
+  return client.post<CommandReceipt>('/journals', body);
 }
 
 export async function postJournal(
   ctx: { tenantId: string; userId: string; token: string },
   journalId: string,
-  idempotencyKey: string,
+  idempotencyKey: string
 ): Promise<ApiResult<CommandReceipt>> {
   const client = createApiClient(ctx);
   return client.post<CommandReceipt>(`/journals/${journalId}/post`, { idempotencyKey });
@@ -89,7 +89,7 @@ export async function postJournal(
 export async function reverseJournal(
   ctx: { tenantId: string; userId: string; token: string },
   journalId: string,
-  reason: string,
+  reason: string
 ): Promise<ApiResult<CommandReceipt>> {
   const client = createApiClient(ctx);
   return client.post<CommandReceipt>(`/journals/${journalId}/reverse`, { reason });
@@ -98,7 +98,7 @@ export async function reverseJournal(
 export async function voidJournal(
   ctx: { tenantId: string; userId: string; token: string },
   journalId: string,
-  reason: string,
+  reason: string
 ): Promise<ApiResult<CommandReceipt>> {
   const client = createApiClient(ctx);
   return client.post<CommandReceipt>(`/journals/${journalId}/void`, { reason });

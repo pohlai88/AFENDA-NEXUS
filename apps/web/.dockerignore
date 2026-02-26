@@ -1,0 +1,15 @@
+# Docker
+node_modules
+.next
+.git
+.gitignore
+*.md
+*.test.*
+*.spec.*
+__tests__
+coverage
+.env.local
+.env.development.local
+.turbo
+dist
+.cache

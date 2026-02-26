@@ -1,6 +1,8 @@
 ---
 name: skill-name-here
-description: Brief description that helps Cascade understand when to invoke this skill (1-2 sentences)
+description:
+  Brief description that helps Cascade understand when to invoke this skill (1-2
+  sentences)
 category: nextjs | monorepo | database | validation | ui | tools | security
 priority: high | medium | low
 ---
@@ -9,7 +11,9 @@ priority: high | medium | low
 
 Brief overview of what this skill helps accomplish.
 
-> **After creating this skill:** Add an entry to `.agents/skills-registry.json` and run `node .agents/tools/agents-gen.mjs` to regenerate INDEX.md + INSTALLED-SKILLS.md.
+> **After creating this skill:** Add an entry to `.agents/skills-registry.json`
+> and run `node .agents/tools/agents-gen.mjs` to regenerate INDEX.md +
+> INSTALLED-SKILLS.md.
 
 ## Prerequisites
 

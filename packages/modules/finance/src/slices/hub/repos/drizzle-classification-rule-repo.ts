@@ -1,22 +1,34 @@
-import { eq, and, desc, count } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { classificationRuleSets, classificationRules } from "@afenda/db";
-import { ok, err, NotFoundError, type Result, type PaginationParams, type PaginatedResult } from "@afenda/core";
-import type { ClassificationRule, ClassificationRuleSet, ReportingStandard, StatementCategory } from "../../hub/entities/classification-rule.js";
-import type { AccountType } from "../../../shared/types.js";
-import type { IClassificationRuleRepo } from "../../../slices/hub/ports/classification-rule-repo.js";
+import { eq, and, desc, count } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { classificationRuleSets, classificationRules } from '@afenda/db';
+import {
+  ok,
+  err,
+  NotFoundError,
+  type Result,
+  type PaginationParams,
+  type PaginatedResult,
+} from '@afenda/core';
+import type {
+  ClassificationRule,
+  ClassificationRuleSet,
+  ReportingStandard,
+  StatementCategory,
+} from '../../hub/entities/classification-rule.js';
+import type { AccountType } from '../../../shared/types.js';
+import type { IClassificationRuleRepo } from '../../../slices/hub/ports/classification-rule-repo.js';
 
 export class DrizzleClassificationRuleRepo implements IClassificationRuleRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async findByStandard(
     standard: ReportingStandard,
-    version?: number,
+    version?: number
   ): Promise<Result<ClassificationRuleSet>> {
     const conditions = version
       ? and(
           eq(classificationRuleSets.standard, standard),
-          eq(classificationRuleSets.version, version),
+          eq(classificationRuleSets.version, version)
         )
       : eq(classificationRuleSets.standard, standard);
 
@@ -27,7 +39,8 @@ export class DrizzleClassificationRuleRepo implements IClassificationRuleRepo {
       .orderBy(desc(classificationRuleSets.version))
       .limit(1);
 
-    if (!setRow) return err(new NotFoundError("ClassificationRuleSet", `${standard}/v${version ?? "latest"}`));
+    if (!setRow)
+      return err(new NotFoundError('ClassificationRuleSet', `${standard}/v${version ?? 'latest'}`));
 
     const ruleRows = await this.tx
       .select()
@@ -42,14 +55,14 @@ export class DrizzleClassificationRuleRepo implements IClassificationRuleRepo {
     });
   }
 
-  async findAll(pagination?: PaginationParams): Promise<Result<PaginatedResult<ClassificationRuleSet>>> {
+  async findAll(
+    pagination?: PaginationParams
+  ): Promise<Result<PaginatedResult<ClassificationRuleSet>>> {
     const page = pagination?.page ?? 1;
     const limit = pagination?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [totalRow] = await this.tx
-      .select({ total: count() })
-      .from(classificationRuleSets);
+    const [totalRow] = await this.tx.select({ total: count() }).from(classificationRuleSets);
 
     const setRows = await this.tx
       .select()
@@ -83,7 +96,7 @@ export class DrizzleClassificationRuleRepo implements IClassificationRuleRepo {
       .where(eq(classificationRules.id, id))
       .limit(1);
 
-    if (!row) return err(new NotFoundError("ClassificationRule", id));
+    if (!row) return err(new NotFoundError('ClassificationRule', id));
 
     const [setRow] = await this.tx
       .select()
@@ -91,14 +104,14 @@ export class DrizzleClassificationRuleRepo implements IClassificationRuleRepo {
       .where(eq(classificationRuleSets.id, row.ruleSetId))
       .limit(1);
 
-    if (!setRow) return err(new NotFoundError("ClassificationRuleSet", row.ruleSetId));
+    if (!setRow) return err(new NotFoundError('ClassificationRuleSet', row.ruleSetId));
 
     return ok(this.mapRule(row, setRow));
   }
 
   private mapRule(
     row: typeof classificationRules.$inferSelect,
-    setRow: typeof classificationRuleSets.$inferSelect,
+    setRow: typeof classificationRuleSets.$inferSelect
   ): ClassificationRule {
     return {
       id: row.id!,
@@ -108,7 +121,7 @@ export class DrizzleClassificationRuleRepo implements IClassificationRuleRepo {
       accountCodePattern: row.pattern || undefined,
       statementCategory: row.category as StatementCategory,
       effectiveFrom: setRow.createdAt,
-      createdBy: "system",
+      createdBy: 'system',
       createdAt: row.createdAt,
     };
   }

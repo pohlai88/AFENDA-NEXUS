@@ -1,6 +1,7 @@
 # Async Patterns
 
-In Next.js 15+, `params`, `searchParams`, `cookies()`, and `headers()` are asynchronous.
+In Next.js 15+, `params`, `searchParams`, `cookies()`, and `headers()` are
+asynchronous.
 
 ## Async Params and SearchParams
 
@@ -19,7 +20,10 @@ export default async function Page({ params }: Props) {
 ### Route Handlers
 
 ```tsx
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
 }
 ```

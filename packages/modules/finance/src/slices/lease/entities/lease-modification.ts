@@ -2,7 +2,12 @@
  * Lease modification entity — tracks remeasurements and changes to lease terms.
  */
 
-export type ModificationType = "TERM_EXTENSION" | "TERM_REDUCTION" | "PAYMENT_CHANGE" | "SCOPE_CHANGE" | "RATE_CHANGE";
+export type ModificationType =
+  | 'TERM_EXTENSION'
+  | 'TERM_REDUCTION'
+  | 'PAYMENT_CHANGE'
+  | 'SCOPE_CHANGE'
+  | 'RATE_CHANGE';
 
 export interface LeaseModification {
   readonly id: string;

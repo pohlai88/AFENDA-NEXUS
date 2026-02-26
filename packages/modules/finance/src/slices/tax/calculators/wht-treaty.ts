@@ -46,14 +46,15 @@ export interface WhtTreatyResult {
 export function computeWhtWithTreaty(
   input: WhtTreatyInput,
   treaties: readonly TreatyRate[],
-  asOfDate: Date = new Date(),
+  asOfDate: Date = new Date()
 ): WhtTreatyResult {
   const treaty = treaties.find(
-    (t) => t.sourceCountry === input.sourceCountry
-      && t.residenceCountry === input.payeeCountry
-      && t.incomeType === input.incomeType
-      && t.effectiveFrom <= asOfDate
-      && (t.effectiveTo === null || t.effectiveTo >= asOfDate),
+    (t) =>
+      t.sourceCountry === input.sourceCountry &&
+      t.residenceCountry === input.payeeCountry &&
+      t.incomeType === input.incomeType &&
+      t.effectiveFrom <= asOfDate &&
+      (t.effectiveTo === null || t.effectiveTo >= asOfDate)
   );
 
   const domesticRateBps = treaty?.domesticRateBps ?? 0;
@@ -83,7 +84,7 @@ export function computeWhtWithTreaty(
 export function computeBatchWht(
   inputs: readonly WhtTreatyInput[],
   treaties: readonly TreatyRate[],
-  asOfDate?: Date,
+  asOfDate?: Date
 ): readonly WhtTreatyResult[] {
   return inputs.map((input) => computeWhtWithTreaty(input, treaties, asOfDate));
 }

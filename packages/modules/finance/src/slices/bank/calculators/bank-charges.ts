@@ -4,16 +4,16 @@
  * Classifies bank statement lines as known charge types based on rules.
  */
 
-import type { BankStatementLine } from "../entities/bank-statement-line.js";
+import type { BankStatementLine } from '../entities/bank-statement-line.js';
 
 export type ChargeCategory =
-  | "SERVICE_FEE"
-  | "WIRE_FEE"
-  | "OVERDRAFT_INTEREST"
-  | "CARD_FEE"
-  | "FX_FEE"
-  | "PENALTY"
-  | "UNKNOWN";
+  | 'SERVICE_FEE'
+  | 'WIRE_FEE'
+  | 'OVERDRAFT_INTEREST'
+  | 'CARD_FEE'
+  | 'FX_FEE'
+  | 'PENALTY'
+  | 'UNKNOWN';
 
 export interface ChargeRule {
   readonly pattern: RegExp;
@@ -37,12 +37,12 @@ export interface ChargeClassificationResult {
 }
 
 const DEFAULT_RULES: readonly ChargeRule[] = [
-  { pattern: /service\s*(fee|charge)/i, category: "SERVICE_FEE", glAccountId: "bank-charges" },
-  { pattern: /wire\s*(transfer|fee)/i, category: "WIRE_FEE", glAccountId: "bank-charges" },
-  { pattern: /overdraft/i, category: "OVERDRAFT_INTEREST", glAccountId: "interest-expense" },
-  { pattern: /card\s*(fee|charge|annual)/i, category: "CARD_FEE", glAccountId: "bank-charges" },
-  { pattern: /fx\s*(fee|charge|conversion)/i, category: "FX_FEE", glAccountId: "bank-charges" },
-  { pattern: /penalty|late\s*fee/i, category: "PENALTY", glAccountId: "bank-charges" },
+  { pattern: /service\s*(fee|charge)/i, category: 'SERVICE_FEE', glAccountId: 'bank-charges' },
+  { pattern: /wire\s*(transfer|fee)/i, category: 'WIRE_FEE', glAccountId: 'bank-charges' },
+  { pattern: /overdraft/i, category: 'OVERDRAFT_INTEREST', glAccountId: 'interest-expense' },
+  { pattern: /card\s*(fee|charge|annual)/i, category: 'CARD_FEE', glAccountId: 'bank-charges' },
+  { pattern: /fx\s*(fee|charge|conversion)/i, category: 'FX_FEE', glAccountId: 'bank-charges' },
+  { pattern: /penalty|late\s*fee/i, category: 'PENALTY', glAccountId: 'bank-charges' },
 ];
 
 /**
@@ -50,14 +50,14 @@ const DEFAULT_RULES: readonly ChargeRule[] = [
  */
 export function classifyBankCharges(
   lines: readonly BankStatementLine[],
-  rules: readonly ChargeRule[] = DEFAULT_RULES,
+  rules: readonly ChargeRule[] = DEFAULT_RULES
 ): ChargeClassificationResult {
   const charges: ClassifiedCharge[] = [];
   let totalCharges = 0n;
   const categorySummary = new Map<ChargeCategory, bigint>();
 
   for (const line of lines) {
-    if (line.transactionType !== "DEBIT") continue;
+    if (line.transactionType !== 'DEBIT') continue;
 
     let matched = false;
     for (const rule of rules) {
@@ -71,7 +71,10 @@ export function classifyBankCharges(
           confidence: 90,
         });
         totalCharges += line.amount;
-        categorySummary.set(rule.category, (categorySummary.get(rule.category) ?? 0n) + line.amount);
+        categorySummary.set(
+          rule.category,
+          (categorySummary.get(rule.category) ?? 0n) + line.amount
+        );
         matched = true;
         break;
       }
@@ -81,13 +84,13 @@ export function classifyBankCharges(
       charges.push({
         statementLineId: line.id,
         amount: line.amount,
-        category: "UNKNOWN",
+        category: 'UNKNOWN',
         glAccountId: null,
         description: line.description,
         confidence: 40,
       });
       totalCharges += line.amount;
-      categorySummary.set("UNKNOWN", (categorySummary.get("UNKNOWN") ?? 0n) + line.amount);
+      categorySummary.set('UNKNOWN', (categorySummary.get('UNKNOWN') ?? 0n) + line.amount);
     }
   }
 

@@ -5,7 +5,16 @@ import Tabs from '@mdx/Tabs.astro';
 
 # Sequences
 
-<IsSupportedChipGroup chips={{ 'PostgreSQL': true, 'SQLite': false, 'MySQL': false, 'SingleStore': false, 'MSSQL': false, 'CockroachDB': true }} />
+<IsSupportedChipGroup
+  chips={{
+    PostgreSQL: true,
+    SQLite: false,
+    MySQL: false,
+    SingleStore: false,
+    MSSQL: false,
+    CockroachDB: true,
+  }}
+/>
 
 Sequences in PostgreSQL and CockroachDB are special single-row tables created to generate unique identifiers, often used for auto-incrementing primary key values. They provide a thread-safe way to generate unique sequential values across multiple sessions.
 
@@ -19,18 +28,19 @@ export const customSequence = pgSequence("name");
 
 // Sequence with params
 export const customSequence = pgSequence("name", {
-      startWith: 100,
-      maxValue: 10000,
-      minValue: 100,
-      cycle: true,
-      cache: 10,
-      increment: 2
+startWith: 100,
+maxValue: 10000,
+minValue: 100,
+cycle: true,
+cache: 10,
+increment: 2
 });
 
 // Sequence in custom schema
 export const customSchema = pgSchema('custom_schema');
 export const customSequence = customSchema.sequence("name");
-```
+
+````
 </Tab>
 <Tab>
 ```ts
@@ -52,6 +62,7 @@ export const customSequence = cockroachSequence("name", {
 // Sequence in custom schema
 export const customSchema = cockroachSchema('custom_schema');
 export const customSequence = customSchema.sequence("name");
-```
+````
+
 </Tab>
 </Tabs>

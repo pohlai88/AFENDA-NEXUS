@@ -1,19 +1,20 @@
 import Tab from '@mdx/Tab.astro';
 import Tabs from '@mdx/Tabs.astro';
-import Npm from "@mdx/Npm.astro";
+import Npm from '@mdx/Npm.astro';
 import Callout from '@mdx/Callout.astro';
 import Steps from '@mdx/Steps.astro';
 import AnchorCards from '@mdx/AnchorCards.astro';
-import Prerequisites from "@mdx/Prerequisites.astro";
-import WhatsNextPostgres from "@mdx/WhatsNextPostgres.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
+import WhatsNextPostgres from '@mdx/WhatsNextPostgres.astro';
 
 # Drizzle \<\> Vercel Postgres
 
 <Prerequisites>
-- Database [connection basics](/docs/connect-overview) with Drizzle
-- Vercel Postgres database - [website](https://vercel.com/docs/storage/vercel-postgres)
-- Vercel Postgres driver - [docs](https://vercel.com/docs/storage/vercel-postgres/sdk) & [GitHub](https://github.com/vercel/storage/tree/main/packages/postgres)
-- Drizzle PostgreSQL drivers - [docs](/docs/get-started-postgresql)
+  - Database [connection basics](/docs/connect-overview) with Drizzle - Vercel Postgres database -
+  [website](https://vercel.com/docs/storage/vercel-postgres) - Vercel Postgres driver -
+  [docs](https://vercel.com/docs/storage/vercel-postgres/sdk) &
+  [GitHub](https://github.com/vercel/storage/tree/main/packages/postgres) - Drizzle PostgreSQL
+  drivers - [docs](/docs/get-started-postgresql)
 </Prerequisites>
 
 According to their **[official website](https://vercel.com/docs/storage/vercel-postgres)**,
@@ -27,14 +28,11 @@ Check out the official **[Vercel Postgres + Drizzle](https://vercel.com/docs/sto
 
 #### Step 1 - Install packages
 
-<Npm>
-drizzle-orm @vercel/postgres
--D drizzle-kit
-</Npm>
+<Npm>drizzle-orm @vercel/postgres -D drizzle-kit</Npm>
 
 #### Step 2 - Prepare Vercel Postgres
 
-Setup a project according to the **[official docs.](https://vercel.com/docs/storage/vercel-postgres/quickstart)** 
+Setup a project according to the **[official docs.](https://vercel.com/docs/storage/vercel-postgres/quickstart)**
 
 #### Step 3 - Initialize the driver and make a query
 
@@ -52,19 +50,19 @@ If you need to provide your existing driver:
 import { sql } from '@vercel/postgres';
 import { drizzle } from 'drizzle-orm/vercel-postgres';
 
-const db = drizzle({ client: sql })
+const db = drizzle({ client: sql });
 
 const result = await db.execute('select 1');
 ```
 
 With **[@vercel/postgres](https://vercel.com/docs/storage/vercel-postgres)** severless package
 you can access Vercel Postgres from either serverful or serverless environments with no TCP available,
-like Cloudflare Workers, through websockets.  
-  
+like Cloudflare Workers, through websockets.
+
 If you're about to use Vercel Postgres from a _serverfull_ environment, you can do it
-either with `@vercel/postgres` or directly access the DB through `postgesql://` with 
+either with `@vercel/postgres` or directly access the DB through `postgesql://` with
 either **[`postgres`](#postgresjs)** or **[`pg`](#node-postgres)**.
 
 #### What's next?
 
-<WhatsNextPostgres/>
+<WhatsNextPostgres />

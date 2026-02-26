@@ -1,5 +1,5 @@
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { ApInvoice } from "../entities/ap-invoice.js";
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type { ApInvoice } from '../entities/ap-invoice.js';
 
 export interface CreateApInvoiceInput {
   readonly tenantId: string;
@@ -30,7 +30,10 @@ export interface CreateApInvoiceLineInput {
 export interface IApInvoiceRepo {
   create(input: CreateApInvoiceInput): Promise<Result<ApInvoice>>;
   findById(id: string): Promise<Result<ApInvoice>>;
-  findBySupplier(supplierId: string, params?: PaginationParams): Promise<PaginatedResult<ApInvoice>>;
+  findBySupplier(
+    supplierId: string,
+    params?: PaginationParams
+  ): Promise<PaginatedResult<ApInvoice>>;
   findByStatus(status: string, params?: PaginationParams): Promise<PaginatedResult<ApInvoice>>;
   findAll(params?: PaginationParams): Promise<PaginatedResult<ApInvoice>>;
   findUnpaid(): Promise<ApInvoice[]>;

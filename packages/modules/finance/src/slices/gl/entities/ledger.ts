@@ -1,4 +1,4 @@
-import type { CompanyId } from "@afenda/core";
+import type { CompanyId } from '@afenda/core';
 
 export interface Ledger {
   readonly id: string;

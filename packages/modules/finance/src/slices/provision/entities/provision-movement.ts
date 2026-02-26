@@ -2,7 +2,12 @@
  * Provision movement entity — tracks utilisation, reversal, unwinding, remeasurement.
  */
 
-export type ProvisionMovementType = "INITIAL_RECOGNITION" | "UNWINDING_DISCOUNT" | "UTILISATION" | "REVERSAL" | "REMEASUREMENT";
+export type ProvisionMovementType =
+  | 'INITIAL_RECOGNITION'
+  | 'UNWINDING_DISCOUNT'
+  | 'UTILISATION'
+  | 'REVERSAL'
+  | 'REMEASUREMENT';
 
 export interface ProvisionMovement {
   readonly id: string;

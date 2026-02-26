@@ -1,11 +1,11 @@
-import type { CompanyId, TenantId } from "@afenda/core";
+import type { CompanyId, TenantId } from '@afenda/core';
 
 export interface IntercompanyRelationship {
   readonly id: string;
   readonly tenantId: TenantId;
   readonly sellerCompanyId: CompanyId;
   readonly buyerCompanyId: CompanyId;
-  readonly pricingRule: "COST" | "MARKUP" | "MARKET";
+  readonly pricingRule: 'COST' | 'MARKUP' | 'MARKET';
   readonly markupPercent: number | null;
   readonly isActive: boolean;
   readonly createdAt: Date;
@@ -21,6 +21,6 @@ export interface IntercompanyDocument {
   readonly mirrorJournalId: string;
   readonly amount: bigint;
   readonly currency: string;
-  readonly status: "PENDING" | "PAIRED" | "RECONCILED";
+  readonly status: 'PENDING' | 'PAIRED' | 'RECONCILED';
   readonly createdAt: Date;
 }

@@ -9,7 +9,7 @@ public_api: null
 exports_map:
   ".": { source: "./src/index.ts", import: "./dist/index.js", types: "./dist/index.d.ts", default: "./src/index.ts" }
 dependency_kinds:
-  allowed_runtime: ["@afenda/core", "pino", "zod", "dotenv", "find-up"]
+  allowed_runtime: ["@afenda/core", "pino", "zod", "dotenv", "find-up", "jose"]
   allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "@types/node", "pino-pretty", "tsup", "typescript", "vitest"]
   allowed_peer: []
 enforced_structure:

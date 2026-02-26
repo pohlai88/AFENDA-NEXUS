@@ -1,6 +1,6 @@
-import type { CompanyId, DateRange } from "@afenda/core";
+import type { CompanyId, DateRange } from '@afenda/core';
 
-export type PeriodStatus = "OPEN" | "CLOSED" | "LOCKED";
+export type PeriodStatus = 'OPEN' | 'CLOSED' | 'LOCKED';
 
 export interface FiscalPeriod {
   readonly id: string;

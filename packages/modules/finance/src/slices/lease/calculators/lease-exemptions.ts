@@ -29,11 +29,11 @@ export function checkLeaseExemptions(input: LeaseExemptionInput): LeaseExemption
 
   let exemptionReason: string | null = null;
   if (isShortTerm && isLowValue) {
-    exemptionReason = "Short-term lease (≤12 months) and low-value asset (≤$5,000)";
+    exemptionReason = 'Short-term lease (≤12 months) and low-value asset (≤$5,000)';
   } else if (isShortTerm) {
-    exemptionReason = "Short-term lease (≤12 months)";
+    exemptionReason = 'Short-term lease (≤12 months)';
   } else if (isLowValue) {
-    exemptionReason = "Low-value underlying asset (≤$5,000)";
+    exemptionReason = 'Low-value underlying asset (≤$5,000)';
   }
 
   return { isShortTerm, isLowValue, isExempt, exemptionReason };

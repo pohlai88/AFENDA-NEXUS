@@ -1,13 +1,13 @@
 /**
  * Contact Form - Complete Reference Implementation
- * 
+ *
  * This example demonstrates all key patterns from the form-builder skill:
  * - React Hook Form with Zod validation
  * - Proper accessibility (labels, error associations, ARIA)
  * - Loading and error states
  * - Server error handling
  * - Form reset after success
- * 
+ *
  * @example
  * ```tsx
  * <ContactForm onSuccess={(data) => console.log('Submitted:', data)} />
@@ -25,7 +25,7 @@ import { z } from 'zod';
 
 /**
  * Zod schema for contact form validation.
- * 
+ *
  * Key patterns:
  * - .min(1) for required fields (better error message than .nonempty())
  * - .email() for email validation
@@ -33,39 +33,31 @@ import { z } from 'zod';
  * - Checkbox consent with .refine()
  */
 const contactFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Name is required')
-    .min(2, 'Name must be at least 2 characters'),
-  
-  email: z
-    .string()
-    .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
-  
+  name: z.string().min(1, 'Name is required').min(2, 'Name must be at least 2 characters'),
+
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+
   phone: z
     .string()
     .regex(/^\+?[\d\s\-()]*$/, 'Please enter a valid phone number')
     .optional()
     .or(z.literal('')),
-  
+
   subject: z.enum(['general', 'support', 'sales', 'partnership'], {
     errorMap: () => ({ message: 'Please select a subject' }),
   }),
-  
+
   message: z
     .string()
     .min(1, 'Message is required')
     .min(10, 'Message must be at least 10 characters')
     .max(1000, 'Message must be less than 1000 characters'),
-  
+
   newsletter: z.boolean().default(false),
-  
-  consent: z
-    .boolean()
-    .refine((val) => val === true, {
-      message: 'You must agree to our privacy policy to continue',
-    }),
+
+  consent: z.boolean().refine((val) => val === true, {
+    message: 'You must agree to our privacy policy to continue',
+  }),
 });
 
 // Infer TypeScript type from schema - single source of truth
@@ -86,24 +78,21 @@ interface ContactFormProps {
 // COMPONENT
 // =============================================================================
 
-export function ContactForm({ 
-  onSuccess, 
-  apiEndpoint = '/api/contact' 
-}: ContactFormProps) {
+export function ContactForm({ onSuccess, apiEndpoint = '/api/contact' }: ContactFormProps) {
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
-  
+
   // Server error state - separate from validation errors
   const [serverError, setServerError] = useState<string | null>(null);
-  
+
   // Success state - show thank you message
   const [isSuccess, setIsSuccess] = useState(false);
 
   // ---------------------------------------------------------------------------
   // Form Setup
   // ---------------------------------------------------------------------------
-  
+
   const {
     register,
     handleSubmit,
@@ -112,7 +101,7 @@ export function ContactForm({
     setError,
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
-    mode: 'onBlur',           // Validate on blur (not on every keystroke)
+    mode: 'onBlur', // Validate on blur (not on every keystroke)
     reValidateMode: 'onChange', // Re-validate on change after first error
     defaultValues: {
       name: '',
@@ -128,7 +117,7 @@ export function ContactForm({
   // ---------------------------------------------------------------------------
   // Submit Handler
   // ---------------------------------------------------------------------------
-  
+
   const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
     // Clear any previous server error
     setServerError(null);
@@ -142,7 +131,7 @@ export function ContactForm({
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        
+
         // Handle field-specific errors from server
         if (error.fieldErrors) {
           Object.entries(error.fieldErrors).forEach(([field, message]) => {
@@ -153,7 +142,7 @@ export function ContactForm({
           });
           return;
         }
-        
+
         // Handle general server error
         throw new Error(error.message || 'Failed to send message');
       }
@@ -162,12 +151,9 @@ export function ContactForm({
       setIsSuccess(true);
       reset();
       onSuccess?.(data);
-      
     } catch (error) {
       setServerError(
-        error instanceof Error 
-          ? error.message 
-          : 'Something went wrong. Please try again.'
+        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
       );
     }
   };
@@ -175,21 +161,13 @@ export function ContactForm({
   // ---------------------------------------------------------------------------
   // Success View
   // ---------------------------------------------------------------------------
-  
+
   if (isSuccess) {
     return (
-      <div 
-        className="contact-form-success"
-        role="status" 
-        aria-live="polite"
-      >
+      <div className="contact-form-success" role="status" aria-live="polite">
         <h2>Thank you!</h2>
         <p>Your message has been sent successfully. We'll get back to you soon.</p>
-        <button 
-          type="button" 
-          onClick={() => setIsSuccess(false)}
-          className="btn btn-secondary"
-        >
+        <button type="button" onClick={() => setIsSuccess(false)} className="btn btn-secondary">
           Send another message
         </button>
       </div>
@@ -199,10 +177,10 @@ export function ContactForm({
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
-  
+
   return (
-    <form 
-      onSubmit={handleSubmit(onSubmit)} 
+    <form
+      onSubmit={handleSubmit(onSubmit)}
       noValidate // Disable browser validation - we use Zod
       className="contact-form"
     >
@@ -332,10 +310,7 @@ export function ContactForm({
       {/* Newsletter Checkbox (Optional) */}
       <div className="form-field form-field-checkbox">
         <label>
-          <input
-            type="checkbox"
-            {...register('newsletter')}
-          />
+          <input type="checkbox" {...register('newsletter')} />
           <span>Subscribe to our newsletter for updates</span>
         </label>
       </div>
@@ -351,7 +326,11 @@ export function ContactForm({
             aria-describedby={errors.consent ? 'consent-error' : undefined}
           />
           <span>
-            I agree to the <a href="/privacy" target="_blank" rel="noopener">privacy policy</a> <span aria-hidden="true">*</span>
+            I agree to the{' '}
+            <a href="/privacy" target="_blank" rel="noopener">
+              privacy policy
+            </a>{' '}
+            <span aria-hidden="true">*</span>
           </span>
         </label>
         {errors.consent && (
@@ -362,8 +341,8 @@ export function ContactForm({
       </div>
 
       {/* Submit Button */}
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         disabled={isSubmitting}
         className="btn btn-primary"
         aria-busy={isSubmitting}

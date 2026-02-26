@@ -1,4 +1,4 @@
-import type { FairValueLevel } from "../entities/financial-instrument.js";
+import type { FairValueLevel } from '../entities/financial-instrument.js';
 
 export interface FairValueMeasurement {
   readonly id: string;

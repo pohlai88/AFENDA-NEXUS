@@ -1,9 +1,9 @@
-import Npm from "@mdx/Npm.astro";
-import Callout from "@mdx/Callout.astro";
-import CodeTabs from "@mdx/CodeTabs.astro";
-import Section from "@mdx/Section.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
-import WhatsNextPostgres from "@mdx/WhatsNextPostgres.astro";
+import Npm from '@mdx/Npm.astro';
+import Callout from '@mdx/Callout.astro';
+import CodeTabs from '@mdx/CodeTabs.astro';
+import Section from '@mdx/Section.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
+import WhatsNextPostgres from '@mdx/WhatsNextPostgres.astro';
 
 # Drizzle \<\> PlanetScale Postgres
 
@@ -57,15 +57,15 @@ const result = await db.execute('select 1');
 ````
 
 ```typescript copy
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 const db = drizzle({ client: pool });
 
-const result = await db.execute("select 1");
+const result = await db.execute('select 1');
 ```
 
 </CodeTabs>
@@ -116,9 +116,9 @@ const result = await db.execute('select 1');
 
 ```typescript copy
 // For Node.js environments - install 'ws' package
-import ws from "ws";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-serverless";
+import ws from 'ws';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 
 neonConfig.webSocketConstructor = ws;
 // Required for PlanetScale Postgres connections
@@ -128,7 +128,7 @@ neonConfig.wsProxy = (host, port) => `${host}/v2?address=${host}:${port}`;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle({ client: pool });
 
-const result = await db.execute("select 1");
+const result = await db.execute('select 1');
 ```
 
 </Section>

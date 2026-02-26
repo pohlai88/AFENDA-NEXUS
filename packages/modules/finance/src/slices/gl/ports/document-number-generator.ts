@@ -1,4 +1,4 @@
-import type { Result } from "@afenda/core";
+import type { Result } from '@afenda/core';
 
 /**
  * Generates unique, sequential document numbers per tenant and prefix.

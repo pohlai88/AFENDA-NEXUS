@@ -1,5 +1,5 @@
-import type { Result } from "@afenda/core";
-import type { PaymentTerms } from "../entities/payment-terms.js";
+import type { Result } from '@afenda/core';
+import type { PaymentTerms } from '../entities/payment-terms.js';
 
 export interface IPaymentTermsRepo {
   findById(id: string): Promise<Result<PaymentTerms>>;

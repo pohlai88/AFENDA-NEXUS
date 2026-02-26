@@ -8,7 +8,7 @@
  * For production, replace with a Redis-backed implementation
  * (e.g. @fastify/rate-limit with Redis store) for multi-instance support.
  */
-import type { FastifyRequest, FastifyReply } from "fastify";
+import type { FastifyRequest, FastifyReply } from 'fastify';
 
 export interface RateLimitConfig {
   readonly maxRequests: number;
@@ -40,7 +40,7 @@ export function registerRateLimitGuard(config?: Partial<RateLimitConfig>) {
   const { maxRequests, windowMs } = { ...DEFAULT_CONFIG, ...config };
 
   return async (req: FastifyRequest, reply: FastifyReply) => {
-    const tenantId = req.headers["x-tenant-id"] as string;
+    const tenantId = req.headers['x-tenant-id'] as string;
     if (!tenantId) return; // tenant guard handles missing tenant
 
     const now = Date.now();
@@ -53,10 +53,10 @@ export function registerRateLimitGuard(config?: Partial<RateLimitConfig>) {
     pruneWindow(entry, now, windowMs);
 
     if (entry.timestamps.length >= maxRequests) {
-      reply.header("Retry-After", Math.ceil(windowMs / 1000).toString());
+      reply.header('Retry-After', Math.ceil(windowMs / 1000).toString());
       return reply.status(429).send({
         error: {
-          code: "RATE_LIMITED",
+          code: 'RATE_LIMITED',
           message: `Tenant ${tenantId} exceeded ${maxRequests} requests per ${windowMs / 1000}s window`,
         },
       });

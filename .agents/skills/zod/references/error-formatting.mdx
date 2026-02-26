@@ -1,9 +1,9 @@
 ---
 title: Formatting errors
-description: "Utilities for formatting and displaying Zod errors"
+description: 'Utilities for formatting and displaying Zod errors'
 ---
 
-import { Callout } from "fumadocs-ui/components/callout";
+import { Callout } from 'fumadocs-ui/components/callout';
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
 Zod emphasizes _completeness_ and _correctness_ in its error reporting. In many cases, it's helpful to convert the `$ZodError` to a more useful format. Zod provides some utilities for this.
@@ -11,7 +11,7 @@ Zod emphasizes _completeness_ and _correctness_ in its error reporting. In many 
 Consider this simple object schema.
 
 ```ts
-import * as z from "zod";
+import * as z from 'zod';
 
 const schema = z.strictObject({
   username: z.string(),
@@ -24,7 +24,7 @@ Attempting to parse this invalid data results in an error containing three issue
 ```ts
 const result = schema.safeParse({
   username: 1234,
-  favoriteNumbers: [1234, "4567"],
+  favoriteNumbers: [1234, '4567'],
   extraKey: 1234,
 });
 
@@ -33,29 +33,27 @@ result.error!.issues;
   {
     expected: 'string',
     code: 'invalid_type',
-    path: [ 'username' ],
-    message: 'Invalid input: expected string, received number'
+    path: ['username'],
+    message: 'Invalid input: expected string, received number',
   },
   {
     expected: 'number',
     code: 'invalid_type',
-    path: [ 'favoriteNumbers', 1 ],
-    message: 'Invalid input: expected number, received string'
+    path: ['favoriteNumbers', 1],
+    message: 'Invalid input: expected number, received string',
   },
   {
     code: 'unrecognized_keys',
-    keys: [ 'extraKey' ],
+    keys: ['extraKey'],
     path: [],
-    message: 'Unrecognized key: "extraKey"'
-  }
+    message: 'Unrecognized key: "extraKey"',
+  },
 ];
 ```
-
 
 ## `z.treeifyError()`
 
 To convert ("treeify") this error into a nested object, use `z.treeifyError()`.
-
 
 ```ts
 const tree = z.treeifyError(result.error);
@@ -108,12 +106,9 @@ This returns the following string:
   → at favoriteNumbers[1]
 ```
 
-
 ## `z.formatError()`
 
-<Callout type="warn">
-  This has been deprecated in favor of `z.treeifyError()`.
-</Callout>
+<Callout type="warn">This has been deprecated in favor of `z.treeifyError()`.</Callout>
 
 <Accordions>
   <Accordion title="Show docs">
@@ -151,7 +146,7 @@ This returns the following string:
 
 ## `z.flattenError()`
 
-While `z.treeifyError()` is useful for traversing a potentially complex nested structure, the majority of schemas are *flat*—just one level deep. In this case, use `z.flattenError()` to retrieve a clean, shallow error object.
+While `z.treeifyError()` is useful for traversing a potentially complex nested structure, the majority of schemas are _flat_—just one level deep. In this case, use `z.flattenError()` to retrieve a clean, shallow error object.
 
 ```ts
 const flattened = z.flattenError(result.error);

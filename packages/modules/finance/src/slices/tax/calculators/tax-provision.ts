@@ -41,14 +41,14 @@ export function computeTaxProvision(input: TaxProvisionInput): TaxProvisionResul
   const grossCurrentTax = (taxableIncome * BigInt(input.statutoryRateBps)) / 10000n;
   const currentTaxExpense = grossCurrentTax - input.taxCredits + input.priorYearAdjustment;
 
-  const deferredTaxExpense = (input.temporaryDifferencesChange * BigInt(input.statutoryRateBps)) / 10000n;
+  const deferredTaxExpense =
+    (input.temporaryDifferencesChange * BigInt(input.statutoryRateBps)) / 10000n;
 
   const totalTaxExpense = currentTaxExpense + deferredTaxExpense;
 
   // Effective rate in bps: (totalTax / pretaxIncome) * 10000
-  const effectiveRateBps = input.pretaxIncome !== 0n
-    ? Number((totalTaxExpense * 10000n) / input.pretaxIncome)
-    : 0;
+  const effectiveRateBps =
+    input.pretaxIncome !== 0n ? Number((totalTaxExpense * 10000n) / input.pretaxIncome) : 0;
 
   return {
     taxableIncome,

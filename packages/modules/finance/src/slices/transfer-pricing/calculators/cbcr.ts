@@ -3,7 +3,7 @@
  * Pure calculator — aggregates entity-level data by tax jurisdiction
  * to produce CbCR Table 1 output.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface CbcrEntityInput {
   readonly entityId: string;
@@ -46,11 +46,9 @@ export interface CbcrResult {
 /**
  * Aggregates entity-level data by tax jurisdiction for CbCR Table 1.
  */
-export function computeCbcr(
-  inputs: readonly CbcrEntityInput[],
-): CalculatorResult<CbcrResult> {
+export function computeCbcr(inputs: readonly CbcrEntityInput[]): CalculatorResult<CbcrResult> {
   if (inputs.length === 0) {
-    throw new Error("At least one entity required");
+    throw new Error('At least one entity required');
   }
 
   const byJurisdiction = new Map<string, CbcrEntityInput[]>();

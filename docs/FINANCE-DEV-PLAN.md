@@ -1298,8 +1298,8 @@ files.
 
 ### Remaining Work Summary
 
-| Phase | Status  | Remaining Items                                                   |
-| ----- | ------- | ----------------------------------------------------------------- |
+| Phase | Status  | Remaining Items                                                        |
+| ----- | ------- | ---------------------------------------------------------------------- |
 | **0** | ✅ Done | Strangler-fig shims **removed** (4 files deleted, 9 empty dirs pruned) |
 | **1** | ✅ Done | —                                                                      |
 | **2** | ✅ Done | FA-08/09/10 all covered (transfer-asset, capitalize-cwip added)        |
@@ -1307,7 +1307,7 @@ files.
 | **4** | ✅ Done | TR-06 manage-ic-loan service added                                     |
 | **5** | ✅ Done | Cost accounting slice + budget/subscription extensions (54 tests)      |
 | **6** | ✅ Done | Consolidation + statutory + SLA (44 tests)                             |
-| **7** | ✅ Done | 5 IFRS specialist modules — full CRUD (30 files), 67 calc tests       |
+| **7** | ✅ Done | 5 IFRS specialist modules — full CRUD (30 files), 67 calc tests        |
 | **8** | ✅ Done | Controls + data hardening — 5 calculators, 32 tests                    |
 
 **All phases complete.** 784 tests passing across 63 test files (29 skipped).
@@ -1330,8 +1330,8 @@ deferred). Gap remediation completed — see section below.
 4. **Phase 1–4 sections** — done.
 5. **Migration numbering (line 819–835)** — stale. Migrations consolidated into
    `0000_baseline.sql`. Phase 5: `0002_cost_budget_subscription.sql`. Phase 6:
-   `0003_consolidation_statutory_sla.sql`. Phase 7:
-   `0004_ifrs_specialist.sql`. Phase 8: `0005_controls_hardening.sql`.
+   `0003_consolidation_statutory_sla.sql`. Phase 7: `0004_ifrs_specialist.sql`.
+   Phase 8: `0005_controls_hardening.sql`.
 6. **Folder Convention (line 40–122)** — accurate for existing slices.
    `cost-accounting/`, `consolidation/`, `intangibles/`, `fin-instruments/`,
    `hedge/`, `deferred-tax/`, `transfer-pricing/` all exist.
@@ -1343,28 +1343,28 @@ deferred). Gap remediation completed — see section below.
 ## Gap Remediation (2025-06)
 
 > A codebase-vs-plan gap analysis identified 9 categories of drift between
-> FINANCE-DEV-PLAN.md and the actual `@afenda/finance` implementation.
-> A 12-step remediation plan was executed sequentially, each step verified
-> with typecheck (0 errors) and full test suite (784 pass, 29 skipped).
+> FINANCE-DEV-PLAN.md and the actual `@afenda/finance` implementation. A 12-step
+> remediation plan was executed sequentially, each step verified with typecheck
+> (0 errors) and full test suite (784 pass, 29 skipped).
 
 ### Gaps Identified
 
-| # | Gap Category                   | Severity | Description                                                       |
-|---|--------------------------------|----------|-------------------------------------------------------------------|
-| 1 | TypeScript errors               | High     | 5 type mismatches in repos/routes (bigint mode, missing fields)   |
-| 2 | Missing shared types            | Medium   | 57 cross-slice imports bypassing `shared/` mediation              |
-| 3 | Missing hook ports              | Medium   | 8 cross-slice calculator usages without hook port indirection     |
-| 4 | Arch-guard E16 not built        | High     | No-cross-slice-imports rule declared but not enforced             |
-| 5 | Missing DB tables               | High     | 8 Phase 7 tables not in Drizzle schema                            |
-| 6 | Missing route wiring            | Medium   | 3 route registrars (cost-acct, consolidation, controls) unwired   |
-| 7 | Phase 7 slices incomplete       | High     | 5 IFRS modules had calculators only — no entities/repos/routes    |
-| 8 | Missing Zod schemas             | Medium   | Phase 7 CRUD endpoints had no contract schemas                    |
-| 9 | Strangler-fig shims still live  | Low      | 4 barrel re-export shims + 9 empty legacy directories             |
+| #   | Gap Category                   | Severity | Description                                                     |
+| --- | ------------------------------ | -------- | --------------------------------------------------------------- |
+| 1   | TypeScript errors              | High     | 5 type mismatches in repos/routes (bigint mode, missing fields) |
+| 2   | Missing shared types           | Medium   | 57 cross-slice imports bypassing `shared/` mediation            |
+| 3   | Missing hook ports             | Medium   | 8 cross-slice calculator usages without hook port indirection   |
+| 4   | Arch-guard E16 not built       | High     | No-cross-slice-imports rule declared but not enforced           |
+| 5   | Missing DB tables              | High     | 8 Phase 7 tables not in Drizzle schema                          |
+| 6   | Missing route wiring           | Medium   | 3 route registrars (cost-acct, consolidation, controls) unwired |
+| 7   | Phase 7 slices incomplete      | High     | 5 IFRS modules had calculators only — no entities/repos/routes  |
+| 8   | Missing Zod schemas            | Medium   | Phase 7 CRUD endpoints had no contract schemas                  |
+| 9   | Strangler-fig shims still live | Low      | 4 barrel re-export shims + 9 empty legacy directories           |
 
 ### Remediation Steps Completed
 
 | Step | Action                            | Files Changed | Key Metrics                                    |
-|------|-----------------------------------|---------------|------------------------------------------------|
+| ---- | --------------------------------- | ------------- | ---------------------------------------------- |
 | 1    | Fix 5 TypeScript errors           | 5             | 0 TS errors (was 5)                            |
 | 2    | Extract shared types to `shared/` | 57 imports    | Cross-slice imports eliminated                 |
 | 3    | Add hook ports for cross-slice    | 8 port files  | 45 imports redirected through hooks            |
@@ -1380,17 +1380,17 @@ deferred). Gap remediation completed — see section below.
 
 ### Post-Remediation Baselines
 
-| Metric                     | Value                                |
-|----------------------------|--------------------------------------|
-| TypeScript errors          | **0**                                |
-| Test files passing         | **63** (2 integration skipped)       |
-| Test cases passing         | **784** (29 skipped)                 |
-| Arch-guard (finance)       | **126 PASS / 0 FAIL**               |
-| Arch-guard (global)        | 326 PASS / 40 FAIL (pre-existing)   |
-| Phase 7 CRUD files         | 30 new files across 5 slices         |
-| Contract schemas           | 20 new Zod schemas                   |
-| Strangler-fig shims        | **0** (all removed)                  |
-| Legacy empty directories   | **0** (all pruned)                   |
+| Metric                   | Value                             |
+| ------------------------ | --------------------------------- |
+| TypeScript errors        | **0**                             |
+| Test files passing       | **63** (2 integration skipped)    |
+| Test cases passing       | **784** (29 skipped)              |
+| Arch-guard (finance)     | **126 PASS / 0 FAIL**             |
+| Arch-guard (global)      | 326 PASS / 40 FAIL (pre-existing) |
+| Phase 7 CRUD files       | 30 new files across 5 slices      |
+| Contract schemas         | 20 new Zod schemas                |
+| Strangler-fig shims      | **0** (all removed)               |
+| Legacy empty directories | **0** (all pruned)                |
 
 ### Architectural Changes
 
@@ -1404,5 +1404,5 @@ deferred). Gap remediation completed — see section below.
   `["src/app", "src/app/ports", "src/shared", "src/slices"]`;
   `allow_imports_by_path` updated to `src/slices/*/routes/**` and
   `src/slices/*/repos/**`
-- **Arch-guard**: `toArray()` helper added for YAML parser robustness;
-  5 `|| []` patterns replaced with `Array.isArray()` checks
+- **Arch-guard**: `toArray()` helper added for YAML parser robustness; 5 `|| []`
+  patterns replaced with `Array.isArray()` checks

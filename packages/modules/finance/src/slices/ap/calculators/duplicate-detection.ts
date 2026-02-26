@@ -29,7 +29,9 @@ function makeKey(fp: InvoiceFingerprint): string {
  * Returns groups of invoices that share the same supplier + ref + amount + date.
  * Single invoices (no duplicates) are excluded from the result.
  */
-export function detectDuplicates(invoices: readonly InvoiceFingerprint[]): readonly DuplicateGroup[] {
+export function detectDuplicates(
+  invoices: readonly InvoiceFingerprint[]
+): readonly DuplicateGroup[] {
   const groups = new Map<string, InvoiceFingerprint[]>();
 
   for (const inv of invoices) {

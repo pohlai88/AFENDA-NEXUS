@@ -3,14 +3,14 @@
  * Pure calculator — produces elimination + NCI + goodwill journal lines
  * from consolidation computation results.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export type ConsolJournalLineType =
-  | "IC_ELIMINATION"
-  | "NCI_ALLOCATION"
-  | "GOODWILL_RECOGNITION"
-  | "DIVIDEND_ELIMINATION"
-  | "FX_TRANSLATION";
+  | 'IC_ELIMINATION'
+  | 'NCI_ALLOCATION'
+  | 'GOODWILL_RECOGNITION'
+  | 'DIVIDEND_ELIMINATION'
+  | 'FX_TRANSLATION';
 
 export interface ConsolJournalLine {
   readonly lineType: ConsolJournalLineType;
@@ -58,14 +58,14 @@ export interface ConsolJournalInput {
  * Generates consolidation journal lines from all consolidation adjustments.
  */
 export function generateConsolidationJournal(
-  input: ConsolJournalInput,
+  input: ConsolJournalInput
 ): CalculatorResult<readonly ConsolJournalLine[]> {
   const lines: ConsolJournalLine[] = [];
 
   // IC eliminations — debit payable, credit receivable (net to zero)
   for (const ic of input.icEliminations) {
     lines.push({
-      lineType: "IC_ELIMINATION",
+      lineType: 'IC_ELIMINATION',
       debitAccountId: ic.accountId,
       creditAccountId: ic.accountId,
       amountMinor: ic.amountMinor,
@@ -79,7 +79,7 @@ export function generateConsolidationJournal(
   for (const nci of input.nciAllocations) {
     if (nci.nciNetAssets !== 0n) {
       lines.push({
-        lineType: "NCI_ALLOCATION",
+        lineType: 'NCI_ALLOCATION',
         debitAccountId: input.retainedEarningsAccountId,
         creditAccountId: input.nciEquityAccountId,
         amountMinor: nci.nciNetAssets >= 0n ? nci.nciNetAssets : -nci.nciNetAssets,
@@ -90,7 +90,7 @@ export function generateConsolidationJournal(
     }
     if (nci.nciProfitOrLoss !== 0n) {
       lines.push({
-        lineType: "NCI_ALLOCATION",
+        lineType: 'NCI_ALLOCATION',
         debitAccountId: input.nciPnlAccountId,
         creditAccountId: input.nciEquityAccountId,
         amountMinor: nci.nciProfitOrLoss >= 0n ? nci.nciProfitOrLoss : -nci.nciProfitOrLoss,
@@ -105,7 +105,7 @@ export function generateConsolidationJournal(
   for (const gw of input.goodwillEntries) {
     if (gw.goodwillAmount > 0n) {
       lines.push({
-        lineType: "GOODWILL_RECOGNITION",
+        lineType: 'GOODWILL_RECOGNITION',
         debitAccountId: input.goodwillAccountId,
         creditAccountId: input.investmentAccountId,
         amountMinor: gw.goodwillAmount,
@@ -120,7 +120,7 @@ export function generateConsolidationJournal(
   for (const div of input.dividendEliminations) {
     if (div.eliminationAmount > 0n) {
       lines.push({
-        lineType: "DIVIDEND_ELIMINATION",
+        lineType: 'DIVIDEND_ELIMINATION',
         debitAccountId: input.dividendIncomeAccountId,
         creditAccountId: input.retainedEarningsAccountId,
         amountMinor: div.eliminationAmount,

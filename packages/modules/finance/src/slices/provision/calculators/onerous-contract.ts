@@ -26,7 +26,9 @@ export function computeOnerousContract(input: OnerousContractInput): OnerousCont
   // Provision = lower of (cost to fulfil, penalty to exit) = unavoidable costs
   // If unavoidable costs < net deficit, use unavoidable costs
   const provisionAmount = isOnerous
-    ? (input.unavoidableCosts < netDeficit ? input.unavoidableCosts : netDeficit)
+    ? input.unavoidableCosts < netDeficit
+      ? input.unavoidableCosts
+      : netDeficit
     : 0n;
 
   return { isOnerous, provisionAmount, netDeficit, currencyCode: input.currencyCode };

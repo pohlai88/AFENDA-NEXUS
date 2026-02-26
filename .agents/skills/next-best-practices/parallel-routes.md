@@ -1,6 +1,8 @@
 # Parallel & Intercepting Routes
 
-Parallel routes render multiple pages in the same layout. Intercepting routes show a different UI when navigating from within your app vs direct URL access. Together they enable modal patterns.
+Parallel routes render multiple pages in the same layout. Intercepting routes
+show a different UI when navigating from within your app vs direct URL access.
+Together they enable modal patterns.
 
 ## File Structure
 
@@ -44,7 +46,8 @@ export default function RootLayout({
 
 ## Step 2: Default File (Critical!)
 
-**Every parallel route slot MUST have a `default.tsx`** to prevent 404s on hard navigation.
+**Every parallel route slot MUST have a `default.tsx`** to prevent 404s on hard
+navigation.
 
 ```tsx
 // app/@modal/default.tsx
@@ -53,7 +56,8 @@ export default function Default() {
 }
 ```
 
-Without this file, refreshing any page will 404 because Next.js can't determine what to render in the `@modal` slot.
+Without this file, refreshing any page will 404 because Next.js can't determine
+what to render in the `@modal` slot.
 
 ## Step 3: Intercepting Route (Modal)
 
@@ -63,7 +67,11 @@ The `(.)` prefix intercepts routes at the same level.
 // app/@modal/(.)photos/[id]/page.tsx
 import { Modal } from '@/components/modal';
 
-export default async function PhotoModal({ params }: { params: Promise<{ id: string }> }) {
+export default async function PhotoModal({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const photo = await getPhoto(id);
 
@@ -79,7 +87,11 @@ export default async function PhotoModal({ params }: { params: Promise<{ id: str
 
 ```tsx
 // app/photos/[id]/page.tsx
-export default async function PhotoPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PhotoPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const photo = await getPhoto(id);
 
@@ -94,7 +106,8 @@ export default async function PhotoPage({ params }: { params: Promise<{ id: stri
 
 ## Step 5: Modal Component with Correct Closing
 
-**Critical: Use `router.back()` to close modals, NOT `router.push()` or `<Link>`.**
+**Critical: Use `router.back()` to close modals, NOT `router.push()` or
+`<Link>`.**
 
 ```tsx
 // components/modal.tsx
@@ -125,7 +138,7 @@ export function Modal({ children }: { children: React.ReactNode }) {
         router.back(); // Correct
       }
     },
-    [router],
+    [router]
   );
 
   return (
@@ -173,7 +186,8 @@ Matchers match **route segments**, not filesystem paths:
 | `(..)(..)` | Two levels up | Rarely used                                                           |
 | `(...)`    | From root     | `@modal/(...)photos` intercepts `/photos` from anywhere               |
 
-**Common mistake**: Thinking `(..)` means "parent folder" - it means "parent route segment".
+**Common mistake**: Thinking `(..)` means "parent folder" - it means "parent
+route segment".
 
 ## Handling Hard Navigation
 
@@ -206,7 +220,8 @@ export default async function PhotoPage({ params }) {
 
 ### 1. Missing `default.tsx` → 404 on Refresh
 
-Every `@slot` folder needs a `default.tsx` that returns `null` (or appropriate content).
+Every `@slot` folder needs a `default.tsx` that returns `null` (or appropriate
+content).
 
 ### 2. Modal Persists After Navigation
 
@@ -214,7 +229,8 @@ You're using `router.push()` instead of `router.back()`.
 
 ### 3. Nested Parallel Routes Need Defaults Too
 
-If you have `@modal` inside a route group, each level needs its own `default.tsx`:
+If you have `@modal` inside a route group, each level needs its own
+`default.tsx`:
 
 ```
 app/
@@ -230,7 +246,8 @@ app/
 Check your matcher:
 
 - `(.)photos` intercepts `/photos` from the same route level
-- If your `@modal` is in `app/dashboard/@modal`, use `(.)photos` to intercept `/dashboard/photos`, not `/photos`
+- If your `@modal` is in `app/dashboard/@modal`, use `(.)photos` to intercept
+  `/dashboard/photos`, not `/photos`
 
 ### 5. TypeScript Errors with `params`
 
@@ -238,7 +255,11 @@ In Next.js 15+, `params` is a Promise:
 
 ```tsx
 // Correct
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
 }
 ```
@@ -281,6 +302,5 @@ export default async function Gallery() {
 }
 ```
 
-Clicking a photo → Modal opens (intercepted)
-Direct URL → Full page renders
+Clicking a photo → Modal opens (intercepted) Direct URL → Full page renders
 Refresh while modal open → Full page renders

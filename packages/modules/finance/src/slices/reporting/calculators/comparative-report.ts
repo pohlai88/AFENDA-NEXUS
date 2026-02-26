@@ -5,10 +5,13 @@
  * Merges two classified report sections (current vs prior) into a
  * side-by-side comparative view with variance computation.
  */
-import { money } from "@afenda/core";
-import type { ReportSection, ReportRow } from "../entities/financial-reports.js";
-import type { ComparativeReportSection, ComparativeReportRow } from "../entities/financial-reports.js";
-import type { CalculatorResult } from "../../../shared/types.js";
+import { money } from '@afenda/core';
+import type { ReportSection, ReportRow } from '../entities/financial-reports.js';
+import type {
+  ComparativeReportSection,
+  ComparativeReportRow,
+} from '../entities/financial-reports.js';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface ComparativeSectionInput {
   readonly current: ReportSection;
@@ -21,7 +24,7 @@ export interface ComparativeSectionInput {
  * Accounts present in one period but not the other get zero for the missing period.
  */
 export function buildComparativeSection(
-  input: ComparativeSectionInput,
+  input: ComparativeSectionInput
 ): CalculatorResult<ComparativeReportSection> {
   const { current, prior, currency } = input;
 
@@ -47,9 +50,10 @@ export function buildComparativeSection(
     const currentBalance = cur?.balance ?? money(0n, currency);
     const priorBalance = pri?.balance ?? money(0n, currency);
     const varianceAmount = currentBalance.amount - priorBalance.amount;
-    const variancePercent = priorBalance.amount !== 0n
-      ? Number((varianceAmount * 10000n) / priorBalance.amount) / 100
-      : null;
+    const variancePercent =
+      priorBalance.amount !== 0n
+        ? Number((varianceAmount * 10000n) / priorBalance.amount) / 100
+        : null;
 
     rows.push({
       accountCode: code,

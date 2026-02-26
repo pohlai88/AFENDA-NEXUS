@@ -1,0 +1,129 @@
+import { createApiClient } from '@/lib/api-client';
+import type { ApiResult, PaginatedResponse } from '@/lib/types';
+
+// ─── View Models ────────────────────────────────────────────────────────────
+
+export type IcSettlementStatus = 'PENDING' | 'PAIRED' | 'RECONCILED';
+
+export interface IcTransactionListItem {
+  id: string;
+  agreementId: string;
+  description: string;
+  amount: string;
+  currency: string;
+  transactionDate: string;
+  settlementStatus: IcSettlementStatus;
+  sourceCompanyName: string;
+  mirrorCompanyName: string;
+  sourceJournalRef?: string;
+  mirrorJournalRef?: string;
+}
+
+export interface IcTransactionDetail {
+  id: string;
+  agreementId: string;
+  description: string;
+  amount: string;
+  currency: string;
+  transactionDate: string;
+  settlementStatus: IcSettlementStatus;
+  sourceCompanyId: string;
+  sourceCompanyName: string;
+  mirrorCompanyId: string;
+  mirrorCompanyName: string;
+  sourceJournalId?: string;
+  sourceJournalRef?: string;
+  mirrorJournalId?: string;
+  mirrorJournalRef?: string;
+  sourceLines: IcJournalLineView[];
+  mirrorLines: IcJournalLineView[];
+  createdAt: string;
+}
+
+export interface IcJournalLineView {
+  accountId: string;
+  accountCode: string;
+  accountName?: string;
+  debit: string;
+  credit: string;
+}
+
+export interface IcAgreementListItem {
+  id: string;
+  sellerCompanyId: string;
+  sellerCompanyName: string;
+  buyerCompanyId: string;
+  buyerCompanyName: string;
+  pricingRule: string;
+  markupPercent?: number;
+  isActive: boolean;
+}
+
+export interface IcAgingRow {
+  companyId: string;
+  companyName: string;
+  counterpartyId: string;
+  counterpartyName: string;
+  currency: string;
+  current: string;
+  days30: string;
+  days60: string;
+  days90Plus: string;
+  total: string;
+}
+
+export interface IcAgingResult {
+  rows: IcAgingRow[];
+  asOfDate: string;
+  currency: string;
+  grandTotal: string;
+}
+
+// ─── Query Functions ────────────────────────────────────────────────────────
+
+type RequestCtx = { tenantId: string; userId: string; token: string };
+
+export async function getIcTransactions(
+  ctx: RequestCtx,
+  params: { status?: string; page?: string; limit?: string }
+): Promise<ApiResult<PaginatedResponse<IcTransactionListItem>>> {
+  const client = createApiClient(ctx);
+  const query: Record<string, string> = {};
+  if (params.status) query.status = params.status;
+  if (params.page) query.page = params.page;
+  if (params.limit) query.limit = params.limit;
+
+  return client.get<PaginatedResponse<IcTransactionListItem>>('/ic-transactions', query);
+}
+
+export async function getIcTransaction(
+  ctx: RequestCtx,
+  id: string
+): Promise<ApiResult<IcTransactionDetail>> {
+  const client = createApiClient(ctx);
+  return client.get<IcTransactionDetail>(`/ic-transactions/${id}`);
+}
+
+export async function getIcAgreements(
+  ctx: RequestCtx,
+  params: { page?: string; limit?: string } = {}
+): Promise<ApiResult<PaginatedResponse<IcAgreementListItem>>> {
+  const client = createApiClient(ctx);
+  const query: Record<string, string> = {};
+  if (params.page) query.page = params.page;
+  if (params.limit) query.limit = params.limit;
+
+  return client.get<PaginatedResponse<IcAgreementListItem>>('/ic-agreements', query);
+}
+
+export async function getIcAging(
+  ctx: RequestCtx,
+  params: { currency?: string; asOfDate?: string }
+): Promise<ApiResult<IcAgingResult>> {
+  const client = createApiClient(ctx);
+  const query: Record<string, string> = {};
+  if (params.currency) query.currency = params.currency;
+  if (params.asOfDate) query.asOfDate = params.asOfDate;
+
+  return client.get<IcAgingResult>('/reports/ic-aging', query);
+}

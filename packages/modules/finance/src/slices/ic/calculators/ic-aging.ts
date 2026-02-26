@@ -5,9 +5,9 @@
  * Pure calculator — no I/O, no side effects.
  * Computes aging buckets for open intercompany items based on their age in days.
  */
-import type { Money } from "@afenda/core";
-import { money } from "@afenda/core";
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { Money } from '@afenda/core';
+import { money } from '@afenda/core';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface IcOpenItem {
   readonly transactionId: string;
@@ -15,10 +15,10 @@ export interface IcOpenItem {
   readonly mirrorCompanyId: string;
   readonly amount: Money;
   readonly createdAt: Date;
-  readonly status: "PENDING" | "PAIRED" | "RECONCILED";
+  readonly status: 'PENDING' | 'PAIRED' | 'RECONCILED';
 }
 
-export type AgingBucket = "CURRENT" | "30_DAYS" | "60_DAYS" | "90_DAYS" | "OVER_90";
+export type AgingBucket = 'CURRENT' | '30_DAYS' | '60_DAYS' | '90_DAYS' | 'OVER_90';
 
 export interface AgingBucketSummary {
   readonly bucket: AgingBucket;
@@ -39,21 +39,21 @@ function daysBetween(from: Date, to: Date): number {
 }
 
 function toBucket(days: number): AgingBucket {
-  if (days <= 30) return "CURRENT";
-  if (days <= 60) return "30_DAYS";
-  if (days <= 90) return "60_DAYS";
-  if (days <= 120) return "90_DAYS";
-  return "OVER_90";
+  if (days <= 30) return 'CURRENT';
+  if (days <= 60) return '30_DAYS';
+  if (days <= 90) return '60_DAYS';
+  if (days <= 120) return '90_DAYS';
+  return 'OVER_90';
 }
 
-const BUCKET_ORDER: AgingBucket[] = ["CURRENT", "30_DAYS", "60_DAYS", "90_DAYS", "OVER_90"];
+const BUCKET_ORDER: AgingBucket[] = ['CURRENT', '30_DAYS', '60_DAYS', '90_DAYS', 'OVER_90'];
 
 export function computeIcAging(
   items: readonly IcOpenItem[],
   asOfDate: Date,
-  currency: string,
+  currency: string
 ): CalculatorResult<IcAgingReport> {
-  const openItems = items.filter((i) => i.status !== "RECONCILED");
+  const openItems = items.filter((i) => i.status !== 'RECONCILED');
 
   const bucketMap = new Map<AgingBucket, { count: number; total: bigint }>();
   for (const b of BUCKET_ORDER) {
@@ -78,7 +78,7 @@ export function computeIcAging(
 
   const totalOpen = money(
     buckets.reduce((sum, b) => sum + b.totalAmount.amount, 0n),
-    currency,
+    currency
   );
 
   return {

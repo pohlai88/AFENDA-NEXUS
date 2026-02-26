@@ -12,7 +12,7 @@ export interface CreditCheckInput {
   readonly currencyCode: string;
 }
 
-export type CreditDecision = "APPROVED" | "HOLD" | "REJECTED";
+export type CreditDecision = 'APPROVED' | 'HOLD' | 'REJECTED';
 
 export interface CreditCheckResult {
   readonly customerId: string;
@@ -35,15 +35,15 @@ export function checkCreditLimit(input: CreditCheckInput): CreditCheckResult {
   let reason: string;
 
   if (projectedExposure <= input.creditLimit) {
-    decision = "APPROVED";
-    reason = "Within credit limit";
+    decision = 'APPROVED';
+    reason = 'Within credit limit';
   } else if (input.currentExposure <= input.creditLimit) {
     // Currently within limit but this transaction would breach it
-    decision = "HOLD";
+    decision = 'HOLD';
     reason = `Transaction would exceed limit by ${-headroom}`;
   } else {
     // Already over limit
-    decision = "REJECTED";
+    decision = 'REJECTED';
     reason = `Already over limit by ${input.currentExposure - input.creditLimit}`;
   }
 

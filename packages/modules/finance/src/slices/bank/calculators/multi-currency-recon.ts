@@ -33,7 +33,9 @@ export interface MultiCurrencyReconResult {
 /**
  * Convert both statement and GL balances to base currency and compute FX difference.
  */
-export function computeMultiCurrencyRecon(input: MultiCurrencyReconInput): MultiCurrencyReconResult {
+export function computeMultiCurrencyRecon(
+  input: MultiCurrencyReconInput
+): MultiCurrencyReconResult {
   const stmtRate = findRate(input.fxRates, input.statementCurrency, input.baseCurrency);
   const glRate = findRate(input.fxRates, input.glCurrency, input.baseCurrency);
 
@@ -56,7 +58,7 @@ function findRate(rates: readonly FxRateEntry[], from: string, to: string): numb
   if (direct) return direct.rateBps;
   // Try inverse
   const inverse = rates.find((r) => r.fromCurrency === to && r.toCurrency === from);
-  if (inverse && inverse.rateBps !== 0) return Math.round(10000 * 10000 / inverse.rateBps);
+  if (inverse && inverse.rateBps !== 0) return Math.round((10000 * 10000) / inverse.rateBps);
   return 10000; // fallback 1:1
 }
 

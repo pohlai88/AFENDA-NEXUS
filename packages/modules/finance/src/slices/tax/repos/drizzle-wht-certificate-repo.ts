@@ -1,8 +1,11 @@
-import { eq, and, gte, lte } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { whtCertificates } from "@afenda/db";
-import type { WhtCertificate } from "../entities/wht-certificate.js";
-import type { IWhtCertificateRepo, CreateWhtCertificateInput } from "../ports/wht-certificate-repo.js";
+import { eq, and, gte, lte } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { whtCertificates } from '@afenda/db';
+import type { WhtCertificate } from '../entities/wht-certificate.js';
+import type {
+  IWhtCertificateRepo,
+  CreateWhtCertificateInput,
+} from '../ports/wht-certificate-repo.js';
 
 type Row = typeof whtCertificates.$inferSelect;
 
@@ -12,7 +15,7 @@ function mapToDomain(row: Row): WhtCertificate {
     tenantId: row.tenantId,
     payeeId: row.payeeId,
     payeeName: row.payeeName,
-    payeeType: row.payeeType as WhtCertificate["payeeType"],
+    payeeType: row.payeeType as WhtCertificate['payeeType'],
     countryCode: row.countryCode,
     incomeType: row.incomeType,
     grossAmount: row.grossAmount,
@@ -27,29 +30,39 @@ function mapToDomain(row: Row): WhtCertificate {
     taxPeriodEnd: row.taxPeriodEnd,
     relatedInvoiceId: row.relatedInvoiceId,
     relatedPaymentId: row.relatedPaymentId,
-    status: row.status as WhtCertificate["status"],
+    status: row.status as WhtCertificate['status'],
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
 }
 
 export class DrizzleWhtCertificateRepo implements IWhtCertificateRepo {
-  constructor(private readonly db: TenantTx) { }
+  constructor(private readonly db: TenantTx) {}
 
   async findById(id: string): Promise<WhtCertificate | null> {
-    const rows = await this.db.select().from(whtCertificates).where(eq(whtCertificates.id, id)).limit(1);
+    const rows = await this.db
+      .select()
+      .from(whtCertificates)
+      .where(eq(whtCertificates.id, id))
+      .limit(1);
     return rows[0] ? mapToDomain(rows[0]) : null;
   }
 
   async findByPayee(payeeId: string): Promise<readonly WhtCertificate[]> {
-    const rows = await this.db.select().from(whtCertificates).where(eq(whtCertificates.payeeId, payeeId));
+    const rows = await this.db
+      .select()
+      .from(whtCertificates)
+      .where(eq(whtCertificates.payeeId, payeeId));
     return rows.map(mapToDomain);
   }
 
   async findByPeriod(periodStart: Date, periodEnd: Date): Promise<readonly WhtCertificate[]> {
-    const rows = await this.db.select().from(whtCertificates).where(
-      and(gte(whtCertificates.issueDate, periodStart), lte(whtCertificates.issueDate, periodEnd)),
-    );
+    const rows = await this.db
+      .select()
+      .from(whtCertificates)
+      .where(
+        and(gte(whtCertificates.issueDate, periodStart), lte(whtCertificates.issueDate, periodEnd))
+      );
     return rows.map(mapToDomain);
   }
 
@@ -59,31 +72,38 @@ export class DrizzleWhtCertificateRepo implements IWhtCertificateRepo {
   }
 
   async create(tenantId: string, input: CreateWhtCertificateInput): Promise<WhtCertificate> {
-    const [row] = await this.db.insert(whtCertificates).values({
-      tenantId,
-      payeeId: input.payeeId,
-      payeeName: input.payeeName,
-      payeeType: input.payeeType,
-      countryCode: input.countryCode,
-      incomeType: input.incomeType,
-      grossAmount: input.grossAmount,
-      whtAmount: input.whtAmount,
-      netAmount: input.netAmount,
-      currencyCode: input.currencyCode,
-      rateApplied: input.rateApplied,
-      treatyRate: input.treatyRate,
-      certificateNumber: input.certificateNumber,
-      issueDate: input.issueDate,
-      taxPeriodStart: input.taxPeriodStart,
-      taxPeriodEnd: input.taxPeriodEnd,
-      relatedInvoiceId: input.relatedInvoiceId,
-      relatedPaymentId: input.relatedPaymentId,
-    }).returning();
+    const [row] = await this.db
+      .insert(whtCertificates)
+      .values({
+        tenantId,
+        payeeId: input.payeeId,
+        payeeName: input.payeeName,
+        payeeType: input.payeeType,
+        countryCode: input.countryCode,
+        incomeType: input.incomeType,
+        grossAmount: input.grossAmount,
+        whtAmount: input.whtAmount,
+        netAmount: input.netAmount,
+        currencyCode: input.currencyCode,
+        rateApplied: input.rateApplied,
+        treatyRate: input.treatyRate,
+        certificateNumber: input.certificateNumber,
+        issueDate: input.issueDate,
+        taxPeriodStart: input.taxPeriodStart,
+        taxPeriodEnd: input.taxPeriodEnd,
+        relatedInvoiceId: input.relatedInvoiceId,
+        relatedPaymentId: input.relatedPaymentId,
+      })
+      .returning();
     return mapToDomain(row!);
   }
 
-  async updateStatus(id: string, status: WhtCertificate["status"]): Promise<WhtCertificate> {
-    const [row] = await this.db.update(whtCertificates).set({ status }).where(eq(whtCertificates.id, id)).returning();
+  async updateStatus(id: string, status: WhtCertificate['status']): Promise<WhtCertificate> {
+    const [row] = await this.db
+      .update(whtCertificates)
+      .set({ status })
+      .where(eq(whtCertificates.id, id))
+      .returning();
     return mapToDomain(row!);
   }
 }

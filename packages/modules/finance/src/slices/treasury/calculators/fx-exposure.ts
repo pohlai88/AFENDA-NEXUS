@@ -27,7 +27,7 @@ export interface FxExposureResult {
 
 export function computeFxExposure(
   items: readonly FxExposureItem[],
-  baseCurrencyCode: string,
+  baseCurrencyCode: string
 ): FxExposureResult {
   const byCurrency = new Map<string, { long: bigint; short: bigint }>();
 

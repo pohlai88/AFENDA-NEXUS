@@ -1,4 +1,4 @@
-import type { ExpensePolicy } from "../entities/expense-policy.js";
+import type { ExpensePolicy } from '../entities/expense-policy.js';
 
 export interface CreateExpensePolicyInput {
   readonly companyId: string;
@@ -19,5 +19,8 @@ export interface IExpensePolicyRepo {
   findByCategory(companyId: string, category: string): Promise<ExpensePolicy | null>;
   findAll(): Promise<readonly ExpensePolicy[]>;
   create(tenantId: string, input: CreateExpensePolicyInput): Promise<ExpensePolicy>;
-  update(id: string, input: Partial<CreateExpensePolicyInput & { isActive: boolean }>): Promise<ExpensePolicy>;
+  update(
+    id: string,
+    input: Partial<CreateExpensePolicyInput & { isActive: boolean }>
+  ): Promise<ExpensePolicy>;
 }

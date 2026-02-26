@@ -1,5 +1,5 @@
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { Account } from "../entities/account.js";
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type { Account } from '../entities/account.js';
 
 export interface IAccountRepo {
   findByCode(companyId: string, code: string): Promise<Result<Account>>;

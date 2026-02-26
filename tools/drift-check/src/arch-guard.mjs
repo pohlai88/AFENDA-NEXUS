@@ -33,21 +33,21 @@
  * Zero dependencies — uses only Node.js built-ins.
  */
 
-import { readFileSync, readdirSync, existsSync, statSync, mkdirSync } from "node:fs";
-import { join, resolve, dirname, relative, posix } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFileSync, readdirSync, existsSync, statSync, mkdirSync } from 'node:fs';
+import { join, resolve, dirname, relative, posix } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const REPO_ROOT = resolve(__dirname, "../../..");
-const MANIFEST_PATH = join(REPO_ROOT, ".afenda", "project.manifest.json");
+const REPO_ROOT = resolve(__dirname, '../../..');
+const MANIFEST_PATH = join(REPO_ROOT, '.afenda', 'project.manifest.json');
 
 const PKG_FILTER = (() => {
-  const idx = process.argv.indexOf("--pkg");
+  const idx = process.argv.indexOf('--pkg');
   return idx !== -1 && process.argv[idx + 1] ? process.argv[idx + 1] : null;
 })();
-const FIX_MODE = process.argv.includes("--fix");
-const JSON_MODE = process.argv.includes("--json");
+const FIX_MODE = process.argv.includes('--fix');
+const JSON_MODE = process.argv.includes('--json');
 
 // ─── Result Accumulator ─────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ function parseFrontmatter(content) {
   const stack = [{ obj: fm, indent: -1 }];
 
   for (const line of lines) {
-    if (line.trim() === "" || line.trim().startsWith("#")) continue;
+    if (line.trim() === '' || line.trim().startsWith('#')) continue;
 
     const indent = line.search(/\S/);
     const trimmed = line.trim();
@@ -90,7 +90,7 @@ function parseFrontmatter(content) {
     currentObj = stack[stack.length - 1].obj;
 
     // Array item
-    if (trimmed.startsWith("- ")) {
+    if (trimmed.startsWith('- ')) {
       const val = trimmed.slice(2).trim();
 
       // Resolve the owner of currentKey — it may be the current stack frame or
@@ -108,15 +108,22 @@ function parseFrontmatter(content) {
       }
 
       // Promote empty object to array when first list item arrives
-      if (currentKey && typeof listOwner[currentKey] === "object" && !Array.isArray(listOwner[currentKey]) && Object.keys(listOwner[currentKey]).length === 0) {
+      if (
+        currentKey &&
+        typeof listOwner[currentKey] === 'object' &&
+        !Array.isArray(listOwner[currentKey]) &&
+        Object.keys(listOwner[currentKey]).length === 0
+      ) {
         listOwner[currentKey] = [];
       }
       if (currentKey && Array.isArray(listOwner[currentKey])) {
         // Parse inline object { from: "x", forbid: ["y"] }
-        if (val.startsWith("{")) {
+        if (val.startsWith('{')) {
           try {
             // YAML allows unquoted keys — quote them for JSON.parse
-            const jsonified = val.replace(/'/g, '"').replace(/(\{|,)\s*([a-zA-Z_]\w*)\s*:/g, '$1 "$2":');
+            const jsonified = val
+              .replace(/'/g, '"')
+              .replace(/(\{|,)\s*([a-zA-Z_]\w*)\s*:/g, '$1 "$2":');
             listOwner[currentKey].push(JSON.parse(jsonified));
           } catch {
             listOwner[currentKey].push(val);
@@ -128,7 +135,7 @@ function parseFrontmatter(content) {
       continue;
     }
 
-    const colonIdx = trimmed.indexOf(":");
+    const colonIdx = trimmed.indexOf(':');
     if (colonIdx === -1) continue;
 
     let key = trimmed.slice(0, colonIdx).trim();
@@ -139,11 +146,17 @@ function parseFrontmatter(content) {
     let value = trimmed.slice(colonIdx + 1).trim();
 
     // Remove inline comments
-    if (value.includes("#") && !value.startsWith('"') && !value.startsWith("'") && !value.startsWith("[") && !value.startsWith("{")) {
-      value = value.split("#")[0].trim();
+    if (
+      value.includes('#') &&
+      !value.startsWith('"') &&
+      !value.startsWith("'") &&
+      !value.startsWith('[') &&
+      !value.startsWith('{')
+    ) {
+      value = value.split('#')[0].trim();
     }
 
-    if (value === "" || value === "|") {
+    if (value === '' || value === '|') {
       // Nested object or upcoming array
       currentObj[key] = {};
       stack.push({ obj: currentObj[key], indent });
@@ -160,13 +173,13 @@ function parseFrontmatter(content) {
 }
 
 function parseValue(val) {
-  if (val === "true") return true;
-  if (val === "false") return false;
-  if (val === "null") return null;
+  if (val === 'true') return true;
+  if (val === 'false') return false;
+  if (val === 'null') return null;
   if (val.startsWith('"') && val.endsWith('"')) return val.slice(1, -1);
   if (val.startsWith("'") && val.endsWith("'")) return val.slice(1, -1);
   // Inline array: ["a", "b"]
-  if (val.startsWith("[")) {
+  if (val.startsWith('[')) {
     try {
       return JSON.parse(val.replace(/'/g, '"'));
     } catch {
@@ -174,7 +187,7 @@ function parseValue(val) {
     }
   }
   // Inline object: { import: "./dist/index.js", types: "./dist/index.d.ts" }
-  if (val.startsWith("{")) {
+  if (val.startsWith('{')) {
     try {
       // YAML allows unquoted keys — quote them for JSON.parse
       const jsonified = val.replace(/'/g, '"').replace(/(\{|,)\s*([a-zA-Z_]\w*)\s*:/g, '$1 "$2":');
@@ -196,7 +209,7 @@ function toArray(val) {
 
 function loadJson(path) {
   try {
-    return JSON.parse(readFileSync(path, "utf-8"));
+    return JSON.parse(readFileSync(path, 'utf-8'));
   } catch {
     return null;
   }
@@ -204,7 +217,9 @@ function loadJson(path) {
 
 function findArchFile(pkgDir) {
   if (!existsSync(pkgDir)) return null;
-  const files = readdirSync(pkgDir).filter((f) => f.startsWith("ARCHITECTURE.") && f.endsWith(".md"));
+  const files = readdirSync(pkgDir).filter(
+    (f) => f.startsWith('ARCHITECTURE.') && f.endsWith('.md')
+  );
   return files.length > 0 ? join(pkgDir, files[0]) : null;
 }
 
@@ -214,7 +229,7 @@ function collectSourceFiles(dir, collected = []) {
   for (const entry of entries) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (["node_modules", "dist", ".next", "build", ".turbo"].includes(entry.name)) continue;
+      if (['node_modules', 'dist', '.next', 'build', '.turbo'].includes(entry.name)) continue;
       collectSourceFiles(full, collected);
     } else if (/\.(ts|tsx|js|jsx|mjs)$/.test(entry.name)) {
       if (/\.(test|spec)\.(ts|tsx|js|jsx|mjs)$/.test(entry.name)) continue;
@@ -243,29 +258,29 @@ function extractImports(content) {
 }
 
 function getPackageFromImport(imp) {
-  if (imp.startsWith(".") || imp.startsWith("/")) return null; // relative
-  if (imp.startsWith("node:")) return null; // built-in
+  if (imp.startsWith('.') || imp.startsWith('/')) return null; // relative
+  if (imp.startsWith('node:')) return null; // built-in
   // Scoped: @scope/name or @scope/name/path
-  if (imp.startsWith("@")) {
-    const parts = imp.split("/");
+  if (imp.startsWith('@')) {
+    const parts = imp.split('/');
     return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : imp;
   }
   // Unscoped: name or name/path
-  return imp.split("/")[0];
+  return imp.split('/')[0];
 }
 
 function matchesGlob(filePath, pattern) {
   // Glob matching: supports *, ** wildcards in any position.
   // * matches a single path segment, ** matches zero or more segments.
-  const normalized = filePath.replace(/\\/g, "/");
-  const patParts = pattern.split("/");
-  const fileParts = normalized.split("/");
+  const normalized = filePath.replace(/\\/g, '/');
+  const patParts = pattern.split('/');
+  const fileParts = normalized.split('/');
 
   function match(pi, fi) {
     if (pi === patParts.length && fi === fileParts.length) return true;
     if (pi === patParts.length) return false;
     const seg = patParts[pi];
-    if (seg === "**") {
+    if (seg === '**') {
       // ** matches zero or more path segments
       if (pi === patParts.length - 1) return true; // trailing **
       for (let skip = fi; skip <= fileParts.length; skip++) {
@@ -274,24 +289,24 @@ function matchesGlob(filePath, pattern) {
       return false;
     }
     if (fi === fileParts.length) return false;
-    if (seg === "*") return match(pi + 1, fi + 1); // * matches exactly one segment
+    if (seg === '*') return match(pi + 1, fi + 1); // * matches exactly one segment
     return seg === fileParts[fi] && match(pi + 1, fi + 1);
   }
   return match(0, 0);
 }
 
 function isRelativeImportCrossLayer(imp, sourceRelPath, rules) {
-  if (!imp.startsWith("./") && !imp.startsWith("../")) return false;
+  if (!imp.startsWith('./') && !imp.startsWith('../')) return false;
   if (!rules || rules.length === 0) return false;
 
   // Resolve the import target relative to the source file
-  const sourceDir = dirname(sourceRelPath).replace(/\\/g, "/");
+  const sourceDir = dirname(sourceRelPath).replace(/\\/g, '/');
   // Normalize: join sourceDir + imp, remove ./ and resolve ../
   let target = posix.normalize(posix.join(sourceDir, imp));
   // Add .ts extension heuristic for matching
-  if (!target.includes(".")) target += ".ts";
+  if (!target.includes('.')) target += '.ts';
 
-  const normalizedSource = sourceRelPath.replace(/\\/g, "/");
+  const normalizedSource = sourceRelPath.replace(/\\/g, '/');
 
   for (const rule of rules) {
     const fromPattern = rule.from;
@@ -313,39 +328,39 @@ function checkPackage(pkgPath, manifestEntry) {
   const pkgName = manifestEntry.name;
 
   // Skip unmanaged packages
-  if (manifestEntry.type === "unmanaged") return;
+  if (manifestEntry.type === 'unmanaged') return;
 
   // E1: ARCHITECTURE.md exists
   const archFile = findArchFile(pkgDir);
   if (!archFile) {
-    fail(pkgName, "E1", `ARCHITECTURE.*.md missing in ${pkgPath}`);
+    fail(pkgName, 'E1', `ARCHITECTURE.*.md missing in ${pkgPath}`);
     return; // Can't check further without frontmatter
   }
-  pass(pkgName, "E1", "ARCHITECTURE.md exists");
+  pass(pkgName, 'E1', 'ARCHITECTURE.md exists');
 
   // Parse frontmatter
-  const content = readFileSync(archFile, "utf-8");
+  const content = readFileSync(archFile, 'utf-8');
   const fm = parseFrontmatter(content);
   if (!fm) {
-    fail(pkgName, "E1", `ARCHITECTURE.md has no valid YAML frontmatter in ${pkgPath}`);
+    fail(pkgName, 'E1', `ARCHITECTURE.md has no valid YAML frontmatter in ${pkgPath}`);
     return;
   }
 
   // E2: package matches package.json name
-  const pkgJson = loadJson(join(pkgDir, "package.json"));
+  const pkgJson = loadJson(join(pkgDir, 'package.json'));
   if (pkgJson) {
     if (fm.package === pkgJson.name) {
-      pass(pkgName, "E2", `package field matches package.json name`);
+      pass(pkgName, 'E2', `package field matches package.json name`);
     } else {
-      fail(pkgName, "E2", `package "${fm.package}" != package.json name "${pkgJson.name}"`);
+      fail(pkgName, 'E2', `package "${fm.package}" != package.json name "${pkgJson.name}"`);
     }
   }
 
   // E3: root_dir matches
   if (fm.root_dir === pkgPath) {
-    pass(pkgName, "E3", `root_dir matches`);
+    pass(pkgName, 'E3', `root_dir matches`);
   } else {
-    fail(pkgName, "E3", `root_dir "${fm.root_dir}" != manifest path "${pkgPath}"`);
+    fail(pkgName, 'E3', `root_dir "${fm.root_dir}" != manifest path "${pkgPath}"`);
   }
 
   // E4: required_files
@@ -354,9 +369,9 @@ function checkPackage(pkgPath, manifestEntry) {
   for (const f of requiredFiles) {
     const filePath = join(pkgDir, f);
     if (existsSync(filePath)) {
-      pass(pkgName, "E4", `Required file "${f}" exists`);
+      pass(pkgName, 'E4', `Required file "${f}" exists`);
     } else {
-      fail(pkgName, "E4", `Required file "${f}" missing`);
+      fail(pkgName, 'E4', `Required file "${f}" missing`);
     }
   }
 
@@ -366,12 +381,12 @@ function checkPackage(pkgPath, manifestEntry) {
   for (const d of requiredDirs) {
     const dirPath = join(pkgDir, d);
     if (existsSync(dirPath) && statSync(dirPath).isDirectory()) {
-      pass(pkgName, "E5", `Required directory "${d}" exists`);
+      pass(pkgName, 'E5', `Required directory "${d}" exists`);
     } else if (FIX_MODE) {
       mkdirSync(dirPath, { recursive: true });
-      pass(pkgName, "E5", `Required directory "${d}" created (--fix)`);
+      pass(pkgName, 'E5', `Required directory "${d}" created (--fix)`);
     } else {
-      fail(pkgName, "E5", `Required directory "${d}" missing`);
+      fail(pkgName, 'E5', `Required directory "${d}" missing`);
     }
   }
 
@@ -379,11 +394,15 @@ function checkPackage(pkgPath, manifestEntry) {
   const allowedRuntime = toArray(fm.dependency_kinds?.allowed_runtime);
   const deps = pkgJson?.dependencies || {};
   for (const dep of Object.keys(deps)) {
-    if (deps[dep] === "workspace:*" || deps[dep]?.startsWith("workspace:")) continue; // workspace deps always OK
+    if (deps[dep] === 'workspace:*' || deps[dep]?.startsWith('workspace:')) continue; // workspace deps always OK
     if (allowedRuntime.includes(dep)) {
-      pass(pkgName, "E6", `Dep "${dep}" is in allowed_runtime`);
+      pass(pkgName, 'E6', `Dep "${dep}" is in allowed_runtime`);
     } else {
-      fail(pkgName, "E6", `Dep "${dep}" NOT in allowed_runtime -- add to ARCHITECTURE.md or remove`);
+      fail(
+        pkgName,
+        'E6',
+        `Dep "${dep}" NOT in allowed_runtime -- add to ARCHITECTURE.md or remove`
+      );
     }
   }
 
@@ -391,11 +410,11 @@ function checkPackage(pkgPath, manifestEntry) {
   const allowedDev = toArray(fm.dependency_kinds?.allowed_dev);
   const devDeps = pkgJson?.devDependencies || {};
   for (const dep of Object.keys(devDeps)) {
-    if (devDeps[dep] === "workspace:*" || devDeps[dep]?.startsWith("workspace:")) continue;
+    if (devDeps[dep] === 'workspace:*' || devDeps[dep]?.startsWith('workspace:')) continue;
     if (allowedDev.includes(dep)) {
-      pass(pkgName, "E7", `DevDep "${dep}" is in allowed_dev`);
+      pass(pkgName, 'E7', `DevDep "${dep}" is in allowed_dev`);
     } else {
-      fail(pkgName, "E7", `DevDep "${dep}" NOT in allowed_dev -- add to ARCHITECTURE.md or remove`);
+      fail(pkgName, 'E7', `DevDep "${dep}" NOT in allowed_dev -- add to ARCHITECTURE.md or remove`);
     }
   }
 
@@ -405,9 +424,9 @@ function checkPackage(pkgPath, manifestEntry) {
   const crossLayerRules = toArray(fm.boundary_rules?.forbid_cross_layer_imports);
 
   if (forbiddenImports.length > 0 || crossLayerRules.length > 0) {
-    const sourceFiles = collectSourceFiles(join(pkgDir, "src"));
+    const sourceFiles = collectSourceFiles(join(pkgDir, 'src'));
     for (const sourceFile of sourceFiles) {
-      const fileContent = readFileSync(sourceFile, "utf-8");
+      const fileContent = readFileSync(sourceFile, 'utf-8');
       const imports = extractImports(fileContent);
       const relPath = relative(pkgDir, sourceFile);
 
@@ -415,27 +434,34 @@ function checkPackage(pkgPath, manifestEntry) {
         const pkg = getPackageFromImport(imp);
 
         // E8: Forbidden imports
-        if (pkg && forbiddenImports.some((f) => pkg === f || pkg.startsWith(f + "/"))) {
+        if (pkg && forbiddenImports.some((f) => pkg === f || pkg.startsWith(f + '/'))) {
           // E9: Check path-scoped exceptions
           let excepted = false;
           for (const [globPattern, allowedPkgs] of Object.entries(allowByPath)) {
-            if (matchesGlob(relPath.replace(/\\/g, "/"), globPattern) && allowedPkgs.includes(pkg)) {
+            if (
+              matchesGlob(relPath.replace(/\\/g, '/'), globPattern) &&
+              allowedPkgs.includes(pkg)
+            ) {
               excepted = true;
               break;
             }
           }
           if (excepted) {
-            pass(pkgName, "E9", `"${pkg}" allowed in ${relPath} (path exception)`);
+            pass(pkgName, 'E9', `"${pkg}" allowed in ${relPath} (path exception)`);
           } else {
-            fail(pkgName, "E8", `"${relPath}" imports forbidden "${pkg}"`);
+            fail(pkgName, 'E8', `"${relPath}" imports forbidden "${pkg}"`);
           }
         }
 
         // E10: Cross-layer imports (relative imports only)
-        if (imp.startsWith(".") && crossLayerRules.length > 0) {
+        if (imp.startsWith('.') && crossLayerRules.length > 0) {
           const violation = isRelativeImportCrossLayer(imp, relPath, crossLayerRules);
           if (violation) {
-            fail(pkgName, "E10", `Cross-layer: "${violation.source}" imports "${violation.target}" (${violation.from} -> ${violation.forbid})`);
+            fail(
+              pkgName,
+              'E10',
+              `Cross-layer: "${violation.source}" imports "${violation.target}" (${violation.from} -> ${violation.forbid})`
+            );
           }
         }
       }
@@ -443,28 +469,28 @@ function checkPackage(pkgPath, manifestEntry) {
   }
 
   // E11: composite flag
-  const tsconfig = loadJson(join(pkgDir, "tsconfig.json"));
+  const tsconfig = loadJson(join(pkgDir, 'tsconfig.json'));
   if (tsconfig && fm.composite !== undefined) {
     const actual = tsconfig.compilerOptions?.composite ?? false;
     if (actual === fm.composite) {
-      pass(pkgName, "E11", `composite=${fm.composite} matches tsconfig`);
+      pass(pkgName, 'E11', `composite=${fm.composite} matches tsconfig`);
     } else {
-      warn(pkgName, "E11", `composite: frontmatter=${fm.composite}, tsconfig=${actual}`);
+      warn(pkgName, 'E11', `composite: frontmatter=${fm.composite}, tsconfig=${actual}`);
     }
   }
 
   // E12: exports_map
-  if (fm.exports_map && fm.exports_map !== "null" && pkgJson?.exports) {
+  if (fm.exports_map && fm.exports_map !== 'null' && pkgJson?.exports) {
     // Simple string comparison of the "." export
-    const fmDot = fm.exports_map["."];
-    const pkgDot = pkgJson.exports["."];
+    const fmDot = fm.exports_map['.'];
+    const pkgDot = pkgJson.exports['.'];
     if (fmDot && pkgDot) {
-      const fmStr = typeof fmDot === "string" ? fmDot : JSON.stringify(fmDot);
-      const pkgStr = typeof pkgDot === "string" ? pkgDot : JSON.stringify(pkgDot);
+      const fmStr = typeof fmDot === 'string' ? fmDot : JSON.stringify(fmDot);
+      const pkgStr = typeof pkgDot === 'string' ? pkgDot : JSON.stringify(pkgDot);
       if (fmStr === pkgStr) {
-        pass(pkgName, "E12", `exports["."] matches`);
+        pass(pkgName, 'E12', `exports["."] matches`);
       } else {
-        warn(pkgName, "E12", `exports["."] mismatch: frontmatter=${fmStr}, package.json=${pkgStr}`);
+        warn(pkgName, 'E12', `exports["."] mismatch: frontmatter=${fmStr}, package.json=${pkgStr}`);
       }
     }
   }
@@ -478,21 +504,23 @@ function checkCircularDeps(manifest) {
   const pkgNames = new Set();
 
   for (const [pkgPath, entry] of Object.entries(manifest.packages)) {
-    if (entry.type === "unmanaged") continue;
+    if (entry.type === 'unmanaged') continue;
     pkgNames.add(entry.name);
     const pkgDir = join(REPO_ROOT, pkgPath);
-    const pkgJson = loadJson(join(pkgDir, "package.json"));
+    const pkgJson = loadJson(join(pkgDir, 'package.json'));
     if (!pkgJson) continue;
 
     const edges = new Set();
     for (const dep of Object.keys(pkgJson.dependencies || {})) {
-      if (dep.startsWith("@afenda/")) edges.add(dep);
+      if (dep.startsWith('@afenda/')) edges.add(dep);
     }
     graph.set(entry.name, edges);
   }
 
   // DFS cycle detection
-  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const WHITE = 0,
+    GRAY = 1,
+    BLACK = 2;
   const color = new Map();
   for (const name of pkgNames) color.set(name, WHITE);
 
@@ -520,10 +548,10 @@ function checkCircularDeps(manifest) {
   }
 
   if (cycles.length === 0) {
-    pass("*", "E13", "No circular package dependencies detected");
+    pass('*', 'E13', 'No circular package dependencies detected');
   } else {
     for (const cycle of cycles) {
-      fail("*", "E13", `Circular dependency: ${cycle.join(" -> ")}`);
+      fail('*', 'E13', `Circular dependency: ${cycle.join(' -> ')}`);
     }
   }
 }
@@ -537,11 +565,11 @@ function checkPublicApiSurface(pkgPath, pkgName, fm) {
   const pkgDir = join(REPO_ROOT, pkgPath);
   const apiPath = join(pkgDir, publicApiFile);
   if (!existsSync(apiPath)) {
-    fail(pkgName, "E14", `public_api file "${publicApiFile}" does not exist`);
+    fail(pkgName, 'E14', `public_api file "${publicApiFile}" does not exist`);
     return;
   }
 
-  const content = readFileSync(apiPath, "utf-8");
+  const content = readFileSync(apiPath, 'utf-8');
 
   // Extract all named exports: export { X }, export type { X }, export { X } from "..."
   const exportedSymbols = new Set();
@@ -549,23 +577,30 @@ function checkPublicApiSurface(pkgPath, pkgName, fm) {
   const reExportRegex = /export\s+(?:type\s+)?{([^}]+)}\s+from/g;
   let m;
   while ((m = reExportRegex.exec(content)) !== null) {
-    const names = m[1].split(",").map((s) => s.trim().split(/\s+as\s+/).pop().trim());
+    const names = m[1].split(',').map((s) =>
+      s
+        .trim()
+        .split(/\s+as\s+/)
+        .pop()
+        .trim()
+    );
     for (const name of names) {
       if (name) exportedSymbols.add(name);
     }
   }
   // "export function X", "export class X", "export const X"
-  const directExportRegex = /export\s+(?:async\s+)?(?:function|class|const|let|type|interface|enum)\s+(\w+)/g;
+  const directExportRegex =
+    /export\s+(?:async\s+)?(?:function|class|const|let|type|interface|enum)\s+(\w+)/g;
   while ((m = directExportRegex.exec(content)) !== null) {
     exportedSymbols.add(m[1]);
   }
 
   if (exportedSymbols.size === 0) {
-    warn(pkgName, "E14", `No exports found in "${publicApiFile}" -- cannot verify API surface`);
+    warn(pkgName, 'E14', `No exports found in "${publicApiFile}" -- cannot verify API surface`);
     return;
   }
 
-  pass(pkgName, "E14", `Public API surface: ${exportedSymbols.size} exports in "${publicApiFile}"`);
+  pass(pkgName, 'E14', `Public API surface: ${exportedSymbols.size} exports in "${publicApiFile}"`);
 }
 
 // ─── E15: Port-Implementation Parity ────────────────────────────────────────
@@ -573,22 +608,22 @@ function checkPublicApiSurface(pkgPath, pkgName, fm) {
 function checkPortImplParity(pkgPath, pkgName, fm) {
   // Only check packages with hexagonal architecture (ports + repositories)
   const requiredDirs = toArray(fm.enforced_structure?.required_directories);
-  const hasPorts = requiredDirs.some((d) => d.includes("ports"));
-  const hasRepos = requiredDirs.some((d) => d.includes("repositories"));
+  const hasPorts = requiredDirs.some((d) => d.includes('ports'));
+  const hasRepos = requiredDirs.some((d) => d.includes('repositories'));
   if (!hasPorts || !hasRepos) return;
 
   const pkgDir = join(REPO_ROOT, pkgPath);
-  const portsDir = join(pkgDir, "src", "app", "ports");
-  const reposDir = join(pkgDir, "src", "infra", "repositories");
+  const portsDir = join(pkgDir, 'src', 'app', 'ports');
+  const reposDir = join(pkgDir, 'src', 'infra', 'repositories');
 
   if (!existsSync(portsDir) || !existsSync(reposDir)) return;
 
   // Collect port interface names from port files
-  const portFiles = readdirSync(portsDir).filter((f) => f.endsWith(".ts"));
+  const portFiles = readdirSync(portsDir).filter((f) => f.endsWith('.ts'));
   const portInterfaces = [];
 
   for (const file of portFiles) {
-    const content = readFileSync(join(portsDir, file), "utf-8");
+    const content = readFileSync(join(portsDir, file), 'utf-8');
     const ifaceRegex = /export\s+interface\s+(I\w+(?:Repo|Store|Writer|Generator|Policy))/g;
     let m;
     while ((m = ifaceRegex.exec(content)) !== null) {
@@ -599,24 +634,32 @@ function checkPortImplParity(pkgPath, pkgName, fm) {
   if (portInterfaces.length === 0) return;
 
   // Collect implementation class names from infra subdirectories (repositories, authorization, etc.)
-  const infraDir = join(pkgDir, "src", "infra");
+  const infraDir = join(pkgDir, 'src', 'infra');
   const infraSubdirs = existsSync(infraDir)
     ? readdirSync(infraDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory() && d.name !== "routes" && d.name !== "mappers")
-      .map((d) => join(infraDir, d.name))
+        .filter((d) => d.isDirectory() && d.name !== 'routes' && d.name !== 'mappers')
+        .map((d) => join(infraDir, d.name))
     : [reposDir];
   const implContent = infraSubdirs
     .filter((d) => existsSync(d))
-    .flatMap((d) => readdirSync(d).filter((f) => f.endsWith(".ts")).map((f) => readFileSync(join(d, f), "utf-8")))
-    .join("\n");
+    .flatMap((d) =>
+      readdirSync(d)
+        .filter((f) => f.endsWith('.ts'))
+        .map((f) => readFileSync(join(d, f), 'utf-8'))
+    )
+    .join('\n');
 
   for (const port of portInterfaces) {
     // Check if any class implements this interface
     const implRegex = new RegExp(`implements\\s+[^{]*\\b${port.name}\\b`);
     if (implRegex.test(implContent)) {
-      pass(pkgName, "E15", `Port "${port.name}" has implementation in infra/repositories`);
+      pass(pkgName, 'E15', `Port "${port.name}" has implementation in infra/repositories`);
     } else {
-      warn(pkgName, "E15", `Port "${port.name}" (${port.file}) has no implementation in infra/repositories`);
+      warn(
+        pkgName,
+        'E15',
+        `Port "${port.name}" (${port.file}) has no implementation in infra/repositories`
+      );
     }
   }
 }
@@ -639,9 +682,9 @@ function checkSliceIsolation(pkgPath, pkgName, fm) {
   if (!fm.slice_isolation) return;
 
   const pkgDir = join(REPO_ROOT, pkgPath);
-  const slicesDir = join(pkgDir, "src", "slices");
+  const slicesDir = join(pkgDir, 'src', 'slices');
   if (!existsSync(slicesDir)) {
-    warn(pkgName, "E16", `slice_isolation=true but src/slices/ dir not found`);
+    warn(pkgName, 'E16', `slice_isolation=true but src/slices/ dir not found`);
     return;
   }
 
@@ -658,15 +701,15 @@ function checkSliceIsolation(pkgPath, pkgName, fm) {
     const sourceFiles = collectSourceFiles(sliceDir);
 
     for (const sourceFile of sourceFiles) {
-      const content = readFileSync(sourceFile, "utf-8");
+      const content = readFileSync(sourceFile, 'utf-8');
       const imports = extractImports(content);
-      const relToSlice = relative(sliceDir, sourceFile).replace(/\\/g, "/");
+      const relToSlice = relative(sliceDir, sourceFile).replace(/\\/g, '/');
 
       for (const imp of imports) {
-        if (!imp.startsWith(".")) continue; // skip bare/package imports
+        if (!imp.startsWith('.')) continue; // skip bare/package imports
 
         // Normalize import path relative to the file
-        const fileDir = dirname(relative(pkgDir, sourceFile)).replace(/\\/g, "/");
+        const fileDir = dirname(relative(pkgDir, sourceFile)).replace(/\\/g, '/');
         const resolved = posix.normalize(posix.join(fileDir, imp));
 
         // Pattern 1: imports ../../<otherSlice>/ (short relative from calculators/services depth)
@@ -674,7 +717,11 @@ function checkSliceIsolation(pkgPath, pkgName, fm) {
         if (shortCross) {
           const targetSlug = shortCross[1];
           if (slugSet.has(targetSlug) && targetSlug !== slug) {
-            fail(pkgName, "E16", `Slice "${slug}" imports from slice "${targetSlug}" in ${relToSlice} → ${imp} (use shared/ port instead)`);
+            fail(
+              pkgName,
+              'E16',
+              `Slice "${slug}" imports from slice "${targetSlug}" in ${relToSlice} → ${imp} (use shared/ port instead)`
+            );
             violations++;
             continue;
           }
@@ -685,7 +732,11 @@ function checkSliceIsolation(pkgPath, pkgName, fm) {
         if (longCross) {
           const targetSlug = longCross[1];
           if (slugSet.has(targetSlug) && targetSlug !== slug) {
-            fail(pkgName, "E16", `Slice "${slug}" imports from slice "${targetSlug}" in ${relToSlice} → ${imp} (use shared/ port instead)`);
+            fail(
+              pkgName,
+              'E16',
+              `Slice "${slug}" imports from slice "${targetSlug}" in ${relToSlice} → ${imp} (use shared/ port instead)`
+            );
             violations++;
             continue;
           }
@@ -695,7 +746,7 @@ function checkSliceIsolation(pkgPath, pkgName, fm) {
   }
 
   if (violations === 0) {
-    pass(pkgName, "E16", `Slice isolation: ${sliceSlugs.length} slices, 0 cross-slice violations`);
+    pass(pkgName, 'E16', `Slice isolation: ${sliceSlugs.length} slices, 0 cross-slice violations`);
   }
 }
 
@@ -707,16 +758,16 @@ function printReport() {
     return;
   }
 
-  console.log("\n+----------------------------------------------------------+");
-  console.log("|            ARCHITECTURE Governance Report                |");
-  console.log("+----------------------------------------------------------+\n");
+  console.log('\n+----------------------------------------------------------+');
+  console.log('|            ARCHITECTURE Governance Report                |');
+  console.log('+----------------------------------------------------------+\n');
 
   if (results.fail.length > 0) {
     console.log(`[FAIL] FAILURES (${results.fail.length}):\n`);
     for (const { pkg, check, msg } of results.fail) {
       console.log(`  [${check}] ${pkg}: ${msg}`);
     }
-    console.log("");
+    console.log('');
   }
 
   if (results.warn.length > 0) {
@@ -724,16 +775,16 @@ function printReport() {
     for (const { pkg, check, msg } of results.warn) {
       console.log(`  [${check}] ${pkg}: ${msg}`);
     }
-    console.log("");
+    console.log('');
   }
 
   console.log(`[PASS] PASSED: ${results.pass.length}`);
   console.log(`[FAIL] FAILED: ${results.fail.length}`);
   console.log(`[WARN] WARNED: ${results.warn.length}`);
-  console.log("");
+  console.log('');
 
   if (results.fail.length > 0) {
-    console.log("=> Fix failures before merging. See docs/ARCHITECTURE-SPEC.md section E.\n");
+    console.log('=> Fix failures before merging. See docs/ARCHITECTURE-SPEC.md section E.\n');
   }
 }
 
@@ -741,17 +792,17 @@ function printReport() {
 
 function main() {
   if (!existsSync(MANIFEST_PATH)) {
-    console.error("FATAL: .afenda/project.manifest.json not found");
+    console.error('FATAL: .afenda/project.manifest.json not found');
     process.exit(2);
   }
 
   const manifest = loadJson(MANIFEST_PATH);
   if (!manifest || !manifest.packages) {
-    console.error("FATAL: Invalid manifest");
+    console.error('FATAL: Invalid manifest');
     process.exit(2);
   }
 
-  console.log("Running ARCHITECTURE governance checks...\n");
+  console.log('Running ARCHITECTURE governance checks...\n');
 
   for (const [pkgPath, entry] of Object.entries(manifest.packages)) {
     if (PKG_FILTER && entry.name !== PKG_FILTER) continue;
@@ -765,12 +816,12 @@ function main() {
 
   // E14 + E15 + E16: Per-package checks that need frontmatter
   for (const [pkgPath, entry] of Object.entries(manifest.packages)) {
-    if (entry.type === "unmanaged") continue;
+    if (entry.type === 'unmanaged') continue;
     if (PKG_FILTER && entry.name !== PKG_FILTER) continue;
     const pkgDir = join(REPO_ROOT, pkgPath);
     const archFile = findArchFile(pkgDir);
     if (!archFile) continue;
-    const content = readFileSync(archFile, "utf-8");
+    const content = readFileSync(archFile, 'utf-8');
     const fm = parseFrontmatter(content);
     if (!fm) continue;
     checkPublicApiSurface(pkgPath, entry.name, fm);

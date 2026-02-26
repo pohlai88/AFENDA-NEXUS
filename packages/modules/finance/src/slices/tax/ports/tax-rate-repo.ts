@@ -1,10 +1,10 @@
-import type { TaxRate } from "../entities/tax-rate.js";
+import type { TaxRate } from '../entities/tax-rate.js';
 
 export interface CreateTaxRateInput {
   readonly taxCodeId: string;
   readonly name: string;
   readonly ratePercent: number;
-  readonly type: TaxRate["type"];
+  readonly type: TaxRate['type'];
   readonly jurisdictionCode: string;
   readonly effectiveFrom: Date;
   readonly effectiveTo: Date | null;

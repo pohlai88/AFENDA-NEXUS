@@ -1,12 +1,26 @@
-import { eq, count } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { revenueContracts, recognitionMilestones } from "@afenda/db";
-import { ok, err, NotFoundError, AppError, type Result, type PaginationParams, type PaginatedResult } from "@afenda/core";
-import type { RevenueContract, RecognitionMilestone } from "../../hub/entities/revenue-recognition.js";
-import type { IRevenueContractRepo, CreateRevenueContractInput } from "../../../slices/hub/ports/revenue-contract-repo.js";
+import { eq, count } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { revenueContracts, recognitionMilestones } from '@afenda/db';
+import {
+  ok,
+  err,
+  NotFoundError,
+  AppError,
+  type Result,
+  type PaginationParams,
+  type PaginatedResult,
+} from '@afenda/core';
+import type {
+  RevenueContract,
+  RecognitionMilestone,
+} from '../../hub/entities/revenue-recognition.js';
+import type {
+  IRevenueContractRepo,
+  CreateRevenueContractInput,
+} from '../../../slices/hub/ports/revenue-contract-repo.js';
 
 export class DrizzleRevenueContractRepo implements IRevenueContractRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async create(input: CreateRevenueContractInput): Promise<Result<RevenueContract>> {
     const [row] = await this.tx
@@ -23,12 +37,12 @@ export class DrizzleRevenueContractRepo implements IRevenueContractRepo {
         endDate: input.endDate,
         deferredAccountId: input.deferredAccountId,
         revenueAccountId: input.revenueAccountId,
-        status: "ACTIVE",
+        status: 'ACTIVE',
         recognizedToDate: 0n,
       })
       .returning();
 
-    if (!row) return err(new AppError("INTERNAL", "Failed to create revenue contract"));
+    if (!row) return err(new AppError('INTERNAL', 'Failed to create revenue contract'));
 
     return ok(this.mapToDomain(row));
   }
@@ -40,7 +54,7 @@ export class DrizzleRevenueContractRepo implements IRevenueContractRepo {
       .where(eq(revenueContracts.id, id))
       .limit(1);
 
-    if (!row) return err(new NotFoundError("RevenueContract", id));
+    if (!row) return err(new NotFoundError('RevenueContract', id));
 
     return ok(this.mapToDomain(row));
   }
@@ -50,15 +64,9 @@ export class DrizzleRevenueContractRepo implements IRevenueContractRepo {
     const limit = pagination?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [totalRow] = await this.tx
-      .select({ total: count() })
-      .from(revenueContracts);
+    const [totalRow] = await this.tx.select({ total: count() }).from(revenueContracts);
 
-    const rows = await this.tx
-      .select()
-      .from(revenueContracts)
-      .limit(limit)
-      .offset(offset);
+    const rows = await this.tx.select().from(revenueContracts).limit(limit).offset(offset);
 
     return ok({
       data: rows.map((r) => this.mapToDomain(r)),
@@ -75,7 +83,7 @@ export class DrizzleRevenueContractRepo implements IRevenueContractRepo {
       .where(eq(revenueContracts.id, id))
       .returning();
 
-    if (!row) return err(new NotFoundError("RevenueContract", id));
+    if (!row) return err(new NotFoundError('RevenueContract', id));
 
     return ok(this.mapToDomain(row));
   }
@@ -95,7 +103,7 @@ export class DrizzleRevenueContractRepo implements IRevenueContractRepo {
         targetDate: r.targetDate,
         completedDate: r.completedDate ?? undefined,
         isCompleted: r.isCompleted,
-      })),
+      }))
     );
   }
 
@@ -108,12 +116,12 @@ export class DrizzleRevenueContractRepo implements IRevenueContractRepo {
       customerName: row.customerName,
       totalAmount: row.totalAmount,
       currency: row.currencyId,
-      recognitionMethod: row.recognitionMethod as RevenueContract["recognitionMethod"],
+      recognitionMethod: row.recognitionMethod as RevenueContract['recognitionMethod'],
       startDate: row.startDate,
       endDate: row.endDate,
       deferredAccountId: row.deferredAccountId,
       revenueAccountId: row.revenueAccountId,
-      status: row.status as RevenueContract["status"],
+      status: row.status as RevenueContract['status'],
       recognizedToDate: row.recognizedToDate,
       createdAt: row.createdAt,
     };

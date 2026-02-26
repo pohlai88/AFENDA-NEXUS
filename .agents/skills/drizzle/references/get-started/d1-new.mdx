@@ -1,9 +1,9 @@
 import Npm from '@mdx/Npm.astro';
 import Npx from '@mdx/Npx.astro';
 import Callout from '@mdx/Callout.astro';
-import Prerequisites from "@mdx/Prerequisites.astro";
-import CodeTabs from "@mdx/CodeTabs.astro";
-import WhatsNextPostgres from "@mdx/WhatsNextPostgres.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
+import CodeTabs from '@mdx/CodeTabs.astro';
+import WhatsNextPostgres from '@mdx/WhatsNextPostgres.astro';
 import Breadcrumbs from '@mdx/Breadcrumbs.astro';
 import FileStructure from '@mdx/get-started/FileStructure.mdx';
 import InstallPackages from '@mdx/get-started/InstallPackages.mdx';
@@ -17,25 +17,29 @@ import SetupEnv from '@mdx/get-started/SetupEnv.mdx';
 import CreateTable from '@mdx/get-started/sqlite/CreateTable.mdx';
 import ConnectLibsql from '@mdx/get-started/sqlite/ConnectLibsql.mdx';
 
-<Breadcrumbs/>
+<Breadcrumbs />
 
 # Get Started with Drizzle and D1
 
-<Prerequisites>  
-  - **dotenv** - package for managing environment variables - [read here](https://www.npmjs.com/package/dotenv)
-  - **tsx** - package for running TypeScript files - [read here](https://tsx.is/)
-  - **Cloudflare D1** - Serverless SQL database to query from your Workers and Pages projects - [read here](https://developers.cloudflare.com/d1/)
-  - **wrangler** - Cloudflare Developer Platform command-line interface - [read here](https://developers.cloudflare.com/workers/wrangler)
+<Prerequisites>
+  - **dotenv** - package for managing environment variables - [read
+  here](https://www.npmjs.com/package/dotenv) - **tsx** - package for running TypeScript files -
+  [read here](https://tsx.is/) - **Cloudflare D1** - Serverless SQL database to query from your
+  Workers and Pages projects - [read here](https://developers.cloudflare.com/d1/) - **wrangler** -
+  Cloudflare Developer Platform command-line interface - [read
+  here](https://developers.cloudflare.com/workers/wrangler)
 </Prerequisites>
 
 <FileStructure />
 
 #### Step 1 - Install required packages
-<InstallPackages lib='wrangler'/>
+
+<InstallPackages lib="wrangler" />
 
 #### Step 2 - Setup wrangler.toml
 
 You would need to have a `wrangler.toml` file for D1 database and will look something like this:
+
 ```toml
 name = "YOUR PROJECT NAME"
 main = "src/index.ts"
@@ -64,19 +68,15 @@ export default {
 };
 ```
 
-#### Step 4 - Generate wrangler types 
+#### Step 4 - Generate wrangler types
 
-<Npx>
-wrangler types
-</Npx>
+<Npx>wrangler types</Npx>
 
-<Callout>
-The output of this command will be a `worker-configuration.d.ts` file.
-</Callout>
+<Callout>The output of this command will be a `worker-configuration.d.ts` file.</Callout>
 
 #### Step 5 - Create a table
 
-<CreateTable/>
+<CreateTable />
 
 #### Step 6 - Setup Drizzle config file
 
@@ -100,8 +100,10 @@ export default defineConfig({
   },
 });
 ```
-<Callout title='tips'>
-You can check [our tutorial](/docs/guides/d1-http-with-drizzle-kit) on how to get env variables from CloudFlare
+
+<Callout title="tips">
+  You can check [our tutorial](/docs/guides/d1-http-with-drizzle-kit) on how to get env variables
+  from CloudFlare
 </Callout>
 
 #### Step 7 - Applying changes to the database
@@ -127,4 +129,4 @@ export default {
 
 #### Step 9 - Run index.ts file
 
-<RunFile/>
+<RunFile />

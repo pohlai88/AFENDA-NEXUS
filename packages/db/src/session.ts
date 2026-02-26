@@ -1,8 +1,8 @@
-import { sql } from "drizzle-orm";
-import type { ExtractTablesWithRelations } from "drizzle-orm";
-import type { PgTransaction, PgQueryResultHKT } from "drizzle-orm/pg-core";
-import type { DbClient } from "./client.js";
-import type * as schema from "./schema/index.js";
+import { sql } from 'drizzle-orm';
+import type { ExtractTablesWithRelations } from 'drizzle-orm';
+import type { PgTransaction, PgQueryResultHKT } from 'drizzle-orm/pg-core';
+import type { DbClient } from './client.js';
+import type * as schema from './schema/index.js';
 
 export type TenantTx = PgTransaction<
   PgQueryResultHKT,
@@ -18,6 +18,7 @@ export interface DbSessionOptions {
 export interface TenantContext {
   tenantId: string;
   userId?: string;
+  companyId?: string;
 }
 
 export interface DbSession {
@@ -40,9 +41,16 @@ export interface DbSession {
    *   COMMIT / ROLLBACK
    *   -- connection returned to pool, all SET LOCAL values discarded
    */
-  withTenant<T>(
-    ctx: TenantContext,
-    fn: (tx: TenantTx) => Promise<T>,
+  withTenant<T>(ctx: TenantContext, fn: (tx: TenantTx) => Promise<T>): Promise<T>;
+
+  /**
+   * Execute a callback inside a transaction with tenant + company context.
+   * Sets app.tenant_id, app.company_id, app.user_id, and ROLE app_runtime.
+   * Use for company-scoped operations (GL, AP, AR, IC) — defense-in-depth.
+   */
+  withTenantAndCompany<T>(
+    ctx: TenantContext & { companyId: string },
+    fn: (tx: TenantTx) => Promise<T>
   ): Promise<T>;
 }
 
@@ -55,24 +63,37 @@ export interface DbSession {
  */
 export function createDbSession(opts: DbSessionOptions): DbSession {
   const { db, logger } = opts;
+  const rlsEnforced = process.env.RLS_ENFORCED !== 'false';
 
   return {
     db,
-    async withTenant<T>(
-      ctx: TenantContext,
-      fn: (tx: TenantTx) => Promise<T>,
-    ): Promise<T> {
+    async withTenant<T>(ctx: TenantContext, fn: (tx: TenantTx) => Promise<T>): Promise<T> {
       return db.transaction(async (tx) => {
         logger?.info(`Tenant context: ${ctx.tenantId}`);
-        await tx.execute(
-          sql`SELECT set_config('app.tenant_id', ${ctx.tenantId}, true)`,
-        );
+        await tx.execute(sql`SELECT set_config('app.tenant_id', ${ctx.tenantId}, true)`);
         if (ctx.userId) {
-          await tx.execute(
-            sql`SELECT set_config('app.user_id', ${ctx.userId}, true)`,
-          );
+          await tx.execute(sql`SELECT set_config('app.user_id', ${ctx.userId}, true)`);
         }
-        await tx.execute(sql`SET LOCAL ROLE app_runtime`);
+        if (rlsEnforced) {
+          await tx.execute(sql`SET LOCAL ROLE app_runtime`);
+        }
+        return fn(tx);
+      });
+    },
+    async withTenantAndCompany<T>(
+      ctx: TenantContext & { companyId: string },
+      fn: (tx: TenantTx) => Promise<T>
+    ): Promise<T> {
+      return db.transaction(async (tx) => {
+        logger?.info(`Tenant+company context: ${ctx.tenantId} / ${ctx.companyId}`);
+        await tx.execute(sql`SELECT set_config('app.tenant_id', ${ctx.tenantId}, true)`);
+        await tx.execute(sql`SELECT set_config('app.company_id', ${ctx.companyId}, true)`);
+        if (ctx.userId) {
+          await tx.execute(sql`SELECT set_config('app.user_id', ${ctx.userId}, true)`);
+        }
+        if (rlsEnforced) {
+          await tx.execute(sql`SET LOCAL ROLE app_runtime`);
+        }
         return fn(tx);
       });
     },

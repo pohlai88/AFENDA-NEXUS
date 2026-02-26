@@ -1,15 +1,15 @@
-import type { Result } from "@afenda/core";
-import { ok } from "@afenda/core";
-import type { Journal } from "../entities/journal.js";
-import type { RecurringTemplate } from "../../../shared/ports/recurring-template-port.js";
-import type { IRecurringTemplateRepo } from "../../../shared/ports/recurring-template-port.js";
-import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";
-import type { IAccountRepo } from "../../../slices/gl/ports/account-repo.js";
-import type { IFiscalPeriodRepo } from "../../../slices/gl/ports/fiscal-period-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { IJournalAuditRepo } from "../../../slices/gl/ports/journal-audit-repo.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import { ok } from '@afenda/core';
+import type { Journal } from '../entities/journal.js';
+import type { RecurringTemplate } from '../../../shared/ports/recurring-template-port.js';
+import type { IRecurringTemplateRepo } from '../../../shared/ports/recurring-template-port.js';
+import type { IJournalRepo, CreateJournalInput } from '../../../slices/gl/ports/journal-repo.js';
+import type { IAccountRepo } from '../../../slices/gl/ports/account-repo.js';
+import type { IFiscalPeriodRepo } from '../../../slices/gl/ports/fiscal-period-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { IJournalAuditRepo } from '../../../slices/gl/ports/journal-audit-repo.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface ProcessRecurringInput {
   readonly tenantId: string;
@@ -23,19 +23,16 @@ export interface ProcessRecurringResult {
   readonly journals: readonly Journal[];
 }
 
-function advanceDate(
-  from: Date,
-  frequency: RecurringTemplate["frequency"],
-): Date {
+function advanceDate(from: Date, frequency: RecurringTemplate['frequency']): Date {
   const next = new Date(from);
   switch (frequency) {
-    case "MONTHLY":
+    case 'MONTHLY':
       next.setMonth(next.getMonth() + 1);
       break;
-    case "QUARTERLY":
+    case 'QUARTERLY':
       next.setMonth(next.getMonth() + 3);
       break;
-    case "YEARLY":
+    case 'YEARLY':
       next.setFullYear(next.getFullYear() + 1);
       break;
   }
@@ -52,7 +49,7 @@ export async function processRecurringJournals(
     outboxWriter: IOutboxWriter;
     journalAuditRepo: IJournalAuditRepo;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<ProcessRecurringResult>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor.userId ?? input.userId;
@@ -68,11 +65,14 @@ export async function processRecurringJournals(
   for (const template of templates) {
     try {
       // Resolve accountCode → accountId for each template line
-      const resolvedLines: CreateJournalInput["lines"][number][] = [];
+      const resolvedLines: CreateJournalInput['lines'][number][] = [];
       let resolutionFailed = false;
 
       for (const line of template.lines) {
-        const accountResult = await deps.accountRepo.findByCode(ctx?.companyId ?? "", line.accountCode);
+        const accountResult = await deps.accountRepo.findByCode(
+          ctx?.companyId ?? '',
+          line.accountCode
+        );
         if (!accountResult.ok) {
           resolutionFailed = true;
           break;
@@ -91,7 +91,10 @@ export async function processRecurringJournals(
       }
 
       // Find open period for the template's nextRunDate
-      const periodResult = await deps.periodRepo.findOpenByDate(ctx?.companyId ?? "", template.nextRunDate);
+      const periodResult = await deps.periodRepo.findOpenByDate(
+        ctx?.companyId ?? '',
+        template.nextRunDate
+      );
       if (!periodResult.ok) {
         failed++;
         continue;
@@ -119,7 +122,7 @@ export async function processRecurringJournals(
         tenantId,
         journalId: journalResult.value.id,
         fromStatus: null,
-        toStatus: "DRAFT",
+        toStatus: 'DRAFT',
         userId,
       });
 

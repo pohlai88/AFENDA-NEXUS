@@ -15,7 +15,7 @@ export interface OutboxRow {
 }
 
 export interface OutboxWriter {
-  write(row: Omit<OutboxRow, "id" | "createdAt" | "processedAt">): Promise<void>;
+  write(row: Omit<OutboxRow, 'id' | 'createdAt' | 'processedAt'>): Promise<void>;
 }
 
 export interface OutboxDrainer {

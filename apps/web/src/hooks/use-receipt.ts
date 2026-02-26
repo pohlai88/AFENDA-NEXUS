@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import type { CommandReceipt } from "@/lib/types";
+import { useState, useCallback } from 'react';
+import type { CommandReceipt } from '@/lib/types';
 
 interface UseReceiptReturn {
   receipt: CommandReceipt | null;

@@ -1,28 +1,35 @@
-import { eq, and, count } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { icAgreements, icTransactions, icTransactionLegs, currencies } from "@afenda/db";
-import { ok, err, NotFoundError, type Result, type PaginationParams, type PaginatedResult } from "@afenda/core";
-import type { IntercompanyRelationship, IntercompanyDocument } from "../entities/intercompany.js";
-import type { IIcAgreementRepo, IIcTransactionRepo, CreateIcDocumentInput } from "../../../slices/ic/ports/ic-repo.js";
+import { eq, and, count } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { icAgreements, icTransactions, icTransactionLegs, currencies } from '@afenda/db';
+import {
+  ok,
+  err,
+  NotFoundError,
+  type Result,
+  type PaginationParams,
+  type PaginatedResult,
+} from '@afenda/core';
+import type { IntercompanyRelationship, IntercompanyDocument } from '../entities/intercompany.js';
+import type {
+  IIcAgreementRepo,
+  IIcTransactionRepo,
+  CreateIcDocumentInput,
+} from '../../../slices/ic/ports/ic-repo.js';
 
 export class DrizzleIcAgreementRepo implements IIcAgreementRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async findById(id: string): Promise<Result<IntercompanyRelationship>> {
-    const [row] = await this.tx
-      .select()
-      .from(icAgreements)
-      .where(eq(icAgreements.id, id))
-      .limit(1);
+    const [row] = await this.tx.select().from(icAgreements).where(eq(icAgreements.id, id)).limit(1);
 
-    if (!row) return err(new NotFoundError("IcAgreement", id));
+    if (!row) return err(new NotFoundError('IcAgreement', id));
 
     return ok({
       id: row.id!,
       tenantId: row.tenantId as never,
       sellerCompanyId: row.sellerCompanyId as never,
       buyerCompanyId: row.buyerCompanyId as never,
-      pricingRule: row.pricing as "COST" | "MARKUP" | "MARKET",
+      pricingRule: row.pricing as 'COST' | 'MARKUP' | 'MARKET',
       markupPercent: row.markupPercent ?? null,
       isActive: row.isActive,
       createdAt: row.createdAt,
@@ -31,7 +38,7 @@ export class DrizzleIcAgreementRepo implements IIcAgreementRepo {
 
   async findByCompanyPair(
     sellerCompanyId: string,
-    buyerCompanyId: string,
+    buyerCompanyId: string
   ): Promise<Result<IntercompanyRelationship>> {
     const [row] = await this.tx
       .select()
@@ -39,46 +46,42 @@ export class DrizzleIcAgreementRepo implements IIcAgreementRepo {
       .where(
         and(
           eq(icAgreements.sellerCompanyId, sellerCompanyId),
-          eq(icAgreements.buyerCompanyId, buyerCompanyId),
-        ),
+          eq(icAgreements.buyerCompanyId, buyerCompanyId)
+        )
       )
       .limit(1);
 
-    if (!row) return err(new NotFoundError("IcAgreement", `${sellerCompanyId}/${buyerCompanyId}`));
+    if (!row) return err(new NotFoundError('IcAgreement', `${sellerCompanyId}/${buyerCompanyId}`));
 
     return ok({
       id: row.id!,
       tenantId: row.tenantId as never,
       sellerCompanyId: row.sellerCompanyId as never,
       buyerCompanyId: row.buyerCompanyId as never,
-      pricingRule: row.pricing as "COST" | "MARKUP" | "MARKET",
+      pricingRule: row.pricing as 'COST' | 'MARKUP' | 'MARKET',
       markupPercent: row.markupPercent ?? null,
       isActive: row.isActive,
       createdAt: row.createdAt,
     });
   }
 
-  async findAll(pagination?: PaginationParams): Promise<Result<PaginatedResult<IntercompanyRelationship>>> {
+  async findAll(
+    pagination?: PaginationParams
+  ): Promise<Result<PaginatedResult<IntercompanyRelationship>>> {
     const page = pagination?.page ?? 1;
     const limit = pagination?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [totalRow] = await this.tx
-      .select({ total: count() })
-      .from(icAgreements);
+    const [totalRow] = await this.tx.select({ total: count() }).from(icAgreements);
 
-    const rows = await this.tx
-      .select()
-      .from(icAgreements)
-      .limit(limit)
-      .offset(offset);
+    const rows = await this.tx.select().from(icAgreements).limit(limit).offset(offset);
 
     const data: IntercompanyRelationship[] = rows.map((row) => ({
       id: row.id!,
       tenantId: row.tenantId as never,
       sellerCompanyId: row.sellerCompanyId as never,
       buyerCompanyId: row.buyerCompanyId as never,
-      pricingRule: row.pricing as "COST" | "MARKUP" | "MARKET",
+      pricingRule: row.pricing as 'COST' | 'MARKUP' | 'MARKET',
       markupPercent: row.markupPercent ?? null,
       isActive: row.isActive,
       createdAt: row.createdAt,
@@ -89,7 +92,7 @@ export class DrizzleIcAgreementRepo implements IIcAgreementRepo {
 }
 
 export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async create(input: CreateIcDocumentInput): Promise<Result<IntercompanyDocument>> {
     // Resolve currencyId from currency code
@@ -99,7 +102,7 @@ export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
       .where(eq(currencies.code, input.currency))
       .limit(1);
 
-    const currencyId = currencyRow?.id ?? "00000000-0000-0000-0000-000000000000";
+    const currencyId = currencyRow?.id ?? '00000000-0000-0000-0000-000000000000';
 
     const [txRow] = await this.tx
       .insert(icTransactions)
@@ -109,18 +112,18 @@ export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
         transactionDate: new Date(),
         amount: input.amount,
         currencyId,
-        description: "IC Transaction",
+        description: 'IC Transaction',
       })
       .returning();
 
-    if (!txRow) return err(new NotFoundError("IcTransaction", "create-failed"));
+    if (!txRow) return err(new NotFoundError('IcTransaction', 'create-failed'));
 
     // Create source leg
     await this.tx.insert(icTransactionLegs).values({
       tenantId: input.tenantId,
       transactionId: txRow.id!,
       companyId: input.sourceCompanyId,
-      side: "SELLER",
+      side: 'SELLER',
       journalId: input.sourceJournalId,
     });
 
@@ -129,7 +132,7 @@ export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
       tenantId: input.tenantId,
       transactionId: txRow.id!,
       companyId: input.mirrorCompanyId,
-      side: "BUYER",
+      side: 'BUYER',
       journalId: input.mirrorJournalId,
     });
 
@@ -143,19 +146,19 @@ export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
       mirrorJournalId: input.mirrorJournalId,
       amount: input.amount,
       currency: input.currency,
-      status: "PAIRED",
+      status: 'PAIRED',
       createdAt: txRow.createdAt,
     });
   }
 
-  async findAll(pagination?: PaginationParams): Promise<Result<PaginatedResult<IntercompanyDocument>>> {
+  async findAll(
+    pagination?: PaginationParams
+  ): Promise<Result<PaginatedResult<IntercompanyDocument>>> {
     const page = pagination?.page ?? 1;
     const limit = pagination?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const [totalRow] = await this.tx
-      .select({ total: count() })
-      .from(icTransactions);
+    const [totalRow] = await this.tx.select({ total: count() }).from(icTransactions);
 
     const rows = await this.tx
       .select({
@@ -179,20 +182,20 @@ export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
         .from(icTransactionLegs)
         .where(eq(icTransactionLegs.transactionId, row.id!));
 
-      const sellerLeg = legs.find((l) => l.side === "SELLER");
-      const buyerLeg = legs.find((l) => l.side === "BUYER");
+      const sellerLeg = legs.find((l) => l.side === 'SELLER');
+      const buyerLeg = legs.find((l) => l.side === 'BUYER');
 
       data.push({
         id: row.id!,
         tenantId: row.tenantId as never,
         relationshipId: row.agreementId,
-        sourceCompanyId: (sellerLeg?.companyId ?? "") as never,
-        mirrorCompanyId: (buyerLeg?.companyId ?? "") as never,
-        sourceJournalId: sellerLeg?.journalId ?? "",
-        mirrorJournalId: buyerLeg?.journalId ?? "",
+        sourceCompanyId: (sellerLeg?.companyId ?? '') as never,
+        mirrorCompanyId: (buyerLeg?.companyId ?? '') as never,
+        sourceJournalId: sellerLeg?.journalId ?? '',
+        mirrorJournalId: buyerLeg?.journalId ?? '',
         amount: row.amount ?? 0n,
-        currency: row.currencyCode ?? "USD",
-        status: row.settlementStatus === "PENDING" ? "PENDING" : "PAIRED",
+        currency: row.currencyCode ?? 'USD',
+        status: row.settlementStatus === 'PENDING' ? 'PENDING' : 'PAIRED',
         createdAt: row.createdAt,
       });
     }
@@ -216,27 +219,27 @@ export class DrizzleIcTransactionRepo implements IIcTransactionRepo {
       .where(eq(icTransactions.id, id))
       .limit(1);
 
-    if (!row) return err(new NotFoundError("IcTransaction", id));
+    if (!row) return err(new NotFoundError('IcTransaction', id));
 
     const legs = await this.tx
       .select()
       .from(icTransactionLegs)
       .where(eq(icTransactionLegs.transactionId, id));
 
-    const sellerLeg = legs.find((l) => l.side === "SELLER");
-    const buyerLeg = legs.find((l) => l.side === "BUYER");
+    const sellerLeg = legs.find((l) => l.side === 'SELLER');
+    const buyerLeg = legs.find((l) => l.side === 'BUYER');
 
     return ok({
       id: row.id!,
       tenantId: row.tenantId as never,
       relationshipId: row.agreementId,
-      sourceCompanyId: (sellerLeg?.companyId ?? "") as never,
-      mirrorCompanyId: (buyerLeg?.companyId ?? "") as never,
-      sourceJournalId: sellerLeg?.journalId ?? "",
-      mirrorJournalId: buyerLeg?.journalId ?? "",
+      sourceCompanyId: (sellerLeg?.companyId ?? '') as never,
+      mirrorCompanyId: (buyerLeg?.companyId ?? '') as never,
+      sourceJournalId: sellerLeg?.journalId ?? '',
+      mirrorJournalId: buyerLeg?.journalId ?? '',
       amount: row.amount ?? 0n,
-      currency: row.currencyCode ?? "USD",
-      status: row.settlementStatus === "PENDING" ? "PENDING" : "PAIRED",
+      currency: row.currencyCode ?? 'USD',
+      status: row.settlementStatus === 'PENDING' ? 'PENDING' : 'PAIRED',
       createdAt: row.createdAt,
     });
   }

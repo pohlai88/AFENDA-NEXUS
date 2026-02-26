@@ -1,5 +1,5 @@
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { PaymentRun, PaymentRunItem } from "../entities/payment-run.js";
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type { PaymentRun, PaymentRunItem } from '../entities/payment-run.js';
 
 export interface CreatePaymentRunInput {
   readonly tenantId: string;

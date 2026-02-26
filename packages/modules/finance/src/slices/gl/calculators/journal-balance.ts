@@ -5,10 +5,10 @@
  * Pure calculator — no I/O, no side effects.
  * Validates that a set of journal lines is balanced (sum debits = sum credits).
  */
-import type { Money } from "@afenda/core";
+import type { Money } from '@afenda/core';
 
-export type { CalculatorResult } from "../../../shared/types.js";
-import type { CalculatorResult } from "../../../shared/types.js";
+export type { CalculatorResult } from '../../../shared/types.js';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface JournalBalanceLine {
   readonly debit: Money;
@@ -22,10 +22,10 @@ export interface JournalBalanceResult {
 }
 
 export function validateJournalBalance(
-  lines: readonly JournalBalanceLine[],
+  lines: readonly JournalBalanceLine[]
 ): CalculatorResult<JournalBalanceResult> {
   if (lines.length < 2) {
-    throw new Error("Journal must have at least 2 lines");
+    throw new Error('Journal must have at least 2 lines');
   }
 
   let totalDebits = 0n;

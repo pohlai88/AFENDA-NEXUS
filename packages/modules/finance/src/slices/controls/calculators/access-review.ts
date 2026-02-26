@@ -6,15 +6,15 @@
  * dormant accounts, SoD violations, and orphaned accounts.
  */
 
-export type AccessRiskLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type AccessRiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export type AccessFinding =
-  | "EXCESSIVE_PRIVILEGE"
-  | "DORMANT_ACCOUNT"
-  | "SOD_VIOLATION"
-  | "ORPHANED_ACCOUNT"
-  | "MISSING_APPROVAL"
-  | "ROLE_ACCUMULATION";
+  | 'EXCESSIVE_PRIVILEGE'
+  | 'DORMANT_ACCOUNT'
+  | 'SOD_VIOLATION'
+  | 'ORPHANED_ACCOUNT'
+  | 'MISSING_APPROVAL'
+  | 'ROLE_ACCUMULATION';
 
 export interface UserAccessRecord {
   readonly userId: string;
@@ -62,18 +62,18 @@ export interface AccessReviewReport {
   readonly reviewDate: Date;
 }
 
-const DEFAULT_CONFIG: Omit<AccessReviewConfig, "reviewDate" | "sodRules"> = {
+const DEFAULT_CONFIG: Omit<AccessReviewConfig, 'reviewDate' | 'sodRules'> = {
   dormantDays: 90,
   maxRolesPerUser: 5,
-  privilegedRoles: ["ADMIN", "FINANCE_ADMIN", "SYSTEM_ADMIN", "SUPER_USER"],
+  privilegedRoles: ['ADMIN', 'FINANCE_ADMIN', 'SYSTEM_ADMIN', 'SUPER_USER'],
 };
 
 export function reviewUserAccess(
   users: readonly UserAccessRecord[],
-  config: AccessReviewConfig,
+  config: AccessReviewConfig
 ): { result: AccessReviewReport; explanation: string } {
   if (users.length === 0) {
-    throw new Error("At least one user access record is required");
+    throw new Error('At least one user access record is required');
   }
 
   const cfg = { ...DEFAULT_CONFIG, ...config };
@@ -84,25 +84,25 @@ export function reviewUserAccess(
       findings.push({
         userId: user.userId,
         userName: user.userName,
-        finding: "ORPHANED_ACCOUNT",
-        riskLevel: "HIGH",
+        finding: 'ORPHANED_ACCOUNT',
+        riskLevel: 'HIGH',
         description: `Inactive account still has ${user.roles.length} role(s) assigned`,
-        recommendation: "Remove all roles from inactive account immediately",
+        recommendation: 'Remove all roles from inactive account immediately',
       });
     }
 
     if (user.isActive && user.lastLoginDate) {
       const daysSinceLogin = Math.floor(
-        (cfg.reviewDate.getTime() - user.lastLoginDate.getTime()) / (1000 * 60 * 60 * 24),
+        (cfg.reviewDate.getTime() - user.lastLoginDate.getTime()) / (1000 * 60 * 60 * 24)
       );
       if (daysSinceLogin > cfg.dormantDays) {
         findings.push({
           userId: user.userId,
           userName: user.userName,
-          finding: "DORMANT_ACCOUNT",
-          riskLevel: "MEDIUM",
+          finding: 'DORMANT_ACCOUNT',
+          riskLevel: 'MEDIUM',
           description: `No login for ${daysSinceLogin} days (threshold: ${cfg.dormantDays})`,
-          recommendation: "Disable account or confirm continued need with manager",
+          recommendation: 'Disable account or confirm continued need with manager',
         });
       }
     }
@@ -111,10 +111,10 @@ export function reviewUserAccess(
       findings.push({
         userId: user.userId,
         userName: user.userName,
-        finding: "DORMANT_ACCOUNT",
-        riskLevel: "MEDIUM",
-        description: "Account has never been used",
-        recommendation: "Disable account or confirm continued need with manager",
+        finding: 'DORMANT_ACCOUNT',
+        riskLevel: 'MEDIUM',
+        description: 'Account has never been used',
+        recommendation: 'Disable account or confirm continued need with manager',
       });
     }
 
@@ -122,10 +122,10 @@ export function reviewUserAccess(
       findings.push({
         userId: user.userId,
         userName: user.userName,
-        finding: "ROLE_ACCUMULATION",
-        riskLevel: "HIGH",
+        finding: 'ROLE_ACCUMULATION',
+        riskLevel: 'HIGH',
         description: `User has ${user.roles.length} roles (max recommended: ${cfg.maxRolesPerUser})`,
-        recommendation: "Review role assignments and remove unnecessary roles",
+        recommendation: 'Review role assignments and remove unnecessary roles',
       });
     }
 
@@ -134,10 +134,10 @@ export function reviewUserAccess(
       findings.push({
         userId: user.userId,
         userName: user.userName,
-        finding: "MISSING_APPROVAL",
-        riskLevel: "HIGH",
-        description: "Privileged role assigned but no manager/approver on record",
-        recommendation: "Assign a manager and obtain documented approval for privileged access",
+        finding: 'MISSING_APPROVAL',
+        riskLevel: 'HIGH',
+        description: 'Privileged role assigned but no manager/approver on record',
+        recommendation: 'Assign a manager and obtain documented approval for privileged access',
       });
     }
 
@@ -147,10 +147,10 @@ export function reviewUserAccess(
         findings.push({
           userId: user.userId,
           userName: user.userName,
-          finding: "EXCESSIVE_PRIVILEGE",
-          riskLevel: "HIGH",
+          finding: 'EXCESSIVE_PRIVILEGE',
+          riskLevel: 'HIGH',
           description: `Has privileged role(s) plus ${nonPriv.length} operational role(s) — principle of least privilege violation`,
-          recommendation: "Separate admin and operational access into different accounts",
+          recommendation: 'Separate admin and operational access into different accounts',
         });
       }
     }
@@ -161,8 +161,8 @@ export function reviewUserAccess(
         findings.push({
           userId: user.userId,
           userName: user.userName,
-          finding: "SOD_VIOLATION",
-          riskLevel: "CRITICAL",
+          finding: 'SOD_VIOLATION',
+          riskLevel: 'CRITICAL',
           description: `Segregation of Duties violation: has both ${roleA} and ${roleB} — ${rule.description}`,
           recommendation: `Remove one of the conflicting roles (${roleA} or ${roleB})`,
         });
@@ -171,10 +171,10 @@ export function reviewUserAccess(
   }
 
   const byRisk = {
-    critical: findings.filter((f) => f.riskLevel === "CRITICAL").length,
-    high: findings.filter((f) => f.riskLevel === "HIGH").length,
-    medium: findings.filter((f) => f.riskLevel === "MEDIUM").length,
-    low: findings.filter((f) => f.riskLevel === "LOW").length,
+    critical: findings.filter((f) => f.riskLevel === 'CRITICAL').length,
+    high: findings.filter((f) => f.riskLevel === 'HIGH').length,
+    medium: findings.filter((f) => f.riskLevel === 'MEDIUM').length,
+    low: findings.filter((f) => f.riskLevel === 'LOW').length,
   };
 
   return {
@@ -185,8 +185,9 @@ export function reviewUserAccess(
       byRisk,
       reviewDate: cfg.reviewDate,
     },
-    explanation: findings.length === 0
-      ? `${users.length} user(s) reviewed — no findings`
-      : `${users.length} user(s) reviewed — ${findings.length} finding(s): ${byRisk.critical} critical, ${byRisk.high} high, ${byRisk.medium} medium, ${byRisk.low} low`,
+    explanation:
+      findings.length === 0
+        ? `${users.length} user(s) reviewed — no findings`
+        : `${users.length} user(s) reviewed — ${findings.length} finding(s): ${byRisk.critical} critical, ${byRisk.high} high, ${byRisk.medium} medium, ${byRisk.low} low`,
   };
 }

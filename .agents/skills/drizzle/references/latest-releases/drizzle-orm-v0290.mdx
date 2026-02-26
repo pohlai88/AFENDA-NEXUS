@@ -3,7 +3,8 @@ title: DrizzleORM v0.29.0 release
 pubDate: 2023-11-09
 description: Added new features like unsigned option for bigint in MySQL, improved query builder types, added possibility to specify name for primary keys and foreign keys, read replicas support, set operators support, new MySQL and PostgreSQL proxy drivers, D1 Batch API support.
 ---
-import Section from "@mdx/Section.astro";
+
+import Section from '@mdx/Section.astro';
 
 > Drizzle ORM version `0.29.0` will require a minimum Drizzle Kit version of `0.20.0`, and vice versa. Therefore, when upgrading to a newer version of Drizzle ORM, you will also need to upgrade Drizzle Kit. This may result in some breaking changes throughout the versions, especially if you need to upgrade Drizzle Kit and your Drizzle ORM version is older than `<0.28.0`
 
@@ -26,11 +27,7 @@ Read more in [docs](/docs/column-types/mysql#bigint)
 Starting from `0.29.0` by default, as all the query builders in Drizzle try to conform to SQL as much as possible, you can only invoke most of the methods once. For example, in a SELECT statement there might only be one WHERE clause, so you can only invoke .where() once:
 
 ```ts copy {5}
-const query = db
-  .select()
-  .from(users)
-  .where(eq(users.id, 1))
-  .where(eq(users.name, 'John')); // ❌ Type error - where() can only be invoked once
+const query = db.select().from(users).where(eq(users.id, 1)).where(eq(users.name, 'John')); // ❌ Type error - where() can only be invoked once
 ```
 
 This behavior is useful for conventional query building, i.e. when you create the whole query at once. However, it becomes a problem when you want to build a query dynamically, i.e. if you have a shared function that takes a query builder and enhances it. To solve this problem, Drizzle provides a special 'dynamic' mode for query builders, which removes the restriction of invoking methods only once. To enable it, you need to call .$dynamic() on a query builder.
@@ -38,11 +35,7 @@ This behavior is useful for conventional query building, i.e. when you create th
 Let's see how it works by implementing a simple withPagination function that adds LIMIT and OFFSET clauses to a query based on the provided page number and an optional page size:
 
 ```ts copy {12,13}
-function withPagination<T extends PgSelect>(
-  qb: T,
-  page: number,
-  pageSize: number = 10,
-) {
+function withPagination<T extends PgSelect>(qb: T, page: number, pageSize: number = 10) {
   return qb.limit(pageSize).offset(page * pageSize);
 }
 
@@ -71,17 +64,21 @@ Read more in [docs](/docs/dynamic-query-building)
 There is an issue when constraint names exceed the 64-character limit of the database. This causes the database engine to truncate the name, potentially leading to issues. Starting from `0.29.0`, you have the option to specify custom names for both `primaryKey()` and `foreignKey()`. We have also deprecated the old `primaryKey()` syntax, which can still be used but will be removed in future releases
 
 ```ts copy {5,7}
-const table = pgTable('table', {
-  id: integer('id'),
-  name: text('name'),
-}, (table) => ({
-  cpk: primaryKey({ name: 'composite_key', columns: [table.id, table.name] }),
-  cfk: foreignKey({
-    name: 'fkName',
-    columns: [table.id],
-    foreignColumns: [table.name],
-  }),
-}));
+const table = pgTable(
+  'table',
+  {
+    id: integer('id'),
+    name: text('name'),
+  },
+  (table) => ({
+    cpk: primaryKey({ name: 'composite_key', columns: [table.id, table.name] }),
+    cfk: foreignKey({
+      name: 'fkName',
+      columns: [table.id],
+      foreignColumns: [table.name],
+    }),
+  })
+);
 ```
 
 Read more in [docs](/docs/indexes-constraints#composite-primary-key)
@@ -101,25 +98,25 @@ const db = withReplicas(primaryDb, [read1, read2]);
 db.$primary.select().from(usersTable);
 
 // read from either read1 connection or read2 connection
-db.select().from(usersTable)
+db.select().from(usersTable);
 
 // use primary database for delete operation
-db.delete(usersTable).where(eq(usersTable.id, 1))
+db.delete(usersTable).where(eq(usersTable.id, 1));
 ```
 
 Implementation example of custom logic for selecting read replicas, where the first replica has a 70% chance of being chosen, and the second replica has a 30% chance of being chosen. Note that you can implement any type of random selection for read replicas
 
 ```ts copy
 const db = withReplicas(primaryDb, [read1, read2], (replicas) => {
-    const weight = [0.7, 0.3];
-    let cumulativeProbability = 0;
-    const rand = Math.random();
+  const weight = [0.7, 0.3];
+  let cumulativeProbability = 0;
+  const rand = Math.random();
 
-    for (const [i, replica] of replicas.entries()) {
-      cumulativeProbability += weight[i]!;
-      if (rand < cumulativeProbability) return replica;
-    }
-    return replicas[0]!
+  for (const [i, replica] of replicas.entries()) {
+    cumulativeProbability += weight[i]!;
+    if (rand < cumulativeProbability) return replica;
+  }
+  return replicas[0]!;
 });
 ```
 
@@ -143,12 +140,14 @@ const allUsersQuery = db.select().from(users);
 const allCustomersQuery = db.select().from(customers);
 
 const result = await union(allUsersQuery, allCustomersQuery)
-```
+
+````
 
 ```ts copy {2}
 // Builder approach
 const result = await db.select().from(users).union(db.select().from(customers));
-```
+````
+
 </Section>
 
 Read more in [docs](/docs/set-operations)
@@ -185,14 +184,18 @@ async function main() {
     }
   });
 
-  await migrate(db, async (queries) => {
-    try {
-      await axios.post(`${process.env.REMOTE_DRIVER}/migrate`, { queries });
-    } catch (e) {
-      console.log(e);
-      throw new Error('Proxy server cannot run migrations');
-    }
-  }, { migrationsFolder: 'drizzle' });
+  await migrate(
+    db,
+    async (queries) => {
+      try {
+        await axios.post(`${process.env.REMOTE_DRIVER}/migrate`, { queries });
+      } catch (e) {
+        console.log(e);
+        throw new Error('Proxy server cannot run migrations');
+      }
+    },
+    { migrationsFolder: 'drizzle' }
+  );
 
   await db.insert(cities).values({ id: 1, name: 'name' });
 
@@ -203,10 +206,10 @@ async function main() {
     cityId: 1,
   });
 
-  const usersToCityResponse = await db.select().from(users).leftJoin(
-    cities,
-    eq(users.cityId, cities.id),
-  );
+  const usersToCityResponse = await db
+    .select()
+    .from(users)
+    .leftJoin(cities, eq(users.cityId, cities.id));
 }
 ```
 
@@ -239,18 +242,27 @@ async function main() {
     }
   });
 
-  await migrate(db, async (queries) => {
-    try {
-      await axios.post(`${process.env.REMOTE_DRIVER}/query`, { queries });
-    } catch (e) {
-      console.log(e);
-      throw new Error('Proxy server cannot run migrations');
-    }
-  }, { migrationsFolder: 'drizzle' });
+  await migrate(
+    db,
+    async (queries) => {
+      try {
+        await axios.post(`${process.env.REMOTE_DRIVER}/query`, { queries });
+      } catch (e) {
+        console.log(e);
+        throw new Error('Proxy server cannot run migrations');
+      }
+    },
+    { migrationsFolder: 'drizzle' }
+  );
 
   const insertedCity = await db.insert(cities).values({ id: 1, name: 'name' }).returning();
-  const insertedUser = await db.insert(users).values({ id: 1, name: 'name', email: 'email', cityId: 1 });
-  const usersToCityResponse = await db.select().from(users).leftJoin(cities, eq(users.cityId, cities.id));
+  const insertedUser = await db
+    .insert(users)
+    .values({ id: 1, name: 'name', email: 'email', cityId: 1 });
+  const usersToCityResponse = await db
+    .select()
+    .from(users)
+    .leftJoin(cities, eq(users.cityId, cities.id));
 }
 ```
 
@@ -301,6 +313,7 @@ type BatchResponse = [
   }[],
 ];
 ```
+
 </Section>
 
 All possible builders that can be used inside `db.batch`:
@@ -321,6 +334,7 @@ All possible builders that can be used inside `db.batch`:
 More usage examples here: [integration-tests/tests/d1-batch.test.ts](https://github.com/drizzle-team/drizzle-orm/blob/beta/integration-tests/tests/d1-batch.test.ts) and in [docs](/docs/batch-api)
 
 ---
+
 ## Drizzle Kit 0.20.0
 
 1. New way to define drizzle.config using `defineConfig` function
@@ -328,7 +342,7 @@ More usage examples here: [integration-tests/tests/d1-batch.test.ts](https://git
 3. Drizzle Studio is migrating to https://local.drizzle.studio/
 4. `bigint unsigned` support
 5. `primaryKeys` and `foreignKeys` now can have custom names
-6. Environment variables are now automatically fetched 
+6. Environment variables are now automatically fetched
 7. Some bug fixes and improvements
 
 You can read more about drizzle-kit updates [here](https://github.com/drizzle-team/drizzle-kit-mirror/releases/tag/v0.20.0)

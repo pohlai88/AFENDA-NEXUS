@@ -1,8 +1,20 @@
-import { sql } from "drizzle-orm";
-import { ok } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { TenantTx } from "@afenda/db";
-import type { IDocumentNumberGenerator } from "../../../slices/gl/ports/document-number-generator.js";
+import { sql } from 'drizzle-orm';
+import { ok } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { TenantTx } from '@afenda/db';
+import type { IDocumentNumberGenerator } from '../../../slices/gl/ports/document-number-generator.js';
+
+/**
+ * Extract the first row from a Drizzle `execute()` result.
+ * The HKT-based return type is opaque at compile time but is always array-like at runtime.
+ */
+function extractFirstRow<T>(result: unknown): T | undefined {
+  if (Array.isArray(result)) return result[0] as T;
+  if (result && typeof result === 'object' && 'rows' in result) {
+    return (result as { rows: T[] }).rows[0];
+  }
+  return undefined;
+}
 
 /**
  * DB-backed document number generator using advisory locks for gap-free sequencing.
@@ -25,8 +37,9 @@ export class DrizzleDocumentNumberGenerator implements IDocumentNumberGenerator 
         RETURNING last_value
       `);
 
-      const seq = Number((result as unknown as { rows: { last_value: number }[] }).rows?.[0]?.last_value ?? 1);
-      return ok(`${prefix}-${String(seq).padStart(6, "0")}`);
+      const firstRow = extractFirstRow<{ last_value: number }>(result);
+      const seq = Number(firstRow?.last_value ?? 1);
+      return ok(`${prefix}-${String(seq).padStart(6, '0')}`);
     } catch {
       // Fallback: if document_sequence table doesn't exist yet, use timestamp
       const ts = Date.now();

@@ -1,4 +1,4 @@
-import type { LedgerId, Money } from "@afenda/core";
+import type { LedgerId, Money } from '@afenda/core';
 
 export interface ReportSection {
   readonly label: string;
@@ -78,4 +78,29 @@ export interface CashFlowStatement {
   readonly investingActivities: Money;
   readonly financingActivities: Money;
   readonly netCashFlow: Money;
+}
+
+export interface EquityStatementReport {
+  readonly ledgerId: LedgerId;
+  readonly periodId: string;
+  readonly rows: readonly EquityStatementReportRow[];
+  readonly totalOpeningEquity: Money;
+  readonly totalClosingEquity: Money;
+  readonly totalComprehensiveIncome: Money;
+}
+
+export interface EquityStatementReportRow {
+  readonly component: string;
+  readonly openingBalance: Money;
+  readonly closingBalance: Money;
+  readonly totalMovements: Money;
+  readonly movements: {
+    readonly profitOrLoss: Money;
+    readonly oci: Money;
+    readonly dividends: Money;
+    readonly sharesIssued: Money;
+    readonly sharesRepurchased: Money;
+    readonly transfers: Money;
+    readonly other: Money;
+  };
 }

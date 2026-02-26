@@ -31,9 +31,8 @@ export function computeSaleLeaseback(input: SaleLeasebackInput): SaleLeasebackRe
   const lossOnSale = totalGainLoss < 0n ? -totalGainLoss : 0n;
 
   // Portion of gain/loss retained = leaseLiability / fairValue
-  const retainedRightPortion = input.fairValue > 0n
-    ? (input.leaseLiability * 10000n) / input.fairValue
-    : 0n;
+  const retainedRightPortion =
+    input.fairValue > 0n ? (input.leaseLiability * 10000n) / input.fairValue : 0n;
 
   // Adjusted gain/loss = total * (1 - retained portion)
   const transferredPortion = 10000n - retainedRightPortion;

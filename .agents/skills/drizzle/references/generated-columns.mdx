@@ -7,7 +7,8 @@ import Callout from '@mdx/Callout.astro';
 # Generated Columns
 
 <Callout type="info">
-To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `drizzle-kit@0.23.0` or higher
+  To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `drizzle-kit@0.23.0`
+  or higher
 </Callout>
 
 1. Virtual (or non-persistent) Generated Columns: These columns are computed dynamically whenever they are queried. They do not occupy storage space in the database.
@@ -15,7 +16,10 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
 2. Stored (or persistent) Generated Columns: These columns are computed when a row is inserted or updated and their values are stored in the database. This allows them to be indexed and can improve query performance since the values do not need to be recomputed for each query.
 
 <Callout type="info">
-    The implementation and usage of generated columns can vary significantly across different SQL databases. PostgreSQL, MySQL, and SQLite each have unique features, capabilities, and limitations when it comes to generated columns. In this section, we will explore these differences in detail to help you understand how to best utilize generated columns in each database system.
+  The implementation and usage of generated columns can vary significantly across different SQL
+  databases. PostgreSQL, MySQL, and SQLite each have unique features, capabilities, and limitations
+  when it comes to generated columns. In this section, we will explore these differences in detail
+  to help you understand how to best utilize generated columns in each database system.
 </Callout>
 
 <Tabs items={["PostgreSQL", "MySQL", "SQLite", "SingleStore(WIP)", "MSSQL", "CockroachDB"]}>
@@ -34,19 +38,19 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     - Cannot specify default values.
     - Expressions cannot reference other generated columns or include subqueries.
     - Schema changes required to modify generated column expressions.
-    - Cannot directly use in primary keys, foreign keys, or unique constraints   
+    - Cannot directly use in primary keys, foreign keys, or unique constraints
 
-    For more info, please check [PostgreSQL](https://www.postgresql.org/docs/current/ddl-generated-columns.html) docs 
+    For more info, please check [PostgreSQL](https://www.postgresql.org/docs/current/ddl-generated-columns.html) docs
 
     #### Drizzle side
-    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query, 
+    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query,
     that will generate this column data for you.
 
-    #### Features 
+    #### Features
     This function can accept generated expression in 2 ways:
 
     <Callout type='warning' collapsed="What was changed starting from 1.0.0-beta.12 version">
-    
+
     In previous versions, `.generatedAlwaysAs()` also accepted literals as expressions.
 
     **`string`**
@@ -58,11 +62,11 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     ```sql
     CREATE TABLE "test" (
-	    "gen_name" text GENERATED ALWAYS AS ('hello world!') STORED
+        "gen_name" text GENERATED ALWAYS AS ('hello world!') STORED
     );
     ```
     </CodeTab>
-    
+
     </Callout>
 
     **`sql`** tag - if you want drizzle to escape some values for you
@@ -75,7 +79,7 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     ```sql
     CREATE TABLE "test" (
-	    "gen_name" text GENERATED ALWAYS AS ('hello "world"!') STORED
+        "gen_name" text GENERATED ALWAYS AS ('hello "world"!') STORED
     );
     ```
     </CodeTab>
@@ -92,13 +96,14 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     ```sql
     CREATE TABLE "test" (
-	    "first_name" text,
-	    "gen_name" text GENERATED ALWAYS AS ('hi, ' || "test"."first_name" || '!') STORED
+        "first_name" text,
+        "gen_name" text GENERATED ALWAYS AS ('hi, ' || "test"."first_name" || '!') STORED
     );
     ```
     </CodeTab>
 
     **Example** generated columns with full-text search
+
    <CodeTabs items={["schema.ts"]}>
 	<CodeTab>
 	```typescript copy {17-19}
@@ -137,6 +142,7 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     CREATE INDEX "idx_content_search" ON "test" USING gin ("content_search");
     ```
     </CodeTab>
+
    </CodeTabs>
   </Tab> 
   <Tab>
@@ -152,21 +158,21 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     - Used in SELECT, INSERT, UPDATE, and DELETE statements.
     - Can be indexed, both virtual and stored.
     - Can specify NOT NULL and other constraints.
-    
+
     **Limitations**
-    - Cannot directly insert or update values in a generated column 
+    - Cannot directly insert or update values in a generated column
 
     For more info, please check [MySQL Alter Generated](https://dev.mysql.com/doc/refman/8.4/en/alter-table-generated-columns.html) docs and [MySQL create generated](https://dev.mysql.com/doc/refman/8.4/en/create-table-generated-columns.html) docs
 
     #### Drizzle side
-    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query, 
+    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query,
     that will generate this column data for you.
 
-    #### Features 
+    #### Features
     This function can accept generated expression in 2 ways:
 
     <Callout type='warning' collapsed="What was changed starting from 1.0.0-beta.12 version">
-    
+
     In previous versions, `.generatedAlwaysAs()` also accepted literals as expressions.
 
     **`string`**
@@ -179,11 +185,11 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
 
     ```sql
     CREATE TABLE "test" (
-	    "gen_name" text GENERATED ALWAYS AS ('hello world!') VIRTUAL
+        "gen_name" text GENERATED ALWAYS AS ('hello world!') VIRTUAL
     );
     ```
     </CodeTab>
-    
+
     </Callout>
 
     **`sql`** tag - if you want drizzle to escape some values for you
@@ -196,7 +202,7 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     ```sql
     CREATE TABLE `test` (
-	    `gen_name` text GENERATED ALWAYS AS ('hello "world"!') VIRTUAL
+        `gen_name` text GENERATED ALWAYS AS ('hello "world"!') VIRTUAL
     );
     ```
     </CodeTab>
@@ -214,11 +220,13 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     ```sql
     CREATE TABLE `test` (
-  	  `first_name` text,
-  	  `gen_name` text GENERATED ALWAYS AS ('hi, ' || `test`.`first_name` || '!') VIRTUAL
-    );
-    ```
-    </CodeTab>
+
+`first_name` text,
+`gen_name` text GENERATED ALWAYS AS ('hi, ' || `test`.`first_name` || '!') VIRTUAL
+);
+
+````
+</CodeTab>
 
     #### Limitations
     Drizzle Kit will also have limitations for `push` command:
@@ -253,7 +261,7 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     </CodeTab>
   </CodeTabs>
-  </Tab> 
+  </Tab>
   <Tab>
     #### Database side
     **Types**: `STORED`, `VIRTUAL`
@@ -267,21 +275,21 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     - Used in SELECT, INSERT, UPDATE, and DELETE statements.
     - Can be indexed, both virtual and stored.
     - Can specify NOT NULL and other constraints.
-    
-    **Limitations**
-    - Cannot directly insert or update values in a generated column 
 
-    For more info, please check [SQLite](https://www.sqlite.org/gencol.html) docs 
+    **Limitations**
+    - Cannot directly insert or update values in a generated column
+
+    For more info, please check [SQLite](https://www.sqlite.org/gencol.html) docs
 
     #### Drizzle side
-    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query, 
+    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query,
     that will generate this column data for you.
 
-    #### Features 
+    #### Features
     This function can accept generated expression in 2 ways:
 
     <Callout type='warning' collapsed="What was changed starting from 1.0.0-beta.12 version">
-    
+
     In versions before 1.0.0-beta.12, `.generatedAlwaysAs()` also accepted literals as expressions.
 
     **`string`**
@@ -295,12 +303,12 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
 
     ```sql
     CREATE TABLE `test` (
-	    `id` integer PRIMARY KEY,
-	    `gen_name` text GENERATED ALWAYS AS ('hello world!') VIRTUAL
+        `id` integer PRIMARY KEY,
+        `gen_name` text GENERATED ALWAYS AS ('hello world!') VIRTUAL
     );
     ```
     </CodeTab>
-    
+
     </Callout>
 
     **`sql`** tag - if you want drizzle to escape some values for you
@@ -368,7 +376,7 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     </CodeTab>
   </CodeTabs>
-  </Tab> 
+  </Tab>
   <Tab>
   Work in Progress
   </Tab>
@@ -384,14 +392,14 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     For more info, please check [MSSQL](https://learn.microsoft.com/en-us/sql/relational-databases/tables/specify-computed-columns-in-a-table?view=sql-server-ver17) docs
 
     #### Drizzle side
-    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query, 
+    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query,
     that will generate this column data for you.
 
-    #### Features 
+    #### Features
     This function can accept generated expression in 2 ways:
 
     <Callout type='warning' collapsed="What was changed starting from 1.0.0-beta.12 version">
-    
+
     In previous versions, `.generatedAlwaysAs()` also accepted literals as expressions.
 
     **`string`**
@@ -403,7 +411,7 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     ```sql
     CREATE TABLE [test] (
-	    [gen_name] AS ('hello world!')
+        [gen_name] AS ('hello world!')
     );
     ```
     </CodeTab>
@@ -420,8 +428,8 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     ```sql
     CREATE TABLE [test] (
-	    [id] int,
-	    [gen_name] AS ('hello "world"!') 
+        [id] int,
+        [gen_name] AS ('hello "world"!')
     );
     ```
     </CodeTab>
@@ -440,20 +448,21 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```sql
     CREATE TABLE [test] (
     	[first_name] text,
-    	[gen_name] AS (concat('hi,', ' ', [test].[first_name], '!')) 
+    	[gen_name] AS (concat('hi,', ' ', [test].[first_name], '!'))
     );
     ```
     </CodeTab>
+
   </Tab>
   <Tab>
-    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query, 
+    In Drizzle you can specify `.generatedAlwaysAs()` function on any column type and add a supported sql query,
     that will generate this column data for you.
 
-    #### Features 
+    #### Features
     This function can accept generated expression in 2 ways:
 
     <Callout type='warning' collapsed="What was changed starting from 1.0.0-beta.12 version">
-    
+
     In previous versions, `.generatedAlwaysAs()` also accepted literals as expressions.
 
     **`string`**
@@ -481,7 +490,7 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     ```
     ```sql
     CREATE TABLE "test" (
-	    "gen_name" string GENERATED ALWAYS AS ('hello "world"!') STORED
+        "gen_name" string GENERATED ALWAYS AS ('hello "world"!') STORED
     );
     ```
     </CodeTab>
@@ -506,6 +515,7 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     </CodeTab>
 
     **Example** generated columns with full-text search
+
    <CodeTabs items={["schema.ts"]}>
 	<CodeTab>
 	```typescript copy {17-19}
@@ -543,6 +553,8 @@ To use this feature you would need to have `drizzle-orm@0.32.0` or higher and `d
     CREATE INDEX "idx_content_search" ON "test" USING gin ("content_search");
     ```
     </CodeTab>
+
    </CodeTabs>
-  </Tab> 
+  </Tab>
 </Tabs>
+````

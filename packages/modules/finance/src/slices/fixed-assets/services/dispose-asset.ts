@@ -2,13 +2,13 @@
  * FA service: Dispose an asset and record gain/loss.
  */
 
-import { err, NotFoundError, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IAssetRepo } from "../ports/asset-repo.js";
-import type { IAssetMovementRepo } from "../ports/asset-movement-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import { computeDisposal, type DisposalResult } from "../calculators/disposal.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, NotFoundError, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IAssetRepo } from '../ports/asset-repo.js';
+import type { IAssetMovementRepo } from '../ports/asset-movement-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import { computeDisposal, type DisposalResult } from '../calculators/disposal.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface DisposeAssetInput {
   readonly tenantId: string;
@@ -21,11 +21,15 @@ export interface DisposeAssetInput {
 
 export async function disposeAsset(
   input: DisposeAssetInput,
-  deps: { assetRepo: IAssetRepo; assetMovementRepo: IAssetMovementRepo; outboxWriter: IOutboxWriter },
+  deps: {
+    assetRepo: IAssetRepo;
+    assetMovementRepo: IAssetMovementRepo;
+    outboxWriter: IOutboxWriter;
+  }
 ): Promise<Result<DisposalResult>> {
   const asset = await deps.assetRepo.findById(input.assetId);
-  if (!asset) return err(new NotFoundError("Asset", input.assetId));
-  if (asset.status === "DISPOSED") return err(new ValidationError("Asset already disposed"));
+  if (!asset) return err(new NotFoundError('Asset', input.assetId));
+  if (asset.status === 'DISPOSED') return err(new ValidationError('Asset already disposed'));
 
   const result = computeDisposal({
     assetId: asset.id,
@@ -36,14 +40,14 @@ export async function disposeAsset(
   });
 
   await deps.assetRepo.update(asset.id, {
-    status: "DISPOSED",
+    status: 'DISPOSED',
     disposedAt: input.disposalDate,
     disposalProceeds: input.disposalProceeds,
   });
 
   await deps.assetMovementRepo.create(input.tenantId, {
     assetId: asset.id,
-    movementType: "DISPOSAL",
+    movementType: 'DISPOSAL',
     movementDate: input.disposalDate,
     amount: result.gainOrLoss,
     currencyCode: asset.currencyCode,

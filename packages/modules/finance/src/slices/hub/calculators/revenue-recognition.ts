@@ -6,10 +6,10 @@
  * Computes a straight-line recognition schedule for a revenue contract,
  * distributing the total amount evenly across periods.
  */
-import type { Money } from "@afenda/core";
-import { money } from "@afenda/core";
-import type { RecognitionScheduleEntry } from "../entities/revenue-recognition.js";
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { Money } from '@afenda/core';
+import { money } from '@afenda/core';
+import type { RecognitionScheduleEntry } from '../entities/revenue-recognition.js';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface RecognitionScheduleInput {
   readonly totalAmount: bigint;
@@ -31,7 +31,7 @@ export interface RecognitionScheduleResult {
  * Any remainder from integer division is added to the final period.
  */
 export function computeStraightLineSchedule(
-  input: RecognitionScheduleInput,
+  input: RecognitionScheduleInput
 ): CalculatorResult<RecognitionScheduleResult> {
   const { totalAmount, periodCount, currency, alreadyRecognized } = input;
 
@@ -44,7 +44,7 @@ export function computeStraightLineSchedule(
         perPeriodAmount: money(0n, currency),
       },
       inputs: { ...input },
-      explanation: "No periods specified",
+      explanation: 'No periods specified',
     };
   }
 
@@ -99,7 +99,7 @@ export interface MilestoneScheduleResult {
  */
 export function computeMilestoneRecognition(
   milestones: readonly MilestoneInput[],
-  currency: string,
+  currency: string
 ): CalculatorResult<MilestoneScheduleResult> {
   let completedAmount = 0n;
   let pendingAmount = 0n;

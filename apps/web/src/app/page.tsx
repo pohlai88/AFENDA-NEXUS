@@ -1,6 +1,15 @@
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation';
+import { getServerSession } from '@/lib/auth';
 
-export default function RootPage() {
-  // Root page redirects to login; authenticated users are routed via (shell) layout
-  redirect("/login");
+export const dynamic = 'force-dynamic';
+
+export default async function RootPage() {
+  const session = await getServerSession();
+
+  if (session) {
+    // Authenticated → shell dashboard
+    redirect('/finance');
+  }
+
+  redirect('/login');
 }

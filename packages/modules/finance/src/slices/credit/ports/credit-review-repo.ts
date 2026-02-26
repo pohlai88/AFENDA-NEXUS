@@ -1,4 +1,4 @@
-import type { CreditReview } from "../entities/credit-review.js";
+import type { CreditReview } from '../entities/credit-review.js';
 
 export interface CreateCreditReviewInput {
   readonly creditLimitId: string;
@@ -8,7 +8,7 @@ export interface CreateCreditReviewInput {
   readonly proposedLimit: bigint;
   readonly approvedLimit: bigint;
   readonly currencyCode: string;
-  readonly outcome: CreditReview["outcome"];
+  readonly outcome: CreditReview['outcome'];
   readonly riskRating: string | null;
   readonly notes: string | null;
   readonly reviewedBy: string;

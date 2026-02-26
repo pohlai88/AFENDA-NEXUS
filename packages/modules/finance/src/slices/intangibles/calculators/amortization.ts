@@ -3,8 +3,8 @@
  * Reuses depreciation strategy pattern from FA-02.
  * Finite life → amortize. Indefinite life → no amortization (test for impairment).
  */
-import type { CalculatorResult } from "../../../shared/types.js";
-import type { AmortizationMethod, UsefulLifeType } from "../entities/intangible-asset.js";
+import type { CalculatorResult } from '../../../shared/types.js';
+import type { AmortizationMethod, UsefulLifeType } from '../entities/intangible-asset.js';
 
 export interface AmortizationInput {
   readonly assetId: string;
@@ -34,15 +34,15 @@ export interface AmortizationResult {
  * Indefinite-life assets: zero amortization, flagged for impairment test.
  */
 export function computeAmortization(
-  inputs: readonly AmortizationInput[],
+  inputs: readonly AmortizationInput[]
 ): CalculatorResult<readonly AmortizationResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one intangible asset required");
+    throw new Error('At least one intangible asset required');
   }
 
   const results: AmortizationResult[] = inputs.map((input) => {
     // Indefinite life — no amortization
-    if (input.usefulLifeType === "INDEFINITE") {
+    if (input.usefulLifeType === 'INDEFINITE') {
       const nbv = input.acquisitionCost - input.accumulatedAmortization;
       return {
         assetId: input.assetId,
@@ -55,32 +55,30 @@ export function computeAmortization(
     }
 
     // Finite life — compute amortization
-    const method = input.amortizationMethod ?? "STRAIGHT_LINE";
+    const method = input.amortizationMethod ?? 'STRAIGHT_LINE';
     const usefulLifeMonths = input.usefulLifeMonths ?? 0;
     const depreciableAmount = input.acquisitionCost - input.residualValue;
     const currentNbv = input.acquisitionCost - input.accumulatedAmortization;
     let amortizationAmount: bigint;
 
     switch (method) {
-      case "STRAIGHT_LINE":
+      case 'STRAIGHT_LINE':
         amortizationAmount =
           usefulLifeMonths > 0
             ? (depreciableAmount * BigInt(input.periodMonths)) / BigInt(usefulLifeMonths)
             : 0n;
         break;
-      case "DECLINING_BALANCE": {
+      case 'DECLINING_BALANCE': {
         const rateBps = input.decliningRateBps ?? 2000;
         const annualAmort = (currentNbv * BigInt(rateBps)) / 10000n;
         amortizationAmount = (annualAmort * BigInt(input.periodMonths)) / 12n;
         break;
       }
-      case "UNITS_OF_PRODUCTION": {
+      case 'UNITS_OF_PRODUCTION': {
         const totalUnits = input.totalEstimatedUnits ?? 1;
         const unitsThisPeriod = input.unitsThisPeriod ?? 0;
         amortizationAmount =
-          totalUnits > 0
-            ? (depreciableAmount * BigInt(unitsThisPeriod)) / BigInt(totalUnits)
-            : 0n;
+          totalUnits > 0 ? (depreciableAmount * BigInt(unitsThisPeriod)) / BigInt(totalUnits) : 0n;
         break;
       }
     }

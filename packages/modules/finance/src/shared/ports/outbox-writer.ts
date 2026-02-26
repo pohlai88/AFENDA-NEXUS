@@ -4,6 +4,14 @@ export interface OutboxEvent {
   readonly payload: Record<string, unknown>;
 }
 
+export interface OutboxEntry {
+  readonly id: string;
+  readonly eventType: string;
+  readonly createdAt: Date;
+  readonly payload: unknown;
+}
+
 export interface IOutboxWriter {
   write(event: OutboxEvent): Promise<void>;
+  findRecent?(limit: number): Promise<OutboxEntry[]>;
 }

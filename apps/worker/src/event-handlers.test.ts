@@ -1,10 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
-import type { OutboxRow } from "@afenda/db";
-import type { Logger } from "@afenda/platform";
-import {
-  createEventHandlerRegistry,
-  registerFinanceHandlers,
-} from "./event-handlers.js";
+import { describe, it, expect, vi } from 'vitest';
+import type { OutboxRow } from '@afenda/db';
+import type { Logger } from '@afenda/platform';
+import { createEventHandlerRegistry, registerFinanceHandlers } from './event-handlers.js';
 
 function mockLogger(): Logger {
   return {
@@ -19,63 +16,65 @@ function mockLogger(): Logger {
 
 function makeOutboxRow(overrides: Partial<OutboxRow> = {}): OutboxRow {
   return {
-    id: "outbox-1",
-    tenantId: "t1",
-    eventType: "JOURNAL_POSTED",
-    payload: { journalId: "j1" },
-    createdAt: new Date("2025-06-01"),
+    id: 'outbox-1',
+    tenantId: 't1',
+    eventType: 'JOURNAL_POSTED',
+    payload: { journalId: 'j1' },
+    createdAt: new Date('2025-06-01'),
     processedAt: null,
     ...overrides,
   };
 }
 
-describe("EventHandlerRegistry", () => {
-  it("dispatches to registered handler", async () => {
+describe('EventHandlerRegistry', () => {
+  it('dispatches to registered handler', async () => {
     const logger = mockLogger();
     const registry = createEventHandlerRegistry(logger);
     const handler = vi.fn();
 
-    registry.register("JOURNAL_POSTED", handler);
+    registry.register('JOURNAL_POSTED', handler);
     await registry.dispatch(makeOutboxRow());
 
     expect(handler).toHaveBeenCalledOnce();
-    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ eventType: "JOURNAL_POSTED" }));
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ eventType: 'JOURNAL_POSTED' }));
   });
 
-  it("logs warning for unregistered event type", async () => {
+  it('logs warning for unregistered event type', async () => {
     const logger = mockLogger();
     const registry = createEventHandlerRegistry(logger);
 
-    await registry.dispatch(makeOutboxRow({ eventType: "UNKNOWN_EVENT" }));
+    await registry.dispatch(makeOutboxRow({ eventType: 'UNKNOWN_EVENT' }));
 
     expect(logger.warn).toHaveBeenCalledOnce();
-    expect((logger.warn as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toContain("No handler registered");
+    expect((logger.warn as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toContain(
+      'No handler registered'
+    );
   });
 
-  it("supports multiple event types", async () => {
+  it('supports multiple event types', async () => {
     const logger = mockLogger();
     const registry = createEventHandlerRegistry(logger);
     const handler1 = vi.fn();
     const handler2 = vi.fn();
 
-    registry.register("JOURNAL_POSTED", handler1);
-    registry.register("GL_BALANCE_CHANGED", handler2);
+    registry.register('JOURNAL_POSTED', handler1);
+    registry.register('GL_BALANCE_CHANGED', handler2);
 
-    await registry.dispatch(makeOutboxRow({ eventType: "JOURNAL_POSTED" }));
-    await registry.dispatch(makeOutboxRow({ eventType: "GL_BALANCE_CHANGED" }));
+    await registry.dispatch(makeOutboxRow({ eventType: 'JOURNAL_POSTED' }));
+    await registry.dispatch(makeOutboxRow({ eventType: 'GL_BALANCE_CHANGED' }));
 
     expect(handler1).toHaveBeenCalledOnce();
     expect(handler2).toHaveBeenCalledOnce();
   });
 
-  it("overwrites handler for same event type", async () => {
+  it('overwrites handler for same event type', async () => {
     const logger = mockLogger();
     const registry = createEventHandlerRegistry(logger);
     const handler1 = vi.fn();
     const handler2 = vi.fn();
 
-    registry.register("JOURNAL_POSTED", handler1);
-    registry.register("JOURNAL_POSTED", handler2);
+    registry.register('JOURNAL_POSTED', handler1);
+    registry.register('JOURNAL_POSTED', handler2);
 
     await registry.dispatch(makeOutboxRow());
 
@@ -84,18 +83,18 @@ describe("EventHandlerRegistry", () => {
   });
 });
 
-describe("registerFinanceHandlers", () => {
-  it("registers handlers for all known finance events", async () => {
+describe('registerFinanceHandlers', () => {
+  it('registers handlers for all known finance events', async () => {
     const logger = mockLogger();
     const registry = createEventHandlerRegistry(logger);
     registerFinanceHandlers(registry, logger);
 
     const eventTypes = [
-      "JOURNAL_POSTED",
-      "GL_BALANCE_CHANGED",
-      "JOURNAL_REVERSED",
-      "JOURNAL_VOIDED",
-      "IC_TRANSACTION_CREATED",
+      'JOURNAL_POSTED',
+      'GL_BALANCE_CHANGED',
+      'JOURNAL_REVERSED',
+      'JOURNAL_VOIDED',
+      'IC_TRANSACTION_CREATED',
     ];
 
     for (const eventType of eventTypes) {

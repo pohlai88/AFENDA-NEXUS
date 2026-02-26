@@ -1,6 +1,6 @@
-import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import path from "node:path";
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 /**
  * Check reputation for a skill
@@ -25,16 +25,16 @@ export async function checkReputation(skillName, version) {
     // We need to go up 3 levels to get to the skill root directory
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const checkerDir = path.resolve(__dirname, '../../..');
-    
+
     const reputationCheck = spawnSync(
-      "node",
+      'node',
       [
         `${checkerDir}/scripts/check_clawhub_reputation.mjs`,
         skillSlug,
-        version || "",
-        "70" // Default threshold
+        version || '',
+        '70', // Default threshold
       ],
-      { encoding: "utf-8", cwd: checkerDir }
+      { encoding: 'utf-8', cwd: checkerDir }
     );
 
     if (reputationCheck.status === 0) {
@@ -58,7 +58,7 @@ export async function checkReputation(skillName, version) {
       } catch {
         result.safe = false;
         result.score = 50;
-        result.warnings.push("Skill flagged by reputation check");
+        result.warnings.push('Skill flagged by reputation check');
       }
     } else {
       // Error running check
@@ -81,19 +81,17 @@ export async function checkReputation(skillName, version) {
  * @returns {string}
  */
 export function formatReputationWarning(reputationInfo) {
-  if (!reputationInfo || reputationInfo.score >= 70) return "";
-  
-  const lines = [
-    `\n⚠️  **REPUTATION WARNING** (Score: ${reputationInfo.score}/100)`,
-  ];
-  
+  if (!reputationInfo || reputationInfo.score >= 70) return '';
+
+  const lines = [`\n⚠️  **REPUTATION WARNING** (Score: ${reputationInfo.score}/100)`];
+
   if (reputationInfo.warnings.length > 0) {
-    lines.push("");
-    reputationInfo.warnings.forEach(w => lines.push(`• ${w}`));
+    lines.push('');
+    reputationInfo.warnings.forEach((w) => lines.push(`• ${w}`));
   }
-  
-  lines.push("");
-  lines.push("This skill has low reputation score. Review carefully before installation.");
-  
-  return lines.join("\n");
+
+  lines.push('');
+  lines.push('This skill has low reputation score. Review carefully before installation.');
+
+  return lines.join('\n');
 }

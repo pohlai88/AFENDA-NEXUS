@@ -2,9 +2,9 @@
  * Lease contract entity — IFRS 16 lease master data.
  */
 
-export type LeaseType = "FINANCE" | "OPERATING";
-export type LeaseStatus = "DRAFT" | "ACTIVE" | "MODIFIED" | "TERMINATED" | "EXPIRED";
-export type LesseeOrLessor = "LESSEE" | "LESSOR";
+export type LeaseType = 'FINANCE' | 'OPERATING';
+export type LeaseStatus = 'DRAFT' | 'ACTIVE' | 'MODIFIED' | 'TERMINATED' | 'EXPIRED';
+export type LesseeOrLessor = 'LESSEE' | 'LESSOR';
 
 export interface LeaseContract {
   readonly id: string;

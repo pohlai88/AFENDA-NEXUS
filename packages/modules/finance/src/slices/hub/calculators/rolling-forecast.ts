@@ -6,9 +6,9 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type ForecastMethod = "TREND" | "AVERAGE" | "MANUAL" | "GROWTH_RATE";
+export type ForecastMethod = 'TREND' | 'AVERAGE' | 'MANUAL' | 'GROWTH_RATE';
 
 export interface HistoricalPeriod {
   readonly periodId: string;
@@ -50,10 +50,11 @@ export interface RollingForecastResult {
  * Generate rolling forecast for future periods based on historical data.
  */
 export function computeRollingForecast(
-  input: RollingForecastInput,
+  input: RollingForecastInput
 ): CalculatorResult<RollingForecastResult> {
-  if (input.periodsToForecast <= 0) throw new Error("periodsToForecast must be positive");
-  if (input.historicalPeriods.length === 0) throw new Error("At least one historical period is required");
+  if (input.periodsToForecast <= 0) throw new Error('periodsToForecast must be positive');
+  if (input.historicalPeriods.length === 0)
+    throw new Error('At least one historical period is required');
 
   // Group historical data by account
   const byAccount = new Map<string, bigint[]>();
@@ -79,7 +80,7 @@ export function computeRollingForecast(
           accountCode,
           forecastPeriodIndex: idx,
           forecastAmount: override,
-          method: "MANUAL",
+          method: 'MANUAL',
           isOverride: true,
         });
         totalForecast += override;
@@ -89,7 +90,7 @@ export function computeRollingForecast(
       let forecastAmount: bigint;
 
       switch (input.method) {
-        case "TREND": {
+        case 'TREND': {
           // Simple linear trend: use last value + average delta
           if (actuals.length < 2) {
             forecastAmount = actuals[actuals.length - 1]!;
@@ -103,19 +104,19 @@ export function computeRollingForecast(
           }
           break;
         }
-        case "AVERAGE": {
+        case 'AVERAGE': {
           const sum = actuals.reduce((s, a) => s + a, 0n);
           forecastAmount = sum / BigInt(actuals.length);
           break;
         }
-        case "GROWTH_RATE": {
+        case 'GROWTH_RATE': {
           const rateBps = BigInt(input.growthRateBps ?? 0);
           const lastActual = actuals[actuals.length - 1]!;
           // Compound: last * (1 + rate/10000)^(idx+1) — approximated linearly for BigInt
           forecastAmount = lastActual + (lastActual * rateBps * BigInt(idx + 1)) / 10000n;
           break;
         }
-        case "MANUAL":
+        case 'MANUAL':
           forecastAmount = actuals[actuals.length - 1]!;
           break;
       }
@@ -139,7 +140,11 @@ export function computeRollingForecast(
       accountCount: byAccount.size,
       currencyCode: input.currencyCode,
     },
-    inputs: { method: input.method, periodsToForecast: input.periodsToForecast, historicalCount: input.historicalPeriods.length },
+    inputs: {
+      method: input.method,
+      periodsToForecast: input.periodsToForecast,
+      historicalCount: input.historicalPeriods.length,
+    },
     explanation: `Rolling forecast: ${lines.length} lines across ${byAccount.size} accounts for ${input.periodsToForecast} periods`,
   };
 }

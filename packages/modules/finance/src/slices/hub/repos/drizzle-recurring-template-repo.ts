@@ -1,19 +1,27 @@
-import { eq, and, lte, count, asc } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { recurringTemplates } from "@afenda/db";
-import type { PaginationParams, PaginatedResult } from "@afenda/core";
-import type { RecurringTemplate, RecurringTemplateLine } from "../entities/recurring-template.js";
-import type { IRecurringTemplateRepo, CreateRecurringTemplateInput } from "../../../slices/hub/ports/recurring-template-repo.js";
+import { eq, and, lte, count, asc } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { recurringTemplates } from '@afenda/db';
+import type { PaginationParams, PaginatedResult } from '@afenda/core';
+import type { RecurringTemplate, RecurringTemplateLine } from '../entities/recurring-template.js';
+import type {
+  IRecurringTemplateRepo,
+  CreateRecurringTemplateInput,
+} from '../../../slices/hub/ports/recurring-template-repo.js';
+
+function parseLines(raw: unknown): RecurringTemplateLine[] {
+  if (!Array.isArray(raw)) return [];
+  return raw as RecurringTemplateLine[];
+}
 
 function mapRow(row: typeof recurringTemplates.$inferSelect): RecurringTemplate {
-  const lines = (row.lineTemplate ?? []) as unknown as RecurringTemplateLine[];
+  const lines = parseLines(row.lineTemplate);
   return {
     id: row.id!,
     companyId: row.companyId as never,
     ledgerId: row.ledgerId as never,
     description: row.description,
     lines,
-    frequency: row.frequency as RecurringTemplate["frequency"],
+    frequency: row.frequency as RecurringTemplate['frequency'],
     nextRunDate: row.nextRunDate,
     isActive: row.isActive,
     createdAt: row.createdAt,
@@ -21,7 +29,7 @@ function mapRow(row: typeof recurringTemplates.$inferSelect): RecurringTemplate 
 }
 
 export class DrizzleRecurringTemplateRepo implements IRecurringTemplateRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async findById(id: string): Promise<RecurringTemplate | null> {
     const [row] = await this.tx
@@ -62,10 +70,7 @@ export class DrizzleRecurringTemplateRepo implements IRecurringTemplateRepo {
       .select()
       .from(recurringTemplates)
       .where(
-        and(
-          eq(recurringTemplates.isActive, true),
-          lte(recurringTemplates.nextRunDate, asOfDate),
-        ),
+        and(eq(recurringTemplates.isActive, true), lte(recurringTemplates.nextRunDate, asOfDate))
       )
       .orderBy(asc(recurringTemplates.nextRunDate));
 
@@ -80,7 +85,7 @@ export class DrizzleRecurringTemplateRepo implements IRecurringTemplateRepo {
         companyId: input.companyId,
         ledgerId: input.ledgerId,
         description: input.description,
-        lineTemplate: input.lines as unknown as Record<string, unknown>,
+        lineTemplate: input.lines,
         frequency: input.frequency,
         nextRunDate: input.nextRunDate,
       })

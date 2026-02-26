@@ -33,7 +33,9 @@ async function UsersPage() {
   const users = await db.user.findMany();
 
   // Or fetch from external API
-  const posts = await fetch('https://api.example.com/posts').then((r) => r.json());
+  const posts = await fetch('https://api.example.com/posts').then((r) =>
+    r.json()
+  );
 
   return (
     <ul>
@@ -158,7 +160,11 @@ async function Dashboard() {
 ```tsx
 // Good: Parallel fetching
 async function Dashboard() {
-  const [user, posts, comments] = await Promise.all([getUser(), getPosts(), getComments()]);
+  const [user, posts, comments] = await Promise.all([
+    getUser(),
+    getPosts(),
+    getComments(),
+  ]);
 
   return <div>...</div>;
 }
@@ -270,7 +276,8 @@ function ClientComponent() {
 
 ### Option 3: Server Action for Reads (Works But Not Ideal)
 
-Server Actions can be called from Client Components for reads, but this is not their intended purpose:
+Server Actions can be called from Client Components for reads, but this is not
+their intended purpose:
 
 ```tsx
 'use client';
@@ -288,7 +295,8 @@ function ClientComponent() {
 }
 ```
 
-**Note**: Server Actions always use POST, so no HTTP caching. Prefer Route Handlers for cacheable reads.
+**Note**: Server Actions always use POST, so no HTTP caching. Prefer Route
+Handlers for cacheable reads.
 
 ## Quick Reference
 

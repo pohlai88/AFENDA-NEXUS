@@ -3,14 +3,15 @@ title: Cloudflare D1 HTTP API with Drizzle Kit
 slug: d1-http-with-drizzle-kit
 ---
 
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
 
 <Prerequisites>
-- [Drizzle Kit](/docs/kit-overview)
-- [Drizzle Studio](/docs/kit-overview#drizzle-studio)
-- [Drizzle Chrome Extension](https://chromewebstore.google.com/detail/drizzle-studio/mjkojjodijpaneehkgmeckeljgkimnmd)
-- You should have installed `drizzle-kit@0.21.3` or higher
-- You should have [Cloudflare account](https://dash.cloudflare.com/login), deployed [D1 database](https://developers.cloudflare.com/d1/) and token with D1 edit permissions
+  - [Drizzle Kit](/docs/kit-overview) - [Drizzle Studio](/docs/kit-overview#drizzle-studio) -
+  [Drizzle Chrome
+  Extension](https://chromewebstore.google.com/detail/drizzle-studio/mjkojjodijpaneehkgmeckeljgkimnmd)
+  - You should have installed `drizzle-kit@0.21.3` or higher - You should have [Cloudflare
+  account](https://dash.cloudflare.com/login), deployed [D1
+  database](https://developers.cloudflare.com/d1/) and token with D1 edit permissions
 </Prerequisites>
 
 To use Drizzle kit with Cloudflare D1 HTTP API, you need to configure the `drizzle.config.ts` file like this:
@@ -40,5 +41,3 @@ You can find `accountId`, `databaseId` and `token` in [Cloudflare dashboard](htt
 After you have configured `drizzle.config.ts` file, Drizzle Kit lets you run `migrate`, `push`, `introspect` and `studio` commands using Cloudflare D1 HTTP API.
 
 You can also use [Drizzle Chrome Extension](https://chromewebstore.google.com/detail/drizzle-studio/mjkojjodijpaneehkgmeckeljgkimnmd) to browse Cloudflare D1 database directly in their admin panel.
-
-

@@ -1,5 +1,5 @@
-import type { PaginatedResult, PaginationParams } from "@afenda/core";
-import type { RecurringTemplate } from "../entities/recurring-template.js";
+import type { PaginatedResult, PaginationParams } from '@afenda/core';
+import type { RecurringTemplate } from '../entities/recurring-template.js';
 
 export interface CreateRecurringTemplateInput {
   readonly tenantId: string;
@@ -12,7 +12,7 @@ export interface CreateRecurringTemplateInput {
     readonly credit: bigint;
     readonly description?: string;
   }[];
-  readonly frequency: "MONTHLY" | "QUARTERLY" | "YEARLY";
+  readonly frequency: 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
   readonly nextRunDate: Date;
 }
 

@@ -9,10 +9,10 @@
  * - AsyncLocalStorage mixin for automatic correlationId/tenantId/requestId injection
  * - Request/response serializers for structured HTTP logging
  */
-import { AsyncLocalStorage } from "node:async_hooks";
-import pino from "pino";
+import { AsyncLocalStorage } from 'node:async_hooks';
+import pino from 'pino';
 
-export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal";
+export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
 export interface Logger {
   trace(msg: string, ctx?: Record<string, unknown>): void;
@@ -51,23 +51,23 @@ export function getContext(): RequestContext | undefined {
 /* ------------------------------------------------------------------ */
 
 const REDACT_PATHS = [
-  "authorization",
-  "password",
-  "secret",
-  "token",
-  "cookie",
-  "apiKey",
-  "*.authorization",
-  "*.password",
-  "*.secret",
-  "*.token",
-  "*.cookie",
-  "*.apiKey",
-  "req.headers.authorization",
-  "req.headers.cookie",
-  "body.password",
-  "body.secret",
-  "body.token",
+  'authorization',
+  'password',
+  'secret',
+  'token',
+  'cookie',
+  'apiKey',
+  '*.authorization',
+  '*.password',
+  '*.secret',
+  '*.token',
+  '*.cookie',
+  '*.apiKey',
+  'req.headers.authorization',
+  'req.headers.cookie',
+  'body.password',
+  'body.secret',
+  'body.token',
 ];
 
 /* ------------------------------------------------------------------ */
@@ -81,9 +81,9 @@ function serializeReq(req: Record<string, unknown>): Record<string, unknown> {
     url: req.url,
     headers: {
       host: headers.host,
-      "user-agent": headers["user-agent"],
-      "content-type": headers["content-type"],
-      "x-correlation-id": headers["x-correlation-id"],
+      'user-agent': headers['user-agent'],
+      'content-type': headers['content-type'],
+      'x-correlation-id': headers['x-correlation-id'],
     },
   };
 }
@@ -101,22 +101,28 @@ function serializeRes(res: Record<string, unknown>): Record<string, unknown> {
 function wrapPino(p: pino.Logger): Logger {
   return {
     trace(msg, ctx) {
-      if (ctx) p.trace(ctx, msg); else p.trace(msg);
+      if (ctx) p.trace(ctx, msg);
+      else p.trace(msg);
     },
     debug(msg, ctx) {
-      if (ctx) p.debug(ctx, msg); else p.debug(msg);
+      if (ctx) p.debug(ctx, msg);
+      else p.debug(msg);
     },
     info(msg, ctx) {
-      if (ctx) p.info(ctx, msg); else p.info(msg);
+      if (ctx) p.info(ctx, msg);
+      else p.info(msg);
     },
     warn(msg, ctx) {
-      if (ctx) p.warn(ctx, msg); else p.warn(msg);
+      if (ctx) p.warn(ctx, msg);
+      else p.warn(msg);
     },
     error(msg, ctx) {
-      if (ctx) p.error(ctx, msg); else p.error(msg);
+      if (ctx) p.error(ctx, msg);
+      else p.error(msg);
     },
     fatal(msg, ctx) {
-      if (ctx) p.fatal(ctx, msg); else p.fatal(msg);
+      if (ctx) p.fatal(ctx, msg);
+      else p.fatal(msg);
     },
     child(bindings) {
       return wrapPino(p.child(bindings));
@@ -140,10 +146,9 @@ export interface CreateLoggerOptions {
 }
 
 export function createLogger(opts?: CreateLoggerOptions): Logger {
-  const isDev = process.env.NODE_ENV !== "production";
+  const isDev = process.env.NODE_ENV !== 'production';
   const envLevel = process.env.LOG_LEVEL?.trim() || undefined;
-  const level: LogLevel =
-    (envLevel as LogLevel | undefined) ?? opts?.level ?? "info";
+  const level: LogLevel = (envLevel as LogLevel | undefined) ?? opts?.level ?? 'info';
 
   const base: Record<string, unknown> = {
     pid: process.pid,
@@ -153,7 +158,7 @@ export function createLogger(opts?: CreateLoggerOptions): Logger {
   if (opts?.traceId) base.trace_id = opts.traceId;
 
   const transport: pino.TransportSingleOptions | undefined = isDev
-    ? { target: "pino-pretty", options: { colorize: true, translateTime: "SYS:standard" } }
+    ? { target: 'pino-pretty', options: { colorize: true, translateTime: 'SYS:standard' } }
     : undefined;
 
   const p = pino({

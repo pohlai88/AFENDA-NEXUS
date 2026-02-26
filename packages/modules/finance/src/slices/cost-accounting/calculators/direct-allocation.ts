@@ -41,11 +41,11 @@ export interface DirectAllocationResult {
  * Allocate costs directly from source pools to targets proportionally by driver quantity.
  */
 export function computeDirectAllocation(input: DirectAllocationInput): DirectAllocationResult {
-  if (input.pools.length === 0) throw new Error("At least one allocation pool is required");
-  if (input.targets.length === 0) throw new Error("At least one allocation target is required");
+  if (input.pools.length === 0) throw new Error('At least one allocation pool is required');
+  if (input.targets.length === 0) throw new Error('At least one allocation target is required');
 
   const totalDriverQty = input.targets.reduce((sum, t) => sum + t.driverQuantity, 0n);
-  if (totalDriverQty <= 0n) throw new Error("Total driver quantity must be positive");
+  if (totalDriverQty <= 0n) throw new Error('Total driver quantity must be positive');
 
   const lines: DirectAllocationLine[] = [];
   let totalAllocated = 0n;
@@ -55,7 +55,7 @@ export function computeDirectAllocation(input: DirectAllocationInput): DirectAll
 
     let poolAllocated = 0n;
     const sortedTargets = [...input.targets].sort((a, b) =>
-      a.driverQuantity > b.driverQuantity ? -1 : 1,
+      a.driverQuantity > b.driverQuantity ? -1 : 1
     );
 
     for (let i = 0; i < sortedTargets.length; i++) {
@@ -72,9 +72,7 @@ export function computeDirectAllocation(input: DirectAllocationInput): DirectAll
 
       if (amount <= 0n) continue;
 
-      const allocationRate = totalDriverQty > 0n
-        ? (pool.totalCost * 10000n) / totalDriverQty
-        : 0n;
+      const allocationRate = totalDriverQty > 0n ? (pool.totalCost * 10000n) / totalDriverQty : 0n;
 
       lines.push({
         fromCostCenterId: pool.sourceCostCenterId,

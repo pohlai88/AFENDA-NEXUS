@@ -5,9 +5,9 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type MrrEventType = "NEW" | "EXPANSION" | "CONTRACTION" | "CHURN" | "REACTIVATION";
+export type MrrEventType = 'NEW' | 'EXPANSION' | 'CONTRACTION' | 'CHURN' | 'REACTIVATION';
 
 export interface MrrEvent {
   readonly subscriptionId: string;
@@ -43,10 +43,8 @@ export interface ChurnMrrResult {
 /**
  * Compute MRR movement and churn metrics for a period.
  */
-export function computeChurnMrr(
-  input: ChurnMrrInput,
-): CalculatorResult<ChurnMrrResult> {
-  if (input.openingMrr < 0n) throw new Error("Opening MRR cannot be negative");
+export function computeChurnMrr(input: ChurnMrrInput): CalculatorResult<ChurnMrrResult> {
+  if (input.openingMrr < 0n) throw new Error('Opening MRR cannot be negative');
 
   let newMrr = 0n;
   let expansionMrr = 0n;
@@ -56,19 +54,19 @@ export function computeChurnMrr(
 
   for (const event of input.events) {
     switch (event.eventType) {
-      case "NEW":
+      case 'NEW':
         newMrr += event.amount;
         break;
-      case "EXPANSION":
+      case 'EXPANSION':
         expansionMrr += event.amount;
         break;
-      case "CONTRACTION":
+      case 'CONTRACTION':
         contractionMrr += event.amount;
         break;
-      case "CHURN":
+      case 'CHURN':
         churnMrr += event.amount;
         break;
-      case "REACTIVATION":
+      case 'REACTIVATION':
         reactivationMrr += event.amount;
         break;
     }
@@ -78,12 +76,14 @@ export function computeChurnMrr(
   const closingMrr = input.openingMrr + netNewMrr;
 
   // Churn rates in basis points (100 bps = 1%)
-  const grossChurnRateBps = input.openingMrr > 0n
-    ? Number((churnMrr * 10000n) / input.openingMrr)
-    : 0;
-  const netChurnRateBps = input.openingMrr > 0n
-    ? Number(((churnMrr + contractionMrr - expansionMrr - reactivationMrr) * 10000n) / input.openingMrr)
-    : 0;
+  const grossChurnRateBps =
+    input.openingMrr > 0n ? Number((churnMrr * 10000n) / input.openingMrr) : 0;
+  const netChurnRateBps =
+    input.openingMrr > 0n
+      ? Number(
+          ((churnMrr + contractionMrr - expansionMrr - reactivationMrr) * 10000n) / input.openingMrr
+        )
+      : 0;
 
   return {
     result: {

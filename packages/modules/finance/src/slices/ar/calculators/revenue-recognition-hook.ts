@@ -9,7 +9,7 @@
  * Uses raw bigint for amounts (minor units).
  */
 
-export type RecognitionMethod = "POINT_IN_TIME" | "OVER_TIME" | "DEFERRED";
+export type RecognitionMethod = 'POINT_IN_TIME' | 'OVER_TIME' | 'DEFERRED';
 
 export interface RevenueScheduleLine {
   readonly periodId: string;
@@ -45,20 +45,22 @@ export interface RevenueRecognitionResult {
  * - If no delivery and no obligations met → DEFERRED (zero recognition)
  */
 export function computeRevenueRecognition(
-  input: RevenueRecognitionInput,
+  input: RevenueRecognitionInput
 ): RevenueRecognitionResult {
   // POINT_IN_TIME: obligations met + delivered
   if (input.performanceObligationsMet && input.deliveryDate !== null) {
     return {
       invoiceId: input.invoiceId,
-      method: "POINT_IN_TIME",
+      method: 'POINT_IN_TIME',
       recognizedAmount: input.totalAmount,
       deferredAmount: 0n,
-      schedule: [{
-        periodId: formatPeriod(input.deliveryDate),
-        amount: input.totalAmount,
-        cumulativePercent: 100,
-      }],
+      schedule: [
+        {
+          periodId: formatPeriod(input.deliveryDate),
+          amount: input.totalAmount,
+          cumulativePercent: 100,
+        },
+      ],
     };
   }
 
@@ -68,7 +70,7 @@ export function computeRevenueRecognition(
     // In production, this would query the hub slice for the contract schedule
     return {
       invoiceId: input.invoiceId,
-      method: "OVER_TIME",
+      method: 'OVER_TIME',
       recognizedAmount: 0n,
       deferredAmount: input.totalAmount,
       schedule: [],
@@ -78,7 +80,7 @@ export function computeRevenueRecognition(
   // DEFERRED: no delivery, no obligations met
   return {
     invoiceId: input.invoiceId,
-    method: "DEFERRED",
+    method: 'DEFERRED',
     recognizedAmount: 0n,
     deferredAmount: input.totalAmount,
     schedule: [],
@@ -86,14 +88,14 @@ export function computeRevenueRecognition(
 }
 
 function formatPeriod(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
 /**
  * Batch compute revenue recognition for multiple invoices.
  */
 export function computeBatchRevenueRecognition(
-  inputs: readonly RevenueRecognitionInput[],
+  inputs: readonly RevenueRecognitionInput[]
 ): readonly RevenueRecognitionResult[] {
   return inputs.map(computeRevenueRecognition);
 }

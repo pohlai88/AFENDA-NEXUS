@@ -1,8 +1,8 @@
 import Npm from '@mdx/Npm.astro';
 import Callout from '@mdx/Callout.astro';
-import Prerequisites from "@mdx/Prerequisites.astro";
-import CodeTabs from "@mdx/CodeTabs.astro";
-import WhatsNextPostgres from "@mdx/WhatsNextPostgres.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
+import CodeTabs from '@mdx/CodeTabs.astro';
+import WhatsNextPostgres from '@mdx/WhatsNextPostgres.astro';
 
 # Drizzle \<\> SingleStore
 
@@ -11,12 +11,11 @@ To use Drizzle with a SingleStore database, you should use the `mysql2` driver
 Drizzle ORM natively supports `mysql2` with `drizzle-orm/singlestore` package.
 
 #### Step 1 - Install packages
-<Npm>
-drizzle-orm mysql2
--D drizzle-kit
-</Npm>
+
+<Npm>drizzle-orm mysql2 -D drizzle-kit</Npm>
 
 #### Step 2 - Initialize the driver and make a query
+
 <CodeTabs items={['mysql2', 'mysql with config']}>
 ```typescript copy
 import { drizzle } from "drizzle-orm/singlestore";
@@ -24,7 +23,8 @@ import { drizzle } from "drizzle-orm/singlestore";
 const db = drizzle(process.env.DATABASE_URL);
 
 const response = await db.select().from(...)
-```
+
+````
 ```typescript copy
 import { drizzle } from "drizzle-orm/singlestore";
 
@@ -32,7 +32,8 @@ import { drizzle } from "drizzle-orm/singlestore";
 const db = drizzle({ connection:{ uri: process.env.DATABASE_URL }});
 
 const response = await db.select().from(...)
-```
+````
+
 </CodeTabs>
 
 If you need to provide your existing driver:
@@ -42,34 +43,37 @@ If you need to provide your existing driver:
   import { drizzle } from "drizzle-orm/singlestore";
   import mysql from "mysql2/promise";
 
-  const connection = await mysql.createConnection({
-    host: "host",
-    user: "user",
-    database: "database",
-    ...
-  });
+const connection = await mysql.createConnection({
+host: "host",
+user: "user",
+database: "database",
+...
+});
 
-  const db = drizzle({ client: connection });
-  ```
-  ```typescript copy
-  import { drizzle } from "drizzle-orm/singlestore";
-  import mysql from "mysql2/promise";
+const db = drizzle({ client: connection });
 
-  const poolConnection = mysql.createPool({
-    host: "host",
-    user: "user",
-    database: "database",
-    ...
-  });
+````
+```typescript copy
+import { drizzle } from "drizzle-orm/singlestore";
+import mysql from "mysql2/promise";
 
-  const db = drizzle({ client: poolConnection });
-  ```
+const poolConnection = mysql.createPool({
+  host: "host",
+  user: "user",
+  database: "database",
+  ...
+});
+
+const db = drizzle({ client: poolConnection });
+````
+
 </CodeTabs>
 
 <Callout type="warning" emoji="⚙️">
-  For the built in `migrate` function with DDL migrations we and drivers strongly encourage you to use single `client` connection.  
+  For the built in `migrate` function with DDL migrations we and drivers strongly encourage you to use single `client` connection.
 
-  For querying purposes feel free to use either `client` or `pool` based on your business demands.
+For querying purposes feel free to use either `client` or `pool` based on your business demands.
+
 </Callout>
 
 #### Limitations
@@ -88,4 +92,4 @@ Currently, the SingleStore dialect has a set of limitations and features that do
 
 #### What's next?
 
-<WhatsNextPostgres/>
+<WhatsNextPostgres />

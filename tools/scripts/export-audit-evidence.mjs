@@ -14,9 +14,9 @@
  *   node tools/scripts/export-audit-evidence.mjs --tenant-id 019c87ba-1c31-7ad5-b237-7b19e9ce19e4
  *   node tools/scripts/export-audit-evidence.mjs --tenant-id 019c87ba-1c31-7ad5-b237-7b19e9ce19e4 --from 2025-01-01 --to 2025-12-31 --output evidence.json
  */
-import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
-import postgres from "postgres";
+import { writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import postgres from 'postgres';
 
 // ─── Parse args ─────────────────────────────────────────────────────────────
 
@@ -26,36 +26,38 @@ function getArg(name) {
   return idx >= 0 && idx + 1 < args.length ? args[idx + 1] : undefined;
 }
 
-const tenantId = getArg("tenant-id");
-const fromDate = getArg("from");
-const toDate = getArg("to");
-const output = getArg("output");
+const tenantId = getArg('tenant-id');
+const fromDate = getArg('from');
+const toDate = getArg('to');
+const output = getArg('output');
 
 if (!tenantId) {
-  console.error("Error: --tenant-id <uuid> is required");
-  console.error("Usage: node tools/scripts/export-audit-evidence.mjs --tenant-id <uuid> [--from <date>] [--to <date>] [--output <file>]");
+  console.error('Error: --tenant-id <uuid> is required');
+  console.error(
+    'Usage: node tools/scripts/export-audit-evidence.mjs --tenant-id <uuid> [--from <date>] [--to <date>] [--output <file>]'
+  );
   process.exit(1);
 }
 
 // ─── Load .env ──────────────────────────────────────────────────────────────
 
-const ROOT = resolve(import.meta.dirname, "../..");
+const ROOT = resolve(import.meta.dirname, '../..');
 try {
-  const dotenv = await import("dotenv");
-  dotenv.config({ path: resolve(ROOT, ".env") });
+  const dotenv = await import('dotenv');
+  dotenv.config({ path: resolve(ROOT, '.env') });
 } catch {
   // dotenv not available — rely on env vars being set
 }
 
 const connectionString = process.env.DATABASE_URL_DIRECT || process.env.DATABASE_URL;
 if (!connectionString) {
-  console.error("Error: DATABASE_URL_DIRECT or DATABASE_URL must be set");
+  console.error('Error: DATABASE_URL_DIRECT or DATABASE_URL must be set');
   process.exit(1);
 }
 
 // ─── Query ──────────────────────────────────────────────────────────────────
 
-const sql = postgres(connectionString, { ssl: "require" });
+const sql = postgres(connectionString, { ssl: 'require' });
 
 try {
   let query = `
@@ -84,7 +86,7 @@ try {
   const evidence = {
     exportedAt: new Date().toISOString(),
     tenantId,
-    dateRange: { from: fromDate ?? "all", to: toDate ?? "all" },
+    dateRange: { from: fromDate ?? 'all', to: toDate ?? 'all' },
     totalRecords: rows.length,
     records: rows.map((r) => ({
       id: r.id,
@@ -101,13 +103,13 @@ try {
   const json = JSON.stringify(evidence, null, 2);
 
   if (output) {
-    writeFileSync(output, json, "utf-8");
+    writeFileSync(output, json, 'utf-8');
     console.log(`Exported ${rows.length} audit records to ${output}`);
   } else {
     console.log(json);
   }
 } catch (err) {
-  console.error("Query failed:", err.message);
+  console.error('Query failed:', err.message);
   process.exit(1);
 } finally {
   await sql.end();

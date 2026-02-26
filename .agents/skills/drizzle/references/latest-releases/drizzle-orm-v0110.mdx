@@ -3,7 +3,8 @@ pubDate: 2022-07-20
 title: DrizzleORM v0.11.0 release
 description: DrizzleORM - is an open source TypeScript ORM, supports PostgreSQL and about to have MySQL and SQLite support in couple of weeks. We've decided it's time to share it with public.
 ---
-import Section from "@mdx/Section.astro";
+
+import Section from '@mdx/Section.astro';
 
 DrizzleORM - is an open source TypeScript ORM, supports PostgreSQL and about to have MySQL and SQLite support in couple of weeks. We've decided it's time to share it with public.
 
@@ -11,14 +12,17 @@ With drizzle you have a fully typed SQL schema in-code which benefits you in mul
 
 ```ts
 // declaring enum in database
-export const popularityEnum = createEnum({ alias: 'popularity', values: ['unknown', 'known', 'popular'] });
+export const popularityEnum = createEnum({
+  alias: 'popularity',
+  values: ['unknown', 'known', 'popular'],
+});
 
 export class CountriesTable extends PgTable<CountriesTable> {
-  id = this.serial("id").primaryKey();
-  name = this.varchar("name", { size: 256 })
+  id = this.serial('id').primaryKey();
+  name = this.varchar('name', { size: 256 });
 
   // declaring index
-  nameIndex = this.uniqueIndex(this.name)
+  nameIndex = this.uniqueIndex(this.name);
 
   public tableName(): string {
     return 'countries';
@@ -26,12 +30,12 @@ export class CountriesTable extends PgTable<CountriesTable> {
 }
 
 export class CitiesTable extends PgTable<CitiesTable> {
-  id = this.serial("id").primaryKey();
-  name = this.varchar("name", { size: 256 })
-  countryId = this.int("country_id").foreignKey(CountriesTable, (country) => country.id)
+  id = this.serial('id').primaryKey();
+  name = this.varchar('name', { size: 256 });
+  countryId = this.int('country_id').foreignKey(CountriesTable, (country) => country.id);
 
   // declaring enum column in table
-  popularity = this.type(popularityEnum, "popularity")
+  popularity = this.type(popularityEnum, 'popularity');
 
   public tableName(): string {
     return 'cities';
@@ -42,7 +46,7 @@ export class CitiesTable extends PgTable<CitiesTable> {
 This is quick start example of how you connect to the database and make your first query with typed result
 
 ```ts
-import { drizzle, PgTable } from 'drizzle-orm'
+import { drizzle, PgTable } from 'drizzle-orm';
 
 export class UsersTable extends PgTable<UsersTable> {
   public id = this.serial('id').primaryKey();
@@ -53,9 +57,9 @@ export class UsersTable extends PgTable<UsersTable> {
     return 'users';
   }
 }
-export type User = InferType<UsersTable>
+export type User = InferType<UsersTable>;
 
-const db = await drizzle.connect("postgres://user:password@host:port/db");
+const db = await drizzle.connect('postgres://user:password@host:port/db');
 const usersTable = new UsersTable(db);
 
 const users: User[] = await usersTable.select().execute();
@@ -64,56 +68,60 @@ const users: User[] = await usersTable.select().execute();
 This is how you use `WHERE` statement with filters, run partial select queries, use `limit/offset` and `orderBy`
 
 ```ts
-await table.select().where(
-  eq(table.id, 42)
-).execute();
+await table.select().where(eq(table.id, 42)).execute();
 
 // you can combine filters with eq(...) or or(...)
-await table.select().where(
-  and([eq(table.id, 42), eq(table.name, "Dan")])
-).execute();
+await table
+  .select()
+  .where(and([eq(table.id, 42), eq(table.name, 'Dan')]))
+  .execute();
 
-await table.select().where(
-  or([eq(table.id, 42), eq(table.id, 1)])
-).execute();
+await table
+  .select()
+  .where(or([eq(table.id, 42), eq(table.id, 1)]))
+  .execute();
 
 // partial select
-const result = await table.select({
-     mapped1: table.id,
-     mapped2: table.name,
-}).execute();
+const result = await table
+  .select({
+    mapped1: table.id,
+    mapped2: table.name,
+  })
+  .execute();
 const { mapped1, mapped2 } = result[0];
 
 // limit offset & order by
-await table.select().limit(10).offset(10).execute()
-await table.select().orderBy((table) => table.name, Order.ASC)
-await table.select().orderBy((table) => table.name, Order.DESC)
+await table.select().limit(10).offset(10).execute();
+await table.select().orderBy((table) => table.name, Order.ASC);
+await table.select().orderBy((table) => table.name, Order.DESC);
 ```
 
 This is how you run `inserts`, `updates` and `deletes`
 
 ```ts
-const result = await usersTable.insert({
-  name: "Andrew",
-  createdAt: new Date(),
-}).execute();
-
-const result = await usersTable.insertMany([{
-  name: "Andrew",
-  createdAt: new Date(),
-}, {
-  name: "Dan",
-  createdAt: new Date(),
-}]).execute();
-
-await usersTable.update()
-  .where(eq(usersTable.name, 'Dan'))
-  .set({ name: 'Mr. Dan' })
+const result = await usersTable
+  .insert({
+    name: 'Andrew',
+    createdAt: new Date(),
+  })
   .execute();
 
-await usersTable.delete()
-  .where(eq(usersTable.name, 'Dan'))
+const result = await usersTable
+  .insertMany([
+    {
+      name: 'Andrew',
+      createdAt: new Date(),
+    },
+    {
+      name: 'Dan',
+      createdAt: new Date(),
+    },
+  ])
   .execute();
+
+await usersTable.update().where(eq(usersTable.name, 'Dan')).set({ name: 'Mr. Dan' }).execute();
+
+await usersTable.delete().where(eq(usersTable.name, 'Dan')).execute();
 ```
 
 One of the most powerful features we have in our ORM are fully typed joins, compiler won't let you make a mistake
@@ -122,12 +130,13 @@ One of the most powerful features we have in our ORM are fully typed joins, comp
 const usersTable = new UsersTable(db);
 const citiesTable = new CitiesTable(db);
 
-const result = await citiesTable.select()
+const result = await citiesTable
+  .select()
   .leftJoin(usersTable, (cities, users) => eq(cities.userId, users.id))
   .where((cities, users) => eq(cities.id, 1))
   .execute();
 
-const citiesWithUsers: { city: City, user: User }[] = result.map((city, user) => ({ city, user }));
+const citiesWithUsers: { city: City; user: User }[] = result.map((city, user) => ({ city, user }));
 ```
 
 Here's a `many to many` relationship example
@@ -172,11 +181,11 @@ export class UsersTable extends PgTable<UsersTable> {
   public id = this.serial("id").primaryKey();
   public fullName = this.varchar("full_name", { size: 256 });
 
-  public fullNameIndex = this.index(this.fullName);
+public fullNameIndex = this.index(this.fullName);
 
-  public tableName(): string {
-    return "users";
-  }
+public tableName(): string {
+return "users";
+}
 }
 
 export class AuthOtpTable extends PgTable<AuthOtpTable> {
@@ -184,11 +193,12 @@ export class AuthOtpTable extends PgTable<AuthOtpTable> {
   public phone = this.varchar("phone", { size: 256 });
   public userId = this.int("user_id").foreignKey(UsersTable, (t) => t.id);
 
-  public tableName(): string {
-    return "auth_otp";
-  }
+public tableName(): string {
+return "auth_otp";
 }
-```
+}
+
+````
 
 ```sql
 -- SQL migration
@@ -210,5 +220,6 @@ EXCEPTION
 END $$;
 
 CREATE INDEX IF NOT EXISTS users_full_name_index ON users (full_name);
-```
+````
+
 </Section>

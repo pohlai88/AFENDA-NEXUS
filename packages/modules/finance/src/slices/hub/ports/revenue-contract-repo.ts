@@ -1,5 +1,8 @@
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { RevenueContract, RecognitionMilestone } from "../../hub/entities/revenue-recognition.js";
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type {
+  RevenueContract,
+  RecognitionMilestone,
+} from '../../hub/entities/revenue-recognition.js';
 
 export interface IRevenueContractRepo {
   create(input: CreateRevenueContractInput): Promise<Result<RevenueContract>>;
@@ -16,7 +19,7 @@ export interface CreateRevenueContractInput {
   readonly customerName: string;
   readonly totalAmount: bigint;
   readonly currency: string;
-  readonly recognitionMethod: "STRAIGHT_LINE" | "MILESTONE" | "PERCENTAGE_OF_COMPLETION";
+  readonly recognitionMethod: 'STRAIGHT_LINE' | 'MILESTONE' | 'PERCENTAGE_OF_COMPLETION';
   readonly startDate: Date;
   readonly endDate: Date;
   readonly deferredAccountId: string;

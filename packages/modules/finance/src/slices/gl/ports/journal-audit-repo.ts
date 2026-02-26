@@ -1,12 +1,12 @@
-import type { Result } from "@afenda/core";
-import type { Journal } from "../entities/journal.js";
-import type { JournalAuditEntry } from "../entities/journal-audit.js";
+import type { Result } from '@afenda/core';
+import type { Journal } from '../entities/journal.js';
+import type { JournalAuditEntry } from '../entities/journal-audit.js';
 
 export interface AuditLogInput {
   readonly tenantId: string;
   readonly journalId: string;
-  readonly fromStatus: Journal["status"] | null;
-  readonly toStatus: Journal["status"];
+  readonly fromStatus: Journal['status'] | null;
+  readonly toStatus: Journal['status'];
   readonly userId: string;
   readonly reason?: string;
   readonly correlationId?: string;

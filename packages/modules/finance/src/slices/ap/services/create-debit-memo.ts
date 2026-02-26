@@ -1,10 +1,10 @@
-import type { Result } from "@afenda/core";
-import { err, AppError } from "@afenda/core";
-import type { ApInvoice } from "../entities/ap-invoice.js";
-import type { IApInvoiceRepo, CreateApInvoiceInput } from "../ports/ap-invoice-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import { err, AppError } from '@afenda/core';
+import type { ApInvoice } from '../entities/ap-invoice.js';
+import type { IApInvoiceRepo, CreateApInvoiceInput } from '../ports/ap-invoice-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface CreateDebitMemoInput {
   readonly tenantId: string;
@@ -24,7 +24,7 @@ export async function createDebitMemo(
     apInvoiceRepo: IApInvoiceRepo;
     outboxWriter: IOutboxWriter;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<ApInvoice>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor.userId ?? input.userId;
@@ -34,8 +34,13 @@ export async function createDebitMemo(
 
   const original = found.value;
 
-  if (original.status === "CANCELLED" || original.status === "DRAFT") {
-    return err(new AppError("VALIDATION", `Cannot create debit memo for invoice with status: ${original.status}`));
+  if (original.status === 'CANCELLED' || original.status === 'DRAFT') {
+    return err(
+      new AppError(
+        'VALIDATION',
+        `Cannot create debit memo for invoice with status: ${original.status}`
+      )
+    );
   }
 
   // Create negative invoice (debit memo) with reversed line amounts
@@ -43,9 +48,9 @@ export async function createDebitMemo(
     accountId: line.accountId,
     description: `Debit memo for ${original.invoiceNumber}: ${input.reason}`,
     quantity: line.quantity,
-    unitPrice: -(line.unitPrice.amount),
-    amount: -(line.amount.amount),
-    taxAmount: -(line.taxAmount.amount),
+    unitPrice: -line.unitPrice.amount,
+    amount: -line.amount.amount,
+    taxAmount: -line.taxAmount.amount,
   }));
 
   const memoInput: CreateApInvoiceInput = {

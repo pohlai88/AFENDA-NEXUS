@@ -22,7 +22,7 @@ export interface CashPoolingResult {
 
 export function computeCashPooling(
   accounts: readonly PoolAccount[],
-  currencyCode: string,
+  currencyCode: string
 ): CashPoolingResult {
   let totalPositive = 0n;
   let totalNegative = 0n;

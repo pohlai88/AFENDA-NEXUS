@@ -1,4 +1,4 @@
-import type { AccountType } from "../../../shared/types.js";
+import type { AccountType } from '../../../shared/types.js';
 
 /**
  * @see GL-09 — Account classification (reporting)
@@ -9,20 +9,20 @@ import type { AccountType } from "../../../shared/types.js";
  * Rules are versioned so auditors can trace which mapping was active at report time.
  */
 
-export type ReportingStandard = "IFRS" | "US_GAAP" | "LOCAL";
+export type ReportingStandard = 'IFRS' | 'US_GAAP' | 'LOCAL';
 
 export type StatementCategory =
-  | "CURRENT_ASSETS"
-  | "NON_CURRENT_ASSETS"
-  | "CURRENT_LIABILITIES"
-  | "NON_CURRENT_LIABILITIES"
-  | "EQUITY"
-  | "OPERATING_REVENUE"
-  | "NON_OPERATING_REVENUE"
-  | "COST_OF_SALES"
-  | "OPERATING_EXPENSES"
-  | "NON_OPERATING_EXPENSES"
-  | "OTHER_COMPREHENSIVE_INCOME";
+  | 'CURRENT_ASSETS'
+  | 'NON_CURRENT_ASSETS'
+  | 'CURRENT_LIABILITIES'
+  | 'NON_CURRENT_LIABILITIES'
+  | 'EQUITY'
+  | 'OPERATING_REVENUE'
+  | 'NON_OPERATING_REVENUE'
+  | 'COST_OF_SALES'
+  | 'OPERATING_EXPENSES'
+  | 'NON_OPERATING_EXPENSES'
+  | 'OTHER_COMPREHENSIVE_INCOME';
 
 export interface ClassificationRule {
   readonly id: string;
@@ -51,17 +51,17 @@ export interface ClassificationRuleSet {
 export function resolveCategory(
   accountCode: string,
   accountType: AccountType,
-  ruleSet: ClassificationRuleSet,
+  ruleSet: ClassificationRuleSet
 ): StatementCategory | undefined {
   // Exact code pattern match first
   const codeMatch = ruleSet.rules.find(
-    (r) => r.accountCodePattern && matchesPattern(accountCode, r.accountCodePattern),
+    (r) => r.accountCodePattern && matchesPattern(accountCode, r.accountCodePattern)
   );
   if (codeMatch) return codeMatch.statementCategory;
 
   // Fallback to account type match
   const typeMatch = ruleSet.rules.find(
-    (r) => !r.accountCodePattern && r.accountType === accountType,
+    (r) => !r.accountCodePattern && r.accountType === accountType
   );
   return typeMatch?.statementCategory;
 }
@@ -71,7 +71,7 @@ export function resolveCategory(
  * Supports trailing wildcard: "1*" matches "1000", "1100", etc.
  */
 function matchesPattern(code: string, pattern: string): boolean {
-  if (pattern.endsWith("*")) {
+  if (pattern.endsWith('*')) {
     return code.startsWith(pattern.slice(0, -1));
   }
   return code === pattern;
@@ -84,23 +84,38 @@ function matchesPattern(code: string, pattern: string): boolean {
 export function defaultIfrsRules(): ClassificationRuleSet {
   const now = new Date();
   const base = {
-    id: "",
-    standard: "IFRS" as ReportingStandard,
+    id: '',
+    standard: 'IFRS' as ReportingStandard,
     version: 1,
-    effectiveFrom: new Date("2020-01-01"),
-    createdBy: "system",
+    effectiveFrom: new Date('2020-01-01'),
+    createdBy: 'system',
     createdAt: now,
   };
   return {
-    standard: "IFRS",
+    standard: 'IFRS',
     version: 1,
-    effectiveFrom: new Date("2020-01-01"),
+    effectiveFrom: new Date('2020-01-01'),
     rules: [
-      { ...base, id: "ifrs-v1-asset", accountType: "ASSET", statementCategory: "CURRENT_ASSETS" },
-      { ...base, id: "ifrs-v1-liability", accountType: "LIABILITY", statementCategory: "CURRENT_LIABILITIES" },
-      { ...base, id: "ifrs-v1-equity", accountType: "EQUITY", statementCategory: "EQUITY" },
-      { ...base, id: "ifrs-v1-revenue", accountType: "REVENUE", statementCategory: "OPERATING_REVENUE" },
-      { ...base, id: "ifrs-v1-expense", accountType: "EXPENSE", statementCategory: "OPERATING_EXPENSES" },
+      { ...base, id: 'ifrs-v1-asset', accountType: 'ASSET', statementCategory: 'CURRENT_ASSETS' },
+      {
+        ...base,
+        id: 'ifrs-v1-liability',
+        accountType: 'LIABILITY',
+        statementCategory: 'CURRENT_LIABILITIES',
+      },
+      { ...base, id: 'ifrs-v1-equity', accountType: 'EQUITY', statementCategory: 'EQUITY' },
+      {
+        ...base,
+        id: 'ifrs-v1-revenue',
+        accountType: 'REVENUE',
+        statementCategory: 'OPERATING_REVENUE',
+      },
+      {
+        ...base,
+        id: 'ifrs-v1-expense',
+        accountType: 'EXPENSE',
+        statementCategory: 'OPERATING_EXPENSES',
+      },
     ],
   };
 }

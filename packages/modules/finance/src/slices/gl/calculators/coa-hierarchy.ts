@@ -5,8 +5,8 @@
  * Pure calculator — no I/O, no side effects.
  * Validates CoA tree integrity, computes subtrees, and ancestor chains.
  */
-import type { AccountType, NormalBalance } from "../entities/account.js";
-import type { CalculatorResult } from "./journal-balance.js";
+import type { AccountType, NormalBalance } from '../entities/account.js';
+import type { CalculatorResult } from './journal-balance.js';
 
 export interface AccountNode {
   readonly id: string;
@@ -30,7 +30,7 @@ export interface CoaIntegrityResult {
  * Validates CoA integrity: no cycles, all parents exist, root nodes have no parent.
  */
 export function validateCoaIntegrity(
-  accounts: readonly AccountNode[],
+  accounts: readonly AccountNode[]
 ): CalculatorResult<CoaIntegrityResult> {
   const byId = new Map(accounts.map((a) => [a.id, a]));
   const errors: string[] = [];
@@ -38,9 +38,7 @@ export function validateCoaIntegrity(
   // Check all parents exist
   for (const a of accounts) {
     if (a.parentId && !byId.has(a.parentId)) {
-      errors.push(
-        `Account ${a.accountCode} references non-existent parent ${a.parentId}`,
-      );
+      errors.push(`Account ${a.accountCode} references non-existent parent ${a.parentId}`);
     }
   }
 
@@ -53,9 +51,7 @@ export function validateCoaIntegrity(
 
     while (current) {
       if (visited.has(current.id)) {
-        errors.push(
-          `Cycle detected in CoA hierarchy at account ${current.accountCode}`,
-        );
+        errors.push(`Cycle detected in CoA hierarchy at account ${current.accountCode}`);
         break;
       }
       visited.add(current.id);
@@ -76,9 +72,10 @@ export function validateCoaIntegrity(
       errors,
     },
     inputs: { accountCount: accounts.length },
-    explanation: errors.length === 0
-      ? `CoA integrity validated: ${accounts.length} accounts, ${rootCount} roots, max depth ${maxDepth}`
-      : `CoA integrity FAILED: ${errors.length} error(s) — ${errors[0]}`,
+    explanation:
+      errors.length === 0
+        ? `CoA integrity validated: ${accounts.length} accounts, ${rootCount} roots, max depth ${maxDepth}`
+        : `CoA integrity FAILED: ${errors.length} error(s) — ${errors[0]}`,
   };
 }
 
@@ -88,7 +85,7 @@ export function validateCoaIntegrity(
  */
 export function getSubtree(
   rootId: string | null,
-  accounts: readonly AccountNode[],
+  accounts: readonly AccountNode[]
 ): CalculatorResult<AccountNode[]> {
   const childMap = new Map<string | null, AccountNode[]>();
   for (const a of accounts) {
@@ -111,7 +108,7 @@ export function getSubtree(
   return {
     result,
     inputs: { rootId, accountCount: accounts.length },
-    explanation: `Subtree from ${rootId ?? "root"}: ${result.length} account(s) found`,
+    explanation: `Subtree from ${rootId ?? 'root'}: ${result.length} account(s) found`,
   };
 }
 
@@ -120,7 +117,7 @@ export function getSubtree(
  */
 export function getAncestors(
   accountId: string,
-  accounts: readonly AccountNode[],
+  accounts: readonly AccountNode[]
 ): CalculatorResult<AccountNode[]> {
   const byId = new Map(accounts.map((a) => [a.id, a]));
   const chain: AccountNode[] = [];
@@ -129,9 +126,7 @@ export function getAncestors(
 
   while (current) {
     if (visited.has(current.id)) {
-      throw new Error(
-        `Cycle detected in CoA hierarchy at account ${current.accountCode}`,
-      );
+      throw new Error(`Cycle detected in CoA hierarchy at account ${current.accountCode}`);
     }
     visited.add(current.id);
     chain.push(current);

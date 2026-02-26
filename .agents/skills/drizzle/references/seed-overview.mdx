@@ -1,17 +1,28 @@
-import Npm from "@mdx/Npm.astro";
-import Tab from "@mdx/Tab.astro";
-import Tabs from "@mdx/Tabs.astro";
+import Npm from '@mdx/Npm.astro';
+import Tab from '@mdx/Tab.astro';
+import Tabs from '@mdx/Tabs.astro';
 import Callout from '@mdx/Callout.astro';
-import CodeTabs from "@mdx/CodeTabs.astro";
-import Section from "@mdx/Section.astro";
+import CodeTabs from '@mdx/CodeTabs.astro';
+import Section from '@mdx/Section.astro';
 import IsSupportedChipGroup from '@mdx/IsSupportedChipGroup.astro';
 
 # Drizzle Seed
 
-<IsSupportedChipGroup chips={{ 'PostgreSQL': true, 'SQLite': true, 'MySQL': true, 'SingleStore': true, 'CockroachDB': true, 'MS SQL': true }} />
+<IsSupportedChipGroup
+  chips={{
+    PostgreSQL: true,
+    SQLite: true,
+    MySQL: true,
+    SingleStore: true,
+    CockroachDB: true,
+    'MS SQL': true,
+  }}
+/>
 
-<Callout type='warning'>
-  `drizzle-seed` can only be used with `drizzle-orm@0.36.4` or higher. Versions lower than this may work at runtime but could have type issues and identity column issues, as this patch was introduced in `drizzle-orm@0.36.4`
+<Callout type="warning">
+  `drizzle-seed` can only be used with `drizzle-orm@0.36.4` or higher. Versions lower than this may
+  work at runtime but could have type issues and identity column issues, as this patch was
+  introduced in `drizzle-orm@0.36.4`
 </Callout>
 
 `drizzle-seed` is a TypeScript library that helps you generate deterministic, yet realistic,
@@ -49,11 +60,11 @@ With drizzle-seed, you get the best of both worlds: the ability to generate real
 In this example we will create 10 users with random names and ids
 
 ```ts {12}
-import { pgTable, integer, text } from "drizzle-orm/pg-core";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { seed } from "drizzle-seed";
+import { pgTable, integer, text } from 'drizzle-orm/pg-core';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { seed } from 'drizzle-seed';
 
-const users = pgTable("users", {
+const users = pgTable('users', {
   id: integer().primaryKey(),
   name: text().notNull(),
 });
@@ -92,8 +103,8 @@ With `drizzle-seed`, you can easily reset your database and seed it with new val
 
 ```ts
 // path to a file with schema you want to reset
-import * as schema from "./schema.ts";
-import { reset } from "drizzle-seed";
+import * as schema from './schema.ts';
+import { reset } from 'drizzle-seed';
 
 async function main() {
   const db = drizzle(process.env.DATABASE_URL!);
@@ -181,8 +192,8 @@ ALTER TABLE [<schemaName>].[<tableName>] DROP CONSTRAINT [<fkName>];
 TRUNCATE TABLE [<schemaName>].[<tableName>];
 
 -- recreates the original fk constraints
-ALTER TABLE [<schemaName>].[<tableName>] 
-ADD CONSTRAINT [<fkName>] 
+ALTER TABLE [<schemaName>].[<tableName>]
+ADD CONSTRAINT [<fkName>]
 FOREIGN KEY([<columnName>])
 REFERENCES [<refSchemaName>].[<refTableName>] ([<refColumnName>])
 ON DELETE <onDeleteAction>
@@ -196,7 +207,7 @@ ON UPDATE <onUpdateAction>;
 
 In case you need to change the behavior of the seed generator functions that `drizzle-seed` uses by default, you can specify your own implementation and even use your own list of values for the seeding process
 
-`.refine` is a callback that receives a list of all available generator functions from `drizzle-seed`. It should return an object with keys representing the tables you want to refine, defining their behavior as needed. 
+`.refine` is a callback that receives a list of all available generator functions from `drizzle-seed`. It should return an object with keys representing the tables you want to refine, defining their behavior as needed.
 Each table can specify several properties to simplify seeding your database:
 
 <rem025 />
@@ -205,19 +216,22 @@ Each table can specify several properties to simplify seeding your database:
 - `count`: Specify the number of rows to insert into the database. By default, it's 10. If a global count is defined in the `seed()` options, the count defined here will override it for this specific table.
 - `with`: Define how many referenced entities to create for each parent table if you want to generate associated entities.
 
-<Callout title='info'>
-You can also specify a weighted random distribution for the number of referenced values you want to create. For details on this API, you can refer to [Weighted Random docs](#weighted-random) docs section
+<Callout title="info">
+  You can also specify a weighted random distribution for the number of referenced values you want
+  to create. For details on this API, you can refer to [Weighted Random docs](#weighted-random) docs
+  section
 </Callout>
 
 **API**
+
 ```ts
 await seed(db, schema).refine((f) => ({
   users: {
     columns: {},
     count: 10,
     with: {
-        posts: 10
-    }
+      posts: 10,
+    },
   },
 }));
 ```
@@ -225,14 +239,14 @@ await seed(db, schema).refine((f) => ({
 Let's check a few examples with an explanation of what will happen:
 
 ```ts filename='schema.ts'
-import { pgTable, integer, text } from "drizzle-orm/pg-core";
+import { pgTable, integer, text } from 'drizzle-orm/pg-core';
 
-export const users = pgTable("users", {
+export const users = pgTable('users', {
   id: integer().primaryKey(),
   name: text().notNull(),
 });
 
-export const posts = pgTable("posts", {
+export const posts = pgTable('posts', {
   id: integer().primaryKey(),
   description: text(),
   userId: integer().references(() => users.id),
@@ -240,21 +254,22 @@ export const posts = pgTable("posts", {
 ```
 
 **Example 1**: Seed only the `users` table with 20 entities and with refined seed logic for the `name` column
+
 ```ts filename='index.ts'
-import { drizzle } from "drizzle-orm/node-postgres";
-import { seed } from "drizzle-seed";
-import * as schema from './schema.ts'
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { seed } from 'drizzle-seed';
+import * as schema from './schema.ts';
 
 async function main() {
   const db = drizzle(process.env.DATABASE_URL!);
 
   await seed(db, { users: schema.users }).refine((f) => ({
     users: {
-        columns: {
-            name: f.fullName(),
-        },
-        count: 20
-    }
+      columns: {
+        name: f.fullName(),
+      },
+      count: 20,
+    },
   }));
 }
 
@@ -262,63 +277,65 @@ main();
 ```
 
 **Example 2**: Seed the `users` table with 20 entities and add 10 `posts` for each `user` by seeding the `posts` table and creating a reference from `posts` to `users`
+
 ```ts filename='index.ts'
-import { drizzle } from "drizzle-orm/node-postgres";
-import { seed } from "drizzle-seed";
-import * as schema from './schema.ts'
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { seed } from 'drizzle-seed';
+import * as schema from './schema.ts';
 
 async function main() {
   const db = drizzle(process.env.DATABASE_URL!);
 
   await seed(db, schema).refine((f) => ({
     users: {
-        count: 20,
-        with: {
-            posts: 10
-        }
-    }
+      count: 20,
+      with: {
+        posts: 10,
+      },
+    },
   }));
 }
 
 main();
 ```
 
-**Example 3**: Seed the `users` table with 5 entities and populate the database with 100 `posts` without connecting them to the `users` entities. Refine `id` generation for `users` so 
+**Example 3**: Seed the `users` table with 5 entities and populate the database with 100 `posts` without connecting them to the `users` entities. Refine `id` generation for `users` so
 that it will give any int from `10000` to `20000` and remains unique, and refine `posts` to retrieve values from a self-defined array
+
 ```ts filename='index.ts'
-import { drizzle } from "drizzle-orm/node-postgres";
-import { seed } from "drizzle-seed";
-import * as schema from './schema.ts'
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { seed } from 'drizzle-seed';
+import * as schema from './schema.ts';
 
 async function main() {
   const db = drizzle(process.env.DATABASE_URL!);
 
   await seed(db, schema).refine((f) => ({
     users: {
-        count: 5,
-        columns: {
-            id: f.int({
-              minValue: 10000,
-              maxValue: 20000,
-              isUnique: true,
-            }),
-        }
+      count: 5,
+      columns: {
+        id: f.int({
+          minValue: 10000,
+          maxValue: 20000,
+          isUnique: true,
+        }),
+      },
     },
     posts: {
-        count: 100,
-        columns: {
-            description: f.valuesFromArray({
-            values: [
-                "The sun set behind the mountains, painting the sky in hues of orange and purple", 
-                "I can't believe how good this homemade pizza turned out!", 
-                "Sometimes, all you need is a good book and a quiet corner.", 
-                "Who else thinks rainy days are perfect for binge-watching old movies?", 
-                "Tried a new hiking trail today and found the most amazing waterfall!",
-                // ...
-            ],
-          })
-        }
-    }
+      count: 100,
+      columns: {
+        description: f.valuesFromArray({
+          values: [
+            'The sun set behind the mountains, painting the sky in hues of orange and purple',
+            "I can't believe how good this homemade pizza turned out!",
+            'Sometimes, all you need is a good book and a quiet corner.',
+            'Who else thinks rainy days are perfect for binge-watching old movies?',
+            'Tried a new hiking trail today and found the most amazing waterfall!',
+            // ...
+          ],
+        }),
+      },
+    },
   }));
 }
 
@@ -331,8 +348,8 @@ There are many more possibilities that we will define in these docs, but for now
 A particularly great feature is the ability to use weighted randomization, both for generator values created for a column and for determining the number of related entities that can be generated by `drizzle-seed`.
 
 Please check [Weighted Random docs](#weighted-random) for more info.
-</Callout>
 
+</Callout>
 
 ## Weighted Random
 
@@ -346,64 +363,56 @@ The Drizzle Seed package has a few places where weighted random can be used:
 Let's check an example for both:
 
 ```ts filename="schema.ts"
-import { pgTable, integer, text, varchar, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, integer, text, varchar, doublePrecision } from 'drizzle-orm/pg-core';
 
-export const orders = pgTable(
-  "orders",
-  {
-    id: integer().primaryKey(),
-    name: text().notNull(),
-    quantityPerUnit: varchar().notNull(),
-    unitPrice: doublePrecision().notNull(),
-    unitsInStock: integer().notNull(),
-    unitsOnOrder: integer().notNull(),
-    reorderLevel: integer().notNull(),
-    discontinued: integer().notNull(),
-  }
-);
+export const orders = pgTable('orders', {
+  id: integer().primaryKey(),
+  name: text().notNull(),
+  quantityPerUnit: varchar().notNull(),
+  unitPrice: doublePrecision().notNull(),
+  unitsInStock: integer().notNull(),
+  unitsOnOrder: integer().notNull(),
+  reorderLevel: integer().notNull(),
+  discontinued: integer().notNull(),
+});
 
-export const details = pgTable(
-  "details",
-  {
-    unitPrice: doublePrecision().notNull(),
-    quantity: integer().notNull(),
-    discount: doublePrecision().notNull(),
+export const details = pgTable('details', {
+  unitPrice: doublePrecision().notNull(),
+  quantity: integer().notNull(),
+  discount: doublePrecision().notNull(),
 
-    orderId: integer()
-      .notNull()
-      .references(() => orders.id, { onDelete: "cascade" }),
-  }
-);
+  orderId: integer()
+    .notNull()
+    .references(() => orders.id, { onDelete: 'cascade' }),
+});
 ```
 
 **Example 1**: Refine the `unitPrice` generation logic to generate `5000` random prices, with a 30% chance of prices between 10-100 and a 70% chance of prices between 100-300
 
 ```ts filename="index.ts"
-import { drizzle } from "drizzle-orm/node-postgres";
-import { seed } from "drizzle-seed";
-import * as schema from './schema.ts'
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { seed } from 'drizzle-seed';
+import * as schema from './schema.ts';
 
 async function main() {
   const db = drizzle(process.env.DATABASE_URL!);
 
   await seed(db, schema).refine((f) => ({
     orders: {
-       count: 5000,
-       columns: {
-           unitPrice: f.weightedRandom(
-               [
-                   {
-                       weight: 0.3,
-                       value: funcs.int({ minValue: 10, maxValue: 100 })
-                   },
-                   {
-                       weight: 0.7,
-                       value: funcs.number({ minValue: 100, maxValue: 300, precision: 100 })
-                   }
-               ]
-           ),
-       }
-    }
+      count: 5000,
+      columns: {
+        unitPrice: f.weightedRandom([
+          {
+            weight: 0.3,
+            value: funcs.int({ minValue: 10, maxValue: 100 }),
+          },
+          {
+            weight: 0.7,
+            value: funcs.number({ minValue: 100, maxValue: 300, precision: 100 }),
+          },
+        ]),
+      },
+    },
   }));
 }
 
@@ -413,24 +422,23 @@ main();
 **Example 2**: For each order, generate 1 to 3 details with a 60% chance, 5 to 7 details with a 30% chance, and 8 to 10 details with a 10% chance
 
 ```ts filename="index.ts"
-import { drizzle } from "drizzle-orm/node-postgres";
-import { seed } from "drizzle-seed";
-import * as schema from './schema.ts'
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { seed } from 'drizzle-seed';
+import * as schema from './schema.ts';
 
 async function main() {
   const db = drizzle(process.env.DATABASE_URL!);
 
   await seed(db, schema).refine((f) => ({
     orders: {
-       with: {
-           details:
-               [
-                   { weight: 0.6, count: [1, 2, 3] },
-                   { weight: 0.3, count: [5, 6, 7] },
-                   { weight: 0.1, count: [8, 9, 10] },
-               ]
-       }
-    }
+      with: {
+        details: [
+          { weight: 0.6, count: [1, 2, 3] },
+          { weight: 0.3, count: [5, 6, 7] },
+          { weight: 0.1, count: [8, 9, 10] },
+        ],
+      },
+    },
   }));
 }
 
@@ -446,18 +454,18 @@ import { seed } from "drizzle-seed";
 import * as schema from "./schema.ts";
 
 const main = async () => {
-    const titlesOfCourtesy = ["Ms.", "Mrs.", "Dr."];
-    const unitsOnOrders = [0, 10, 20, 30, 50, 60, 70, 80, 100];
-    const reorderLevels = [0, 5, 10, 15, 20, 25, 30];
-    const quantityPerUnit = [
-        "100 - 100 g pieces",
-        "100 - 250 g bags",
-        "10 - 200 g glasses",
-        "10 - 4 oz boxes",
-        "10 - 500 g pkgs.",
-        "10 - 500 g pkgs."
-    ];
-    const discounts = [0.05, 0.15, 0.2, 0.25];
+const titlesOfCourtesy = ["Ms.", "Mrs.", "Dr."];
+const unitsOnOrders = [0, 10, 20, 30, 50, 60, 70, 80, 100];
+const reorderLevels = [0, 5, 10, 15, 20, 25, 30];
+const quantityPerUnit = [
+"100 - 100 g pieces",
+"100 - 250 g bags",
+"10 - 200 g glasses",
+"10 - 4 oz boxes",
+"10 - 500 g pkgs.",
+"10 - 500 g pkgs."
+];
+const discounts = [0.05, 0.15, 0.2, 0.25];
 
     await seed(db, schema).refine((funcs) => ({
         customers: {
@@ -564,11 +572,12 @@ const main = async () => {
             }
         }
     }));
+
 }
 
 main();
 
-```
+````
 </Section>
 <Section>
 ```ts
@@ -665,7 +674,8 @@ export const details = pgTable('order_detail', {
 	productId: integer().notNull().references(() => products.id, { onDelete: 'cascade' }),
 });
 
-```
+````
+
 </Section>
 </CodeTabs>
 
@@ -677,8 +687,9 @@ Due to certain TypeScript limitations and the current API in Drizzle, it is not 
 
 This means the `with` option will display all tables in the schema, and you will need to manually select the one that has a one-to-many relationship
 
-<Callout title='warning'>
-The `with` option works for one-to-many relationships. For example, if you have one `user` and many `posts`, you can use users `with` posts, but you cannot use posts `with` users
+<Callout title="warning">
+  The `with` option works for one-to-many relationships. For example, if you have one `user` and
+  many `posts`, you can use users `with` posts, but you cannot use posts `with` users
 </Callout>
 
 #### Type limitations for the third parameter in Drizzle tables:

@@ -4,7 +4,11 @@
  * Pure calculator — no DB, no side effects.
  */
 
-export type AbsorptionBasis = "DIRECT_LABOR_HOURS" | "MACHINE_HOURS" | "DIRECT_LABOR_COST" | "UNITS_PRODUCED";
+export type AbsorptionBasis =
+  | 'DIRECT_LABOR_HOURS'
+  | 'MACHINE_HOURS'
+  | 'DIRECT_LABOR_COST'
+  | 'UNITS_PRODUCED';
 
 export interface OverheadBudget {
   readonly costCenterId: string;
@@ -47,8 +51,10 @@ export interface OverheadAbsorptionResult {
 /**
  * Compute overhead absorption rates and over/under absorption.
  */
-export function computeOverheadAbsorption(input: OverheadAbsorptionInput): OverheadAbsorptionResult {
-  if (input.budgets.length === 0) throw new Error("At least one overhead budget is required");
+export function computeOverheadAbsorption(
+  input: OverheadAbsorptionInput
+): OverheadAbsorptionResult {
+  if (input.budgets.length === 0) throw new Error('At least one overhead budget is required');
 
   const lines: OverheadAbsorptionLine[] = [];
   let totalApplied = 0n;
@@ -59,9 +65,10 @@ export function computeOverheadAbsorption(input: OverheadAbsorptionInput): Overh
     if (!actual) continue;
 
     // Predetermined rate = budgeted overhead / budgeted basis qty (scaled by 10000 for precision)
-    const predeterminedRate = budget.budgetedBasisQuantity > 0n
-      ? (budget.budgetedOverhead * 10000n) / budget.budgetedBasisQuantity
-      : 0n;
+    const predeterminedRate =
+      budget.budgetedBasisQuantity > 0n
+        ? (budget.budgetedOverhead * 10000n) / budget.budgetedBasisQuantity
+        : 0n;
 
     // Applied overhead = predetermined rate × actual basis qty / 10000
     const appliedOverhead = (predeterminedRate * actual.actualBasisQuantity) / 10000n;

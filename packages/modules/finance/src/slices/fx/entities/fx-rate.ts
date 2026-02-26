@@ -1,4 +1,4 @@
-import type { CompanyId } from "@afenda/core";
+import type { CompanyId } from '@afenda/core';
 
 export interface FxRate {
   readonly id: string;
@@ -19,7 +19,7 @@ export function convertAmount(
   amount: bigint,
   rate: number,
   _fromScale: number,
-  _toScale: number,
+  _toScale: number
 ): bigint {
   // BigInt fixed-point: multiply amount by scaled rate, then divide by scale
   const PRECISION = 10_000_000_000n;

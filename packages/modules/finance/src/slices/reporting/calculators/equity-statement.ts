@@ -3,18 +3,18 @@
  * Pure calculator — computes equity movements for each component
  * (share capital, retained earnings, OCI, NCI, etc.) over a period.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export type EquityComponent =
-  | "SHARE_CAPITAL"
-  | "SHARE_PREMIUM"
-  | "RETAINED_EARNINGS"
-  | "OCI_RESERVE"
-  | "TRANSLATION_RESERVE"
-  | "REVALUATION_SURPLUS"
-  | "HEDGING_RESERVE"
-  | "TREASURY_SHARES"
-  | "NCI";
+  | 'SHARE_CAPITAL'
+  | 'SHARE_PREMIUM'
+  | 'RETAINED_EARNINGS'
+  | 'OCI_RESERVE'
+  | 'TRANSLATION_RESERVE'
+  | 'REVALUATION_SURPLUS'
+  | 'HEDGING_RESERVE'
+  | 'TREASURY_SHARES'
+  | 'NCI';
 
 export interface EquityMovement {
   readonly component: EquityComponent;
@@ -55,10 +55,10 @@ export interface EquityStatementResult {
  * Computes the statement of changes in equity from movement data.
  */
 export function computeEquityStatement(
-  movements: readonly EquityMovement[],
+  movements: readonly EquityMovement[]
 ): CalculatorResult<EquityStatementResult> {
   if (movements.length === 0) {
-    throw new Error("At least one equity component required");
+    throw new Error('At least one equity component required');
   }
 
   let totalOpeningEquity = 0n;

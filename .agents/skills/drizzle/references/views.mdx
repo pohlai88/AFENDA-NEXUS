@@ -6,17 +6,27 @@ import Section from '@mdx/Section.astro';
 
 # Views
 
-<IsSupportedChipGroup chips={{ 'PostgreSQL': true, 'SQLite': true, 'MySQL': true, 'SingleStore': false, 'MSSQL': true, 'CockroachDB': true }} />
-There're several ways you can declare views with Drizzle ORM.  
+<IsSupportedChipGroup
+  chips={{
+    PostgreSQL: true,
+    SQLite: true,
+    MySQL: true,
+    SingleStore: false,
+    MSSQL: true,
+    CockroachDB: true,
+  }}
+/>
+There're several ways you can declare views with Drizzle ORM.
 
-You can declare views that have to be created or you can declare views that already exist in the database. 
+You can declare views that have to be created or you can declare views that already exist in the database.
 
-You can declare views statements with an inline `query builder` syntax, with `standalone query builder` and with raw `sql` operators. 
+You can declare views statements with an inline `query builder` syntax, with `standalone query builder` and with raw `sql` operators.
 
-When views are created with either inlined or standalone query builders, view columns schema will be automatically inferred, 
+When views are created with either inlined or standalone query builders, view columns schema will be automatically inferred,
 yet when you use `sql` you have to explicitly declare view columns schema.
 
 ### Declaring views
+
 <Tabs items={['PostgreSQL', 'MySQL', 'SQLite', 'MSSQL', 'CockroachDB']}>
   <Tab>
     <Section>
@@ -41,6 +51,7 @@ yet when you use `sql` you have to explicitly declare view columns schema.
       CREATE VIEW "customers_view" AS SELECT * FROM "user" WHERE "role" = 'customer';
       ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -65,6 +76,7 @@ yet when you use `sql` you have to explicitly declare view columns schema.
       CREATE VIEW "customers_view" AS SELECT * FROM "user" WHERE "role" = 'customer';
       ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -89,6 +101,7 @@ yet when you use `sql` you have to explicitly declare view columns schema.
       CREATE VIEW "customers_view" AS SELECT * FROM "user" WHERE "role" = 'customer';
       ```
     </Section>
+
   </Tab>
     <Tab>
     <Section>
@@ -114,6 +127,7 @@ yet when you use `sql` you have to explicitly declare view columns schema.
       ```
     </Section>
     If you need a subset of columns you can use `.select({ ... })` method in query builder, like this:
+
 <Section>
   ```ts {4-6}
   export const customersView = mssqlView("customers_view").as((qb) => {
@@ -154,10 +168,12 @@ yet when you use `sql` you have to explicitly declare view columns schema.
       CREATE VIEW "customers_view" AS SELECT * FROM "user" WHERE "role" = 'customer';
       ```
     </Section>
+
   </Tab>
 </Tabs>
 
 You can also declare views using `standalone query builder`, it works exactly the same way:
+
 <Tabs items={['PostgreSQL', 'MySQL', 'SQLite', 'MSSQL', 'CockroachDB']}>
   <Tab>
     <Section>
@@ -184,6 +200,7 @@ You can also declare views using `standalone query builder`, it works exactly th
       CREATE VIEW "customers_view" AS SELECT * FROM "user" WHERE "role" = 'customer';
       ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -210,6 +227,7 @@ You can also declare views using `standalone query builder`, it works exactly th
       CREATE VIEW "customers_view" AS SELECT * FROM "user" WHERE "role" = 'customer';
       ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -236,6 +254,7 @@ You can also declare views using `standalone query builder`, it works exactly th
       CREATE VIEW "customers_view" AS SELECT * FROM "user" WHERE "role" = 'customer';
       ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -262,6 +281,7 @@ You can also declare views using `standalone query builder`, it works exactly th
       CREATE VIEW [customers_view] AS (SELECT * FROM "user" WHERE "role" = 'customer');
       ```
     </Section>
+
   </Tab>
   <Tab>
     <Section>
@@ -288,11 +308,13 @@ You can also declare views using `standalone query builder`, it works exactly th
       CREATE VIEW "customers_view" AS SELECT * FROM "user" WHERE "role" = 'customer';
       ```
     </Section>
+
   </Tab>
 </Tabs>
 
 ### Declaring views with raw SQL
-Whenever you need to declare view using a syntax that is not supported by the query builder, 
+
+Whenever you need to declare view using a syntax that is not supported by the query builder,
 you can directly use `sql` operator and explicitly specify view columns schema.
 
 ```ts copy
@@ -312,44 +334,48 @@ const newYorkers = pgMaterializedView('new_yorkers', {
 ```
 
 ### Declaring existing views
-When you're provided with a read only access to an existing view in the database you should use `.existing()` view configuration, 
+
+When you're provided with a read only access to an existing view in the database you should use `.existing()` view configuration,
 `drizzle-kit` will ignore and will not generate a `create view` statement in the generated migration.
+
 ```ts
-export const user = pgTable("user", {
+export const user = pgTable('user', {
   id: serial(),
   name: text(),
   email: text(),
   password: text(),
-  role: text().$type<"admin" | "customer">(),
-  createdAt: timestamp("created_at"),
-  updatedAt: timestamp("updated_at"),
+  role: text().$type<'admin' | 'customer'>(),
+  createdAt: timestamp('created_at'),
+  updatedAt: timestamp('updated_at'),
 });
 
 // regular view
-export const trimmedUser = pgView("trimmed_user", {
-  id: serial("id"),
-  name: text("name"),
-  email: text("email"),
+export const trimmedUser = pgView('trimmed_user', {
+  id: serial('id'),
+  name: text('name'),
+  email: text('email'),
 }).existing();
 
 // materialized view won't make any difference, yet you can use it for consistency
-export const trimmedUser = pgMaterializedView("trimmed_user", {
-  id: serial("id"),
-  name: text("name"),
-  email: text("email"),
+export const trimmedUser = pgMaterializedView('trimmed_user', {
+  id: serial('id'),
+  name: text('name'),
+  email: text('email'),
 }).existing();
 ```
 
 ### Materialized views
-<IsSupportedChipGroup chips={{ 'PostgreSQL': true, 'MySQL': false, 'SQLite': false, 'MSSQL': false, 'Cockroach': true }} />
+
+<IsSupportedChipGroup
+  chips={{ PostgreSQL: true, MySQL: false, SQLite: false, MSSQL: false, Cockroach: true }}
+/>
 
 According to the official docs, PostgreSQL and CockroachDB have both **[`regular`](https://www.postgresql.org/docs/current/sql-createview.html)**
 and **[`materialized`](https://www.postgresql.org/docs/current/sql-creatematerializedview.html)** views.
-  
-Materialized views in PostgreSQL and CockroachDB use the rule system like views do, but persist the results in a table-like form.
-{/* This means that when a query is executed against a materialized view, the results are returned directly from the materialized view,
-like from a table, rather than being reconstructed by executing the query against the underlying base tables that make up the view. */}
 
+Materialized views in PostgreSQL and CockroachDB use the rule system like views do, but persist the results in a table-like form.
+{/_ This means that when a query is executed against a materialized view, the results are returned directly from the materialized view,
+like from a table, rather than being reconstructed by executing the query against the underlying base tables that make up the view. _/}
 
 <Tabs items={['PostgreSQL', 'CockroachDB']}>
 <Tab>
@@ -363,6 +389,7 @@ CREATE MATERIALIZED VIEW "new_yorkers" AS SELECT * FROM "users";
 </Section>
 
 You can then refresh materialized views in the application runtime:
+
 ```ts copy
 await db.refreshMaterializedView(newYorkers);
 
@@ -370,6 +397,7 @@ await db.refreshMaterializedView(newYorkers).concurrently();
 
 await db.refreshMaterializedView(newYorkers).withNoData();
 ```
+
 </Tab>
 <Tab>
 <Section>
@@ -382,6 +410,7 @@ CREATE MATERIALIZED VIEW "new_yorkers" AS SELECT * FROM "users";
 </Section>
 
 You can then refresh materialized views in the application runtime:
+
 ```ts copy
 await db.refreshMaterializedView(newYorkers);
 
@@ -389,12 +418,14 @@ await db.refreshMaterializedView(newYorkers).concurrently();
 
 await db.refreshMaterializedView(newYorkers).withNoData();
 ```
+
 </Tab>
 </Tabs>
 
 ### Extended example
+
 <Callout type="info" emoji="ℹ️">
-All the parameters inside the query will be inlined, instead of replaced by `$1`, `$2`, etc.
+  All the parameters inside the query will be inlined, instead of replaced by `$1`, `$2`, etc.
 </Callout>
 
 <Tabs items={['PostgreSQL', 'CockroachDB']}>
@@ -421,18 +452,18 @@ const newYorkers = pgView('new_yorkers')
 
 // materialized view
 const newYorkers2 = pgMaterializedView('new_yorkers')
-  .using('btree')
-  .with({
-    fillfactor: 90,
-    toast_tuple_target: 0.5,
-    autovacuum_enabled: true,
-    ...
-  })
-  .tablespace('custom_tablespace')
-  .withNoData()
-  .as((qb) => {
-    const sq = qb
-      .$with('sq')
+.using('btree')
+.with({
+fillfactor: 90,
+toast_tuple_target: 0.5,
+autovacuum_enabled: true,
+...
+})
+.tablespace('custom_tablespace')
+.withNoData()
+.as((qb) => {
+const sq = qb
+.$with('sq')
       .as(
         qb.select({ userId: users.id, cityId: cities.id })
           .from(users)
@@ -440,8 +471,9 @@ const newYorkers2 = pgMaterializedView('new_yorkers')
           .where(sql`${users.age1} > 18`),
       );
     return qb.with(sq).select().from(sq).where(sql`${users.homeCity} = 1`);
-  });
-```
+});
+
+````
 </Tab>
 <Tab>
 ```ts copy
@@ -473,6 +505,7 @@ const newYorkers2 = cockroachMaterializedView('new_yorkers')
       );
     return qb.with(sq).select().from(sq).where(sql`${users.homeCity} = 1`);
   });
-```
+````
+
 </Tab>
 </Tabs>

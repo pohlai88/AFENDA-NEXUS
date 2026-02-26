@@ -9,18 +9,18 @@
  *
  * Pure orchestration — delegates to domain calculators for all computations.
  */
-import type { Result } from "@afenda/core";
-import { ok, err, AppError } from "@afenda/core";
-import type { TrialBalance } from "../../../shared/ports/gl-read-ports.js";
-import { translateTrialBalance } from "../../../shared/ports/consolidation-hooks.js";
-import type { EliminationEntry } from "../../../shared/ports/consolidation-hooks.js";
-import { computeEliminations } from "../../../shared/ports/consolidation-hooks.js";
-import type { IGlBalanceRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { IFxRateRepo } from "../../../shared/ports/fx-port.js";
-import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import type { IntercompanyBalance } from "../../../shared/ports/consolidation-hooks.js";
-import type { TranslatedEntry } from "../../../shared/ports/consolidation-hooks.js";
+import type { Result } from '@afenda/core';
+import { ok, err, AppError } from '@afenda/core';
+import type { TrialBalance } from '../../../shared/ports/gl-read-ports.js';
+import { translateTrialBalance } from '../../../shared/ports/consolidation-hooks.js';
+import type { EliminationEntry } from '../../../shared/ports/consolidation-hooks.js';
+import { computeEliminations } from '../../../shared/ports/consolidation-hooks.js';
+import type { IGlBalanceRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { IFxRateRepo } from '../../../shared/ports/fx-port.js';
+import type { ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import type { IntercompanyBalance } from '../../../shared/ports/consolidation-hooks.js';
+import type { TranslatedEntry } from '../../../shared/ports/consolidation-hooks.js';
 
 export interface ConsolidationInput {
   readonly tenantId: string;
@@ -46,12 +46,12 @@ export async function consolidate(
     fxRateRepo: IFxRateRepo;
     ledgerRepo: ILedgerRepo;
   },
-  _ctx?: FinanceContext,
+  _ctx?: FinanceContext
 ): Promise<Result<ConsolidationResult>> {
   // 1. Load group ledger to determine group base currency
   const groupLedgerResult = await deps.ledgerRepo.findById(input.groupLedgerId);
   if (!groupLedgerResult.ok) {
-    return err(new AppError("NOT_FOUND", `Group ledger ${input.groupLedgerId} not found`));
+    return err(new AppError('NOT_FOUND', `Group ledger ${input.groupLedgerId} not found`));
   }
   const groupCurrency = groupLedgerResult.value.baseCurrency;
 
@@ -61,10 +61,10 @@ export async function consolidate(
     const tbResult = await deps.balanceRepo.getTrialBalance(
       ledgerId,
       input.fiscalYear,
-      input.fiscalPeriod,
+      input.fiscalPeriod
     );
     if (!tbResult.ok) {
-      return err(new AppError("NOT_FOUND", `Trial balance not found for ledger ${ledgerId}`));
+      return err(new AppError('NOT_FOUND', `Trial balance not found for ledger ${ledgerId}`));
     }
     subsidiaryTrialBalances.set(ledgerId, tbResult.value);
   }
@@ -94,7 +94,7 @@ export async function consolidate(
         sourceCurrency: subCurrency,
         targetCurrency: groupCurrency,
         rateUsed: 1,
-        rateType: "none" as const,
+        rateType: 'none' as const,
       }));
       translatedEntries.set(ledgerId, identity);
       continue;
@@ -104,7 +104,10 @@ export async function consolidate(
     const rateResult = await deps.fxRateRepo.findRate(subCurrency, groupCurrency, input.asOfDate);
     if (!rateResult.ok) {
       return err(
-        new AppError("VALIDATION", `No FX rate for ${subCurrency}/${groupCurrency} as of ${input.asOfDate.toISOString()}`),
+        new AppError(
+          'VALIDATION',
+          `No FX rate for ${subCurrency}/${groupCurrency} as of ${input.asOfDate.toISOString()}`
+        )
       );
     }
 
@@ -115,7 +118,7 @@ export async function consolidate(
         averageRate: rateResult.value.rate,
         historicalRate: rateResult.value.rate,
       },
-      groupCurrency,
+      groupCurrency
     );
     translatedEntries.set(ledgerId, translated.result.entries);
   }
@@ -150,8 +153,8 @@ export async function consolidate(
   for (const elim of elimResult.result) {
     addRow(
       elim.accountId,
-      elim.side === "debit" ? elim.amountMinor : 0n,
-      elim.side === "credit" ? elim.amountMinor : 0n,
+      elim.side === 'debit' ? elim.amountMinor : 0n,
+      elim.side === 'credit' ? elim.amountMinor : 0n
     );
   }
 

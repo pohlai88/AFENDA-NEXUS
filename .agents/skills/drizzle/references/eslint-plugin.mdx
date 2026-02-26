@@ -8,14 +8,12 @@ For cases where it's impossible to perform type checks for specific scenarios, o
 
 ## Install
 
-<Npm>
-eslint-plugin-drizzle
-@typescript-eslint/eslint-plugin @typescript-eslint/parser
-</Npm>
+<Npm>eslint-plugin-drizzle @typescript-eslint/eslint-plugin @typescript-eslint/parser</Npm>
 
 ## Usage
 
 **`.eslintrc.yml` example**
+
 ```yml
 root: true
 parser: '@typescript-eslint/parser'
@@ -24,8 +22,8 @@ parserOptions:
 plugins:
   - drizzle
 rules:
-  'drizzle/enforce-delete-with-where': "error"
-  'drizzle/enforce-update-with-where': "error"
+  'drizzle/enforce-delete-with-where': 'error'
+  'drizzle/enforce-update-with-where': 'error'
 ```
 
 **All config**
@@ -35,7 +33,7 @@ This plugin exports an `all` that makes use of all rules (except for deprecated 
 ```yml
 root: true
 extends:
-  - "plugin:drizzle/all"
+  - 'plugin:drizzle/all'
 parser: '@typescript-eslint/parser'
 parserOptions:
   project: './tsconfig.json'
@@ -50,7 +48,7 @@ At the moment, `all` is equivalent to `recommended`
 ```yml
 root: true
 extends:
-  - "plugin:drizzle/recommended"
+  - 'plugin:drizzle/recommended'
 parser: '@typescript-eslint/parser'
 parserOptions:
   project: './tsconfig.json'
@@ -62,19 +60,20 @@ plugins:
 
 ### **enforce-delete-with-where**
 
-Enforce using `delete` with the`.where()` clause in the `.delete()` statement. Most of the time, 
+Enforce using `delete` with the`.where()` clause in the `.delete()` statement. Most of the time,
 you don't need to delete all rows in the table and require some kind of `WHERE` statements.
 
 Optionally, you can define a `drizzleObjectName` in the plugin options that accept a `string` or
 `string[]`. This is useful when you have objects or classes with a delete method that's not from
-Drizzle. Such a `delete` method will trigger the ESLint rule. To avoid that, you can define the 
-name of the Drizzle object that you use in your codebase (like db) so that the rule would only 
+Drizzle. Such a `delete` method will trigger the ESLint rule. To avoid that, you can define the
+name of the Drizzle object that you use in your codebase (like db) so that the rule would only
 trigger if the delete method comes from this object:
 
 Example, config 1:
+
 ```yml
 rules:
-  'drizzle/enforce-delete-with-where': "error"
+  'drizzle/enforce-delete-with-where': 'error'
 ```
 
 ```ts
@@ -95,13 +94,15 @@ db.delete()
 ```
 
 Example, config 2:
+
 ```yml
 rules:
   'drizzle/enforce-delete-with-where':
-    - "error"
-    - "drizzleObjectName": 
-      - "db"
+    - 'error'
+    - 'drizzleObjectName':
+        - 'db'
 ```
+
 ```ts
 class MyClass {
   public delete() {
@@ -119,22 +120,23 @@ const db = drizzle(...)
 db.delete()
 ```
 
-### **enforce-update-with-where**: 
+### **enforce-update-with-where**:
 
-Enforce using `update` with the`.where()` clause in the `.update()` statement. 
-Most of the time, you don't need to update all rows in the table and require 
+Enforce using `update` with the`.where()` clause in the `.update()` statement.
+Most of the time, you don't need to update all rows in the table and require
 some kind of `WHERE` statements.
 
-Optionally, you can define a `drizzleObjectName` in the plugin options that accept 
-a `string` or `string[]`. This is useful when you have objects or classes with a delete 
-method that's not from Drizzle. Such as `update` method will trigger the ESLint rule. To 
-avoid that, you can define the name of the Drizzle object that you use in your codebase (like db) 
+Optionally, you can define a `drizzleObjectName` in the plugin options that accept
+a `string` or `string[]`. This is useful when you have objects or classes with a delete
+method that's not from Drizzle. Such as `update` method will trigger the ESLint rule. To
+avoid that, you can define the name of the Drizzle object that you use in your codebase (like db)
 so that the rule would only trigger if the delete method comes from this object:
 
 Example, config 1:
+
 ```yml
 rules:
-  'drizzle/enforce-update-with-where': "error"
+  'drizzle/enforce-update-with-where': 'error'
 ```
 
 ```ts
@@ -155,13 +157,15 @@ db.update()
 ```
 
 Example, config 2:
+
 ```yml
 rules:
   'drizzle/enforce-update-with-where':
-    - "error"
-    - "drizzleObjectName": 
-      - "db"
+    - 'error'
+    - 'drizzleObjectName':
+        - 'db'
 ```
+
 ```ts
 class MyClass {
   public update() {

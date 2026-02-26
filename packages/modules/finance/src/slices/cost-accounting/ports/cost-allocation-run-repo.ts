@@ -1,9 +1,9 @@
-import type { CostAllocationRun, CostAllocationLine } from "../entities/cost-allocation-run.js";
+import type { CostAllocationRun, CostAllocationLine } from '../entities/cost-allocation-run.js';
 
 export interface CreateAllocationRunInput {
   readonly companyId: string;
   readonly periodId: string;
-  readonly method: CostAllocationRun["method"];
+  readonly method: CostAllocationRun['method'];
   readonly currencyCode: string;
   readonly executedBy: string;
 }
@@ -23,7 +23,15 @@ export interface ICostAllocationRunRepo {
   findByPeriod(companyId: string, periodId: string): Promise<readonly CostAllocationRun[]>;
   findAll(): Promise<readonly CostAllocationRun[]>;
   create(tenantId: string, input: CreateAllocationRunInput): Promise<CostAllocationRun>;
-  updateStatus(id: string, status: CostAllocationRun["status"], totalAllocated: bigint, lineCount: number): Promise<CostAllocationRun>;
-  createLines(tenantId: string, lines: readonly CreateAllocationLineInput[]): Promise<readonly CostAllocationLine[]>;
+  updateStatus(
+    id: string,
+    status: CostAllocationRun['status'],
+    totalAllocated: bigint,
+    lineCount: number
+  ): Promise<CostAllocationRun>;
+  createLines(
+    tenantId: string,
+    lines: readonly CreateAllocationLineInput[]
+  ): Promise<readonly CostAllocationLine[]>;
   findLinesByRun(runId: string): Promise<readonly CostAllocationLine[]>;
 }

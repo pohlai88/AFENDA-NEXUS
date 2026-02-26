@@ -1,10 +1,15 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { projects, projectCostLines, projectBillings } from "@afenda/db";
-import type { Project } from "../entities/project.js";
-import type { ProjectCostLine } from "../entities/project-cost-line.js";
-import type { ProjectBilling } from "../entities/project-billing.js";
-import type { IProjectRepo, CreateProjectInput, CreateProjectCostLineInput, CreateProjectBillingInput } from "../ports/project-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { projects, projectCostLines, projectBillings } from '@afenda/db';
+import type { Project } from '../entities/project.js';
+import type { ProjectCostLine } from '../entities/project-cost-line.js';
+import type { ProjectBilling } from '../entities/project-billing.js';
+import type {
+  IProjectRepo,
+  CreateProjectInput,
+  CreateProjectCostLineInput,
+  CreateProjectBillingInput,
+} from '../ports/project-repo.js';
 
 type ProjRow = typeof projects.$inferSelect;
 type CostRow = typeof projectCostLines.$inferSelect;
@@ -20,8 +25,8 @@ function mapProjectToDomain(row: ProjRow): Project {
     description: row.description,
     customerId: row.customerId,
     managerId: row.managerId,
-    status: row.status as Project["status"],
-    billingType: row.billingType as Project["billingType"],
+    status: row.status as Project['status'],
+    billingType: row.billingType as Project['billingType'],
     budgetAmount: row.budgetAmount,
     actualCost: row.actualCost,
     billedAmount: row.billedAmount,
@@ -41,7 +46,7 @@ function mapCostToDomain(row: CostRow): ProjectCostLine {
     projectId: row.projectId,
     lineNumber: row.lineNumber,
     costDate: row.costDate,
-    category: row.category as ProjectCostLine["category"],
+    category: row.category as ProjectCostLine['category'],
     description: row.description,
     amount: row.amount,
     currencyCode: row.currencyCode,
@@ -63,7 +68,7 @@ function mapBillingToDomain(row: BillRow): ProjectBilling {
     description: row.description,
     amount: row.amount,
     currencyCode: row.currencyCode,
-    status: row.status as ProjectBilling["status"],
+    status: row.status as ProjectBilling['status'],
     milestoneRef: row.milestoneRef,
     arInvoiceId: row.arInvoiceId,
     createdAt: row.createdAt,
@@ -80,7 +85,11 @@ export class DrizzleProjectRepo implements IProjectRepo {
   }
 
   async findByCode(projectCode: string): Promise<Project | null> {
-    const rows = await this.db.select().from(projects).where(eq(projects.projectCode, projectCode)).limit(1);
+    const rows = await this.db
+      .select()
+      .from(projects)
+      .where(eq(projects.projectCode, projectCode))
+      .limit(1);
     return rows[0] ? mapProjectToDomain(rows[0]) : null;
   }
 
@@ -95,20 +104,23 @@ export class DrizzleProjectRepo implements IProjectRepo {
   }
 
   async create(tenantId: string, input: CreateProjectInput): Promise<Project> {
-    const [row] = await this.db.insert(projects).values({
-      tenantId,
-      companyId: input.companyId,
-      projectCode: input.projectCode,
-      name: input.name,
-      description: input.description,
-      customerId: input.customerId,
-      managerId: input.managerId,
-      billingType: input.billingType,
-      budgetAmount: input.budgetAmount,
-      currencyCode: input.currencyCode,
-      startDate: input.startDate,
-      endDate: input.endDate,
-    }).returning();
+    const [row] = await this.db
+      .insert(projects)
+      .values({
+        tenantId,
+        companyId: input.companyId,
+        projectCode: input.projectCode,
+        name: input.name,
+        description: input.description,
+        customerId: input.customerId,
+        managerId: input.managerId,
+        billingType: input.billingType,
+        budgetAmount: input.budgetAmount,
+        currencyCode: input.currencyCode,
+        startDate: input.startDate,
+        endDate: input.endDate,
+      })
+      .returning();
     return mapProjectToDomain(row!);
   }
 
@@ -118,48 +130,70 @@ export class DrizzleProjectRepo implements IProjectRepo {
   }
 
   async findCostLines(projectId: string): Promise<readonly ProjectCostLine[]> {
-    const rows = await this.db.select().from(projectCostLines).where(eq(projectCostLines.projectId, projectId));
+    const rows = await this.db
+      .select()
+      .from(projectCostLines)
+      .where(eq(projectCostLines.projectId, projectId));
     return rows.map(mapCostToDomain);
   }
 
-  async createCostLine(tenantId: string, input: CreateProjectCostLineInput): Promise<ProjectCostLine> {
-    const [row] = await this.db.insert(projectCostLines).values({
-      tenantId,
-      projectId: input.projectId,
-      lineNumber: input.lineNumber,
-      costDate: input.costDate,
-      category: input.category,
-      description: input.description,
-      amount: input.amount,
-      currencyCode: input.currencyCode,
-      glAccountId: input.glAccountId,
-      journalId: input.journalId,
-      employeeId: input.employeeId,
-      isBillable: input.isBillable,
-    }).returning();
+  async createCostLine(
+    tenantId: string,
+    input: CreateProjectCostLineInput
+  ): Promise<ProjectCostLine> {
+    const [row] = await this.db
+      .insert(projectCostLines)
+      .values({
+        tenantId,
+        projectId: input.projectId,
+        lineNumber: input.lineNumber,
+        costDate: input.costDate,
+        category: input.category,
+        description: input.description,
+        amount: input.amount,
+        currencyCode: input.currencyCode,
+        glAccountId: input.glAccountId,
+        journalId: input.journalId,
+        employeeId: input.employeeId,
+        isBillable: input.isBillable,
+      })
+      .returning();
     return mapCostToDomain(row!);
   }
 
   async findBillings(projectId: string): Promise<readonly ProjectBilling[]> {
-    const rows = await this.db.select().from(projectBillings).where(eq(projectBillings.projectId, projectId));
+    const rows = await this.db
+      .select()
+      .from(projectBillings)
+      .where(eq(projectBillings.projectId, projectId));
     return rows.map(mapBillingToDomain);
   }
 
   async createBilling(tenantId: string, input: CreateProjectBillingInput): Promise<ProjectBilling> {
-    const [row] = await this.db.insert(projectBillings).values({
-      tenantId,
-      projectId: input.projectId,
-      billingDate: input.billingDate,
-      description: input.description,
-      amount: input.amount,
-      currencyCode: input.currencyCode,
-      milestoneRef: input.milestoneRef,
-    }).returning();
+    const [row] = await this.db
+      .insert(projectBillings)
+      .values({
+        tenantId,
+        projectId: input.projectId,
+        billingDate: input.billingDate,
+        description: input.description,
+        amount: input.amount,
+        currencyCode: input.currencyCode,
+        milestoneRef: input.milestoneRef,
+      })
+      .returning();
     return mapBillingToDomain(row!);
   }
 
-  async updateBilling(id: string, input: Partial<Record<string, unknown>>): Promise<ProjectBilling> {
-    const [row] = await this.db.update(projectBillings).set(input).where(eq(projectBillings.id, id)).returning();
+  async updateBilling(
+    id: string,
+    input: Partial<Record<string, unknown>>
+  ): Promise<ProjectBilling> {
+    const [row] = await this.db
+      .update(projectBillings)
+      .set(input)
+      .where(eq(projectBillings.id, id))
+      .returning();
     return mapBillingToDomain(row!);
   }
 }

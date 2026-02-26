@@ -1,5 +1,5 @@
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { DunningRun, DunningLetter } from "../entities/dunning.js";
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type { DunningRun, DunningLetter } from '../entities/dunning.js';
 
 export interface CreateDunningRunInput {
   readonly tenantId: string;

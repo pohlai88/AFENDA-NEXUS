@@ -3,7 +3,7 @@
  * Replaces ad-hoc source transactions with a formal, persistable event type.
  */
 
-export type AccountingEventStatus = "PENDING" | "DERIVED" | "POSTED" | "FAILED" | "PREVIEW";
+export type AccountingEventStatus = 'PENDING' | 'DERIVED' | 'POSTED' | 'FAILED' | 'PREVIEW';
 
 export interface AccountingEvent {
   readonly id: string;

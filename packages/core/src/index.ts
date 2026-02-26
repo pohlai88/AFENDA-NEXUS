@@ -9,10 +9,10 @@
 declare const __brand: unique symbol;
 type Brand<T, B extends string> = T & { readonly [__brand]: B };
 
-export type TenantId = Brand<string, "TenantId">;
-export type CompanyId = Brand<string, "CompanyId">;
-export type UserId = Brand<string, "UserId">;
-export type LedgerId = Brand<string, "LedgerId">;
+export type TenantId = Brand<string, 'TenantId'>;
+export type CompanyId = Brand<string, 'CompanyId'>;
+export type UserId = Brand<string, 'UserId'>;
+export type LedgerId = Brand<string, 'LedgerId'>;
 
 export function tenantId(value: string): TenantId {
   return value as TenantId;
@@ -32,9 +32,7 @@ export function ledgerId(value: string): LedgerId {
 
 // ─── Result Type ────────────────────────────────────────────────────────────
 
-export type Result<T, E = AppError> =
-  | { ok: true; value: T }
-  | { ok: false; error: E };
+export type Result<T, E = AppError> = { ok: true; value: T } | { ok: false; error: E };
 
 export function ok<T>(value: T): Result<T, never> {
   return { ok: true, value };
@@ -50,31 +48,34 @@ export class AppError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly cause?: unknown,
+    public readonly cause?: unknown
   ) {
     super(message);
-    this.name = "AppError";
+    this.name = 'AppError';
   }
 }
 
 export class NotFoundError extends AppError {
   constructor(entity: string, id: string) {
-    super("NOT_FOUND", `${entity} not found: ${id}`);
-    this.name = "NotFoundError";
+    super('NOT_FOUND', `${entity} not found: ${id}`);
+    this.name = 'NotFoundError';
   }
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string, public readonly fields?: Record<string, string>) {
-    super("VALIDATION", message);
-    this.name = "ValidationError";
+  constructor(
+    message: string,
+    public readonly fields?: Record<string, string>
+  ) {
+    super('VALIDATION', message);
+    this.name = 'ValidationError';
   }
 }
 
 export class AuthorizationError extends AppError {
-  constructor(message = "Forbidden") {
-    super("FORBIDDEN", message);
-    this.name = "AuthorizationError";
+  constructor(message = 'Forbidden') {
+    super('FORBIDDEN', message);
+    this.name = 'AuthorizationError';
   }
 }
 
@@ -112,6 +113,6 @@ export interface DateRange {
 }
 
 export function dateRange(from: Date, to: Date): DateRange {
-  if (from > to) throw new AppError("INVALID_DATE_RANGE", "from must be <= to");
+  if (from > to) throw new AppError('INVALID_DATE_RANGE', 'from must be <= to');
   return { from, to };
 }

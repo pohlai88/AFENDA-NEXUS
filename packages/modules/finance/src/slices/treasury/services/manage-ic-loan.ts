@@ -2,12 +2,12 @@
  * TR-06 service: Manage intercompany loans — create, repay, accrue interest.
  */
 
-import { err, NotFoundError, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IIcLoanRepo } from "../ports/ic-loan-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { IcLoan } from "../entities/ic-loan.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, NotFoundError, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IIcLoanRepo } from '../ports/ic-loan-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { IcLoan } from '../entities/ic-loan.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 // ---------- Create ----------
 
@@ -28,14 +28,14 @@ export interface CreateIcLoanInput {
 
 export async function createIcLoan(
   input: CreateIcLoanInput,
-  deps: { icLoanRepo: IIcLoanRepo; outboxWriter: IOutboxWriter },
+  deps: { icLoanRepo: IIcLoanRepo; outboxWriter: IOutboxWriter }
 ): Promise<Result<IcLoan>> {
   if (input.lenderCompanyId === input.borrowerCompanyId)
-    return err(new ValidationError("Lender and borrower must differ"));
+    return err(new ValidationError('Lender and borrower must differ'));
   if (input.principalAmount <= 0n)
-    return err(new ValidationError("Principal amount must be positive"));
+    return err(new ValidationError('Principal amount must be positive'));
   if (input.maturityDate <= input.startDate)
-    return err(new ValidationError("Maturity date must be after start date"));
+    return err(new ValidationError('Maturity date must be after start date'));
 
   const loan = await deps.icLoanRepo.create(input.tenantId, {
     lenderCompanyId: input.lenderCompanyId,
@@ -84,23 +84,23 @@ export interface RepayIcLoanResult {
 
 export async function repayIcLoan(
   input: RepayIcLoanInput,
-  deps: { icLoanRepo: IIcLoanRepo; outboxWriter: IOutboxWriter },
+  deps: { icLoanRepo: IIcLoanRepo; outboxWriter: IOutboxWriter }
 ): Promise<Result<RepayIcLoanResult>> {
   const loan = await deps.icLoanRepo.findById(input.loanId);
-  if (!loan) return err(new NotFoundError("IcLoan", input.loanId));
-  if (loan.status !== "ACTIVE")
+  if (!loan) return err(new NotFoundError('IcLoan', input.loanId));
+  if (loan.status !== 'ACTIVE')
     return err(new ValidationError(`Loan status must be ACTIVE, got ${loan.status}`));
   if (input.repaymentAmount <= 0n)
-    return err(new ValidationError("Repayment amount must be positive"));
+    return err(new ValidationError('Repayment amount must be positive'));
   if (input.repaymentAmount > loan.outstandingBalance)
-    return err(new ValidationError("Repayment exceeds outstanding balance"));
+    return err(new ValidationError('Repayment exceeds outstanding balance'));
 
   const newBalance = loan.outstandingBalance - input.repaymentAmount;
   const isFullyRepaid = newBalance === 0n;
 
   await deps.icLoanRepo.updateBalance(loan.id, newBalance);
   if (isFullyRepaid) {
-    await deps.icLoanRepo.updateStatus(loan.id, "REPAID");
+    await deps.icLoanRepo.updateStatus(loan.id, 'REPAID');
   }
 
   await deps.outboxWriter.write({
@@ -144,16 +144,12 @@ export interface AccrueInterestResult {
  * Pure computation — calculates interest accrual for a period.
  * interest = balance * rateBps / 10000 * daysInPeriod / daysInYear  (BigInt integer division)
  */
-export function computeInterestAccrual(
-  input: AccrueInterestInput,
-): AccrueInterestResult {
-  if (input.daysInYear <= 0) throw new Error("daysInYear must be positive");
-  if (input.daysInPeriod < 0) throw new Error("daysInPeriod must be non-negative");
+export function computeInterestAccrual(input: AccrueInterestInput): AccrueInterestResult {
+  if (input.daysInYear <= 0) throw new Error('daysInYear must be positive');
+  if (input.daysInPeriod < 0) throw new Error('daysInPeriod must be non-negative');
 
   const interestAmount =
-    (input.outstandingBalance *
-      BigInt(input.interestRateBps) *
-      BigInt(input.daysInPeriod)) /
+    (input.outstandingBalance * BigInt(input.interestRateBps) * BigInt(input.daysInPeriod)) /
     (10000n * BigInt(input.daysInYear));
 
   return { interestAmount };

@@ -5,7 +5,7 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface ScenarioAdjustment {
   readonly accountCode: string;
@@ -60,10 +60,10 @@ export interface ScenarioPlanningResult {
  * Compute scenario-adjusted budgets.
  */
 export function computeScenarioPlanning(
-  input: ScenarioPlanningInput,
+  input: ScenarioPlanningInput
 ): CalculatorResult<ScenarioPlanningResult> {
-  if (input.baseline.length === 0) throw new Error("At least one baseline budget line is required");
-  if (input.scenarios.length === 0) throw new Error("At least one scenario is required");
+  if (input.baseline.length === 0) throw new Error('At least one baseline budget line is required');
+  if (input.scenarios.length === 0) throw new Error('At least one scenario is required');
 
   const lines: ScenarioLine[] = [];
   const summaries: ScenarioSummary[] = [];

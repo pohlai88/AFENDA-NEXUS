@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createDbSession, createPooledClient } from "@afenda/db";
-import type { DbClient } from "@afenda/db";
-import { createFinanceRuntime } from "../runtime.js";
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { createDbSession, createPooledClient } from '@afenda/db';
+import type { DbClient } from '@afenda/db';
+import { createFinanceRuntime } from '../runtime.js';
 
 /**
  * A-01: Cross-Tenant Test Matrix
- * 
+ *
  * Verifies RLS isolation across all finance repos:
  * - JournalRepo
  * - AccountRepo
@@ -15,18 +15,18 @@ import { createFinanceRuntime } from "../runtime.js";
  * - FxRateRepo
  * - IcAgreementRepo
  * - IcTransactionRepo
- * 
+ *
  * Pattern: Create data in tenant A, attempt to read from tenant B → expect empty/null
  */
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
-describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
+describe.skipIf(!DATABASE_URL)('A-01: Cross-Tenant Isolation Matrix', () => {
   let db: DbClient;
-  const TENANT_A = "11111111-1111-1111-1111-111111111111";
-  const TENANT_B = "22222222-2222-2222-2222-222222222222";
-  const USER_A = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
-  const USER_B = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+  const TENANT_A = '11111111-1111-1111-1111-111111111111';
+  const TENANT_B = '22222222-2222-2222-2222-222222222222';
+  const USER_A = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  const USER_B = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
   beforeAll(async () => {
     db = createPooledClient({ connectionString: DATABASE_URL! });
@@ -36,8 +36,8 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
     await db.end();
   });
 
-  describe("JournalRepo isolation", () => {
-    it("cannot read journals from other tenant", async () => {
+  describe('JournalRepo isolation', () => {
+    it('cannot read journals from other tenant', async () => {
       const session = createDbSession({ db });
       const runtime = createFinanceRuntime(session);
 
@@ -46,10 +46,10 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
         { tenantId: TENANT_A, userId: USER_A },
         async (tx) => {
           return runtime(tx).journalRepo.create({
-            ledgerId: "ledger-a",
-            fiscalPeriodId: "period-a",
-            postingDate: new Date("2025-01-15"),
-            description: "Tenant A Journal",
+            ledgerId: 'ledger-a',
+            fiscalPeriodId: 'period-a',
+            postingDate: new Date('2025-01-15'),
+            description: 'Tenant A Journal',
             lines: [],
           });
         }
@@ -66,7 +66,7 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
       expect(journalFromB).toBeNull();
     });
 
-    it("cannot list journals from other tenant", async () => {
+    it('cannot list journals from other tenant', async () => {
       const session = createDbSession({ db });
       const runtimeB = createFinanceRuntime(session);
 
@@ -79,13 +79,13 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
       );
 
       // Should not see tenant A's journals
-      const tenantAJournals = journalsFromB.filter((j) => j.id.includes("a"));
+      const tenantAJournals = journalsFromB.filter((j) => j.id.includes('a'));
       expect(tenantAJournals).toHaveLength(0);
     });
   });
 
-  describe("AccountRepo isolation", () => {
-    it("cannot read accounts from other tenant", async () => {
+  describe('AccountRepo isolation', () => {
+    it('cannot read accounts from other tenant', async () => {
       const session = createDbSession({ db });
       const runtimeB = createFinanceRuntime(session);
 
@@ -104,8 +104,8 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
     });
   });
 
-  describe("PeriodRepo isolation", () => {
-    it("cannot read periods from other tenant", async () => {
+  describe('PeriodRepo isolation', () => {
+    it('cannot read periods from other tenant', async () => {
       const session = createDbSession({ db });
       const runtimeB = createFinanceRuntime(session);
 
@@ -121,8 +121,8 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
     });
   });
 
-  describe("BalanceRepo isolation", () => {
-    it("cannot read balances from other tenant", async () => {
+  describe('BalanceRepo isolation', () => {
+    it('cannot read balances from other tenant', async () => {
       const session = createDbSession({ db });
       const runtimeB = createFinanceRuntime(session);
 
@@ -130,7 +130,7 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
         { tenantId: TENANT_B, userId: USER_B },
         async (tx) => {
           const runtime = runtimeB(tx);
-          return runtime.balanceRepo.findByLedger("ledger-a");
+          return runtime.balanceRepo.findByLedger('ledger-a');
         }
       );
 
@@ -139,8 +139,8 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
     });
   });
 
-  describe("LedgerRepo isolation", () => {
-    it("cannot read ledgers from other tenant", async () => {
+  describe('LedgerRepo isolation', () => {
+    it('cannot read ledgers from other tenant', async () => {
       const session = createDbSession({ db });
       const runtimeB = createFinanceRuntime(session);
 
@@ -148,7 +148,7 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
         { tenantId: TENANT_B, userId: USER_B },
         async (tx) => {
           const runtime = runtimeB(tx);
-          return runtime.ledgerRepo.findById("ledger-a");
+          return runtime.ledgerRepo.findById('ledger-a');
         }
       );
 
@@ -156,8 +156,8 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
     });
   });
 
-  describe("FxRateRepo isolation", () => {
-    it("cannot read FX rates from other tenant", async () => {
+  describe('FxRateRepo isolation', () => {
+    it('cannot read FX rates from other tenant', async () => {
       const session = createDbSession({ db });
       createFinanceRuntime(session); // runtimeA — instantiated to simulate tenant A presence
       const runtimeB = createFinanceRuntime(session);
@@ -168,7 +168,7 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
         { tenantId: TENANT_B, userId: USER_B },
         async (tx) => {
           const runtime = runtimeB(tx);
-          return runtime.fxRateRepo.findRate("USD", "EUR", new Date());
+          return runtime.fxRateRepo.findRate('USD', 'EUR', new Date());
         }
       );
 
@@ -177,8 +177,8 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
     });
   });
 
-  describe("IcAgreementRepo isolation", () => {
-    it("cannot read IC agreements from other tenant", async () => {
+  describe('IcAgreementRepo isolation', () => {
+    it('cannot read IC agreements from other tenant', async () => {
       const session = createDbSession({ db });
       const runtimeB = createFinanceRuntime(session);
 
@@ -194,8 +194,8 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
     });
   });
 
-  describe("IcTransactionRepo isolation", () => {
-    it("cannot read IC transactions from other tenant", async () => {
+  describe('IcTransactionRepo isolation', () => {
+    it('cannot read IC transactions from other tenant', async () => {
       const session = createDbSession({ db });
       const runtimeB = createFinanceRuntime(session);
 
@@ -204,7 +204,7 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
         { tenantId: TENANT_B, userId: USER_B },
         async (tx) => {
           const runtime = runtimeB(tx);
-          return runtime.icTransactionRepo.findById("ic-tx-a");
+          return runtime.icTransactionRepo.findById('ic-tx-a');
         }
       );
 
@@ -212,8 +212,8 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
     });
   });
 
-  describe("Write isolation", () => {
-    it("cannot insert data with wrong tenant_id via FK violation", async () => {
+  describe('Write isolation', () => {
+    it('cannot insert data with wrong tenant_id via FK violation', async () => {
       const session = createDbSession({ db });
       const runtimeB = createFinanceRuntime(session);
 
@@ -222,10 +222,10 @@ describe.skipIf(!DATABASE_URL)("A-01: Cross-Tenant Isolation Matrix", () => {
         session.withTenant({ tenantId: TENANT_B, userId: USER_B }, async (tx) => {
           const runtime = runtimeB(tx);
           return runtime.journalRepo.create({
-            ledgerId: "ledger-a", // Belongs to tenant A
-            fiscalPeriodId: "period-b",
-            postingDate: new Date("2025-01-15"),
-            description: "Cross-tenant write attempt",
+            ledgerId: 'ledger-a', // Belongs to tenant A
+            fiscalPeriodId: 'period-b',
+            postingDate: new Date('2025-01-15'),
+            description: 'Cross-tenant write attempt',
             lines: [],
           });
         })

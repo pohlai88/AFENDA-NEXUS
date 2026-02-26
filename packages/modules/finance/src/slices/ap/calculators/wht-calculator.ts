@@ -8,7 +8,7 @@
 
 export interface WhtRate {
   readonly countryCode: string;
-  readonly payeeType: "RESIDENT" | "NON_RESIDENT";
+  readonly payeeType: 'RESIDENT' | 'NON_RESIDENT';
   readonly incomeType: string;
   readonly rate: number;
   readonly treatyRate: number | null;
@@ -21,10 +21,7 @@ export interface WhtResult {
   readonly effectiveRate: number;
 }
 
-export function computeWht(
-  grossAmount: bigint,
-  whtRate: WhtRate,
-): WhtResult {
+export function computeWht(grossAmount: bigint, whtRate: WhtRate): WhtResult {
   const effectiveRate = whtRate.treatyRate ?? whtRate.rate;
 
   // eslint-disable-next-line no-restricted-syntax -- integer arithmetic bridge

@@ -5,7 +5,7 @@
  * All rates are integer basis points — no float arithmetic on money.
  */
 
-import type { DepreciationMethod } from "../entities/asset.js";
+import type { DepreciationMethod } from '../entities/asset.js';
 
 export interface DepreciationInput {
   readonly assetId: string;
@@ -40,14 +40,27 @@ export function computeDepreciation(input: DepreciationInput): DepreciationResul
   let depreciationAmount: bigint;
 
   switch (input.depreciationMethod) {
-    case "STRAIGHT_LINE":
-      depreciationAmount = computeStraightLine(depreciableAmount, input.usefulLifeMonths, input.periodMonths);
+    case 'STRAIGHT_LINE':
+      depreciationAmount = computeStraightLine(
+        depreciableAmount,
+        input.usefulLifeMonths,
+        input.periodMonths
+      );
       break;
-    case "DECLINING_BALANCE":
-      depreciationAmount = computeDecliningBalance(currentNbv, input.residualValue, input.decliningRateBps ?? 2000, input.periodMonths);
+    case 'DECLINING_BALANCE':
+      depreciationAmount = computeDecliningBalance(
+        currentNbv,
+        input.residualValue,
+        input.decliningRateBps ?? 2000,
+        input.periodMonths
+      );
       break;
-    case "UNITS_OF_PRODUCTION":
-      depreciationAmount = computeUnitsOfProduction(depreciableAmount, input.totalEstimatedUnits ?? 1, input.unitsThisPeriod ?? 0);
+    case 'UNITS_OF_PRODUCTION':
+      depreciationAmount = computeUnitsOfProduction(
+        depreciableAmount,
+        input.totalEstimatedUnits ?? 1,
+        input.unitsThisPeriod ?? 0
+      );
       break;
   }
 
@@ -72,12 +85,21 @@ export function computeDepreciation(input: DepreciationInput): DepreciationResul
   };
 }
 
-function computeStraightLine(depreciableAmount: bigint, usefulLifeMonths: number, periodMonths: number): bigint {
+function computeStraightLine(
+  depreciableAmount: bigint,
+  usefulLifeMonths: number,
+  periodMonths: number
+): bigint {
   if (usefulLifeMonths <= 0) return 0n;
   return (depreciableAmount * BigInt(periodMonths)) / BigInt(usefulLifeMonths);
 }
 
-function computeDecliningBalance(currentNbv: bigint, residualValue: bigint, rateBps: number, periodMonths: number): bigint {
+function computeDecliningBalance(
+  currentNbv: bigint,
+  residualValue: bigint,
+  rateBps: number,
+  periodMonths: number
+): bigint {
   // Annual rate applied proportionally to period
   const annualDepr = (currentNbv * BigInt(rateBps)) / 10000n;
   const periodDepr = (annualDepr * BigInt(periodMonths)) / 12n;
@@ -86,7 +108,11 @@ function computeDecliningBalance(currentNbv: bigint, residualValue: bigint, rate
   return periodDepr > maxDepr ? maxDepr : periodDepr;
 }
 
-function computeUnitsOfProduction(depreciableAmount: bigint, totalUnits: number, unitsThisPeriod: number): bigint {
+function computeUnitsOfProduction(
+  depreciableAmount: bigint,
+  totalUnits: number,
+  unitsThisPeriod: number
+): bigint {
   if (totalUnits <= 0) return 0n;
   return (depreciableAmount * BigInt(unitsThisPeriod)) / BigInt(totalUnits);
 }
@@ -94,6 +120,8 @@ function computeUnitsOfProduction(depreciableAmount: bigint, totalUnits: number,
 /**
  * Batch compute depreciation for multiple assets.
  */
-export function computeBatchDepreciation(inputs: readonly DepreciationInput[]): readonly DepreciationResult[] {
+export function computeBatchDepreciation(
+  inputs: readonly DepreciationInput[]
+): readonly DepreciationResult[] {
   return inputs.map(computeDepreciation);
 }

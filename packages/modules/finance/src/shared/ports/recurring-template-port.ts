@@ -6,8 +6,8 @@ export type {
   RecurringTemplate,
   RecurringTemplateLine,
   RecurringFrequency,
-} from "../../slices/hub/entities/recurring-template.js";
+} from '../../slices/hub/entities/recurring-template.js';
 export type {
   IRecurringTemplateRepo,
   CreateRecurringTemplateInput,
-} from "../../slices/hub/ports/recurring-template-repo.js";
+} from '../../slices/hub/ports/recurring-template-repo.js';

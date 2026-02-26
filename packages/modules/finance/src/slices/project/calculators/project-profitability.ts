@@ -28,16 +28,11 @@ export interface ProfitabilityResult {
 
 export function computeProjectProfitability(input: ProfitabilityInput): ProfitabilityResult {
   const grossProfit = input.totalRevenue - input.totalCost;
-  const marginPct = input.totalRevenue > 0n
-    ? Number((grossProfit * 100n) / input.totalRevenue)
-    : 0;
-  const markupPct = input.totalCost > 0n
-    ? Number((grossProfit * 100n) / input.totalCost)
-    : 0;
+  const marginPct = input.totalRevenue > 0n ? Number((grossProfit * 100n) / input.totalRevenue) : 0;
+  const markupPct = input.totalCost > 0n ? Number((grossProfit * 100n) / input.totalCost) : 0;
   const budgetVariance = input.budgetAmount - input.totalCost;
-  const budgetUtilizationPct = input.budgetAmount > 0n
-    ? Number((input.totalCost * 100n) / input.budgetAmount)
-    : 0;
+  const budgetUtilizationPct =
+    input.budgetAmount > 0n ? Number((input.totalCost * 100n) / input.budgetAmount) : 0;
 
   return {
     projectId: input.projectId,

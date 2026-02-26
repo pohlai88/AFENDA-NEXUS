@@ -1,6 +1,6 @@
 import Tab from '@mdx/Tab.astro';
 import Tabs from '@mdx/Tabs.astro';
-import Callout from '@mdx/Callout.astro'
+import Callout from '@mdx/Callout.astro';
 
 # Common way of defining custom types
 
@@ -9,9 +9,8 @@ import Callout from '@mdx/Callout.astro'
 The best way to see how `customType` definition is working is to check how existing data types
 could be defined using `customType` function from Drizzle ORM.
 
-
 <Callout title='info'>
-Each dialect exposes `customType` function 
+Each dialect exposes `customType` function
 
 ```ts
 import { customType } from 'drizzle-orm/pg-core';
@@ -24,19 +23,19 @@ import { customType } from 'drizzle-orm/gel-core';
 ...
 import { customType } from 'drizzle-orm/singlestore-core';
 ```
+
 </Callout>
 
 **Integer**
+
 ```typescript copy
 import { customType } from 'drizzle-orm/pg-core';
 
-const customSerial = customType<{ data: number; }>(
-  {
-    dataType() {
-      return 'integer';
-    },
+const customSerial = customType<{ data: number }>({
+  dataType() {
+    return 'integer';
   },
-);
+});
 ```
 
 **Text**
@@ -84,20 +83,14 @@ const customJsonb = <TData>(name: string) =>
 ```typescript copy
 import { customType } from 'drizzle-orm/pg-core';
 
-const customTimestamp = customType<
-  {
-    data: Date;
-    driverData: string;
-    config: { withTimezone: boolean; precision?: number };
-  }
->({
+const customTimestamp = customType<{
+  data: Date;
+  driverData: string;
+  config: { withTimezone: boolean; precision?: number };
+}>({
   dataType(config) {
-    const precision = typeof config.precision !== 'undefined'
-      ? ` (${config.precision})`
-      : '';
-    return `timestamp${precision}${
-      config.withTimezone ? ' with time zone' : ''
-    }`;
+    const precision = typeof config.precision !== 'undefined' ? ` (${config.precision})` : '';
+    return `timestamp${precision}${config.withTimezone ? ' with time zone' : ''}`;
   },
   fromDriver(value: string): Date {
     return new Date(value);
@@ -113,18 +106,17 @@ const usersTable = pgTable('users', {
   name: customText('name').notNull(),
   verified: customBoolean('verified').notNull().default(false),
   jsonb: customJsonb<string[]>('jsonb'),
-  createdAt: customTimestamp('created_at', { withTimezone: true }).notNull()
+  createdAt: customTimestamp('created_at', { withTimezone: true })
+    .notNull()
     .default(sql`now()`),
 });
 ```
 
-
-
-## TS-doc for type definitions 
+## TS-doc for type definitions
 
 You can check ts-doc for `types` and `param` definition.
 
-```typescript
+````typescript
 export interface CustomTypeValues = {
   /**
    * Required type for custom column, that will infer proper type model
@@ -239,7 +231,7 @@ export interface CustomTypeParams<T extends CustomTypeValues> {
    *  return new Date(value);
    * },
    * ```
-   * 
+   *
    * It'll cause the returned data to change from:
  	 * ```
  	 * {
@@ -339,4 +331,4 @@ export interface CustomTypeParams<T extends CustomTypeValues> {
  	 */
  	forJsonSelect?: (identifier: SQL, sql: SQLGenerator, arrayDimensions?: number) => SQL;
 }
-```
+````

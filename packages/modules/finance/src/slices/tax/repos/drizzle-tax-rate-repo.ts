@@ -1,8 +1,8 @@
-import { eq, and, lte, or, isNull, gte } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { taxRates } from "@afenda/db";
-import type { TaxRate } from "../entities/tax-rate.js";
-import type { ITaxRateRepo, CreateTaxRateInput } from "../ports/tax-rate-repo.js";
+import { eq, and, lte, or, isNull, gte } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { taxRates } from '@afenda/db';
+import type { TaxRate } from '../entities/tax-rate.js';
+import type { ITaxRateRepo, CreateTaxRateInput } from '../ports/tax-rate-repo.js';
 
 type Row = typeof taxRates.$inferSelect;
 
@@ -13,7 +13,7 @@ function mapToDomain(row: Row): TaxRate {
     taxCodeId: row.taxCodeId,
     name: row.name,
     ratePercent: row.ratePercent,
-    type: row.type as TaxRate["type"],
+    type: row.type as TaxRate['type'],
     jurisdictionCode: row.jurisdictionCode,
     effectiveFrom: row.effectiveFrom,
     effectiveTo: row.effectiveTo,
@@ -24,7 +24,7 @@ function mapToDomain(row: Row): TaxRate {
 }
 
 export class DrizzleTaxRateRepo implements ITaxRateRepo {
-  constructor(private readonly db: TenantTx) { }
+  constructor(private readonly db: TenantTx) {}
 
   async findById(id: string): Promise<TaxRate | null> {
     const rows = await this.db.select().from(taxRates).where(eq(taxRates.id, id)).limit(1);
@@ -37,18 +37,24 @@ export class DrizzleTaxRateRepo implements ITaxRateRepo {
   }
 
   async findByJurisdiction(jurisdictionCode: string): Promise<readonly TaxRate[]> {
-    const rows = await this.db.select().from(taxRates).where(eq(taxRates.jurisdictionCode, jurisdictionCode));
+    const rows = await this.db
+      .select()
+      .from(taxRates)
+      .where(eq(taxRates.jurisdictionCode, jurisdictionCode));
     return rows.map(mapToDomain);
   }
 
   async findActive(asOfDate: Date): Promise<readonly TaxRate[]> {
-    const rows = await this.db.select().from(taxRates).where(
-      and(
-        eq(taxRates.isActive, true),
-        lte(taxRates.effectiveFrom, asOfDate),
-        or(isNull(taxRates.effectiveTo), gte(taxRates.effectiveTo, asOfDate)),
-      ),
-    );
+    const rows = await this.db
+      .select()
+      .from(taxRates)
+      .where(
+        and(
+          eq(taxRates.isActive, true),
+          lte(taxRates.effectiveFrom, asOfDate),
+          or(isNull(taxRates.effectiveTo), gte(taxRates.effectiveTo, asOfDate))
+        )
+      );
     return rows.map(mapToDomain);
   }
 
@@ -58,16 +64,19 @@ export class DrizzleTaxRateRepo implements ITaxRateRepo {
   }
 
   async create(tenantId: string, input: CreateTaxRateInput): Promise<TaxRate> {
-    const [row] = await this.db.insert(taxRates).values({
-      tenantId,
-      taxCodeId: input.taxCodeId,
-      name: input.name,
-      ratePercent: input.ratePercent,
-      type: input.type,
-      jurisdictionCode: input.jurisdictionCode,
-      effectiveFrom: input.effectiveFrom,
-      effectiveTo: input.effectiveTo,
-    }).returning();
+    const [row] = await this.db
+      .insert(taxRates)
+      .values({
+        tenantId,
+        taxCodeId: input.taxCodeId,
+        name: input.name,
+        ratePercent: input.ratePercent,
+        type: input.type,
+        jurisdictionCode: input.jurisdictionCode,
+        effectiveFrom: input.effectiveFrom,
+        effectiveTo: input.effectiveTo,
+      })
+      .returning();
     return mapToDomain(row!);
   }
 

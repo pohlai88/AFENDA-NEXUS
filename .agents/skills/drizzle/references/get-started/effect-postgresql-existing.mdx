@@ -1,12 +1,12 @@
 import Tab from '@mdx/Tab.astro';
 import Tabs from '@mdx/Tabs.astro';
-import Npm from "@mdx/Npm.astro";
+import Npm from '@mdx/Npm.astro';
 import Callout from '@mdx/Callout.astro';
 import Steps from '@mdx/Steps.astro';
 import AnchorCards from '@mdx/AnchorCards.astro';
 import Breadcrumbs from '@mdx/Breadcrumbs.astro';
-import CodeTabs from "@mdx/CodeTabs.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import CodeTabs from '@mdx/CodeTabs.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 import IntrospectPostgreSQL from '@mdx/get-started/postgresql/IntrospectPostgreSQL.mdx';
 import FileStructure from '@mdx/get-started/FileStructure.mdx';
 import InstallPackages from '@mdx/get-started/InstallPackages.mdx';
@@ -15,10 +15,10 @@ import SetupEnv from '@mdx/get-started/SetupEnv.mdx';
 import TransferCode from '@mdx/get-started/TransferCode.mdx';
 import ApplyChanges from '@mdx/get-started/ApplyChanges.mdx';
 import RunFile from '@mdx/get-started/RunFile.mdx';
-import ConnectEffect from '@mdx/get-started/postgresql/ConnectEffect.mdx'
+import ConnectEffect from '@mdx/get-started/postgresql/ConnectEffect.mdx';
 import UpdateSchema from '@mdx/get-started/postgresql/UpdateSchema.mdx';
 
-<Breadcrumbs/>
+<Breadcrumbs />
 
 # Get Started with Drizzle and Effect PostgreSQL in existing project
 
@@ -28,45 +28,49 @@ This page explains concepts available on drizzle versions `1.0.0-beta.13` and hi
 Effect is only available for PostgreSQL right now and soon be implemented for all other dialects
 
 On how to upgrade (read more [here](/docs/upgrade-v1))
+
 </Callout>
 
 <Prerequisites>
-  - **Effect** - Effect is a powerful TS library designed to help developers easily create complex, synchronous, and asynchronous programs. - [read more](https://effect.website/docs)
-  - **dotenv** - package for managing environment variables - [read here](https://www.npmjs.com/package/dotenv)
-  - **tsx** - package for running TypeScript files - [read here](https://tsx.is/)
-  - **@effect/sql-pg** - A PostgreSQL toolkit for Effect - [read here](https://effect-ts.github.io/effect/docs/sql-pg)
+  - **Effect** - Effect is a powerful TS library designed to help developers easily create complex,
+  synchronous, and asynchronous programs. - [read more](https://effect.website/docs) - **dotenv** -
+  package for managing environment variables - [read here](https://www.npmjs.com/package/dotenv) -
+  **tsx** - package for running TypeScript files - [read here](https://tsx.is/) - **@effect/sql-pg**
+  - A PostgreSQL toolkit for Effect - [read here](https://effect-ts.github.io/effect/docs/sql-pg)
 </Prerequisites>
 
-<FileStructure/>
+<FileStructure />
 
 #### Step 1 - Install required packages
-<InstallPackages lib='effect @effect/sql-pg pg' devlib=' @types/pg'/>
+
+<InstallPackages lib="effect @effect/sql-pg pg" devlib=" @types/pg" />
 
 #### Step 2 - Setup connection variables
 
-<SetupEnv env_variable='DATABASE_URL' />
+<SetupEnv env_variable="DATABASE_URL" />
 
 <Callout title='tips'>
 If you don't have a PostgreSQL database yet and want to create one for testing, you can use our guide on how to set up PostgreSQL in Docker.
 
 The PostgreSQL in Docker guide is available [here](/docs/guides/postgresql-local-setup). Go set it up, generate a database URL (explained in the guide), and come back for the next steps
+
 </Callout>
 
 #### Step 3 - Setup Drizzle config file
 
-<SetupConfig dialect='postgresql' env_variable='DATABASE_URL'/>
+<SetupConfig dialect="postgresql" env_variable="DATABASE_URL" />
 
 #### Step 4 - Introspect your database
 
-<IntrospectPostgreSQL/>
+<IntrospectPostgreSQL />
 
 #### Step 5 - Transfer code to your actual schema file
 
-<TransferCode/>
+<TransferCode />
 
 #### Step 6 - Connect Drizzle ORM to the database
 
-<ConnectEffect/>
+<ConnectEffect />
 
 #### Step 7 - Query the database
 
@@ -92,7 +96,7 @@ const PgClientLive = PgClient.layer({
   },
 });
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const db = yield* PgDrizzle.makeWithDefaults();
 
   const user: typeof usersTable.$inferInsert = {
@@ -102,10 +106,10 @@ const program = Effect.gen(function*() {
   };
 
   yield* db.insert(usersTable).values(user);
-  console.log('New user created!')
+  console.log('New user created!');
 
   const users = yield* db.select().from(usersTable);
-  console.log('Getting all users from the database: ', users)
+  console.log('Getting all users from the database: ', users);
   /*
   const users: {
     id: number;
@@ -121,10 +125,10 @@ const program = Effect.gen(function*() {
       age: 31,
     })
     .where(eq(usersTable.email, user.email));
-  console.log('User info updated!')
+  console.log('User info updated!');
 
   yield* db.delete(usersTable).where(eq(usersTable.email, user.email));
-  console.log('User deleted!')
+  console.log('User deleted!');
 });
 
 Effect.runPromise(program.pipe(Effect.provide(PgClientLive)));
@@ -132,11 +136,11 @@ Effect.runPromise(program.pipe(Effect.provide(PgClientLive)));
 
 #### Step 8 - Run index.ts file
 
-<RunFile/>
+<RunFile />
 
 #### Step 9 - Update your table schema (optional)
 
-<UpdateSchema/>
+<UpdateSchema />
 
 #### Step 10 - Applying changes to the database (optional)
 
@@ -166,7 +170,7 @@ const PgClientLive = PgClient.layer({
   },
 });
 
-const program = Effect.gen(function*() {
+const program = Effect.gen(function* () {
   const db = yield* PgDrizzle.makeWithDefaults();
 
   const user: typeof usersTable.$inferInsert = {
@@ -177,10 +181,10 @@ const program = Effect.gen(function*() {
   };
 
   yield* db.insert(usersTable).values(user);
-  console.log('New user created!')
+  console.log('New user created!');
 
   const users = yield* db.select().from(usersTable);
-  console.log('Getting all users from the database: ', users)
+  console.log('Getting all users from the database: ', users);
   /*
   const users: {
     id: number;
@@ -197,10 +201,10 @@ const program = Effect.gen(function*() {
       age: 31,
     })
     .where(eq(usersTable.email, user.email));
-  console.log('User info updated!')
+  console.log('User info updated!');
 
   yield* db.delete(usersTable).where(eq(usersTable.email, user.email));
-  console.log('User deleted!')
+  console.log('User deleted!');
 });
 
 Effect.runPromise(program.pipe(Effect.provide(PgClientLive)));

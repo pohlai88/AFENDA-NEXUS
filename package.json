@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo watch dev",
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",
@@ -13,16 +13,19 @@
     "agents:gen": "node .agents/tools/agents-gen.mjs",
     "agents:drift": "node .agents/tools/agents-drift.mjs",
     "db:generate": "pnpm --filter @afenda/db db:generate",
-    "db:migrate": "pnpm --filter @afenda/db db:migrate",
-    "db:push": "pnpm --filter @afenda/db db:push",
+    "db:migrate": "node --env-file-if-exists=.env -e \"require('child_process').execSync('pnpm exec drizzle-kit migrate', {cwd:'packages/db',stdio:'inherit'})\"",
+    "db:push": "node --env-file-if-exists=.env -e \"require('child_process').execSync('pnpm exec drizzle-kit push', {cwd:'packages/db',stdio:'inherit'})\"",
     "db:check": "pnpm --filter @afenda/db db:check",
     "db:ci": "node tools/scripts/db-check-ci.mjs",
-    "db:studio": "pnpm --filter @afenda/db db:studio",
-    "db:reset": "pnpm --filter @afenda/db db:reset",
+    "db:studio": "node --env-file-if-exists=.env -e \"require('child_process').execSync('pnpm exec drizzle-kit studio', {cwd:'packages/db',stdio:'inherit'})\"",
+    "db:reset": "node --env-file-if-exists=.env -e \"require('child_process').execSync('pnpm exec drizzle-kit migrate', {cwd:'packages/db',stdio:'inherit'}); require('child_process').execSync('pnpm db:seed', {cwd:'packages/db',stdio:'inherit'})\"",
     "gen:module": "node tools/generators/src/gen-module.mjs",
     "gen:table": "node tools/generators/src/gen-table.mjs",
     "gen:endpoint": "node tools/generators/src/gen-endpoint.mjs",
     "gen:outbox-event": "node tools/generators/src/gen-outbox-event.mjs",
+    "gen:screen": "node tools/generators/src/gen-screen.mjs",
+    "gen:form": "node tools/generators/src/gen-form.mjs",
+    "gen:table-ui": "node tools/generators/src/gen-table-ui.mjs",
     "arch:guard": "node tools/drift-check/src/arch-guard.mjs",
     "web:drift": "node tools/scripts/web-drift-check.mjs",
     "audit:ais": "node tools/scripts/audit-ais.mjs",
@@ -33,6 +36,13 @@
     "format:check": "prettier --check .",
     "format:yaml": "prettier --write '*.{yaml,yml}'",
     "format:md": "prettier --write '*.{md,markdown}'",
+    "check:test-dir": "node tools/scripts/check-test-directory.mjs --fail",
+    "ci:gates": "pnpm arch:guard && pnpm drift && pnpm agents:drift && pnpm web:drift && pnpm neon:sync && pnpm audit:ais && pnpm audit:sox --fail && pnpm check:test-dir",
+    "ci:gates:fast": "pnpm check:test-dir && pnpm db:ci && pnpm format:check",
+    "branch:env": "node tools/scripts/neon-branch-env.mjs",
+    "neon:sync": "node tools/scripts/neon-integration-sync.mjs",
+    "neon:sync:env": "node tools/scripts/neon-integration-sync.mjs --env",
+    "test:e2e": "turbo run test:e2e",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -49,6 +59,7 @@
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "turbo": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
   }
 }

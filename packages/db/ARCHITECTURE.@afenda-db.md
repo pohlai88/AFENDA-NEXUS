@@ -17,7 +17,7 @@ enforced_structure:
   required_directories: ["src", "src/schema", "drizzle"]
 boundary_rules:
   allowed_import_prefixes: ["./", "drizzle-orm", "postgres"]
-  forbidden_imports: ["@afenda/platform", "@afenda/modules", "@afenda/finance", "@afenda/industry", "fastify", "next", "pino"]
+  forbidden_imports: ["@afenda/platform", "@afenda/modules", "@afenda/finance", "fastify", "next", "pino"]
   allow_imports_by_path: {}
   forbid_cross_layer_imports: []
 ---

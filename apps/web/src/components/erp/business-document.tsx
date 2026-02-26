@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { cn } from "@/lib/utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
+import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 interface BusinessDocumentTab {
   value: string;
@@ -25,10 +25,10 @@ export function BusinessDocument({
   rightRail,
   className,
 }: BusinessDocumentProps) {
-  const defaultValue = defaultTab ?? tabs[0]?.value ?? "details";
+  const defaultValue = defaultTab ?? tabs[0]?.value ?? 'details';
 
   return (
-    <div className={cn("flex flex-col gap-6", className)}>
+    <div className={cn('flex flex-col gap-6', className)}>
       {/* Document header */}
       <div className="rounded-lg border bg-card p-6">{header}</div>
 

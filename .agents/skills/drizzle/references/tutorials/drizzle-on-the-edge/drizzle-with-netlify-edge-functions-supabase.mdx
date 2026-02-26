@@ -1,13 +1,13 @@
 ---
-title: "Drizzle with Netlify Edge Functions and Supabase Database"
-date: "2025-01-30"
+title: 'Drizzle with Netlify Edge Functions and Supabase Database'
+date: '2025-01-30'
 ---
 
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
 import Npm from '@mdx/Npm.astro';
 import Steps from '@mdx/Steps.astro';
-import Section from "@mdx/Section.astro";
-import Callout from "@mdx/Callout.astro";
+import Section from '@mdx/Section.astro';
+import Callout from '@mdx/Callout.astro';
 
 This tutorial demonstrates how to use Drizzle ORM with [Netlify Edge Functions](https://docs.netlify.com/edge-functions/overview/) and [Supabase Database](https://supabase.com/docs/guides/database/overview) database.
 
@@ -20,18 +20,21 @@ drizzle-orm
 </Npm>
 
 - You should have installed the `dotenv` package for managing environment variables. If you use Node.js `v20.6.0` or later, there is no need to install it because Node.js natively supports `.env` files. Read more about it [here](https://nodejs.org/en/blog/release/v20.6.0#built-in-env-file-support).
-<Npm>
-  dotenv
-</Npm>
+
+  <Npm>dotenv</Npm>
 
 - Optionally, you can install the `@netlify/edge-functions` package to import the types for the `Context` object which will be used later.
-<Npm>
+  <Npm>
   @netlify/edge-functions
-</Npm>
+  </Npm>
 </Prerequisites>
 
 <Callout type="warning">
-These installed packages are used only to create table in the database in [Create a table](#create-a-table), [Setup Drizzle config file](#setup-drizzle-config-file) and [Apply changes to the database](#apply-changes-to-the-database) steps. These packages do not affect the code running inside Netlify Edge Functions. We will use `import_map.json` to import the necessary packages for the Edge Functions.
+  These installed packages are used only to create table in the database in [Create a
+  table](#create-a-table), [Setup Drizzle config file](#setup-drizzle-config-file) and [Apply
+  changes to the database](#apply-changes-to-the-database) steps. These packages do not affect the
+  code running inside Netlify Edge Functions. We will use `import_map.json` to import the necessary
+  packages for the Edge Functions.
 </Callout>
 
 <Steps>
@@ -58,15 +61,15 @@ Create `netlify/edge-functions` directory in the root of your project. This is w
 Create a function `user.ts` in the `netlify/edge-functions` directory.
 
 ```typescript copy filename="netlify/edge-functions/user.ts"
-import type { Context } from "@netlify/edge-functions";
+import type { Context } from '@netlify/edge-functions';
 
 export default async (request: Request, context: Context) => {
-  return new Response("User data");
+  return new Response('User data');
 };
 ```
 
 <Callout type="warning">
-The types for the `Request` and `Response` objects are in the global scope.
+  The types for the `Request` and `Response` objects are in the global scope.
 </Callout>
 
 #### Setup imports
@@ -97,7 +100,7 @@ Create a `netlify.toml` file in the root of your project and add the following c
   function = "user"
 ```
 
-This configuration tells Netlify to use the `import_map.json` file for Deno imports and to route requests to the `/user` path to the `user.ts` function. 
+This configuration tells Netlify to use the `import_map.json` file for Deno imports and to route requests to the `/user` path to the `user.ts` function.
 Read more about `netlify.toml` [here](https://docs.netlify.com/configure-builds/file-based-configuration/).
 
 #### Create a table
@@ -105,14 +108,14 @@ Read more about `netlify.toml` [here](https://docs.netlify.com/configure-builds/
 Create a `schema.ts` file in the `netlify/edge-functions/common` directory and declare a table schema:
 
 ```typescript copy filename="netlify/edge-functions/common/schema.ts"
-import { pgTable, serial, text, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer } from 'drizzle-orm/pg-core';
 
 export const usersTable = pgTable('users_table', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   age: integer('age').notNull(),
   email: text('email').notNull().unique(),
-})
+});
 ```
 
 #### Setup Drizzle config file
@@ -123,7 +126,7 @@ Create a `drizzle.config.ts` file in the root of your project and add the follow
 
 ```typescript copy filename="drizzle.config.ts"
 import 'dotenv/config'; // remove this line if you use Node.js v20.6.0 or later
-import type { Config } from "drizzle-kit";
+import type { Config } from 'drizzle-kit';
 
 export default {
   schema: './netlify/edge-functions/common/schema.ts',
@@ -142,7 +145,12 @@ In this tutorial we will use Drizzle kit to push changes to the Neon database.
 ```bash copy
 npx drizzle-kit push
 ```
-<Callout type="warning">Push command is good for situations where you need to quickly test new schema designs or changes in a local development environment, allowing for fast iterations without the overhead of managing migration files.</Callout>
+
+<Callout type="warning">
+  Push command is good for situations where you need to quickly test new schema designs or changes
+  in a local development environment, allowing for fast iterations without the overhead of managing
+  migration files.
+</Callout>
 
 Alternatively, you can use migrations workflow. Read about it here: [Migrations](/docs/migrations).
 
@@ -151,13 +159,13 @@ Alternatively, you can use migrations workflow. Read about it here: [Migrations]
 Update your `netlify/edge-functions/user.ts` file and set up your database configuration:
 
 ```typescript copy filename="netlify/edge-functions/user.ts"
-import type { Context } from "@netlify/edge-functions";
-import { usersTable } from "./common/schema.ts";
+import type { Context } from '@netlify/edge-functions';
+import { usersTable } from './common/schema.ts';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
 export default async (request: Request, context: Context) => {
-  const queryClient = postgres(Netlify.env.get("DATABASE_URL")!);
+  const queryClient = postgres(Netlify.env.get('DATABASE_URL')!);
   const db = drizzle({ client: queryClient });
 
   const users = await db.select().from(usersTable);
@@ -167,7 +175,9 @@ export default async (request: Request, context: Context) => {
 ```
 
 <Callout type="warning">
-You might see a red underline under the imports if you're using VS Code. The Edge Function will still execute. To get rid of the red underline, you can configure VS Code to use Edge Functions in the next step.
+  You might see a red underline under the imports if you're using VS Code. The Edge Function will
+  still execute. To get rid of the red underline, you can configure VS Code to use Edge Functions in
+  the next step.
 </Callout>
 
 #### Test your code locally
@@ -229,4 +239,3 @@ netlify deploy --prod
 </Steps>
 
 Finally, you can use URL of the deployed website and navigate to the route you created `(e.g. /user)` to access your edge function.
-

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { spawnSync } from "node:child_process";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 /**
  * Check ClawHub reputation for a skill
@@ -38,11 +38,9 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
 
   try {
     // Check 1: Try to inspect the skill via clawhub
-    const inspectResult = spawnSync(
-      "clawhub",
-      ["inspect", skillSlug, "--json"],
-      { encoding: "utf-8" }
-    );
+    const inspectResult = spawnSync('clawhub', ['inspect', skillSlug, '--json'], {
+      encoding: 'utf-8',
+    });
 
     if (inspectResult.status !== 0) {
       // Skill doesn't exist or can't be inspected
@@ -51,12 +49,12 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
     } else {
       try {
         const skillInfo = JSON.parse(inspectResult.stdout);
-        
+
         // Check 2: Skill age (new skills are riskier)
         if (skillInfo.skill?.createdAt) {
           const createdMs = skillInfo.skill.createdAt;
           const ageDays = (Date.now() - createdMs) / (1000 * 60 * 60 * 24);
-          
+
           if (ageDays < 7) {
             result.warnings.push(`Skill is less than 7 days old (${ageDays.toFixed(1)} days)`);
             result.score -= 15;
@@ -65,42 +63,45 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
             result.score -= 5;
           }
         }
-        
+
         // Check 3: Update frequency (stale skills are riskier)
         if (skillInfo.skill?.updatedAt && skillInfo.skill?.createdAt) {
           const updatedMs = skillInfo.skill.updatedAt;
           const createdMs = skillInfo.skill.createdAt;
           const updateAgeDays = (Date.now() - updatedMs) / (1000 * 60 * 60 * 24);
           const totalAgeDays = (Date.now() - createdMs) / (1000 * 60 * 60 * 24);
-          
+
           if (updateAgeDays > 90 && totalAgeDays > 90) {
             result.warnings.push(`Skill hasn't been updated in ${updateAgeDays.toFixed(0)} days`);
             result.score -= 10;
           }
         }
-        
+
         // Check 4: Author reputation
         if (skillInfo.owner?.handle) {
-          const authorResult = spawnSync(
-            "clawhub",
-            ["search", skillInfo.owner.handle],
-            { encoding: "utf-8" }
-          );
-          
+          const authorResult = spawnSync('clawhub', ['search', skillInfo.owner.handle], {
+            encoding: 'utf-8',
+          });
+
           if (authorResult.status === 0) {
-            const lines = authorResult.stdout.trim().split('\n').filter(l => l);
+            const lines = authorResult.stdout
+              .trim()
+              .split('\n')
+              .filter((l) => l);
             const skillCount = lines.length - 1; // First line is header
-            
+
             if (skillCount === 1) {
               result.warnings.push(`Author "${skillInfo.owner.handle}" has only 1 published skill`);
               result.score -= 10;
             } else if (skillCount < 3) {
-              result.warnings.push(`Author "${skillInfo.owner.handle}" has only ${skillCount} published skills`);
+              result.warnings.push(
+                `Author "${skillInfo.owner.handle}" has only ${skillCount} published skills`
+              );
               result.score -= 5;
             }
           }
         }
-        
+
         // Check 5: Download statistics
         if (skillInfo.skill?.stats?.downloads !== undefined) {
           const downloads = skillInfo.skill.stats.downloads;
@@ -112,7 +113,6 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
             result.score -= 5;
           }
         }
-        
       } catch (parseError) {
         result.warnings.push(`Failed to parse skill information: ${parseError.message}`);
         result.score = Math.min(result.score, 60);
@@ -125,25 +125,37 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
     // - Depends on clawhub's prompting behavior (sending "n\n" to decline)
     // - If clawhub inspect provided security flags, we'd use that instead
     // This is the only way to programmatically access VirusTotal warnings currently
-    const installArgs = ["install", skillSlug];
-    if (version) installArgs.push("--version", version);
-    const installCheck = spawnSync("clawhub", installArgs, {
-      input: "n\n", // Automatically decline the installation prompt
-      encoding: "utf-8",
+    const installArgs = ['install', skillSlug];
+    if (version) installArgs.push('--version', version);
+    const installCheck = spawnSync('clawhub', installArgs, {
+      input: 'n\n', // Automatically decline the installation prompt
+      encoding: 'utf-8',
     });
 
-    const output = (installCheck.stdout || "") + (installCheck.stderr || "");
-    if (output.includes("suspicious") || output.includes("VirusTotal") || output.includes("flagged")) {
+    const output = (installCheck.stdout || '') + (installCheck.stderr || '');
+    if (
+      output.includes('suspicious') ||
+      output.includes('VirusTotal') ||
+      output.includes('flagged')
+    ) {
       result.virustotal.push("Flagged by ClawHub's VirusTotal Code Insight");
       result.score -= 40; // More severe penalty for VirusTotal flag
-      
+
       // Extract specific warnings
       const lines = output.split('\n');
       for (const line of lines) {
-        if (line.includes("Warning:") || line.includes("risky patterns") || 
-            line.includes("crypto keys") || line.includes("external APIs") || 
-            line.includes("eval") || line.includes("VirusTotal Code Insight")) {
-          const cleanLine = line.trim().replace(/^⚠️\s*/, '').replace(/^\s*Warning:\s*/, '');
+        if (
+          line.includes('Warning:') ||
+          line.includes('risky patterns') ||
+          line.includes('crypto keys') ||
+          line.includes('external APIs') ||
+          line.includes('eval') ||
+          line.includes('VirusTotal Code Insight')
+        ) {
+          const cleanLine = line
+            .trim()
+            .replace(/^⚠️\s*/, '')
+            .replace(/^\s*Warning:\s*/, '');
           if (cleanLine && !result.virustotal.includes(cleanLine)) {
             result.virustotal.push(cleanLine);
           }
@@ -154,11 +166,11 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
     // Check 7: If version specified, check if it exists
     if (version) {
       const versionCheck = spawnSync(
-        "clawhub",
-        ["inspect", skillSlug, "--version", version, "--json"],
-        { encoding: "utf-8" }
+        'clawhub',
+        ['inspect', skillSlug, '--version', version, '--json'],
+        { encoding: 'utf-8' }
       );
-      
+
       if (versionCheck.status !== 0) {
         result.warnings.push(`Version ${version} not found for skill ${skillSlug}`);
         result.score -= 20;
@@ -171,9 +183,10 @@ export async function checkClawhubReputation(skillSlug, version, threshold = 70)
 
     // Add summary warning if below threshold
     if (!result.safe) {
-      result.warnings.unshift(`Reputation score ${result.score}/100 below threshold ${threshold}/100`);
+      result.warnings.unshift(
+        `Reputation score ${result.score}/100 below threshold ${threshold}/100`
+      );
     }
-
   } catch (error) {
     result.warnings.push(`Reputation check error: ${error.message}`);
     result.score = 50;
@@ -192,12 +205,12 @@ if (isCliEntrypoint) {
   async function main() {
     const args = process.argv.slice(2);
     if (args.length < 1) {
-      console.error("Usage: node check_clawhub_reputation.mjs <skill-slug> [version] [threshold]");
+      console.error('Usage: node check_clawhub_reputation.mjs <skill-slug> [version] [threshold]');
       process.exit(1);
     }
-    
+
     const skillSlug = args[0];
-    const version = args[1] || "";
+    const version = args[1] || '';
     let threshold = 70;
     if (args[2] !== undefined) {
       const parsedThreshold = parseInt(args[2], 10);
@@ -209,15 +222,15 @@ if (isCliEntrypoint) {
       }
       threshold = parsedThreshold;
     }
-    
+
     const result = await checkClawhubReputation(skillSlug, version, threshold);
-    
+
     console.log(JSON.stringify(result, null, 2));
-    
+
     if (!result.safe) {
       process.exit(43);
     }
   }
-  
+
   main().catch(console.error);
 }

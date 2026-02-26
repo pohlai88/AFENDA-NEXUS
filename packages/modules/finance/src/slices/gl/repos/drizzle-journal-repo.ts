@@ -1,15 +1,29 @@
-import { eq, and, count } from "drizzle-orm";
-import { ok, err, NotFoundError } from "@afenda/core";
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { TenantTx } from "@afenda/db";
-import { glJournals, glJournalLines } from "@afenda/db";
-import type { Journal } from "../entities/journal.js";
-import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";
-import { mapJournalToDomain } from "../../../shared/mappers/journal-mapper.js";
-import type { JournalRowWithLines } from "../../../shared/mappers/journal-mapper.js";
+import { eq, and, count } from 'drizzle-orm';
+import { ok, err, NotFoundError } from '@afenda/core';
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type { TenantTx } from '@afenda/db';
+import { glJournals, glJournalLines } from '@afenda/db';
+import type { Journal } from '../entities/journal.js';
+import type { IJournalRepo, CreateJournalInput } from '../../../slices/gl/ports/journal-repo.js';
+import { mapJournalToDomain } from '../../../shared/mappers/journal-mapper.js';
+import type { JournalRowWithLines } from '../../../shared/mappers/journal-mapper.js';
+
+/** Drizzle relational query result for glJournals with lines + account + ledger. */
+type JournalQueryRow = Awaited<
+  ReturnType<TenantTx['query']['glJournals']['findFirst']>
+>;
+
+function toJournalRowWithLines(row: NonNullable<JournalQueryRow>): JournalRowWithLines {
+  const r = row as unknown as JournalRowWithLines;
+  return {
+    ...r,
+    lines: r.lines.map((l) => ({ ...l, account: l.account ?? undefined })),
+    ledger: r.ledger ?? undefined,
+  };
+}
 
 export class DrizzleJournalRepo implements IJournalRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async findById(id: string): Promise<Result<Journal>> {
     const row = await this.tx.query.glJournals.findFirst({
@@ -19,8 +33,8 @@ export class DrizzleJournalRepo implements IJournalRepo {
         ledger: true,
       },
     });
-    if (!row) return err(new NotFoundError("Journal", id));
-    return ok(mapJournalToDomain(row as unknown as JournalRowWithLines));
+    if (!row) return err(new NotFoundError('Journal', id));
+    return ok(mapJournalToDomain(toJournalRowWithLines(row)));
   }
 
   async save(journal: Journal): Promise<Result<Journal>> {
@@ -33,7 +47,7 @@ export class DrizzleJournalRepo implements IJournalRepo {
       })
       .where(eq(glJournals.id, journal.id))
       .returning();
-    if (!updated) return err(new NotFoundError("Journal", journal.id));
+    if (!updated) return err(new NotFoundError('Journal', journal.id));
 
     return this.findById(journal.id);
   }
@@ -48,13 +62,13 @@ export class DrizzleJournalRepo implements IJournalRepo {
         journalNumber: input.journalNumber,
         description: input.description,
         postingDate: input.postingDate,
-        status: "DRAFT",
-        documentType: "JOURNAL",
+        status: 'DRAFT',
+        documentType: 'JOURNAL',
         metadata: {},
       })
       .returning();
 
-    if (!journal) return err(new NotFoundError("Journal", "new"));
+    if (!journal) return err(new NotFoundError('Journal', 'new'));
 
     if (input.lines.length > 0) {
       await this.tx.insert(glJournalLines).values(
@@ -66,7 +80,7 @@ export class DrizzleJournalRepo implements IJournalRepo {
           description: line.description ?? null,
           debit: line.debit,
           credit: line.credit,
-        })),
+        }))
       );
     }
 
@@ -74,19 +88,22 @@ export class DrizzleJournalRepo implements IJournalRepo {
   }
 
   async findByPeriod(
-    periodId: string,
-    status?: Journal["status"],
-    pagination?: PaginationParams,
+    periodId?: string,
+    status?: Journal['status'],
+    pagination?: PaginationParams
   ): Promise<Result<PaginatedResult<Journal>>> {
     const page = pagination?.page ?? 1;
     const limit = pagination?.limit ?? 20;
     const offset = (page - 1) * limit;
 
-    const conditions = [eq(glJournals.fiscalPeriodId, periodId)];
+    const conditions = [];
+    if (periodId) {
+      conditions.push(eq(glJournals.fiscalPeriodId, periodId));
+    }
     if (status) {
       conditions.push(eq(glJournals.status, status));
     }
-    const where = and(...conditions);
+    const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [rows, countRows] = await Promise.all([
       this.tx.query.glJournals.findMany({
@@ -103,7 +120,7 @@ export class DrizzleJournalRepo implements IJournalRepo {
     const total = countRows[0]?.total ?? 0;
 
     return ok({
-      data: rows.map((r) => mapJournalToDomain(r as unknown as JournalRowWithLines)),
+      data: rows.map((r) => mapJournalToDomain(toJournalRowWithLines(r))),
       total,
       page,
       limit,

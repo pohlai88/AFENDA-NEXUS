@@ -2,7 +2,7 @@
  * Credit review entity — periodic review of a customer's credit standing.
  */
 
-export type ReviewOutcome = "APPROVED" | "REDUCED" | "SUSPENDED" | "UNCHANGED";
+export type ReviewOutcome = 'APPROVED' | 'REDUCED' | 'SUSPENDED' | 'UNCHANGED';
 
 export interface CreditReview {
   readonly id: string;

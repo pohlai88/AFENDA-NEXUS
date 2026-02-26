@@ -1,16 +1,11 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface LoadingSkeletonProps {
   className?: string;
 }
 
 function Skeleton({ className }: LoadingSkeletonProps) {
-  return (
-    <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
-      aria-hidden="true"
-    />
-  );
+  return <div className={cn('animate-pulse rounded-md bg-muted', className)} aria-hidden="true" />;
 }
 
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
@@ -71,6 +66,12 @@ export function FormSkeleton() {
       <span className="sr-only">Loading...</span>
     </div>
   );
+}
+
+/** Generic page loading skeleton with variant support */
+export function LoadingSkeleton({ variant = 'detail' }: { variant?: 'table' | 'detail' }) {
+  if (variant === 'table') return <TableSkeleton />;
+  return <DetailSkeleton />;
 }
 
 export { Skeleton };

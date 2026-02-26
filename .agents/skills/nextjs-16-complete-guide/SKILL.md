@@ -1,6 +1,9 @@
 ---
 name: nextjs-16-complete-guide
-description: Complete guide to Next.js 16 features, breaking changes, and migration from v15. Use when building new Next.js projects or upgrading existing ones to leverage Turbopack, Cache Components, and latest performance optimizations.
+description:
+  Complete guide to Next.js 16 features, breaking changes, and migration from
+  v15. Use when building new Next.js projects or upgrading existing ones to
+  leverage Turbopack, Cache Components, and latest performance optimizations.
 license: MIT
 ---
 
@@ -8,7 +11,9 @@ license: MIT
 
 ## Purpose
 
-Comprehensive reference for Next.js 16's revolutionary features: Cache Components with "use cache", stable Turbopack as default bundler, proxy.ts architecture, DevTools MCP integration, and React Compiler support.
+Comprehensive reference for Next.js 16's revolutionary features: Cache
+Components with "use cache", stable Turbopack as default bundler, proxy.ts
+architecture, DevTools MCP integration, and React Compiler support.
 
 ## When to Use
 
@@ -24,8 +29,9 @@ Comprehensive reference for Next.js 16's revolutionary features: Cache Component
 
 ### The Big Picture
 
-Next.js 15 was **transition phase** - async APIs, experimental Turbopack, changing cache defaults.
-Next.js 16 is **the payoff** - everything becomes stable, fast, and production-ready.
+Next.js 15 was **transition phase** - async APIs, experimental Turbopack,
+changing cache defaults. Next.js 16 is **the payoff** - everything becomes
+stable, fast, and production-ready.
 
 ### Key Differences
 
@@ -237,8 +243,8 @@ export const config = {
 
 ### 4. DevTools MCP (AI-Assisted Debugging)
 
-**What It Does:**
-Next.js 16 integrates Model Context Protocol (MCP) so AI agents can:
+**What It Does:** Next.js 16 integrates Model Context Protocol (MCP) so AI
+agents can:
 
 - Read unified browser + server logs
 - Understand Next.js routing and caching
@@ -263,15 +269,15 @@ AI Agent (with MCP):
   → "You're missing 'use cache' directive in your component"
 ```
 
-**Integration:**
-Works automatically with Claude Code, Cursor, and other MCP-compatible tools.
+**Integration:** Works automatically with Claude Code, Cursor, and other
+MCP-compatible tools.
 
 ---
 
 ### 5. React Compiler (Stable)
 
-**What It Does:**
-Automatically memoizes components - no more manual `useMemo`, `useCallback`, `React.memo`.
+**What It Does:** Automatically memoizes components - no more manual `useMemo`,
+`useCallback`, `React.memo`.
 
 **Setup:**
 
@@ -617,4 +623,7 @@ const nextConfig = {
 
 ---
 
-**Summary:** Next.js 16 delivers on the promises of 15 - everything is faster, more explicit, and production-ready. Turbopack is default, caching is predictable, and AI tooling is native. This is the version to build modern SaaS applications on in 2025.
+**Summary:** Next.js 16 delivers on the promises of 15 - everything is faster,
+more explicit, and production-ready. Turbopack is default, caching is
+predictable, and AI tooling is native. This is the version to build modern SaaS
+applications on in 2025.

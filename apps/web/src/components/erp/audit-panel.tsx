@@ -1,7 +1,7 @@
-import { cn } from "@/lib/utils";
-import { formatRelativeTime, formatDateTime } from "@/lib/format";
-import { User, Clock } from "lucide-react";
-import type { AuditEntry } from "@/lib/types";
+import { cn } from '@/lib/utils';
+import { formatRelativeTime, formatDateTime } from '@/lib/format';
+import { User, Clock } from 'lucide-react';
+import type { AuditEntry } from '@/lib/types';
 
 interface AuditPanelProps {
   entries: AuditEntry[];
@@ -11,14 +11,14 @@ interface AuditPanelProps {
 export function AuditPanel({ entries, className }: AuditPanelProps) {
   if (entries.length === 0) {
     return (
-      <div className={cn("py-8 text-center text-sm text-muted-foreground", className)}>
+      <div className={cn('py-8 text-center text-sm text-muted-foreground', className)}>
         No audit history available.
       </div>
     );
   }
 
   return (
-    <div className={cn("space-y-0", className)}>
+    <div className={cn('space-y-0', className)}>
       <h4 className="mb-3 text-sm font-semibold">Audit Trail</h4>
       <ol className="relative border-l border-border" aria-label="Audit history">
         {entries.map((entry) => (
@@ -27,10 +27,7 @@ export function AuditPanel({ entries, className }: AuditPanelProps) {
             <div className="flex items-center gap-2 text-sm">
               <span className="font-medium">{entry.action}</span>
               <span className="text-muted-foreground">
-                <time
-                  dateTime={entry.timestamp}
-                  title={formatDateTime(entry.timestamp)}
-                >
+                <time dateTime={entry.timestamp} title={formatDateTime(entry.timestamp)}>
                   {formatRelativeTime(entry.timestamp)}
                 </time>
               </span>
@@ -47,9 +44,7 @@ export function AuditPanel({ entries, className }: AuditPanelProps) {
                 </span>
               )}
             </div>
-            {entry.details && (
-              <p className="mt-1 text-xs text-muted-foreground">{entry.details}</p>
-            )}
+            {entry.details && <p className="mt-1 text-xs text-muted-foreground">{entry.details}</p>}
           </li>
         ))}
       </ol>

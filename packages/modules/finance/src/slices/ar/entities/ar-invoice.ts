@@ -1,6 +1,14 @@
-import type { CompanyId, LedgerId, Money } from "@afenda/core";
+import type { CompanyId, LedgerId, Money } from '@afenda/core';
 
-export type ArInvoiceStatus = "DRAFT" | "PENDING_APPROVAL" | "APPROVED" | "POSTED" | "PAID" | "PARTIALLY_PAID" | "WRITTEN_OFF" | "CANCELLED";
+export type ArInvoiceStatus =
+  | 'DRAFT'
+  | 'PENDING_APPROVAL'
+  | 'APPROVED'
+  | 'POSTED'
+  | 'PAID'
+  | 'PARTIALLY_PAID'
+  | 'WRITTEN_OFF'
+  | 'CANCELLED';
 
 export interface ArInvoice {
   readonly id: string;

@@ -6,7 +6,7 @@
 
 export interface ForecastItem {
   readonly forecastDate: Date;
-  readonly forecastType: "RECEIPTS" | "PAYMENTS" | "FINANCING" | "INVESTING";
+  readonly forecastType: 'RECEIPTS' | 'PAYMENTS' | 'FINANCING' | 'INVESTING';
   readonly amount: bigint;
   readonly probability: number;
   readonly currencyCode: string;
@@ -34,7 +34,7 @@ export function computeCashFlowForecast(
   items: readonly ForecastItem[],
   openingBalance: bigint,
   periodDays: number,
-  currencyCode: string,
+  currencyCode: string
 ): CashFlowForecastResult {
   if (items.length === 0) {
     return {
@@ -61,7 +61,7 @@ export function computeCashFlowForecast(
     periodEnd.setDate(periodEnd.getDate() + periodDays);
 
     const periodItems = sorted.filter(
-      (i) => i.forecastDate >= currentStart && i.forecastDate < periodEnd,
+      (i) => i.forecastDate >= currentStart && i.forecastDate < periodEnd
     );
 
     let receipts = 0n;
@@ -69,7 +69,7 @@ export function computeCashFlowForecast(
 
     for (const item of periodItems) {
       const weighted = (item.amount * BigInt(item.probability)) / 100n;
-      if (item.forecastType === "RECEIPTS" || item.forecastType === "FINANCING") {
+      if (item.forecastType === 'RECEIPTS' || item.forecastType === 'FINANCING') {
         receipts += weighted;
       } else {
         payments += weighted;

@@ -1,4 +1,4 @@
-export type DunningRunStatus = "DRAFT" | "APPROVED" | "SENT" | "CANCELLED";
+export type DunningRunStatus = 'DRAFT' | 'APPROVED' | 'SENT' | 'CANCELLED';
 export type DunningLevel = 1 | 2 | 3 | 4;
 
 export interface DunningRun {

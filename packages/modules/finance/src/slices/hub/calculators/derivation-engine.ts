@@ -7,9 +7,9 @@
  * Implements the accounting hub pattern: derives journal lines from
  * source transactions using configurable derivation rules.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type DerivationRuleType = "posting" | "allocation" | "reclassification" | "accrual";
+export type DerivationRuleType = 'posting' | 'allocation' | 'reclassification' | 'accrual';
 
 export interface DerivationRule {
   readonly id: string;
@@ -56,29 +56,23 @@ const PRECISION_SCALE = 10000n;
  */
 export function derivePostings(
   transactions: readonly SourceTransaction[],
-  rules: readonly DerivationRule[],
+  rules: readonly DerivationRule[]
 ): CalculatorResult<DerivationResult> {
-  const activeRules = [...rules]
-    .filter((r) => r.isActive)
-    .sort((a, b) => a.priority - b.priority);
+  const activeRules = [...rules].filter((r) => r.isActive).sort((a, b) => a.priority - b.priority);
 
   const derivedLines: DerivedLine[] = [];
   const matchedTxIds = new Set<string>();
   let totalDerived = 0n;
 
   for (const tx of transactions) {
-    const matchingRules = activeRules.filter(
-      (r) => r.sourceAccountId === tx.accountId,
-    );
+    const matchingRules = activeRules.filter((r) => r.sourceAccountId === tx.accountId);
 
     if (matchingRules.length === 0) continue;
     matchedTxIds.add(tx.transactionId);
 
     for (const rule of matchingRules) {
       if (rule.percentage <= 0 || rule.percentage > 100) {
-        throw new Error(
-          `Rule ${rule.id} has invalid percentage: ${rule.percentage}`,
-        );
+        throw new Error(`Rule ${rule.id} has invalid percentage: ${rule.percentage}`);
       }
 
       // eslint-disable-next-line no-restricted-syntax -- percentage-to-BigInt, not FX
@@ -133,18 +127,18 @@ export interface AllocationResult {
 export function allocateByDriver(
   totalMinor: bigint,
   drivers: readonly AllocationDriver[],
-  currency: string,
+  currency: string
 ): CalculatorResult<AllocationResult> {
   if (totalMinor <= 0n) {
     throw new Error(`Total must be positive, got ${totalMinor}`);
   }
   if (drivers.length === 0) {
-    throw new Error("At least one allocation driver required");
+    throw new Error('At least one allocation driver required');
   }
 
   const totalWeight = drivers.reduce((sum, d) => sum + d.weight, 0);
   if (totalWeight <= 0) {
-    throw new Error("Total weight must be positive");
+    throw new Error('Total weight must be positive');
   }
 
   // First pass: floor allocation

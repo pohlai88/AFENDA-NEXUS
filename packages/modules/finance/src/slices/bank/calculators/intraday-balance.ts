@@ -7,7 +7,7 @@
 export interface IntradayTransaction {
   readonly lineId: string;
   readonly transactionDate: Date;
-  readonly transactionType: "DEBIT" | "CREDIT";
+  readonly transactionType: 'DEBIT' | 'CREDIT';
   readonly amount: bigint;
   readonly description: string;
   readonly reference: string | null;
@@ -17,7 +17,7 @@ export interface IntradayBalancePoint {
   readonly lineId: string;
   readonly runningBalance: bigint;
   readonly transactionAmount: bigint;
-  readonly direction: "DEBIT" | "CREDIT";
+  readonly direction: 'DEBIT' | 'CREDIT';
   readonly description: string;
 }
 
@@ -37,7 +37,7 @@ export function computeIntradayBalance(
   date: Date,
   openingBalance: bigint,
   transactions: readonly IntradayTransaction[],
-  currencyCode: string,
+  currencyCode: string
 ): IntradayBalanceResult {
   let running = openingBalance;
   let high = openingBalance;
@@ -45,7 +45,7 @@ export function computeIntradayBalance(
   const points: IntradayBalancePoint[] = [];
 
   for (const tx of transactions) {
-    const delta = tx.transactionType === "CREDIT" ? tx.amount : -tx.amount;
+    const delta = tx.transactionType === 'CREDIT' ? tx.amount : -tx.amount;
     running += delta;
     if (running > high) high = running;
     if (running < low) low = running;

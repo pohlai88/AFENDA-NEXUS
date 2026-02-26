@@ -2,31 +2,36 @@ import Tab from '@mdx/Tab.astro';
 import Tabs from '@mdx/Tabs.astro';
 import Callout from '@mdx/Callout.astro';
 import SimpleLinkCards from '@mdx/SimpleLinkCards.astro';
-import CodeTabs from "@mdx/CodeTabs.astro";
+import CodeTabs from '@mdx/CodeTabs.astro';
 import Section from '@mdx/Section.astro';
-import Flex from "@mdx/Flex.astro"
-import LinksList from "@mdx/LinksList.astro"
+import Flex from '@mdx/Flex.astro';
+import LinksList from '@mdx/LinksList.astro';
 
 # Drizzle Relations Fundamentals
 
 In the world of databases, especially relational databases, the concept of relations is absolutely fundamental.
-Think of "relations" as the connections and links between different pieces of data. Just like in real life, 
-where people have relationships with each other, or objects are related to categories, databases use relations to model how different 
+Think of "relations" as the connections and links between different pieces of data. Just like in real life,
+where people have relationships with each other, or objects are related to categories, databases use relations to model how different
 types of information are connected and work together.
 
 ### Normalization
-Normalization is the process of organizing data in your database to reduce redundancy (duplication) and improve data integrity 
-(accuracy and consistency). Think of it like tidying up a messy filing cabinet. Instead of having all sorts of papers 
+
+Normalization is the process of organizing data in your database to reduce redundancy (duplication) and improve data integrity
+(accuracy and consistency). Think of it like tidying up a messy filing cabinet. Instead of having all sorts of papers
 crammed into one folder, you organize them into logical folders and categories to make everything easier to find and manage.
 
 <Callout collapsed="Why is Normalization Important?">
-- **Reduces Data Redundancy**: Imagine storing a customer's address every time they place an order. If the address changes, you'd have to update it in multiple places! Normalization helps you store information in one place and refer to it from other places, minimizing repetition.
-- **Improves Data Integrity**: Less redundancy means less chance of inconsistencies. If you update an address in one place, it's updated everywhere it's needed.
-- **Prevents Anomalies**: Normalization helps prevent issues like:
-  1. **Insertion Anomalies**: Difficulty adding new data because you're missing related information.
-  2. **Update Anomalies**: Having to update the same information in multiple rows.
-  3. **Deletion Anomalies**: Accidentally losing valuable information when you delete something seemingly unrelated.
-- **Easier to Understand and Maintain**: A normalized database is generally more logically structured and easier to understand, query, and modify.
+  - **Reduces Data Redundancy**: Imagine storing a customer's address every time they place an
+  order. If the address changes, you'd have to update it in multiple places! Normalization helps you
+  store information in one place and refer to it from other places, minimizing repetition. -
+  **Improves Data Integrity**: Less redundancy means less chance of inconsistencies. If you update
+  an address in one place, it's updated everywhere it's needed. - **Prevents Anomalies**:
+  Normalization helps prevent issues like: 1. **Insertion Anomalies**: Difficulty adding new data
+  because you're missing related information. 2. **Update Anomalies**: Having to update the same
+  information in multiple rows. 3. **Deletion Anomalies**: Accidentally losing valuable information
+  when you delete something seemingly unrelated. - **Easier to Understand and Maintain**: A
+  normalized database is generally more logically structured and easier to understand, query, and
+  modify.
 </Callout>
 
 Normalization is often described in terms of "normal forms" (1NF, 2NF, 3NF, and beyond). While the details can get quite technical, the core ideas are straightforward:
@@ -35,7 +40,7 @@ Normalization is often described in terms of "normal forms" (1NF, 2NF, 3NF, and 
 
 **Goal**: Each column should hold a single, indivisible value. No repeating groups of data within a single cell
 
-**Example**: Instead of having a single `address` column that stores `123 Main St, City, USA`, you'd 
+**Example**: Instead of having a single `address` column that stores `123 Main St, City, USA`, you'd
 break it down into separate columns: `street_address`, `city`, `state`, `zip_code`.
 
 ```sql
@@ -59,11 +64,11 @@ CREATE TABLE Customers_1NF (
 
 #### 2NF (Second Normal Form): `Eliminate Redundant Data Dependent on Part of the Key`
 
-**Goal**: Applies when you have a table with a composite primary key (a primary key made up of two or more columns). 
+**Goal**: Applies when you have a table with a composite primary key (a primary key made up of two or more columns).
 2NF ensures that all non-key attributes are fully dependent on the entire composite primary key, not just part of it.
 
-Imagine we have a table called `order_items`. This table tracks items within orders, and we use a composite primary key (`order_id`, `product_id`) 
-because a single order can have multiple of the same product (though in this simplified example, let's assume each product appears only 
+Imagine we have a table called `order_items`. This table tracks items within orders, and we use a composite primary key (`order_id`, `product_id`)
+because a single order can have multiple of the same product (though in this simplified example, let's assume each product appears only
 once per order for clarity, but the composite key logic still applies).
 
 <Callout collapsed="Expand for visual example">
@@ -83,39 +88,45 @@ INSERT INTO OrderItems_Unnormalized (order_id, product_id, product_name, product
 (101, 'B456', 'Mouse', 25.00, 2, '2023-10-27'),
 (102, 'A123', 'Laptop', 1200.00, 1, '2023-10-28'),
 (103, 'C789', 'Keyboard', 75.00, 1, '2023-10-29');
+
 ```
+
 ```
+
 +------------------------------------------------------------------------------------+
-| OrderItems_Unnormalized                                                            |
+| OrderItems_Unnormalized |
 +------------------------------------------------------------------------------------+
-| PK (order_id, product_id) | product_name | product_price | quantity | order_date   |
+| PK (order_id, product_id) | product_name | product_price | quantity | order_date |
 +------------------------------------------------------------------------------------+
-| 101, A123               | Laptop       | 1200.00       | 1        | 2023-10-27     |
-| 101, B456               | Mouse        | 25.00         | 2        | 2023-10-27     |
-| 102, A123               | Laptop       | 1200.00       | 1        | 2023-10-28     |
-| 103, C789               | Keyboard     | 75.00         | 1        | 2023-10-29     |
+| 101, A123 | Laptop | 1200.00 | 1 | 2023-10-27 |
+| 101, B456 | Mouse | 25.00 | 2 | 2023-10-27 |
+| 102, A123 | Laptop | 1200.00 | 1 | 2023-10-28 |
+| 103, C789 | Keyboard | 75.00 | 1 | 2023-10-29 |
 +------------------------------------------------------------------------------------+
+
 ```
 </Callout>
 
-**Problem**: Notice that `product_name` and `product_price` are repeated whenever the same `product_id` appears in different orders. 
-These attributes are only dependent on `product_id`, which is part of the composite primary key (`order_id`, `product_id`), but not the entire key. 
+**Problem**: Notice that `product_name` and `product_price` are repeated whenever the same `product_id` appears in different orders.
+These attributes are only dependent on `product_id`, which is part of the composite primary key (`order_id`, `product_id`), but not the entire key.
 This is a partial dependency.
 
-To achieve 2NF, we need to remove the partially dependent attributes (`product_name`, `product_price`) and place them in a separate table where they are 
+To achieve 2NF, we need to remove the partially dependent attributes (`product_name`, `product_price`) and place them in a separate table where they are
 fully dependent on the primary key of that new table.
 
 <Callout collapsed="Normalization to 2NF: Visual explanation">
 ```
-+-------------------+     1:M     +---------------------------+
-| Products          | <---------- | OrderItems_2NF            |
-+-------------------+             +---------------------------+
-| PK product_id     |             | PK (order_id, product_id) |
-| product_name      |             | quantity                  |
-| product_price     |             | order_date                |
-+-------------------+             | FK product_id             |
-                                  +---------------------------+
-```
+
++-------------------+ 1:M +---------------------------+
+| Products | <---------- | OrderItems_2NF |
++-------------------+ +---------------------------+
+| PK product_id | | PK (order_id, product_id) |
+| product_name | | quantity |
+| product_price | | order_date |
++-------------------+ | FK product_id |
++---------------------------+
+
+````
 ```sql
 CREATE TABLE Products (
     product_id VARCHAR(10) PRIMARY KEY,
@@ -144,7 +155,8 @@ INSERT INTO OrderItems_2NF (order_id, product_id, quantity, order_date) VALUES
 (101, 'B456', 2, '2023-10-27'),
 (102, 'A123', 1, '2023-10-28'),
 (103, 'C789', 1, '2023-10-29');
-```
+````
+
 </Callout>
 
 #### 3NF (Third Normal Form): `Eliminate Redundant Data Dependent on Non-Key Attributes`
@@ -167,33 +179,39 @@ INSERT INTO suppliers (supplier_id, supplier_name, zip_code, city, state) VALUES
 ('S1', 'Acme Corp', '12345', 'Anytown', 'NY'),
 ('S2', 'Beta Inc', '67890', 'Otherville', 'CA'),
 ('S3', 'Gamma Ltd', '12345', 'Anytown', 'NY');
+
 ```
+
 ```
+
 +---------------------------------------------------------------+
-| suppliers                                                     |
+| suppliers |
 +---------------------------------------------------------------+
-| PK supplier_id | supplier_name | zip_code | city      | state |
+| PK supplier_id | supplier_name | zip_code | city | state |
 +---------------------------------------------------------------+
-| S1             | Acme Corp     | 12345    | Anytown    | NY   |
-| S2             | Beta Inc      | 67890    | Otherville | CA   |
-| S3             | Gamma Ltd     | 12345    | Anytown    | NY   |
+| S1 | Acme Corp | 12345 | Anytown | NY |
+| S2 | Beta Inc | 67890 | Otherville | CA |
+| S3 | Gamma Ltd | 12345 | Anytown | NY |
 +---------------------------------------------------------------+
+
 ```
 </Callout>
 
-**Solution**: To achieve 3NF, we remove the attributes dependent on the non-key attribute (`city`, `state` dependent on `zip_code`) and put 
+**Solution**: To achieve 3NF, we remove the attributes dependent on the non-key attribute (`city`, `state` dependent on `zip_code`) and put
 them into a separate table keyed by the non-key attribute itself (`zip_code`).
 
 <Callout collapsed="Normalization to 3NF: Visual explanation">
 ```
-+-------------------+     1:M     +--------------------+
-| zip_codes         | <---------- | suppliers          |
-+-------------------+             +--------------------+
-| PK zip_code       |             | PK supplier_id     |
-| city              |             | supplier_name      |
-| state             |             | FK zip_code        |
-+-------------------+             +--------------------+
-```
+
++-------------------+ 1:M +--------------------+
+| zip_codes | <---------- | suppliers |
++-------------------+ +--------------------+
+| PK zip_code | | PK supplier_id |
+| city | | supplier_name |
+| state | | FK zip_code |
++-------------------+ +--------------------+
+
+````
 ```sql
 CREATE TABLE zip_codes (
     zip_code VARCHAR(10) PRIMARY KEY,
@@ -218,15 +236,18 @@ INSERT INTO suppliers (supplier_id, supplier_name, zip_code) VALUES
 ('S1', 'Acme Corp', '12345'),
 ('S2', 'Beta Inc', '67890'),
 ('S3', 'Gamma Ltd', '12345');
-```
+````
+
 </Callout>
 
 <Callout title="Good to know">
-There are additional normal forms, such as `4NF`, `5NF`, `6NF`, `EKNF`, `ETNF`, and `DKNF`. We won't cover these here, but we will create a 
-dedicated set of tutorials for them in our guides and tutorials section.
+  There are additional normal forms, such as `4NF`, `5NF`, `6NF`, `EKNF`, `ETNF`, and `DKNF`. We
+  won't cover these here, but we will create a dedicated set of tutorials for them in our guides and
+  tutorials section.
 </Callout>
 
 ### Database Relationships
+
 #### One-to-One
 
 In a one-to-one relationship, each record in `table A` is related to at most one record in `table B`, and each record in `table B` is
@@ -244,12 +265,12 @@ Table A (One Side)      Table B (One Side)
 | ...     |             | ...     |
 +---------+             +---------+
 ```
-</Callout>
 
+</Callout>
 
 #### One-to-Many
 
-In a one-to-many relationship, one record in `table A` can be related to many records in `table B`, but each 
+In a one-to-many relationship, one record in `table A` can be related to many records in `table B`, but each
 record in `table B` is related to at most one record in `table A`. Think of it as a "parent-child" relationship.
 
 <Callout collapsed="Use Cases & Examples">
@@ -265,11 +286,12 @@ Table A (One Side)      Table B (Many Side)
 +---------+             +---------+
      (One)                  (Many)
 ```
+
 </Callout>
 
 #### Many-to-Many
 
-In a many-to-many relationship, one record in `table A` can be related to many records in `table B`, and one 
+In a many-to-many relationship, one record in `table A` can be related to many records in `table B`, and one
 record in `table B` can be related to many records in `table A`. It's a more complex, bidirectional relationship.
 
 <Callout collapsed="Use Cases & Examples">
@@ -286,10 +308,11 @@ Table A (Many Side)    Junction Table      Table B (Many Side)
 +---------+          +-------------+     +---------+
      (Many)             (Junction)          (Many)
 ```
+
 </Callout>
 
-Many-to-many relationships are not directly implemented with foreign keys between the two main tables. 
-Instead, you need a `junction` table (also called an associative table or bridging table). 
+Many-to-many relationships are not directly implemented with foreign keys between the two main tables.
+Instead, you need a `junction` table (also called an associative table or bridging table).
 This table acts as an intermediary to link records from both tables.
 
 ```sql
@@ -321,23 +344,24 @@ CREATE TABLE enrollments (
 
 ### Why Foreign Keys?
 
-You might think of foreign key constraints as simply a way to validate data - ensuring 
-that when you enter a value in a foreign key column, that value actually exists in the primary key 
+You might think of foreign key constraints as simply a way to validate data - ensuring
+that when you enter a value in a foreign key column, that value actually exists in the primary key
 column of another table. And you'd be partially right! This value checking is the mechanism foreign keys use.
 
-But it's crucial to understand that this validation is not the end goal, it's the means 
+But it's crucial to understand that this validation is not the end goal, it's the means
 to a much larger purpose. Foreign key constraints are fundamentally about:
 
 <Callout collapsed="1. Explicitly Defining and Enforcing Relationships">
 
-We've discussed relationships like `One-to-Many` between Customers and Orders. 
-A foreign key is the SQL language's way of telling the database: 
+We've discussed relationships like `One-to-Many` between Customers and Orders.
+A foreign key is the SQL language's way of telling the database:
 
 > Hey database, I want to enforce a 1-M relationship here. Every value in the customer_id column of the
-Orders table must correspond to a valid customer_id in the Customers table.
+> Orders table must correspond to a valid customer_id in the Customers table.
 
-It's not just a suggestion; it's a constraint the database actively enforces. 
+It's not just a suggestion; it's a constraint the database actively enforces.
 The database becomes relationship-aware because of the foreign key.
+
 </Callout>
 
 <Callout collapsed="2. Maintaining Referential Integrity">
@@ -352,19 +376,21 @@ If you have an order without a customer, you lose crucial context. Queries becom
  become inaccurate, and your application's logic can break down.
 
 **Example**:
+
 ```
-Without a foreign key, you could accidentally delete a customer from the Customers 
-table while their orders still exist in the Orders table. Suddenly, you have orders that point to 
+Without a foreign key, you could accidentally delete a customer from the Customers
+table while their orders still exist in the Orders table. Suddenly, you have orders that point to
 a customer that no longer exists! A foreign key constraint prevents this data inconsistency.
 ```
+
 </Callout>
 
 <Callout collapsed="3. Facilitating Database Design and Understanding">
-- Foreign keys are not just about technical enforcement; they are also a crucial part of database design documentation.
-- When you see a foreign key in a database schema, it immediately tells you: 
-`Table 'X' is related to Table 'Y' in this way.` It's a clear visual and structural indicator of relationships.
-- This makes databases easier to understand, maintain, and evolve over time. New developers can quickly 
-grasp how different parts of the database are connected.
+  - Foreign keys are not just about technical enforcement; they are also a crucial part of database
+  design documentation. - When you see a foreign key in a database schema, it immediately tells you:
+  `Table 'X' is related to Table 'Y' in this way.` It's a clear visual and structural indicator of
+  relationships. - This makes databases easier to understand, maintain, and evolve over time. New
+  developers can quickly grasp how different parts of the database are connected.
 </Callout>
 
 In essence, foreign key constraints are not just about checking values; they are about:
@@ -376,37 +402,48 @@ In essence, foreign key constraints are not just about checking values; they are
 
 ### Why NOT Foreign Keys?
 
-While highly beneficial, there are some scenarios where you might reconsider or use Foreign Keys with caution. 
+While highly beneficial, there are some scenarios where you might reconsider or use Foreign Keys with caution.
 These are typically edge cases and often involve trade-offs.
 
 <Callout collapsed="1. Performance Overhead in Very High-Write Environments">
-- **Scenario**: Extremely high-volume transactional systems (e.g., real-time logging, very high-frequency trading
-platforms, massive IoT data ingestion).
-- **Explanation**: Every time you insert or update data in a table with a foreign key, the database system 
-needs to perform checks to ensure referential integrity. In extremely high-write scenarios, these 
-checks can introduce a small but potentially noticeable performance overhead.
+  - **Scenario**: Extremely high-volume transactional systems (e.g., real-time logging, very
+  high-frequency trading platforms, massive IoT data ingestion). - **Explanation**: Every time you
+  insert or update data in a table with a foreign key, the database system needs to perform checks
+  to ensure referential integrity. In extremely high-write scenarios, these checks can introduce a
+  small but potentially noticeable performance overhead.
 </Callout>
 
 <Callout collapsed="2. Distributed Database Systems and Cross-Node Foreign Keys:">
-- **Scenario**: Systems where data is distributed across multiple database nodes or clusters (common in sharded databases, cloud environments, and microservices).
-- **Explanation**:  Cross-node foreign keys can introduce significant complexity and performance overhead. Validating referential integrity requires communication between nodes, leading to increased latency. Distributed transactions needed to maintain consistency are also more complex and can be less performant than local transactions. In such architectures, application-level data integrity checks or eventual consistency models might be considered alternatives.
+  - **Scenario**: Systems where data is distributed across multiple database nodes or clusters
+  (common in sharded databases, cloud environments, and microservices). - **Explanation**:
+  Cross-node foreign keys can introduce significant complexity and performance overhead. Validating
+  referential integrity requires communication between nodes, leading to increased latency.
+  Distributed transactions needed to maintain consistency are also more complex and can be less
+  performant than local transactions. In such architectures, application-level data integrity checks
+  or eventual consistency models might be considered alternatives.
 </Callout>
 
 <Callout collapsed="3. Legacy Systems and Data Integration with Non-Relational Data:">
-- **Scenario**: Integrating a relational database with older legacy systems or non-relational data stores (e.g., NoSQL, flat files, external APIs).
-- **Explanation**:  Legacy systems or non-relational data might not consistently adhere to the referential integrity rules enforced by foreign keys.  Imposing foreign keys in such scenarios can lead to data import issues, data inconsistencies, and might necessitate complex data transformation or application-level integrity management instead. You might need to carefully evaluate the data quality and consistency of the external sources and potentially rely on application logic or ETL processes to ensure data integrity instead of strictly enforcing foreign keys at the database level.
+  - **Scenario**: Integrating a relational database with older legacy systems or non-relational data
+  stores (e.g., NoSQL, flat files, external APIs). - **Explanation**: Legacy systems or
+  non-relational data might not consistently adhere to the referential integrity rules enforced by
+  foreign keys. Imposing foreign keys in such scenarios can lead to data import issues, data
+  inconsistencies, and might necessitate complex data transformation or application-level integrity
+  management instead. You might need to carefully evaluate the data quality and consistency of the
+  external sources and potentially rely on application logic or ETL processes to ensure data
+  integrity instead of strictly enforcing foreign keys at the database level.
 </Callout>
 
 You can also check out some great explanations from the PlanetScale team in their [article](https://planetscale.com/docs/learn/operating-without-foreign-key-constraints#why-does-planetscale-not-recommend-constraints)
 
 ### Polymorphic Relations
 
-Polymorphic relationships are a more advanced concept that allows a single relationship to point to 
-different types of entities or tables. It's about creating more flexible and adaptable relationships when 
+Polymorphic relationships are a more advanced concept that allows a single relationship to point to
+different types of entities or tables. It's about creating more flexible and adaptable relationships when
 you have different kinds of data that share some commonality.
 
 Imagine you have an `activities` log. An activity could be a `comment` a `like` or a `share`.
-Each of these `activity` types has different details. Instead of creating separate tables and 
+Each of these `activity` types has different details. Instead of creating separate tables and
 relationships for each activity type and the things they relate to, you might use a polymorphic approach.
 
 <Callout collapsed="Common Scenarios & Examples">
@@ -456,6 +493,6 @@ polymorphic relationship.
 ```
 </Callout>
 
-Polymorphic relationships are more complex and are often handled at the application level or 
-using more advanced database features (depending on the specific database system). Standard SQL doesn't 
+Polymorphic relationships are more complex and are often handled at the application level or
+using more advanced database features (depending on the specific database system). Standard SQL doesn't
 have direct, built-in support for enforcing polymorphic foreign key constraints in the same way as regular foreign keys.

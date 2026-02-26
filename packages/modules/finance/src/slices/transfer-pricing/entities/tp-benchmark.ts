@@ -3,7 +3,7 @@
  * Annual comparable data supporting an arm's-length range for a policy.
  */
 
-export type TpBenchmarkMethod = "CUP" | "RESALE_PRICE" | "COST_PLUS" | "TNMM" | "PROFIT_SPLIT";
+export type TpBenchmarkMethod = 'CUP' | 'RESALE_PRICE' | 'COST_PLUS' | 'TNMM' | 'PROFIT_SPLIT';
 
 export interface TpBenchmark {
   readonly id: string;

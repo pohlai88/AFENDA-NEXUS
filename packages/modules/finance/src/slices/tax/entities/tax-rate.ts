@@ -2,7 +2,7 @@
  * Tax rate entity — represents a tax rate for a specific jurisdiction.
  */
 
-export type TaxRateType = "VAT" | "GST" | "SALES_TAX" | "WHT" | "EXCISE" | "CUSTOM";
+export type TaxRateType = 'VAT' | 'GST' | 'SALES_TAX' | 'WHT' | 'EXCISE' | 'CUSTOM';
 
 export interface TaxRate {
   readonly id: string;

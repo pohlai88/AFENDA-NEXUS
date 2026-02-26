@@ -1,5 +1,5 @@
-export type HedgeTestMethod = "DOLLAR_OFFSET" | "REGRESSION" | "CRITICAL_TERMS";
-export type HedgeTestResult = "EFFECTIVE" | "INEFFECTIVE" | "HIGHLY_EFFECTIVE";
+export type HedgeTestMethod = 'DOLLAR_OFFSET' | 'REGRESSION' | 'CRITICAL_TERMS';
+export type HedgeTestResult = 'EFFECTIVE' | 'INEFFECTIVE' | 'HIGHLY_EFFECTIVE';
 
 export interface HedgeEffectivenessTest {
   readonly id: string;
@@ -36,5 +36,8 @@ export interface CreateHedgeEffectivenessTestInput {
 export interface IHedgeEffectivenessTestRepo {
   findByRelationship(hedgeRelationshipId: string): Promise<readonly HedgeEffectivenessTest[]>;
   findLatest(hedgeRelationshipId: string): Promise<HedgeEffectivenessTest | null>;
-  create(tenantId: string, input: CreateHedgeEffectivenessTestInput): Promise<HedgeEffectivenessTest>;
+  create(
+    tenantId: string,
+    input: CreateHedgeEffectivenessTestInput
+  ): Promise<HedgeEffectivenessTest>;
 }

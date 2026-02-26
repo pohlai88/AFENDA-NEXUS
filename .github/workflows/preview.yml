@@ -1,0 +1,175 @@
+# ───────────────────────────────────────────────────────────────────────────────
+# Preview Environment — Neon Auth Branch Isolation
+# ───────────────────────────────────────────────────────────────────────────────
+# Creates an isolated Neon database branch (with cloned neon_auth data) for
+# every pull request. Each preview gets its own Auth API URL so OAuth, users,
+# sessions, and config are fully isolated from production.
+#
+# Ref: https://neon.tech/docs/guides/neon-auth-branching
+# ───────────────────────────────────────────────────────────────────────────────
+
+name: Preview Environment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: false # Don't cancel branch teardown
+
+env:
+  NEON_PROJECT_ID: dark-band-87285012
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9.15.4'
+
+jobs:
+  # ─── Create Neon Branch ──────────────────────────────────────────────────
+  create-branch:
+    name: Create Neon Branch
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      branch_id: ${{ steps.branch.outputs.branch_id }}
+      db_url: ${{ steps.branch.outputs.db_url }}
+      db_url_direct: ${{ steps.branch.outputs.db_url_direct }}
+      neon_auth_url: ${{ steps.auth-url.outputs.neon_auth_url }}
+      host: ${{ steps.branch.outputs.host }}
+    steps:
+      - name: Create Neon preview branch
+        id: branch
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ env.NEON_PROJECT_ID }}
+          branch_name: preview/pr-${{ github.event.pull_request.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          username: neondb_owner
+
+      - name: Derive Neon Auth URL
+        id: auth-url
+        run: |
+          # Each Neon branch gets its own Auth API endpoint.
+          # Pattern: https://<endpoint-id>.neonauth.<region>.aws.neon.tech/<dbname>/auth
+          HOST="${{ steps.branch.outputs.host }}"
+          ENDPOINT_ID=$(echo "$HOST" | cut -d. -f1)
+          REGION=$(echo "$HOST" | cut -d. -f2-4)  # e.g. ap-southeast-1.aws.neon
+          NEON_AUTH_URL="https://${ENDPOINT_ID}.neonauth.${REGION}.tech/neondb/auth"
+          echo "neon_auth_url=${NEON_AUTH_URL}" >> "$GITHUB_OUTPUT"
+          echo "### 🔐 Neon Auth URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`${NEON_AUTH_URL}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Add trusted origin for preview URL
+        if: vars.PREVIEW_BASE_URL != ''
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          # Register the preview deployment URL as a trusted origin so OAuth
+          # redirects work correctly on the branch.
+          PREVIEW_URL="${{ vars.PREVIEW_BASE_URL }}/pr-${{ github.event.pull_request.number }}"
+          curl -sf -X POST \
+            "https://console.neon.tech/api/v2/projects/${{ env.NEON_PROJECT_ID }}/branches/${{ steps.branch.outputs.branch_id }}/neon_auth/trusted_domains" \
+            -H "Authorization: Bearer ${NEON_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"domain\": \"${PREVIEW_URL}\"}" \
+          || echo "⚠️ Could not set trusted origin (non-fatal)"
+
+  # ─── Build & Test Against Preview Branch ─────────────────────────────────
+  preview-test:
+    name: Test on Preview Branch
+    if: github.event.action != 'closed'
+    needs: create-branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ needs.create-branch.outputs.db_url }}
+      DATABASE_URL_DIRECT: ${{ needs.create-branch.outputs.db_url_direct }}
+      NEON_AUTH_BASE_URL: ${{ needs.create-branch.outputs.neon_auth_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm turbo build
+
+      - name: Typecheck
+        run: pnpm turbo typecheck
+
+      # Governance: schema ↔ migrations must be in sync before migrate
+      - name: DB schema drift check
+        run: pnpm db:ci
+
+      - name: Test directory convention check
+        run: pnpm check:test-dir
+
+      - name: Run migrations on preview branch
+        run: pnpm --filter @afenda/db db:migrate
+
+      - name: Unit & Integration tests
+        run: pnpm turbo test:coverage
+        env:
+          CI: true
+
+      - name: Comment preview info on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = [
+              '### 🔀 Neon Preview Branch',
+              '',
+              `| Resource | Value |`,
+              `| --- | --- |`,
+              `| **Branch** | \`preview/pr-${{ github.event.pull_request.number }}\` |`,
+              `| **Auth URL** | \`${{ needs.create-branch.outputs.neon_auth_url }}\` |`,
+              `| **DB Host** | \`${{ needs.create-branch.outputs.host }}\` |`,
+              '',
+              '> Auth data (users, sessions, OAuth config) is isolated from production.',
+              '> Sessions do not transfer between branches — sign in again on preview.',
+            ].join('\n');
+
+            // Update or create comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c => c.body?.includes('Neon Preview Branch'));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  # ─── Cleanup: Delete Branch on PR Close ──────────────────────────────────
+  cleanup:
+    name: Delete Neon Branch
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete Neon preview branch
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ env.NEON_PROJECT_ID }}
+          branch: preview/pr-${{ github.event.pull_request.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}

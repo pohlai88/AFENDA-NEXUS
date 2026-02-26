@@ -13,7 +13,11 @@ export interface RevaluationInput {
   readonly currencyCode: string;
 }
 
-export type RevaluationEffect = "SURPLUS_TO_OCI" | "DEFICIT_TO_PL" | "DEFICIT_REVERSAL_FROM_OCI" | "NO_CHANGE";
+export type RevaluationEffect =
+  | 'SURPLUS_TO_OCI'
+  | 'DEFICIT_TO_PL'
+  | 'DEFICIT_REVERSAL_FROM_OCI'
+  | 'NO_CHANGE';
 
 export interface RevaluationResult {
   readonly assetId: string;
@@ -39,7 +43,7 @@ export function computeRevaluation(input: RevaluationInput): RevaluationResult {
   if (diff === 0n) {
     return {
       assetId: input.assetId,
-      effect: "NO_CHANGE",
+      effect: 'NO_CHANGE',
       revaluationAmount: 0n,
       newNbv: input.currentNbv,
       ociImpact: 0n,
@@ -52,7 +56,7 @@ export function computeRevaluation(input: RevaluationInput): RevaluationResult {
     // Surplus → OCI
     return {
       assetId: input.assetId,
-      effect: "SURPLUS_TO_OCI",
+      effect: 'SURPLUS_TO_OCI',
       revaluationAmount: diff,
       newNbv: input.fairValue,
       ociImpact: diff,
@@ -67,7 +71,7 @@ export function computeRevaluation(input: RevaluationInput): RevaluationResult {
     // Fully offset against OCI surplus
     return {
       assetId: input.assetId,
-      effect: "DEFICIT_REVERSAL_FROM_OCI",
+      effect: 'DEFICIT_REVERSAL_FROM_OCI',
       revaluationAmount: diff,
       newNbv: input.fairValue,
       ociImpact: diff,
@@ -81,7 +85,7 @@ export function computeRevaluation(input: RevaluationInput): RevaluationResult {
   const plExpense = absDiff - ociOffset;
   return {
     assetId: input.assetId,
-    effect: "DEFICIT_TO_PL",
+    effect: 'DEFICIT_TO_PL',
     revaluationAmount: diff,
     newNbv: input.fairValue,
     ociImpact: -ociOffset,

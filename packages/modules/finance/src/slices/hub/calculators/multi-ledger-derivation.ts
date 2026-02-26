@@ -3,9 +3,9 @@
  * Pure calculator — derives journal lines from accounting events using mapping rules,
  * supporting 1 event → N journals across multiple ledgers.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
-import type { MappingRule, MappingRuleCondition } from "../entities/mapping-rule.js";
-import type { AccountingEvent } from "../entities/accounting-event.js";
+import type { CalculatorResult } from '../../../shared/types.js';
+import type { MappingRule, MappingRuleCondition } from '../entities/mapping-rule.js';
+import type { AccountingEvent } from '../entities/accounting-event.js';
 
 export interface DerivedJournalLine {
   readonly ruleId: string;
@@ -28,28 +28,25 @@ export interface MultiLedgerDerivationResult {
 /**
  * Evaluates a single condition against an event.
  */
-function evaluateCondition(
-  condition: MappingRuleCondition,
-  event: AccountingEvent,
-): boolean {
+function evaluateCondition(condition: MappingRuleCondition, event: AccountingEvent): boolean {
   const fieldValue = String(getEventField(event, condition.field));
 
   switch (condition.operator) {
-    case "EQ":
+    case 'EQ':
       return fieldValue === condition.value;
-    case "NEQ":
+    case 'NEQ':
       return fieldValue !== condition.value;
-    case "IN":
+    case 'IN':
       return Array.isArray(condition.value) && condition.value.includes(fieldValue);
-    case "NOT_IN":
+    case 'NOT_IN':
       return Array.isArray(condition.value) && !condition.value.includes(fieldValue);
-    case "GT":
+    case 'GT':
       return Number(fieldValue) > Number(condition.value);
-    case "LT":
+    case 'LT':
       return Number(fieldValue) < Number(condition.value);
-    case "GTE":
+    case 'GTE':
       return Number(fieldValue) >= Number(condition.value);
-    case "LTE":
+    case 'LTE':
       return Number(fieldValue) <= Number(condition.value);
     default:
       return false;
@@ -66,7 +63,7 @@ function getEventField(event: AccountingEvent, field: string): string | bigint {
     amountMinor: event.amountMinor,
     ledgerId: event.ledgerId,
   };
-  return map[field] ?? "";
+  return map[field] ?? '';
 }
 
 /**
@@ -75,14 +72,14 @@ function getEventField(event: AccountingEvent, field: string): string | bigint {
  */
 export function deriveMultiLedger(
   events: readonly AccountingEvent[],
-  rules: readonly MappingRule[],
+  rules: readonly MappingRule[]
 ): CalculatorResult<MultiLedgerDerivationResult> {
   if (events.length === 0) {
-    throw new Error("At least one accounting event required");
+    throw new Error('At least one accounting event required');
   }
 
   const publishedRules = [...rules]
-    .filter((r) => r.status === "PUBLISHED")
+    .filter((r) => r.status === 'PUBLISHED')
     .sort((a, b) => a.priority - b.priority);
 
   const derivedLines: DerivedJournalLine[] = [];
@@ -101,16 +98,13 @@ export function deriveMultiLedger(
 
     for (const rule of matchingRules) {
       const targetLedgers =
-        rule.targetLedgerIds.length > 0
-          ? rule.targetLedgerIds
-          : [event.ledgerId];
+        rule.targetLedgerIds.length > 0 ? rule.targetLedgerIds : [event.ledgerId];
 
       for (const targetLedgerId of targetLedgers) {
         ledgerIds.add(targetLedgerId);
 
         for (const target of rule.targets) {
-          const amount =
-            (event.amountMinor * BigInt(target.percentageBps)) / 10000n;
+          const amount = (event.amountMinor * BigInt(target.percentageBps)) / 10000n;
           if (amount === 0n) continue;
 
           totalDerived += amount;
@@ -129,9 +123,7 @@ export function deriveMultiLedger(
     }
   }
 
-  const unmatchedEvents = events
-    .filter((e) => !matchedEventIds.has(e.id))
-    .map((e) => e.id);
+  const unmatchedEvents = events.filter((e) => !matchedEventIds.has(e.id)).map((e) => e.id);
 
   return {
     result: {

@@ -1,9 +1,9 @@
-import type { LeaseModification } from "../entities/lease-modification.js";
+import type { LeaseModification } from '../entities/lease-modification.js';
 
 export interface CreateLeaseModificationInput {
   readonly leaseContractId: string;
   readonly modificationDate: Date;
-  readonly modificationType: LeaseModification["modificationType"];
+  readonly modificationType: LeaseModification['modificationType'];
   readonly description: string;
   readonly previousLeaseTermMonths: number;
   readonly newLeaseTermMonths: number;

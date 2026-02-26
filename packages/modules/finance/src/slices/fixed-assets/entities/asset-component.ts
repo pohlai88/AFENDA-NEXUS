@@ -3,7 +3,7 @@
  * Supports component accounting (IAS 16).
  */
 
-import type { DepreciationMethod } from "./asset.js";
+import type { DepreciationMethod } from './asset.js';
 
 export interface AssetComponent {
   readonly id: string;

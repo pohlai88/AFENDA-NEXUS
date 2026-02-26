@@ -3,17 +3,17 @@
  * Pure calculator — produces a reconciliation of deferred tax balance
  * movements between periods for disclosure.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export type MovementType =
-  | "OPENING_BALANCE"
-  | "RECOGNIZED_IN_PNL"
-  | "RECOGNIZED_IN_OCI"
-  | "RATE_CHANGE"
-  | "ACQUISITION"
-  | "DISPOSAL"
-  | "FX_TRANSLATION"
-  | "CLOSING_BALANCE";
+  | 'OPENING_BALANCE'
+  | 'RECOGNIZED_IN_PNL'
+  | 'RECOGNIZED_IN_OCI'
+  | 'RATE_CHANGE'
+  | 'ACQUISITION'
+  | 'DISPOSAL'
+  | 'FX_TRANSLATION'
+  | 'CLOSING_BALANCE';
 
 export interface MovementInput {
   readonly category: string;
@@ -51,10 +51,10 @@ export interface MovementScheduleResult {
  * Closing = Opening + P&L + OCI + rate change + acquisitions - disposals + FX
  */
 export function computeMovementSchedule(
-  inputs: readonly MovementInput[],
+  inputs: readonly MovementInput[]
 ): CalculatorResult<MovementScheduleResult> {
   if (inputs.length === 0) {
-    throw new Error("At least one category required");
+    throw new Error('At least one category required');
   }
 
   let totalOpening = 0n;

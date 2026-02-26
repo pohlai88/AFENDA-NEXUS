@@ -8,16 +8,19 @@
 
 // ─── Schema ─────────────────────────────────────────────────────────────────
 
-export * from "./schema/index.js";
+export * from './schema/index.js';
 
 // ─── Client ─────────────────────────────────────────────────────────────────
 
 export {
   createPooledClient,
   createDirectClient,
+  createReadOnlyClient,
+  ensureNeonConnectionString,
   type ConnectionOptions,
   type DbClient,
-} from "./client.js";
+  type EnsureNeonConnectionStringOptions,
+} from './client.js';
 
 // ─── Session ────────────────────────────────────────────────────────────────
 
@@ -27,29 +30,33 @@ export {
   type DbSessionOptions,
   type TenantContext,
   type TenantTx,
-} from "./session.js";
+} from './session.js';
 
 // ─── Migrate ────────────────────────────────────────────────────────────────
 
-export { migrate } from "./migrate.js";
+export { migrate } from './migrate.js';
 
 // ─── Seed ───────────────────────────────────────────────────────────────────
 
-export { seed } from "./seed.js";
+export { seed } from './seed.js';
 
 // ─── Prepared Queries ───────────────────────────────────────────────────────
 
-export { createPreparedQueries } from "./prepared.js";
+export { createPreparedQueries } from './prepared.js';
 
 // ─── Health Check ──────────────────────────────────────────────────────────
 
-export { createHealthCheck } from "./health.js";
+export { createHealthCheck } from './health.js';
+
+// ─── Retry (Neon resilience) ───────────────────────────────────────────────
+
+export { withRetry, type RetryOptions } from './retry.js';
 
 // ─── Outbox ────────────────────────────────────────────────────────────────
 
-export type { OutboxRow, OutboxWriter, OutboxDrainer } from "./schema/outbox.js";
-export { createOutboxDrainer } from "./outbox-drainer.js";
+export type { OutboxRow, OutboxWriter, OutboxDrainer } from './schema/outbox.js';
+export { createOutboxDrainer } from './outbox-drainer.js';
 
 // ─── Inferred Types ─────────────────────────────────────────────────────────
 
-export type * from "./types.js";
+export type * from './types.js';

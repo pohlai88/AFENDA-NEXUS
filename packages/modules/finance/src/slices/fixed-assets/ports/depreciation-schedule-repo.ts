@@ -1,4 +1,4 @@
-import type { DepreciationScheduleEntry } from "../entities/depreciation-schedule.js";
+import type { DepreciationScheduleEntry } from '../entities/depreciation-schedule.js';
 
 export interface CreateDepreciationEntryInput {
   readonly assetId: string;

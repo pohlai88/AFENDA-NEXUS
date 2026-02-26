@@ -60,17 +60,11 @@
   },
   "integration": {
     "clawsec-suite": {
-      "enhances": [
-        "guarded_skill_install.mjs",
-        "clawsec-advisory-guardian hook"
-      ],
+      "enhances": ["guarded_skill_install.mjs", "clawsec-advisory-guardian hook"],
       "adds_exit_codes": {
         "43": "Reputation warning - requires --confirm-reputation"
       },
-      "adds_arguments": [
-        "--confirm-reputation",
-        "--reputation-threshold"
-      ]
+      "adds_arguments": ["--confirm-reputation", "--reputation-threshold"]
     }
   },
   "openclaw": {

@@ -1,6 +1,8 @@
 ---
 name: pnpm
-description: Use when managing Node.js dependencies with pnpm - provides workspace setup, catalogs, CLI commands, overrides, and CI configuration
+description:
+  Use when managing Node.js dependencies with pnpm - provides workspace setup,
+  catalogs, CLI commands, overrides, and CI configuration
 license: MIT
 ---
 
@@ -65,12 +67,17 @@ catalog:
 
 **Consider loading these reference files based on your task:**
 
-- [ ] [references/cli.md](references/cli.md) - if using pnpm commands, scripts, or filtering
-- [ ] [references/workspaces.md](references/workspaces.md) - if setting up monorepo, catalogs, or workspace config
-- [ ] [references/features.md](references/features.md) - if using overrides, patches, hooks, or managing store
-- [ ] [references/ci.md](references/ci.md) - if configuring CI/CD, Docker, or migrating from npm/yarn
+- [ ] [references/cli.md](references/cli.md) - if using pnpm commands, scripts,
+      or filtering
+- [ ] [references/workspaces.md](references/workspaces.md) - if setting up
+      monorepo, catalogs, or workspace config
+- [ ] [references/features.md](references/features.md) - if using overrides,
+      patches, hooks, or managing store
+- [ ] [references/ci.md](references/ci.md) - if configuring CI/CD, Docker, or
+      migrating from npm/yarn
 
-**DO NOT load all files at once.** Load only what's relevant to your current task.
+**DO NOT load all files at once.** Load only what's relevant to your current
+task.
 
 ## Cross-Skill References
 

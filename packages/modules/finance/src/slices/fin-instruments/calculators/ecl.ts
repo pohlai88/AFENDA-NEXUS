@@ -3,9 +3,9 @@
  * Pure calculator — computes 12-month and lifetime ECL
  * using probability of default, loss given default, and exposure at default.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type EclStage = "STAGE_1" | "STAGE_2" | "STAGE_3";
+export type EclStage = 'STAGE_1' | 'STAGE_2' | 'STAGE_3';
 
 export interface EclInput {
   readonly instrumentId: string;
@@ -33,17 +33,15 @@ export interface EclResult {
  * Stage 2/3: Lifetime ECL = EAD × PD(lifetime) × LGD
  * Lifetime PD is approximated as: min(PD_12m × remaining_months / 12, 10000 bps)
  */
-export function computeEcl(
-  inputs: readonly EclInput[],
-): CalculatorResult<readonly EclResult[]> {
+export function computeEcl(inputs: readonly EclInput[]): CalculatorResult<readonly EclResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one instrument required");
+    throw new Error('At least one instrument required');
   }
 
   const results: EclResult[] = inputs.map((input) => {
     let eclAmount: bigint;
 
-    if (input.stage === "STAGE_1") {
+    if (input.stage === 'STAGE_1') {
       // 12-month ECL = EAD × PD_12m × LGD (bps × bps / 10000^2)
       eclAmount =
         (input.exposureAtDefault *
@@ -78,6 +76,6 @@ export function computeEcl(
   return {
     result: results,
     inputs: { count: inputs.length },
-    explanation: `ECL: ${results.length} instruments, total ECL=${totalEcl}, stages: S1=${results.filter((r) => r.stage === "STAGE_1").length} S2=${results.filter((r) => r.stage === "STAGE_2").length} S3=${results.filter((r) => r.stage === "STAGE_3").length}`,
+    explanation: `ECL: ${results.length} instruments, total ECL=${totalEcl}, stages: S1=${results.filter((r) => r.stage === 'STAGE_1').length} S2=${results.filter((r) => r.stage === 'STAGE_2').length} S3=${results.filter((r) => r.stage === 'STAGE_3').length}`,
   };
 }

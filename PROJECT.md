@@ -508,7 +508,7 @@ metrics until needed.
 ### Monorepo (Turborepo + pnpm)
 
 - **pnpm-workspace.yaml:**
-  `packages: ['apps/*', 'packages/*', 'packages/modules/*', 'packages/industry/*', 'tools/*']`
+  `packages: ['apps/*', 'packages/*', 'packages/modules/*', 'tools/*']`
   — use `tools/*` not `tooling/*`
 - **Catalog:** Centralize versions in `pnpm-workspace.yaml`; use `catalog:` in
   package.json
@@ -591,9 +591,6 @@ shadcn/ui configured. Graphile Worker wired.
 | `packages/db`                     | ✅ Complete | DbSession, Outbox (OutboxRow/Writer/Drainer), schema stubs, migrate util                                                                 |
 | `packages/platform`               | ✅ Complete | Real pino logger, Zod-validated config, feature flags                                                                                    |
 | `packages/modules/finance`        | ✅ Complete | Journal, Account, Ledger, FiscalPeriod, FxRate, GlBalance, TrialBalance, Intercompany; postJournal with balance validation + idempotency |
-| `packages/industry/fnb`           | ✅ Stub     | Overlay config pattern                                                                                                                   |
-| `packages/industry/manufacturing` | ✅ Stub     | Overlay config pattern                                                                                                                   |
-| `packages/industry/agriculture`   | ✅ Stub     | Overlay config pattern                                                                                                                   |
 | `packages/typescript-config`      | ✅ Complete | base, library, fastify, nextjs presets                                                                                                   |
 | `packages/eslint-config`          | ✅ Complete | Flat config + typescript-eslint parser                                                                                                   |
 | `apps/api`                        | ✅ Complete | Fastify server + `/health` + `/health/ready` routes                                                                                      |

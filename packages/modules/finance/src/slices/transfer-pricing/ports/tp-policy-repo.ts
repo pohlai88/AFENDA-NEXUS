@@ -1,4 +1,4 @@
-import type { TpPolicy } from "../entities/tp-policy.js";
+import type { TpPolicy } from '../entities/tp-policy.js';
 
 export interface CreateTpPolicyInput {
   readonly companyId: string;

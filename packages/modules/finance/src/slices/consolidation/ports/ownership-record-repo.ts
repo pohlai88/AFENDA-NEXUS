@@ -1,4 +1,4 @@
-import type { OwnershipRecord } from "../entities/ownership-record.js";
+import type { OwnershipRecord } from '../entities/ownership-record.js';
 
 export interface CreateOwnershipRecordInput {
   readonly parentEntityId: string;

@@ -1,12 +1,12 @@
-import type { Result } from "@afenda/core";
-import { err, AppError } from "@afenda/core";
-import type { ArInvoice } from "../entities/ar-invoice.js";
-import type { IArInvoiceRepo } from "../ports/ar-invoice-repo.js";
-import type { IJournalRepo } from "../../../shared/ports/journal-posting-port.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { IDocumentNumberGenerator } from "../../../shared/ports/journal-posting-port.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import { err, AppError } from '@afenda/core';
+import type { ArInvoice } from '../entities/ar-invoice.js';
+import type { IArInvoiceRepo } from '../ports/ar-invoice-repo.js';
+import type { IJournalRepo } from '../../../shared/ports/journal-posting-port.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { IDocumentNumberGenerator } from '../../../shared/ports/journal-posting-port.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface PostArInvoiceInput {
   readonly tenantId: string;
@@ -25,7 +25,7 @@ export async function postArInvoice(
     outboxWriter: IOutboxWriter;
     documentNumberGenerator: IDocumentNumberGenerator;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<ArInvoice>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor.userId ?? input.userId;
@@ -35,11 +35,16 @@ export async function postArInvoice(
 
   const invoice = found.value;
 
-  if (invoice.status !== "APPROVED") {
-    return err(new AppError("VALIDATION", `Invoice must be APPROVED to post, current status: ${invoice.status}`));
+  if (invoice.status !== 'APPROVED') {
+    return err(
+      new AppError(
+        'VALIDATION',
+        `Invoice must be APPROVED to post, current status: ${invoice.status}`
+      )
+    );
   }
 
-  const numResult = await deps.documentNumberGenerator.next(tenantId, "AR");
+  const numResult = await deps.documentNumberGenerator.next(tenantId, 'AR');
   if (!numResult.ok) return numResult as Result<never>;
   const journalNumber = numResult.value;
 
@@ -63,7 +68,7 @@ export async function postArInvoice(
     ledgerId: invoice.ledgerId as string,
     fiscalPeriodId: input.fiscalPeriodId,
     journalNumber,
-    description: `AR Invoice ${invoice.invoiceNumber} - ${invoice.description ?? ""}`,
+    description: `AR Invoice ${invoice.invoiceNumber} - ${invoice.description ?? ''}`,
     postingDate: invoice.invoiceDate,
     lines: [arControlLine, ...revenueLines],
   });
@@ -72,8 +77,8 @@ export async function postArInvoice(
 
   const updated = await deps.arInvoiceRepo.updateStatus(
     invoice.id,
-    "POSTED",
-    journalResult.value.id,
+    'POSTED',
+    journalResult.value.id
   );
 
   if (!updated.ok) return updated;

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,8 +10,8 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command";
-import { navigationConfig } from "@/lib/constants";
+} from '@/components/ui/command';
+import { navigationConfig } from '@/lib/constants';
 import {
   LayoutDashboard,
   BookOpen,
@@ -21,7 +21,7 @@ import {
   Calendar,
   BarChart3,
   Settings,
-} from "lucide-react";
+} from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
@@ -40,13 +40,13 @@ export function CommandPalette() {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((prev) => !prev);
       }
     }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const navigate = useCallback(
@@ -54,7 +54,7 @@ export function CommandPalette() {
       setOpen(false);
       router.push(href);
     },
-    [router],
+    [router]
   );
 
   const flatItems = navigationConfig.flatMap((item) =>
@@ -64,7 +64,7 @@ export function CommandPalette() {
           group: item.title,
           groupIcon: item.icon,
         }))
-      : [{ ...item, group: "General", groupIcon: item.icon }],
+      : [{ ...item, group: 'General', groupIcon: item.icon }]
   );
 
   const groups = Array.from(new Set(flatItems.map((i) => i.group)));
@@ -83,10 +83,7 @@ export function CommandPalette() {
                 .map((item) => {
                   const Icon = iconMap[item.icon] ?? FileText;
                   return (
-                    <CommandItem
-                      key={item.href}
-                      onSelect={() => navigate(item.href)}
-                    >
+                    <CommandItem key={item.href} onSelect={() => navigate(item.href)}>
                       <Icon className="mr-2 h-4 w-4" />
                       <span>{item.title}</span>
                     </CommandItem>

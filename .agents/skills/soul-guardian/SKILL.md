@@ -1,7 +1,9 @@
 ---
 name: soul-guardian
 version: 0.0.2
-description: Drift detection + baseline integrity guard for agent workspace files with automatic alerting support
+description:
+  Drift detection + baseline integrity guard for agent workspace files with
+  automatic alerting support
 homepage: https://clawsec.prompt.security
 metadata: { 'openclaw': { 'emoji': '👻', 'category': 'security' } }
 clawdis:
@@ -12,7 +14,8 @@ clawdis:
 
 # soul-guardian 👻
 
-Protects your agent's core files (SOUL.md, AGENTS.md, etc.) from unauthorized changes with automatic detection, restoration, and **user alerting**.
+Protects your agent's core files (SOUL.md, AGENTS.md, etc.) from unauthorized
+changes with automatic detection, restoration, and **user alerting**.
 
 ## Quick Start (3 Steps)
 
@@ -38,8 +41,10 @@ Add this to your HEARTBEAT.md for automatic monitoring:
 ```markdown
 ## Soul Guardian Check
 
-- Run `python3 skills/soul-guardian/scripts/soul_guardian.py check --actor heartbeat --output-format alert`
-- If any output is produced, relay it to the user immediately as a security alert
+- Run
+  `python3 skills/soul-guardian/scripts/soul_guardian.py check --actor heartbeat --output-format alert`
+- If any output is produced, relay it to the user immediately as a security
+  alert
 ```
 
 That's it! Soul Guardian will now:
@@ -145,7 +150,8 @@ This output is designed to be relayed directly to the user in TUI/chat.
 - Cannot protect if attacker controls both workspace AND state directory
 - Is not a substitute for backups
 
-**Recommendation:** Store state directory outside workspace for better resilience.
+**Recommendation:** Store state directory outside workspace for better
+resilience.
 
 ---
 
@@ -168,11 +174,10 @@ This will:
 
 ## Troubleshooting
 
-**"Not initialized" error:**
-Run `init` first to set up baselines.
+**"Not initialized" error:** Run `init` first to set up baselines.
 
-**Drift keeps happening:**
-Check what's modifying your files. Review the audit log and patches.
+**Drift keeps happening:** Check what's modifying your files. Review the audit
+log and patches.
 
-**Want to approve a change:**
-Run `approve --file <path>` after reviewing the change.
+**Want to approve a change:** Run `approve --file <path>` after reviewing the
+change.

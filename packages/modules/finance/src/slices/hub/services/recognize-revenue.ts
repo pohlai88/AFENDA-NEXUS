@@ -1,17 +1,18 @@
-import type { Result } from "@afenda/core";
-import { ok, err, AppError } from "@afenda/core";
-import type { RevenueContract } from "../../hub/entities/revenue-recognition.js";
-import {
-  computeStraightLineSchedule,
-} from "../calculators/revenue-recognition.js";
-import type { IRevenueContractRepo } from "../../../slices/hub/ports/revenue-contract-repo.js";
-import type { IJournalRepo, CreateJournalInput } from "../../../shared/ports/journal-posting-port.js";
-import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { IIdempotencyStore } from "../../../shared/ports/idempotency-store.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { IJournalAuditRepo } from "../../../shared/ports/journal-posting-port.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import { ok, err, AppError } from '@afenda/core';
+import type { RevenueContract } from '../../hub/entities/revenue-recognition.js';
+import { computeStraightLineSchedule } from '../calculators/revenue-recognition.js';
+import type { IRevenueContractRepo } from '../../../slices/hub/ports/revenue-contract-repo.js';
+import type {
+  IJournalRepo,
+  CreateJournalInput,
+} from '../../../shared/ports/journal-posting-port.js';
+import type { ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { IIdempotencyStore } from '../../../shared/ports/idempotency-store.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { IJournalAuditRepo } from '../../../shared/ports/journal-posting-port.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface RecognizeRevenueInput {
   readonly tenantId: string;
@@ -51,7 +52,7 @@ export async function recognizeRevenue(
     outboxWriter: IOutboxWriter;
     journalAuditRepo: IJournalAuditRepo;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<RecognizeRevenueResult>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor?.userId ?? input.userId;
@@ -60,10 +61,12 @@ export async function recognizeRevenue(
   const claim = await deps.idempotencyStore.claimOrGet({
     tenantId,
     key: input.idempotencyKey,
-    commandType: "RECOGNIZE_REVENUE",
+    commandType: 'RECOGNIZE_REVENUE',
   });
   if (!claim.claimed) {
-    return err(new AppError("IDEMPOTENCY_CONFLICT", `Request ${input.idempotencyKey} already processed`));
+    return err(
+      new AppError('IDEMPOTENCY_CONFLICT', `Request ${input.idempotencyKey} already processed`)
+    );
   }
 
   // Load contract
@@ -74,29 +77,34 @@ export async function recognizeRevenue(
   // INF-02: Company boundary — ledger must belong to the same company as the contract
   const ledgerResult = await deps.ledgerRepo.findById(input.ledgerId);
   if (!ledgerResult.ok) {
-    return err(new AppError("NOT_FOUND", `Ledger ${input.ledgerId} not found`));
+    return err(new AppError('NOT_FOUND', `Ledger ${input.ledgerId} not found`));
   }
   if (String(ledgerResult.value.companyId) !== String(contract.companyId)) {
     return err(
       new AppError(
-        "COMPANY_MISMATCH",
-        `Ledger belongs to company ${String(ledgerResult.value.companyId)}, but contract belongs to company ${String(contract.companyId)}`,
-      ),
+        'COMPANY_MISMATCH',
+        `Ledger belongs to company ${String(ledgerResult.value.companyId)}, but contract belongs to company ${String(contract.companyId)}`
+      )
     );
   }
 
   // Validate contract state
-  if (contract.status !== "ACTIVE") {
-    return err(new AppError("INVALID_STATE", `Contract ${contract.id} is ${contract.status}, expected ACTIVE`));
+  if (contract.status !== 'ACTIVE') {
+    return err(
+      new AppError(
+        'INVALID_STATE',
+        `Contract ${contract.id} is ${contract.status}, expected ACTIVE`
+      )
+    );
   }
   if (contract.recognizedToDate >= contract.totalAmount) {
-    return err(new AppError("VALIDATION_ERROR", `Contract ${contract.id} is fully recognized`));
+    return err(new AppError('VALIDATION_ERROR', `Contract ${contract.id} is fully recognized`));
   }
 
   // Compute recognition amount based on method
   const amountToRecognize = computeRecognitionAmount(contract, deps);
   if (amountToRecognize <= 0n) {
-    return err(new AppError("VALIDATION_ERROR", "No amount to recognize this period"));
+    return err(new AppError('VALIDATION_ERROR', 'No amount to recognize this period'));
   }
 
   // Cap at remaining amount
@@ -134,7 +142,7 @@ export async function recognizeRevenue(
   const newRecognizedToDate = contract.recognizedToDate + finalAmount;
   const updateResult = await deps.revenueContractRepo.updateRecognized(
     contract.id,
-    newRecognizedToDate,
+    newRecognizedToDate
   );
   if (!updateResult.ok) return updateResult as Result<never>;
 
@@ -142,8 +150,8 @@ export async function recognizeRevenue(
   await deps.journalAuditRepo.log({
     tenantId,
     journalId: journalResult.value.id,
-    fromStatus: "DRAFT",
-    toStatus: "DRAFT",
+    fromStatus: 'DRAFT',
+    toStatus: 'DRAFT',
     userId,
     reason: `Revenue recognition for contract ${contract.contractNumber}`,
   });
@@ -165,8 +173,8 @@ export async function recognizeRevenue(
   await deps.idempotencyStore.recordOutcome?.(
     tenantId,
     input.idempotencyKey,
-    "RECOGNIZE_REVENUE",
-    journalResult.value.id,
+    'RECOGNIZE_REVENUE',
+    journalResult.value.id
   );
 
   return ok({
@@ -185,9 +193,9 @@ export async function recognizeRevenue(
  */
 function computeRecognitionAmount(
   contract: RevenueContract,
-  _deps: { revenueContractRepo: IRevenueContractRepo },
+  _deps: { revenueContractRepo: IRevenueContractRepo }
 ): bigint {
-  if (contract.recognitionMethod === "STRAIGHT_LINE") {
+  if (contract.recognitionMethod === 'STRAIGHT_LINE') {
     const months = monthsBetween(contract.startDate, contract.endDate);
     const periodCount = months > 0 ? months : 1;
     const { result } = computeStraightLineSchedule({
@@ -213,9 +221,5 @@ function computeRecognitionAmount(
 }
 
 function monthsBetween(start: Date, end: Date): number {
-  return (
-    (end.getFullYear() - start.getFullYear()) * 12 +
-    (end.getMonth() - start.getMonth()) +
-    1
-  );
+  return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
 }

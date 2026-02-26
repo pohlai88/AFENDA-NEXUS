@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { leaseSchedules } from "@afenda/db";
-import type { LeaseSchedule } from "../entities/lease-schedule.js";
-import type { ILeaseScheduleRepo, CreateLeaseScheduleInput } from "../ports/lease-schedule-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { leaseSchedules } from '@afenda/db';
+import type { LeaseSchedule } from '../entities/lease-schedule.js';
+import type { ILeaseScheduleRepo, CreateLeaseScheduleInput } from '../ports/lease-schedule-repo.js';
 
 type Row = typeof leaseSchedules.$inferSelect;
 
@@ -28,15 +28,22 @@ export class DrizzleLeaseScheduleRepo implements ILeaseScheduleRepo {
   constructor(private readonly db: TenantTx) {}
 
   async findByLease(leaseContractId: string): Promise<readonly LeaseSchedule[]> {
-    const rows = await this.db.select().from(leaseSchedules).where(eq(leaseSchedules.leaseContractId, leaseContractId));
+    const rows = await this.db
+      .select()
+      .from(leaseSchedules)
+      .where(eq(leaseSchedules.leaseContractId, leaseContractId));
     return rows.map(mapToDomain);
   }
 
-  async createBatch(tenantId: string, lines: readonly CreateLeaseScheduleInput[]): Promise<readonly LeaseSchedule[]> {
+  async createBatch(
+    tenantId: string,
+    lines: readonly CreateLeaseScheduleInput[]
+  ): Promise<readonly LeaseSchedule[]> {
     if (lines.length === 0) return [];
-    const rows = await this.db.insert(leaseSchedules).values(
-      lines.map((l) => ({ tenantId, ...l })),
-    ).returning();
+    const rows = await this.db
+      .insert(leaseSchedules)
+      .values(lines.map((l) => ({ tenantId, ...l })))
+      .returning();
     return rows.map(mapToDomain);
   }
 

@@ -1,5 +1,5 @@
-import type { PaginatedResult, PaginationParams } from "@afenda/core";
-import type { BudgetEntry } from "../entities/budget.js";
+import type { PaginatedResult, PaginationParams } from '@afenda/core';
+import type { BudgetEntry } from '../entities/budget.js';
 
 export interface UpsertBudgetEntryInput {
   readonly tenantId: string;
@@ -16,6 +16,6 @@ export interface IBudgetRepo {
   findByLedgerAndPeriod(
     ledgerId: string,
     periodId: string,
-    pagination: PaginationParams,
+    pagination: PaginationParams
   ): Promise<PaginatedResult<BudgetEntry>>;
 }

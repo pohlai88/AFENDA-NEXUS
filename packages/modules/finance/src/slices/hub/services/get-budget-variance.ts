@@ -1,11 +1,11 @@
-import type { Result } from "@afenda/core";
-import { ok, err, AppError, money } from "@afenda/core";
-import type { BudgetVarianceReport, BudgetVarianceRow } from "../entities/budget.js";
-import type { IBudgetRepo } from "../../../slices/hub/ports/budget-repo.js";
-import type { IGlBalanceRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { IAccountRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
+import type { Result } from '@afenda/core';
+import { ok, err, AppError, money } from '@afenda/core';
+import type { BudgetVarianceReport, BudgetVarianceRow } from '../entities/budget.js';
+import type { IBudgetRepo } from '../../../slices/hub/ports/budget-repo.js';
+import type { IGlBalanceRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { IAccountRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
 
 export interface GetBudgetVarianceInput {
   readonly ledgerId: string;
@@ -20,7 +20,7 @@ export async function getBudgetVariance(
     accountRepo: IAccountRepo;
     ledgerRepo: ILedgerRepo;
   },
-  _ctx?: FinanceContext,
+  _ctx?: FinanceContext
 ): Promise<Result<BudgetVarianceReport>> {
   // Load ledger to get base currency
   const ledgerResult = await deps.ledgerRepo.findById(input.ledgerId);
@@ -28,14 +28,13 @@ export async function getBudgetVariance(
   const currency = ledgerResult.value.baseCurrency;
 
   // Load budget entries for this ledger+period
-  const budgetResult = await deps.budgetRepo.findByLedgerAndPeriod(
-    input.ledgerId,
-    input.periodId,
-    { page: 1, limit: 1000 },
-  );
+  const budgetResult = await deps.budgetRepo.findByLedgerAndPeriod(input.ledgerId, input.periodId, {
+    page: 1,
+    limit: 1000,
+  });
 
   if (budgetResult.data.length === 0) {
-    return err(new AppError("NO_BUDGET_DATA", "No budget entries found for this ledger/period"));
+    return err(new AppError('NO_BUDGET_DATA', 'No budget entries found for this ledger/period'));
   }
 
   // Load trial balance for the same ledger+period

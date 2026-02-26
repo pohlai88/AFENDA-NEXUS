@@ -1,23 +1,25 @@
-import { sql } from "drizzle-orm";
-import { index, jsonb, text, timestamp } from "drizzle-orm/pg-core";
-import { erpSchema } from "./_schemas";
-import { pkId, tenantCol } from "./_common";
+import { sql } from 'drizzle-orm';
+import { index, jsonb, text, timestamp } from 'drizzle-orm/pg-core';
+import { erpSchema } from './_schemas';
+import { pkId, tenantCol } from './_common';
 
 // ─── erp.outbox ─────────────────────────────────────────────────────────────
 
 export const outbox = erpSchema.table(
-  "outbox",
+  'outbox',
   {
     ...pkId(),
     ...tenantCol(),
-    eventType: text("event_type").notNull(),
-    payload: jsonb("payload").notNull().default({}),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    eventType: text('event_type').notNull(),
+    payload: jsonb('payload').notNull().default({}),
+    createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .default(sql`now()`),
-    processedAt: timestamp("processed_at", { withTimezone: true }),
+    processedAt: timestamp('processed_at', { withTimezone: true }),
   },
   (t) => [
-    index("idx_outbox_unprocessed").on(t.createdAt).where(sql`${t.processedAt} IS NULL`),
-  ],
+    index('idx_outbox_unprocessed')
+      .on(t.tenantId, t.createdAt)
+      .where(sql`${t.processedAt} IS NULL`),
+  ]
 );

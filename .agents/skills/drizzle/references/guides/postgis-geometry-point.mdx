@@ -3,21 +3,19 @@ title: PostGIS geometry point
 slug: postgis-geometry-point
 ---
 
-import Section from "@mdx/Section.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Section from '@mdx/Section.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 import CodeTabs from '@mdx/CodeTabs.astro';
-import Callout from "@mdx/Callout.astro";
+import Callout from '@mdx/Callout.astro';
 import CodeTab from '@mdx/CodeTab.astro';
 
 <Prerequisites>
-- Get started with [PostgreSQL](/docs/get-started-postgresql)
-- [Postgis extension](/docs/extensions/pg#postgis)
-- [Indexes](/docs/indexes-constraints#indexes)
-- [Filtering in select statement](/docs/select#filtering)
-- [sql operator](/docs/sql)
+  - Get started with [PostgreSQL](/docs/get-started-postgresql) - [Postgis
+  extension](/docs/extensions/pg#postgis) - [Indexes](/docs/indexes-constraints#indexes) -
+  [Filtering in select statement](/docs/select#filtering) - [sql operator](/docs/sql)
 </Prerequisites>
 
-`PostGIS` extends the capabilities of the PostgreSQL relational database by adding support for storing, indexing, and querying geospatial data. 
+`PostGIS` extends the capabilities of the PostgreSQL relational database by adding support for storing, indexing, and querying geospatial data.
 
 As for now, Drizzle doesn't create extension automatically, so you need to create it manually. Create an empty migration file and add SQL query:
 
@@ -29,6 +27,7 @@ npx drizzle-kit generate --custom
 ```sql
 CREATE EXTENSION postgis;
 ```
+
 </Section>
 
 This is how you can create table with `geometry` datatype and spatial index in Drizzle:
@@ -38,28 +37,28 @@ This is how you can create table with `geometry` datatype and spatial index in D
   ```ts copy {8, 11}
   import { geometry, index, pgTable, serial, text } from 'drizzle-orm/pg-core';
 
-  export const stores = pgTable(
-    'stores',
-    {
-      id: serial('id').primaryKey(),
-      name: text('name').notNull(),
-      location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
-    },
-    (t) => [
-      index('spatial_index').using('gist', t.location),
-    ]
-  );
-  ```
-  </CodeTab>
-  ```sql
-  CREATE TABLE IF NOT EXISTS "stores" (
+export const stores = pgTable(
+  'stores',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    location: geometry('location', { type: 'point', mode: 'xy', srid: 4326 }).notNull(),
+  },
+  (t) => [index('spatial_index').using('gist', t.location)]
+);
+
+````
+</CodeTab>
+```sql
+CREATE TABLE IF NOT EXISTS "stores" (
 	  "id" serial PRIMARY KEY NOT NULL,
 	  "name" text NOT NULL,
 	  "location" geometry(point) NOT NULL
-  );
-  --> statement-breakpoint
-  CREATE INDEX IF NOT EXISTS "spatial_index" ON "stores" USING gist ("location");
-  ```
+);
+--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "spatial_index" ON "stores" USING gist ("location");
+````
+
 </CodeTabs>
  
 This is how you can insert `geometry` data into the table in Drizzle. `ST_MakePoint()` in PostGIS creates a geometric object of type `point` using the specified coordinates.
@@ -91,6 +90,7 @@ To compute the distance between the objects you can use `<->` operator and `ST_D
 `getColumns` available starting from `drizzle-orm@1.0.0-beta.2`(read more [here](/docs/upgrade-v1))
 
 If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
+
 </Callout>
 
 <Section>
@@ -99,27 +99,29 @@ import { getColumns, sql } from 'drizzle-orm';
 import { stores } from './schema';
 
 const point = {
-  x: -73.935_242,
-  y: 40.730_61,
+x: -73.935_242,
+y: 40.730_61,
 };
 
 const sqlPoint = sql`ST_SetSRID(ST_MakePoint(${point.x}, ${point.y}), 4326)`;
 
 await db
-  .select({
-    ...getColumns(stores),
-    distance: sql`ST_Distance(${stores.location}, ${sqlPoint})`,
-  })
-  .from(stores)
-  .orderBy(sql`${stores.location} <-> ${sqlPoint}`)
-  .limit(1);
-```
+.select({
+...getColumns(stores),
+distance: sql`ST_Distance(${stores.location}, ${sqlPoint})`,
+})
+.from(stores)
+.orderBy(sql`${stores.location} <-> ${sqlPoint}`)
+.limit(1);
+
+````
 
 ```sql
 select *, ST_Distance(location, ST_SetSRID(ST_MakePoint(-73.935_242, 40.730_61), 4326))
 from stores order by location <-> ST_SetSRID(ST_MakePoint(-73.935_242, 40.730_61), 4326)
 limit 1;
-```
+````
+
 </Section>
 
 To filter stores located within a specified rectangular area, you can use `ST_MakeEnvelope()` and `ST_Within()` functions. `ST_MakeEnvelope()` creates a rectangular Polygon from the minimum and maximum values for X and Y. `ST_Within()` Returns TRUE if geometry A is within geometry B.
@@ -134,16 +136,18 @@ const point = {
 };
 
 await db
-  .select()
-  .from(stores)
-  .where(
-    sql`ST_Within(
+.select()
+.from(stores)
+.where(
+sql`ST_Within(
       ${stores.location}, ST_MakeEnvelope(${point.x1}, ${point.y1}, ${point.x2}, ${point.y2}, 4326)
     )`,
-  );
-```
+);
+
+````
 
 ```sql
 select * from stores where ST_Within(location, ST_MakeEnvelope(-88, 40, -73, 43, 4326));
-```
+````
+
 </Section>

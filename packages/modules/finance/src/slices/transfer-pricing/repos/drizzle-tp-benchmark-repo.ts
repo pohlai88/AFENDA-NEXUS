@@ -1,8 +1,8 @@
-import { eq, desc } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { tpBenchmarks } from "@afenda/db";
-import type { TpBenchmark } from "../entities/tp-benchmark.js";
-import type { ITpBenchmarkRepo, CreateTpBenchmarkInput } from "../ports/tp-benchmark-repo.js";
+import { eq, desc } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { tpBenchmarks } from '@afenda/db';
+import type { TpBenchmark } from '../entities/tp-benchmark.js';
+import type { ITpBenchmarkRepo, CreateTpBenchmarkInput } from '../ports/tp-benchmark-repo.js';
 
 type Row = typeof tpBenchmarks.$inferSelect;
 
@@ -12,7 +12,7 @@ function mapToDomain(row: Row): TpBenchmark {
     tenantId: row.tenantId,
     policyId: row.policyId,
     benchmarkYear: row.benchmarkYear,
-    method: row.method as TpBenchmark["method"],
+    method: row.method as TpBenchmark['method'],
     comparableCount: row.comparableCount,
     interquartileRangeLowBps: row.interquartileRangeLowBps,
     interquartileRangeMedianBps: row.interquartileRangeMedianBps,
@@ -47,7 +47,10 @@ export class DrizzleTpBenchmarkRepo implements ITpBenchmarkRepo {
   }
 
   async create(tenantId: string, input: CreateTpBenchmarkInput): Promise<TpBenchmark> {
-    const [row] = await this.db.insert(tpBenchmarks).values({ tenantId, ...input }).returning();
+    const [row] = await this.db
+      .insert(tpBenchmarks)
+      .values({ tenantId, ...input })
+      .returning();
     return mapToDomain(row!);
   }
 }

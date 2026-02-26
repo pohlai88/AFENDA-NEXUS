@@ -3,7 +3,7 @@
  * Pure calculator — aggregates financial data by operating segments
  * and computes inter-segment eliminations.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface SegmentData {
   readonly segmentId: string;
@@ -49,10 +49,10 @@ export interface SegmentReportResult {
  * Computes segment reporting with inter-segment elimination.
  */
 export function computeSegmentReport(
-  segments: readonly SegmentData[],
+  segments: readonly SegmentData[]
 ): CalculatorResult<SegmentReportResult> {
   if (segments.length === 0) {
-    throw new Error("At least one segment required");
+    throw new Error('At least one segment required');
   }
 
   let totalInterSegmentRevenue = 0n;
@@ -63,12 +63,9 @@ export function computeSegmentReport(
 
   const rows: SegmentReportRow[] = segments.map((s) => {
     const totalRevenue = s.externalRevenue + s.interSegmentRevenue;
-    const segmentResult =
-      totalRevenue - s.operatingExpenses - s.depreciationAmortization;
+    const segmentResult = totalRevenue - s.operatingExpenses - s.depreciationAmortization;
     const segmentMarginBps =
-      totalRevenue > 0n
-        ? Number((segmentResult * 10000n) / totalRevenue)
-        : 0;
+      totalRevenue > 0n ? Number((segmentResult * 10000n) / totalRevenue) : 0;
 
     totalInterSegmentRevenue += s.interSegmentRevenue;
     consolidatedRevenue += s.externalRevenue;

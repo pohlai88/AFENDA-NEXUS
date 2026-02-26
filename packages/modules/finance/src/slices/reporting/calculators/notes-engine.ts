@@ -3,20 +3,20 @@
  * Pure calculator — generates note disclosures from structured data
  * using configurable templates.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export type NoteCategory =
-  | "ACCOUNTING_POLICIES"
-  | "SIGNIFICANT_JUDGMENTS"
-  | "REVENUE"
-  | "PROPERTY_PLANT_EQUIPMENT"
-  | "INTANGIBLE_ASSETS"
-  | "FINANCIAL_INSTRUMENTS"
-  | "LEASES"
-  | "PROVISIONS"
-  | "RELATED_PARTY"
-  | "SUBSEQUENT_EVENTS"
-  | "OTHER";
+  | 'ACCOUNTING_POLICIES'
+  | 'SIGNIFICANT_JUDGMENTS'
+  | 'REVENUE'
+  | 'PROPERTY_PLANT_EQUIPMENT'
+  | 'INTANGIBLE_ASSETS'
+  | 'FINANCIAL_INSTRUMENTS'
+  | 'LEASES'
+  | 'PROVISIONS'
+  | 'RELATED_PARTY'
+  | 'SUBSEQUENT_EVENTS'
+  | 'OTHER';
 
 export interface NoteTemplate {
   readonly id: string;
@@ -54,10 +54,10 @@ export interface NotesResult {
  */
 export function generateNotes(
   templates: readonly NoteTemplate[],
-  data: readonly NoteData[],
+  data: readonly NoteData[]
 ): CalculatorResult<NotesResult> {
   if (templates.length === 0) {
-    throw new Error("At least one note template required");
+    throw new Error('At least one note template required');
   }
 
   const dataMap = new Map(data.map((d) => [d.templateId, d]));
@@ -75,7 +75,7 @@ export function generateNotes(
         templateId: template.id,
         category: template.category,
         title: template.title,
-        content: "",
+        content: '',
         isComplete: false,
         missingFields: [...template.requiredFields],
       });
@@ -90,7 +90,7 @@ export function generateNotes(
       if (value === undefined || value === null) {
         missingFields.push(field);
       } else {
-        const replacement = typeof value === "bigint" ? value.toString() : String(value);
+        const replacement = typeof value === 'bigint' ? value.toString() : String(value);
         content = content.replaceAll(`{{${field}}}`, replacement);
       }
     }
@@ -98,7 +98,7 @@ export function generateNotes(
     // Also replace any optional fields that are present
     for (const [key, value] of Object.entries(noteData.fields)) {
       if (value !== undefined && value !== null) {
-        const replacement = typeof value === "bigint" ? value.toString() : String(value);
+        const replacement = typeof value === 'bigint' ? value.toString() : String(value);
         content = content.replaceAll(`{{${key}}}`, replacement);
       }
     }

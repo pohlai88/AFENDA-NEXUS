@@ -23,9 +23,26 @@ dependency_kinds:
     - 'sonner'
     - 'nuqs'
     - 'radix-ui'
+    - '@radix-ui/react-checkbox'
+    - '@radix-ui/react-progress'
+    - '@radix-ui/react-radio-group'
     - 'next-themes'
     - 'zod'
     - 'cmdk'
+    - 'better-auth'
+    - '@better-auth/passkey'
+    - '@afenda/authz'
+    - '@afenda/db'
+    - '@neondatabase/auth'
+    - '@sentry/nextjs'
+    - 'date-fns'
+    - 'framer-motion'
+    - 'nanoid'
+    - 'posthog-js'
+    - 'react-day-picker'
+    - 'react-dropzone'
+    - 'recharts'
+    - 'qrcode.react'
   allowed_dev:
     - '@afenda/typescript-config'
     - '@afenda/eslint-config'
@@ -43,6 +60,9 @@ dependency_kinds:
     - '@vitejs/plugin-react'
     - 'tailwindcss'
     - 'eslint-plugin-jsx-a11y'
+    - '@vitest/coverage-v8'
+    - 'shadcn'
+    - '@next/bundle-analyzer'
   allowed_peer: []
 enforced_structure:
   required_files:
@@ -81,15 +101,19 @@ boundary_rules:
     - 'react-hook-form'
     - '@radix-ui/'
     - 'cmdk'
+    - 'better-auth'
+    - '@better-auth/passkey'
+    - '@afenda/authz'
   forbidden_imports:
     - 'fastify'
     - 'drizzle-orm'
     - 'postgres'
     - 'pino'
-    - '@afenda/db'
     - '@afenda/platform'
     - '@afenda/modules'
-  allow_imports_by_path: {}
+  allow_imports_by_path:
+    'src/lib/auth.ts':
+      ['@afenda/db', '@afenda/authz', '@afenda/authz/auth', 'better-auth']
   forbid_cross_layer_imports: []
 ---
 
@@ -557,25 +581,40 @@ A screen is "done" when:
 
 ---
 
-## §12. Generator Integration (Future)
+## §12. Generator Integration
 
-| Generator                      | Output                                               |
-| ------------------------------ | ---------------------------------------------------- |
-| `gen:screen <module> <entity>` | List page + detail page + new page + blocks skeleton |
-| `gen:form <dto>`               | RHF + Zod wiring + field stubs from schema           |
-| `gen:table <viewModel>`        | Table columns + formatters (money/date/status)       |
+| Generator                           | Output                                               | Script             |
+| ----------------------------------- | ---------------------------------------------------- | ------------------ |
+| `gen:screen <module> <entity>`      | List page + detail page + new page + blocks skeleton | `pnpm gen:screen`  |
+| `gen:form <SchemaName>`             | RHF + Zod wiring + field stubs from schema           | `pnpm gen:form`    |
+| `gen:table-ui <ViewModelName>`      | Table columns + formatters (money/date/status)       | `pnpm gen:table-ui`|
 
-These generators enforce the patterns defined in this document.
+These generators enforce the patterns defined in this document. All generated code
+passes the drift gate (`pnpm web:drift`) out of the box.
 
 ---
 
 ## §13. Environment Variables
 
-| Variable               | Purpose                      | Required               |
-| ---------------------- | ---------------------------- | ---------------------- |
-| `NEXT_PUBLIC_API_URL`  | Fastify API base URL         | Yes                    |
-| `NEXT_PUBLIC_APP_NAME` | Display name                 | No (default: "Afenda") |
-| `JWT_SECRET`           | Server-side JWT verification | Production only        |
+| Variable                   | Purpose                      | Required               |
+| -------------------------- | ---------------------------- | ---------------------- |
+| `NEXT_PUBLIC_API_URL`      | Fastify API base URL         | Yes                    |
+| `NEXT_PUBLIC_APP_NAME`     | Display name                 | No (default: "Afenda") |
+| `NEON_AUTH_BASE_URL`       | Neon Auth server URL (branch-specific) | Yes (prod); optional (dev — trusted headers fallback) |
+| `NEON_AUTH_COOKIE_SECRET`  | Session cookie encryption secret (min 32 chars) | Yes when auth is enabled |
+| `JWKS_URL`                 | JWKS endpoint for JWT validation | Production only    |
+
+> **⚠️ Standalone architecture note (Neon Auth roadmap):** This app uses a
+> separate Fastify API server. Neon Auth does not yet officially support
+> standalone frontend + backend deployments (HTTP-only cookies cannot be shared
+> across different domains). Our workaround: the Next.js server extracts the
+> session token from the Neon Auth cookie and forwards it as a
+> `Bearer` token to the Fastify API, which validates it by calling Neon Auth's
+> `/api/auth/get-session` endpoint. This works reliably server-to-server but
+> should be revisited when Neon Auth GA adds official standalone support.
+>
+> **Branch Auth URLs:** Each Neon branch gets its own Auth URL:
+> `https://<endpoint-id>.neonauth.<region>.aws.neon.tech/neondb/auth`
 
 ---
 
@@ -598,3 +637,8 @@ These generators enforce the patterns defined in this document.
 | `nuqs`                     | URL state management (filters, pagination)  | Runtime  |
 | `cmdk`                     | Command palette (Cmd+K)                     | Runtime  |
 | Radix UI primitives        | Accessible headless components (via shadcn) | Runtime  |
+| `better-auth`              | Authentication (session, 2FA, organization) | Runtime  |
+| `@better-auth/passkey`     | Passkey/WebAuthn auth plugin                | Runtime  |
+| `@afenda/authz`            | ERP access control (roles, permissions)     | Runtime  |
+| `shadcn`                   | Component generator CLI                     | Dev      |
+| `qrcode.react`             | QR code generation (TOTP 2FA enrollment)    | Runtime  |

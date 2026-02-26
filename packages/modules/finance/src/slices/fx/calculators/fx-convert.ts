@@ -7,7 +7,7 @@
  * Converts amounts between currencies using fixed-point BigInt arithmetic.
  * Eliminates floating-point penny errors by using a high-precision intermediate.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 const PRECISION_SCALE = 10_000_000_000n; // 10^10 — intermediate precision for rate multiplication
 
@@ -31,7 +31,7 @@ export function convertAmountPrecise(
   amount: bigint,
   rate: number,
   fromCurrency: string,
-  toCurrency: string,
+  toCurrency: string
 ): CalculatorResult<FxConversionResult> {
   if (amount < 0n) {
     throw new Error(`Amount must be non-negative, got ${amount}`);
@@ -81,7 +81,7 @@ export interface FxGainLossResult {
  */
 export function computeGainLoss(
   originalAmount: bigint,
-  revaluedAmount: bigint,
+  revaluedAmount: bigint
 ): CalculatorResult<FxGainLossResult> {
   const diff = revaluedAmount - originalAmount;
   const isGain = diff >= 0n;
@@ -89,7 +89,10 @@ export function computeGainLoss(
 
   return {
     result: { gainLossAmount, isGain },
-    inputs: { originalAmount: originalAmount.toString(), revaluedAmount: revaluedAmount.toString() },
-    explanation: `FX ${isGain ? "gain" : "loss"}: ${gainLossAmount} minor units`,
+    inputs: {
+      originalAmount: originalAmount.toString(),
+      revaluedAmount: revaluedAmount.toString(),
+    },
+    explanation: `FX ${isGain ? 'gain' : 'loss'}: ${gainLossAmount} minor units`,
   };
 }

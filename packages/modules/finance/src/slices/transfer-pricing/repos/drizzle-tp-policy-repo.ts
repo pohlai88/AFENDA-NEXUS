@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { tpPolicies } from "@afenda/db";
-import type { TpPolicy } from "../entities/tp-policy.js";
-import type { ITpPolicyRepo, CreateTpPolicyInput } from "../ports/tp-policy-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { tpPolicies } from '@afenda/db';
+import type { TpPolicy } from '../entities/tp-policy.js';
+import type { ITpPolicyRepo, CreateTpPolicyInput } from '../ports/tp-policy-repo.js';
 
 type Row = typeof tpPolicies.$inferSelect;
 
@@ -41,7 +41,10 @@ export class DrizzleTpPolicyRepo implements ITpPolicyRepo {
   }
 
   async create(tenantId: string, input: CreateTpPolicyInput): Promise<TpPolicy> {
-    const [row] = await this.db.insert(tpPolicies).values({ tenantId, ...input }).returning();
+    const [row] = await this.db
+      .insert(tpPolicies)
+      .values({ tenantId, ...input })
+      .returning();
     return mapToDomain(row!);
   }
 

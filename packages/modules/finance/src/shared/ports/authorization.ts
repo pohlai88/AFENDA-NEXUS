@@ -9,27 +9,33 @@
  */
 
 export type FinancePermission =
-  | "journal:create"
-  | "journal:post"
-  | "journal:reverse"
-  | "journal:void"
-  | "period:close"
-  | "period:lock"
-  | "period:reopen"
-  | "year:close"
-  | "ic:create"
-  | "ic:settle"
-  | "revenue:create"
-  | "revenue:recognize"
-  | "budget:write"
-  | "report:read"
-  | "fx:manage"
-  | "admin:all";
+  | 'journal:create'
+  | 'journal:post'
+  | 'journal:reverse'
+  | 'journal:void'
+  | 'period:close'
+  | 'period:lock'
+  | 'period:reopen'
+  | 'year:close'
+  | 'ic:create'
+  | 'ic:settle'
+  | 'revenue:create'
+  | 'revenue:recognize'
+  | 'budget:write'
+  | 'report:read'
+  | 'fx:manage'
+  | 'admin:all'
+  | 'document:create'
+  | 'document:read'
+  | 'document:delete'
+  | 'document:list'
+  | 'trialBalance:read';
 
 export interface SoDViolation {
   readonly userId: string;
   readonly action: FinancePermission;
   readonly conflictingAction: FinancePermission;
+  readonly entityType: string;
   readonly entityId: string;
   readonly reason: string;
 }
@@ -39,11 +45,7 @@ export interface IAuthorizationPolicy {
    * Returns true if the user has the given permission for the tenant.
    * Implementations should check role assignments, group memberships, etc.
    */
-  hasPermission(
-    tenantId: string,
-    userId: string,
-    permission: FinancePermission,
-  ): Promise<boolean>;
+  hasPermission(tenantId: string, userId: string, permission: FinancePermission): Promise<boolean>;
 
   /**
    * Checks SoD constraints for a specific entity.
@@ -54,6 +56,7 @@ export interface IAuthorizationPolicy {
     tenantId: string,
     userId: string,
     action: FinancePermission,
-    entityId: string,
+    entityType: string,
+    entityId: string
   ): Promise<SoDViolation | null>;
 }

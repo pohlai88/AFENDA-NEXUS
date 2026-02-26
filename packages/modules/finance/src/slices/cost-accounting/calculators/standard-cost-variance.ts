@@ -45,40 +45,46 @@ export interface StandardCostVarianceResult {
  * Compute standard cost variances for a production run.
  */
 export function computeStandardCostVariance(input: StandardCostInput): StandardCostVarianceResult {
-  if (input.unitsProduced <= 0n) throw new Error("Units produced must be positive");
+  if (input.unitsProduced <= 0n) throw new Error('Units produced must be positive');
 
   const variances: VarianceLine[] = [];
 
   // Material Price Variance = (Actual Price - Standard Price) × Actual Qty
-  const mpv = (input.material.actualPricePerUnit - input.material.standardPricePerUnit) * input.material.actualQtyUsed;
+  const mpv =
+    (input.material.actualPricePerUnit - input.material.standardPricePerUnit) *
+    input.material.actualQtyUsed;
   variances.push({
-    varianceType: "MATERIAL_PRICE",
+    varianceType: 'MATERIAL_PRICE',
     amount: mpv < 0n ? -mpv : mpv,
     favorable: mpv <= 0n,
   });
 
   // Material Usage Variance = (Actual Qty - Standard Qty × Units) × Standard Price
   const standardQtyAllowed = input.material.standardQtyPerUnit * input.unitsProduced;
-  const muv = (input.material.actualQtyUsed - standardQtyAllowed) * input.material.standardPricePerUnit;
+  const muv =
+    (input.material.actualQtyUsed - standardQtyAllowed) * input.material.standardPricePerUnit;
   variances.push({
-    varianceType: "MATERIAL_USAGE",
+    varianceType: 'MATERIAL_USAGE',
     amount: muv < 0n ? -muv : muv,
     favorable: muv <= 0n,
   });
 
   // Labor Rate Variance = (Actual Rate - Standard Rate) × Actual Hours
-  const lrv = (input.labor.actualRatePerHour - input.labor.standardRatePerHour) * input.labor.actualHoursWorked;
+  const lrv =
+    (input.labor.actualRatePerHour - input.labor.standardRatePerHour) *
+    input.labor.actualHoursWorked;
   variances.push({
-    varianceType: "LABOR_RATE",
+    varianceType: 'LABOR_RATE',
     amount: lrv < 0n ? -lrv : lrv,
     favorable: lrv <= 0n,
   });
 
   // Labor Efficiency Variance = (Actual Hours - Standard Hours × Units) × Standard Rate
   const standardHoursAllowed = input.labor.standardHoursPerUnit * input.unitsProduced;
-  const lev = (input.labor.actualHoursWorked - standardHoursAllowed) * input.labor.standardRatePerHour;
+  const lev =
+    (input.labor.actualHoursWorked - standardHoursAllowed) * input.labor.standardRatePerHour;
   variances.push({
-    varianceType: "LABOR_EFFICIENCY",
+    varianceType: 'LABOR_EFFICIENCY',
     amount: lev < 0n ? -lev : lev,
     favorable: lev <= 0n,
   });
@@ -87,7 +93,7 @@ export function computeStandardCostVariance(input: StandardCostInput): StandardC
   const appliedOverhead = input.overhead.standardRatePerUnit * input.unitsProduced;
   const ov = input.overhead.actualOverhead - appliedOverhead;
   variances.push({
-    varianceType: "OVERHEAD",
+    varianceType: 'OVERHEAD',
     amount: ov < 0n ? -ov : ov,
     favorable: ov <= 0n,
   });

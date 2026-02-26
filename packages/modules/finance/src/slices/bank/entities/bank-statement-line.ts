@@ -2,8 +2,13 @@
  * Bank statement line entity — individual transaction from a bank statement.
  */
 
-export type TransactionType = "DEBIT" | "CREDIT";
-export type MatchStatus = "UNMATCHED" | "AUTO_MATCHED" | "MANUAL_MATCHED" | "CONFIRMED" | "INVESTIGATING";
+export type TransactionType = 'DEBIT' | 'CREDIT';
+export type MatchStatus =
+  | 'UNMATCHED'
+  | 'AUTO_MATCHED'
+  | 'MANUAL_MATCHED'
+  | 'CONFIRMED'
+  | 'INVESTIGATING';
 
 export interface BankStatementLine {
   readonly id: string;

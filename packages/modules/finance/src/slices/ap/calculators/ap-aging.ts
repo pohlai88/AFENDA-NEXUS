@@ -1,4 +1,4 @@
-import type { ApInvoice } from "../entities/ap-invoice.js";
+import type { ApInvoice } from '../entities/ap-invoice.js';
 
 /**
  * AP-02: Supplier aging calculator.
@@ -35,10 +35,14 @@ function emptyBucket(): AgingBucket {
 }
 
 function addToBucket(bucket: AgingBucket, amount: bigint, daysOverdue: number): AgingBucket {
-  if (daysOverdue <= 0) return { ...bucket, current: bucket.current + amount, total: bucket.total + amount };
-  if (daysOverdue <= 30) return { ...bucket, days30: bucket.days30 + amount, total: bucket.total + amount };
-  if (daysOverdue <= 60) return { ...bucket, days60: bucket.days60 + amount, total: bucket.total + amount };
-  if (daysOverdue <= 90) return { ...bucket, days90: bucket.days90 + amount, total: bucket.total + amount };
+  if (daysOverdue <= 0)
+    return { ...bucket, current: bucket.current + amount, total: bucket.total + amount };
+  if (daysOverdue <= 30)
+    return { ...bucket, days30: bucket.days30 + amount, total: bucket.total + amount };
+  if (daysOverdue <= 60)
+    return { ...bucket, days60: bucket.days60 + amount, total: bucket.total + amount };
+  if (daysOverdue <= 90)
+    return { ...bucket, days90: bucket.days90 + amount, total: bucket.total + amount };
   return { ...bucket, over90: bucket.over90 + amount, total: bucket.total + amount };
 }
 
@@ -46,13 +50,13 @@ export function computeApAging(invoices: readonly ApInvoice[], asOfDate: Date): 
   const supplierMap = new Map<string, { bucket: AgingBucket; count: number }>();
 
   for (const inv of invoices) {
-    if (inv.status === "CANCELLED" || inv.status === "PAID" || inv.status === "DRAFT") continue;
+    if (inv.status === 'CANCELLED' || inv.status === 'PAID' || inv.status === 'DRAFT') continue;
 
     const outstanding = inv.totalAmount.amount - inv.paidAmount.amount;
     if (outstanding <= 0n) continue;
 
     const daysOverdue = Math.floor(
-      (asOfDate.getTime() - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24),
+      (asOfDate.getTime() - inv.dueDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
     const entry = supplierMap.get(inv.supplierId) ?? { bucket: emptyBucket(), count: 0 };

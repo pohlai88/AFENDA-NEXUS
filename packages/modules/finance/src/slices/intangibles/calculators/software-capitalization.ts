@@ -3,16 +3,22 @@
  * Pure calculator — determines which software development costs
  * can be capitalized based on project phase and criteria.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type SoftwarePhase = "PRELIMINARY" | "APPLICATION_DEVELOPMENT" | "POST_IMPLEMENTATION";
+export type SoftwarePhase = 'PRELIMINARY' | 'APPLICATION_DEVELOPMENT' | 'POST_IMPLEMENTATION';
 
 export interface SoftwareCostInput {
   readonly projectId: string;
   readonly phase: SoftwarePhase;
   readonly amount: bigint;
   readonly currencyCode: string;
-  readonly costType: "INTERNAL_LABOR" | "EXTERNAL_SERVICES" | "HOSTING" | "TRAINING" | "DATA_CONVERSION" | "OTHER";
+  readonly costType:
+    | 'INTERNAL_LABOR'
+    | 'EXTERNAL_SERVICES'
+    | 'HOSTING'
+    | 'TRAINING'
+    | 'DATA_CONVERSION'
+    | 'OTHER';
   readonly isTechnicallyFeasible: boolean;
 }
 
@@ -30,15 +36,15 @@ export interface SoftwareCostResult {
  * Hosting and training costs are always expensed regardless of phase.
  */
 export function classifySoftwareCosts(
-  inputs: readonly SoftwareCostInput[],
+  inputs: readonly SoftwareCostInput[]
 ): CalculatorResult<readonly SoftwareCostResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one software cost item required");
+    throw new Error('At least one software cost item required');
   }
 
   const results: SoftwareCostResult[] = inputs.map((input) => {
     // Always-expense cost types
-    if (input.costType === "HOSTING" || input.costType === "TRAINING") {
+    if (input.costType === 'HOSTING' || input.costType === 'TRAINING') {
       return {
         projectId: input.projectId,
         capitalizeAmount: 0n,
@@ -49,7 +55,7 @@ export function classifySoftwareCosts(
     }
 
     // Only APPLICATION_DEVELOPMENT phase can be capitalized
-    if (input.phase !== "APPLICATION_DEVELOPMENT") {
+    if (input.phase !== 'APPLICATION_DEVELOPMENT') {
       return {
         projectId: input.projectId,
         capitalizeAmount: 0n,
@@ -66,7 +72,7 @@ export function classifySoftwareCosts(
         capitalizeAmount: 0n,
         expenseAmount: input.amount,
         phase: input.phase,
-        reason: "Not technically feasible — expense",
+        reason: 'Not technically feasible — expense',
       };
     }
 
@@ -75,7 +81,7 @@ export function classifySoftwareCosts(
       capitalizeAmount: input.amount,
       expenseAmount: 0n,
       phase: input.phase,
-      reason: "Meets capitalization criteria",
+      reason: 'Meets capitalization criteria',
     };
   });
 

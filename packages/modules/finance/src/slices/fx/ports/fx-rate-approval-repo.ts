@@ -1,5 +1,5 @@
-import type { Result } from "@afenda/core";
-import type { FxRateApproval } from "../../fx/entities/fx-rate-approval.js";
+import type { Result } from '@afenda/core';
+import type { FxRateApproval } from '../../fx/entities/fx-rate-approval.js';
 
 export interface IFxRateApprovalRepo {
   submit(rateId: string, submittedBy: string): Promise<Result<FxRateApproval>>;

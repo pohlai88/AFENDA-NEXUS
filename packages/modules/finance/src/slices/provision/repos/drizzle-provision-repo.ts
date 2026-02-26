@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { provisions } from "@afenda/db";
-import type { Provision } from "../entities/provision.js";
-import type { IProvisionRepo, CreateProvisionInput } from "../ports/provision-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { provisions } from '@afenda/db';
+import type { Provision } from '../entities/provision.js';
+import type { IProvisionRepo, CreateProvisionInput } from '../ports/provision-repo.js';
 
 type Row = typeof provisions.$inferSelect;
 
@@ -13,8 +13,8 @@ function mapToDomain(row: Row): Provision {
     companyId: row.companyId,
     provisionNumber: row.provisionNumber,
     description: row.description,
-    provisionType: row.provisionType as Provision["provisionType"],
-    status: row.status as Provision["status"],
+    provisionType: row.provisionType as Provision['provisionType'],
+    status: row.status as Provision['status'],
     recognitionDate: row.recognitionDate,
     expectedSettlementDate: row.expectedSettlementDate,
     initialAmount: row.initialAmount,
@@ -49,17 +49,28 @@ export class DrizzleProvisionRepo implements IProvisionRepo {
   }
 
   async create(tenantId: string, input: CreateProvisionInput): Promise<Provision> {
-    const [row] = await this.db.insert(provisions).values({ tenantId, ...input }).returning();
+    const [row] = await this.db
+      .insert(provisions)
+      .values({ tenantId, ...input })
+      .returning();
     return mapToDomain(row!);
   }
 
-  async updateStatus(id: string, status: Provision["status"]): Promise<Provision> {
-    const [row] = await this.db.update(provisions).set({ status }).where(eq(provisions.id, id)).returning();
+  async updateStatus(id: string, status: Provision['status']): Promise<Provision> {
+    const [row] = await this.db
+      .update(provisions)
+      .set({ status })
+      .where(eq(provisions.id, id))
+      .returning();
     return mapToDomain(row!);
   }
 
   async updateAmount(id: string, currentAmount: bigint): Promise<Provision> {
-    const [row] = await this.db.update(provisions).set({ currentAmount }).where(eq(provisions.id, id)).returning();
+    const [row] = await this.db
+      .update(provisions)
+      .set({ currentAmount })
+      .where(eq(provisions.id, id))
+      .returning();
     return mapToDomain(row!);
   }
 }

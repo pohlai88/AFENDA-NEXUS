@@ -2,8 +2,14 @@
  * Provision entity — IAS 37 provision master data.
  */
 
-export type ProvisionType = "WARRANTY" | "RESTRUCTURING" | "ONEROUS_CONTRACT" | "DECOMMISSIONING" | "LEGAL" | "OTHER";
-export type ProvisionStatus = "ACTIVE" | "PARTIALLY_UTILISED" | "FULLY_UTILISED" | "REVERSED";
+export type ProvisionType =
+  | 'WARRANTY'
+  | 'RESTRUCTURING'
+  | 'ONEROUS_CONTRACT'
+  | 'DECOMMISSIONING'
+  | 'LEGAL'
+  | 'OTHER';
+export type ProvisionStatus = 'ACTIVE' | 'PARTIALLY_UTILISED' | 'FULLY_UTILISED' | 'REVERSED';
 
 export interface Provision {
   readonly id: string;

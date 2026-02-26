@@ -4,14 +4,16 @@ Tricks to speed up debugging Next.js applications.
 
 ## MCP Endpoint (Dev Server)
 
-Next.js exposes a `/_next/mcp` endpoint in development for AI-assisted debugging via MCP (Model Context Protocol).
+Next.js exposes a `/_next/mcp` endpoint in development for AI-assisted debugging
+via MCP (Model Context Protocol).
 
 - **Next.js 16+**: Enabled by default, use `next-devtools-mcp`
 - **Next.js < 16**: Requires `experimental.mcpServer: true` in next.config.js
 
 Reference: https://nextjs.org/docs/app/guides/mcp
 
-**Important**: Find the actual port of the running Next.js dev server (check terminal output or `package.json` scripts). Don't assume port 3000.
+**Important**: Find the actual port of the running Next.js dev server (check
+terminal output or `package.json` scripts). Don't assume port 3000.
 
 ### Request Format
 
@@ -36,7 +38,8 @@ curl -X POST http://localhost:<port>/_next/mcp \
 
 #### `get_errors`
 
-Get current errors from dev server (build errors, runtime errors with source-mapped stacks):
+Get current errors from dev server (build errors, runtime errors with
+source-mapped stacks):
 
 ```json
 { "name": "get_errors", "arguments": {} }
@@ -61,11 +64,13 @@ Get project path and dev server URL:
 { "name": "get_project_metadata", "arguments": {} }
 ```
 
-Returns: `{ "projectPath": "/path/to/project", "devServerUrl": "http://localhost:3000" }`
+Returns:
+`{ "projectPath": "/path/to/project", "devServerUrl": "http://localhost:3000" }`
 
 #### `get_page_metadata`
 
-Get runtime metadata about current page render (requires active browser session):
+Get runtime metadata about current page render (requires active browser
+session):
 
 ```json
 { "name": "get_page_metadata", "arguments": {} }
@@ -88,7 +93,10 @@ Returns path to `<distDir>/logs/next-development.log`
 Locate a Server Action by ID:
 
 ```json
-{ "name": "get_server_action_by_id", "arguments": { "actionId": "<action-id>" } }
+{
+  "name": "get_server_action_by_id",
+  "arguments": { "actionId": "<action-id>" }
+}
 ```
 
 ### Example: Get Errors
@@ -102,7 +110,8 @@ curl -X POST http://localhost:<port>/_next/mcp \
 
 ## Rebuild Specific Routes (Next.js 16+)
 
-Use `--debug-build-paths` to rebuild only specific routes instead of the entire app:
+Use `--debug-build-paths` to rebuild only specific routes instead of the entire
+app:
 
 ```bash
 # Rebuild a specific route

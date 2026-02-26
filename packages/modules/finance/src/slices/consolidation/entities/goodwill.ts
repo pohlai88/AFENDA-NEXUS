@@ -3,7 +3,7 @@
  * Amount = consideration paid − share of fair-value net assets acquired.
  */
 
-export type GoodwillStatus = "ACTIVE" | "IMPAIRED" | "DERECOGNIZED";
+export type GoodwillStatus = 'ACTIVE' | 'IMPAIRED' | 'DERECOGNIZED';
 
 export interface Goodwill {
   readonly id: string;

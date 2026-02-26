@@ -1,19 +1,31 @@
-import { eq, and, sql } from "drizzle-orm";
-import { ok, money } from "@afenda/core";
-import type { Result, CompanyId, LedgerId } from "@afenda/core";
-import type { TenantTx } from "@afenda/db";
-import { glBalances, ledgers } from "@afenda/db";
-import type { TrialBalance, TrialBalanceRow } from "../entities/gl-balance.js";
-import type { AccountType } from "../entities/account.js";
-import type { IGlBalanceRepo, BalanceUpsertLine } from "../../../slices/gl/ports/gl-balance-repo.js";
+import { eq, and, sql } from 'drizzle-orm';
+import { ok, money } from '@afenda/core';
+import type { Result, CompanyId, LedgerId } from '@afenda/core';
+import type { TenantTx } from '@afenda/db';
+import { glBalances, ledgers } from '@afenda/db';
+import type { TrialBalance, TrialBalanceRow } from '../entities/gl-balance.js';
+import type { AccountType } from '../entities/account.js';
+import type {
+  IGlBalanceRepo,
+  BalanceUpsertLine,
+} from '../../../slices/gl/ports/gl-balance-repo.js';
+
+interface LedgerWithCurrency {
+  currency?: { code: string } | null;
+  companyId: string;
+}
+
+interface BalanceRowWithAccount {
+  account?: { code: string; name: string; accountType: string } | null;
+}
 
 export class DrizzleBalanceRepo implements IGlBalanceRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async getTrialBalance(
     ledgerId: string,
     year: string,
-    period?: number,
+    period?: number
   ): Promise<Result<TrialBalance>> {
     // @see FX-10 — Functional currency determination per entity
     // Load ledger first to get the actual base currency (fixes hardcoded "USD" bug)
@@ -21,12 +33,10 @@ export class DrizzleBalanceRepo implements IGlBalanceRepo {
       where: eq(ledgers.id, ledgerId),
       with: { currency: true },
     });
-    const baseCurrency = (ledgerRow as unknown as { currency?: { code: string } })?.currency?.code ?? "USD";
+    const ledgerWithRels = ledgerRow as LedgerWithCurrency | undefined;
+    const baseCurrency = ledgerWithRels?.currency?.code ?? 'USD';
 
-    const conditions = [
-      eq(glBalances.ledgerId, ledgerId),
-      eq(glBalances.fiscalYear, year),
-    ];
+    const conditions = [eq(glBalances.ledgerId, ledgerId), eq(glBalances.fiscalYear, year)];
     if (period !== undefined) {
       conditions.push(eq(glBalances.fiscalPeriod, period));
     }
@@ -44,20 +54,20 @@ export class DrizzleBalanceRepo implements IGlBalanceRepo {
       const creditTotal = money(row.creditBalance, baseCurrency);
       totalDebits += row.debitBalance;
       totalCredits += row.creditBalance;
-      const acct = row as unknown as { account?: { code: string; name: string; accountType: string } };
+      const acct = row as BalanceRowWithAccount;
       return {
-        accountCode: acct.account?.code ?? "",
-        accountName: acct.account?.name ?? "",
-        accountType: (acct.account?.accountType ?? "ASSET") as AccountType,
+        accountCode: acct.account?.code ?? '',
+        accountName: acct.account?.name ?? '',
+        accountType: (acct.account?.accountType ?? 'ASSET') as AccountType,
         debitTotal,
         creditTotal,
       };
     });
 
     return ok({
-      companyId: (ledgerRow?.companyId ?? "") as CompanyId,
+      companyId: (ledgerRow?.companyId ?? '') as CompanyId,
       ledgerId: ledgerId as LedgerId,
-      periodId: period !== undefined ? `${year}-P${String(period).padStart(2, "0")}` : year,
+      periodId: period !== undefined ? `${year}-P${String(period).padStart(2, '0')}` : year,
       rows: trialRows,
       totalDebits: money(totalDebits, baseCurrency),
       totalCredits: money(totalCredits, baseCurrency),

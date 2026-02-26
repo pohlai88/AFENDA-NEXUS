@@ -4,7 +4,7 @@ pubDate: 2023-12-25
 description: Implemented enhancements in the planescale relational tests. Corrected string escaping for empty PgArrays. Rectified syntax error for the exists function in SQLite. Ensured proper handling of dates in AWS Data API. Resolved the Hermes mixins constructor issue.
 ---
 
-## Fixes: 
+## Fixes:
 
 - Added improvements to the planescale relational tests ([#1579](https://github.com/drizzle-team/drizzle-orm/pull/1579))
 - FIX: correct string escaping for empty PgArrays ([#1640](https://github.com/drizzle-team/drizzle-orm/pull/1640))
@@ -24,6 +24,7 @@ npm i eslint-plugin-drizzle@0.2.3
 - Added better context to the suggestion in the error message.
 
 For more info you can check [docs](/docs/eslint-plugin)
+
 ## New Drivers
 
 **🎉 Expo SQLite Driver is available**
@@ -93,10 +94,10 @@ module.exports = config;
 import type { Config } from 'drizzle-kit';
 
 export default {
-	schema: './db/schema.ts',
-	out: './drizzle',
-    dialect: 'sqlite',
-	driver: 'expo',
+  schema: './db/schema.ts',
+  out: './drizzle',
+  dialect: 'sqlite',
+  driver: 'expo',
 } satisfies Config;
 ```
 

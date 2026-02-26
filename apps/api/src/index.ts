@@ -3,11 +3,21 @@
  *
  * Composes modules, registers routes, starts HTTP server.
  */
-import Fastify from "fastify";
-import { loadConfig, createLogger } from "@afenda/platform";
-import { createPooledClient, createDbSession, createHealthCheck } from "@afenda/db";
+import './tracing.js';
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
+import { loadConfig, createLogger } from '@afenda/platform';
+import {
+  createPooledClient,
+  createReadOnlyClient,
+  createDbSession,
+  createHealthCheck,
+} from '@afenda/db';
 import {
   createFinanceRuntime,
+  createAuthorizationPolicy,
+  registerDocumentRoutes,
   registerJournalRoutes,
   registerAccountRoutes,
   registerPeriodRoutes,
@@ -45,33 +55,50 @@ import {
   registerConsolidationRoutes,
   registerConsolidationExtRoutes,
   registerCostAccountingRoutes,
+  registerDashboardRoutes,
   registerFinInstrumentRoutes,
   registerHedgeRoutes,
   registerIntangibleRoutes,
   registerDeferredTaxRoutes,
   registerTransferPricingRoutes,
+  registerApprovalRoutes,
   registerErrorHandler,
   registerBigIntSerializer,
-} from "@afenda/finance/infra";
-import { registerHealthRoutes } from "./routes/health.js";
-import { tenantContextPlugin } from "./middleware/tenant-context.js";
-import { authPlugin } from "./middleware/auth.js";
-import { requestLoggingPlugin } from "./middleware/request-logging.js";
+} from '@afenda/finance/infra';
+import { createR2Adapter, createMockObjectStore, loadR2Config } from '@afenda/storage';
+import { registerHealthRoutes } from './routes/health.js';
+import { tenantContextPlugin } from './middleware/tenant-context.js';
+import { authPlugin } from './middleware/auth.js';
+import { requestLoggingPlugin } from './middleware/request-logging.js';
 
-const logger = createLogger({ level: "info", service: "afenda-api" });
+const logger = createLogger({ level: 'info', service: 'afenda-api' });
 
 async function main(): Promise<void> {
-  logger.info("Starting Afenda API server...");
+  logger.info('Starting Afenda API server...');
 
   // 1. Load config
   const config = await loadConfig();
 
   // 2. Create DB client + session
-  const db = createPooledClient({ connectionString: config.DATABASE_URL });
+  const dbOpts = {
+    connectionString: config.DATABASE_URL,
+    sslMode: config.DATABASE_SSL_MODE,
+  };
+  const db = createPooledClient(dbOpts);
+  const dbReadOnly =
+    config.DATABASE_URL_READONLY &&
+    createReadOnlyClient({
+      connectionString: config.DATABASE_URL_READONLY,
+      sslMode: config.DATABASE_SSL_MODE,
+    });
   const session = createDbSession({ db });
+  const readOnlySession = dbReadOnly ? createDbSession({ db: dbReadOnly }) : null;
 
   // 3. Create finance runtime (composition root)
-  const financeRuntime = createFinanceRuntime(session);
+  const financeRuntime = createFinanceRuntime({ session, readOnlySession });
+
+  // 3b. Create authorization policy (route-level RBAC enforcement)
+  const authPolicy = createAuthorizationPolicy(session);
 
   // 4. Build Fastify instance
   const app = Fastify({ logger: false });
@@ -79,71 +106,93 @@ async function main(): Promise<void> {
   // 5. Register global plugins
   registerErrorHandler(app);
   registerBigIntSerializer(app);
+  await app.register(cors, {
+    origin: [
+      config.APP_URL ?? `http://localhost:${config.PORT_WEB}`,
+      /\.afenda\.(io|dev)$/,
+    ],
+    credentials: true,
+  });
+  await app.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } });
   await app.register(tenantContextPlugin);
   await app.register(requestLoggingPlugin(logger));
   await app.register(authPlugin(config));
 
   // 6. Register routes
   await registerHealthRoutes(app, createHealthCheck(db));
-  registerJournalRoutes(app, financeRuntime);
-  registerAccountRoutes(app, financeRuntime);
-  registerPeriodRoutes(app, financeRuntime);
-  registerBalanceRoutes(app, financeRuntime);
-  registerIcRoutes(app, financeRuntime);
-  registerIcAgreementRoutes(app, financeRuntime);
-  registerLedgerRoutes(app, financeRuntime);
-  registerFxRateRoutes(app, financeRuntime);
-  registerRecurringTemplateRoutes(app, financeRuntime);
-  registerBudgetRoutes(app, financeRuntime);
-  registerReportRoutes(app, financeRuntime);
-  registerSettlementRoutes(app, financeRuntime);
-  registerClassificationRuleRoutes(app, financeRuntime);
-  registerFxRateApprovalRoutes(app, financeRuntime);
-  registerRevenueRoutes(app, financeRuntime);
+  registerJournalRoutes(app, financeRuntime, authPolicy);
+  registerAccountRoutes(app, financeRuntime, authPolicy);
+  registerPeriodRoutes(app, financeRuntime, authPolicy);
+  registerBalanceRoutes(app, financeRuntime, authPolicy);
+  registerIcRoutes(app, financeRuntime, authPolicy);
+  registerIcAgreementRoutes(app, financeRuntime, authPolicy);
+  registerLedgerRoutes(app, financeRuntime, authPolicy);
+  registerFxRateRoutes(app, financeRuntime, authPolicy);
+  registerRecurringTemplateRoutes(app, financeRuntime, authPolicy);
+  registerBudgetRoutes(app, financeRuntime, authPolicy);
+  registerReportRoutes(app, financeRuntime, authPolicy);
+  registerSettlementRoutes(app, financeRuntime, authPolicy);
+  registerClassificationRuleRoutes(app, financeRuntime, authPolicy);
+  registerFxRateApprovalRoutes(app, financeRuntime, authPolicy);
+  registerRevenueRoutes(app, financeRuntime, authPolicy);
 
   // Phase 2: AP / AR / Tax / Fixed Assets / Bank
-  registerApInvoiceRoutes(app, financeRuntime);
-  registerApPaymentRunRoutes(app, financeRuntime);
-  registerApAgingRoutes(app, financeRuntime);
-  registerArInvoiceRoutes(app, financeRuntime);
-  registerArPaymentRoutes(app, financeRuntime);
-  registerArDunningRoutes(app, financeRuntime);
-  registerArAgingRoutes(app, financeRuntime);
-  registerTaxCodeRoutes(app, financeRuntime);
-  registerTaxRateRoutes(app, financeRuntime);
-  registerTaxReturnRoutes(app, financeRuntime);
-  registerWhtCertificateRoutes(app, financeRuntime);
-  registerAssetRoutes(app, financeRuntime);
-  registerBankRoutes(app, financeRuntime);
+  registerApInvoiceRoutes(app, financeRuntime, authPolicy);
+  registerApPaymentRunRoutes(app, financeRuntime, authPolicy);
+  registerApAgingRoutes(app, financeRuntime, authPolicy);
+  registerArInvoiceRoutes(app, financeRuntime, authPolicy);
+  registerArPaymentRoutes(app, financeRuntime, authPolicy);
+  registerArDunningRoutes(app, financeRuntime, authPolicy);
+  registerArAgingRoutes(app, financeRuntime, authPolicy);
+  registerTaxCodeRoutes(app, financeRuntime, authPolicy);
+  registerTaxRateRoutes(app, financeRuntime, authPolicy);
+  registerTaxReturnRoutes(app, financeRuntime, authPolicy);
+  registerWhtCertificateRoutes(app, financeRuntime, authPolicy);
+  registerAssetRoutes(app, financeRuntime, authPolicy);
+  registerBankRoutes(app, financeRuntime, authPolicy);
 
   // Phase 3: Credit / Expense / Project
-  registerCreditRoutes(app, financeRuntime);
-  registerExpenseRoutes(app, financeRuntime);
-  registerProjectRoutes(app, financeRuntime);
+  registerCreditRoutes(app, financeRuntime, authPolicy);
+  registerExpenseRoutes(app, financeRuntime, authPolicy);
+  registerProjectRoutes(app, financeRuntime, authPolicy);
 
   // Phase 4: Lease / Provision / Treasury
-  registerLeaseRoutes(app, financeRuntime);
-  registerProvisionRoutes(app, financeRuntime);
-  registerTreasuryRoutes(app, financeRuntime);
+  registerLeaseRoutes(app, financeRuntime, authPolicy);
+  registerProvisionRoutes(app, financeRuntime, authPolicy);
+  registerTreasuryRoutes(app, financeRuntime, authPolicy);
 
   // Phase 5: Consolidation / Cost Accounting
-  registerConsolidationRoutes(app, financeRuntime);
-  registerConsolidationExtRoutes(app, financeRuntime);
-  registerCostAccountingRoutes(app, financeRuntime);
+  registerConsolidationRoutes(app, financeRuntime, authPolicy);
+  registerConsolidationExtRoutes(app, financeRuntime, authPolicy);
+  registerCostAccountingRoutes(app, financeRuntime, authPolicy);
 
   // Phase 7: Fin-Instruments / Hedge / Intangibles / Deferred Tax / Transfer Pricing
-  registerFinInstrumentRoutes(app, financeRuntime);
-  registerHedgeRoutes(app, financeRuntime);
-  registerIntangibleRoutes(app, financeRuntime);
-  registerDeferredTaxRoutes(app, financeRuntime);
-  registerTransferPricingRoutes(app, financeRuntime);
+  registerFinInstrumentRoutes(app, financeRuntime, authPolicy);
+  registerHedgeRoutes(app, financeRuntime, authPolicy);
+  registerIntangibleRoutes(app, financeRuntime, authPolicy);
+  registerDeferredTaxRoutes(app, financeRuntime, authPolicy);
+  registerTransferPricingRoutes(app, financeRuntime, authPolicy);
+
+  // GAP-A2: Approval Workflow
+  registerApprovalRoutes(app, financeRuntime, authPolicy);
+
+  // Dashboard
+  registerDashboardRoutes(app, financeRuntime, authPolicy);
+
+  // Document Storage (R2)
+  const r2Config = loadR2Config(process.env as Record<string, string>);
+  const objectStore =
+    r2Config.R2_TEST_ENABLED === 'true' || !r2Config.R2_ACCOUNT_ID || !r2Config.R2_ACCESS_KEY_ID
+      ? createMockObjectStore()
+      : createR2Adapter(r2Config);
+  registerDocumentRoutes(app, session, objectStore, authPolicy);
 
   // 7. Start server
-  const address = await app.listen({ port: config.PORT_API, host: "0.0.0.0" });
+  const address = await app.listen({ port: config.PORT_API, host: '0.0.0.0' });
   logger.info(`API server ready on ${address}`);
 }
 
 main().catch((err) => {
-  logger.error("Fatal error", { error: String(err) });
+  logger.error('Fatal error', { error: String(err) });
   process.exit(1);
 });

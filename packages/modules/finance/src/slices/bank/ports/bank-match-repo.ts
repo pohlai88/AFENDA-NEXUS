@@ -1,12 +1,12 @@
-import type { BankMatch } from "../entities/bank-match.js";
+import type { BankMatch } from '../entities/bank-match.js';
 
 export interface CreateBankMatchInput {
   readonly statementLineId: string;
   readonly journalId: string | null;
   readonly sourceDocumentId: string | null;
   readonly sourceDocumentType: string | null;
-  readonly matchType: BankMatch["matchType"];
-  readonly confidence: BankMatch["confidence"];
+  readonly matchType: BankMatch['matchType'];
+  readonly confidence: BankMatch['confidence'];
   readonly confidenceScore: number;
   readonly matchedAmount: bigint;
   readonly currencyCode: string;

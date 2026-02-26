@@ -1,0 +1,34 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import type { InstrumentCategory, InstrumentType, FairValueLevel } from '../types';
+
+interface CreateInstrumentInput { name: string; type: InstrumentType; category: InstrumentCategory; issuer: string; currency: string; faceValue: number; acquisitionCost: number; acquisitionDate: Date; interestRate?: number; maturityDate?: Date; glAccountId: string; }
+
+export async function createInstrument(input: CreateInstrumentInput): Promise<{ ok: true; instrumentId: string } | { ok: false; error: string }> {
+  await new Promise((r) => setTimeout(r, 400));
+  console.log('[Action] createInstrument:', input);
+  revalidatePath('/finance/instruments');
+  return { ok: true, instrumentId: 'inst-new-' + Date.now() };
+}
+
+export async function recordFairValue(instrumentId: string, fairValue: number, level: FairValueLevel, valuationMethod: string): Promise<{ ok: true; journalId?: string } | { ok: false; error: string }> {
+  await new Promise((r) => setTimeout(r, 400));
+  console.log('[Action] recordFairValue:', instrumentId, fairValue, level);
+  revalidatePath('/finance/instruments');
+  return { ok: true, journalId: 'je-fv-' + Date.now() };
+}
+
+export async function calculateECL(instrumentId: string): Promise<{ ok: true; ecl: number; stage: 1 | 2 | 3 } | { ok: false; error: string }> {
+  await new Promise((r) => setTimeout(r, 500));
+  console.log('[Action] calculateECL:', instrumentId);
+  revalidatePath('/finance/instruments');
+  return { ok: true, ecl: 15000, stage: 1 };
+}
+
+export async function disposeInstrument(instrumentId: string, salePrice: number, saleDate: Date): Promise<{ ok: true; gainLoss: number; journalId: string } | { ok: false; error: string }> {
+  await new Promise((r) => setTimeout(r, 500));
+  console.log('[Action] disposeInstrument:', instrumentId, salePrice);
+  revalidatePath('/finance/instruments');
+  return { ok: true, gainLoss: 25000, journalId: 'je-disp-' + Date.now() };
+}

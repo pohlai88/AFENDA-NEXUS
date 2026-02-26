@@ -1,9 +1,9 @@
 import Npm from '@mdx/Npm.astro';
 import Npx from '@mdx/Npx.astro';
 import Callout from '@mdx/Callout.astro';
-import Prerequisites from "@mdx/Prerequisites.astro";
-import CodeTabs from "@mdx/CodeTabs.astro";
-import WhatsNextPostgres from "@mdx/WhatsNextPostgres.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
+import CodeTabs from '@mdx/CodeTabs.astro';
+import WhatsNextPostgres from '@mdx/WhatsNextPostgres.astro';
 import Breadcrumbs from '@mdx/Breadcrumbs.astro';
 import FileStructure from '@mdx/get-started/FileStructure.mdx';
 import InstallPackages from '@mdx/get-started/InstallPackages.mdx';
@@ -17,19 +17,18 @@ import SetupEnv from '@mdx/get-started/SetupEnv.mdx';
 import CreateTable from '@mdx/get-started/sqlite/CreateTable.mdx';
 import ConnectLibsql from '@mdx/get-started/sqlite/ConnectLibsql.mdx';
 
-<Breadcrumbs/>
+<Breadcrumbs />
 
 # Get Started with Drizzle and OP-SQLite
 
-<Prerequisites>  
-  - **OP-SQLite** - SQLite library for react-native - [read here](https://github.com/OP-Engineering/op-sqlite)
+<Prerequisites>
+  - **OP-SQLite** - SQLite library for react-native - [read
+  here](https://github.com/OP-Engineering/op-sqlite)
 </Prerequisites>
 
-
 #### Step 1 - Setup a project from Expo Template
-<Npx>
-create expo-app --template blank-typescript
-</Npx>
+
+<Npx>create expo-app --template blank-typescript</Npx>
 
 You can read more about this template [here](https://docs.expo.dev/more/create-expo/#create-a-new-project).
 
@@ -54,10 +53,8 @@ After installing the template and adding the `db` folder, you'll find the follow
 ```
 
 #### Step 2 - Install required packages
-<Npm>
-  drizzle-orm @op-engineering/op-sqlite
-  -D drizzle-kit
-</Npm>
+
+<Npm>drizzle-orm @op-engineering/op-sqlite -D drizzle-kit</Npm>
 
 #### Step 3 - Connect Drizzle ORM to the database
 
@@ -79,9 +76,9 @@ const db = drizzle(opsqliteDb);
 Create a `schema.ts` file in the `db` directory and declare your table:
 
 ```typescript copy filename="src/db/schema.ts"
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { int, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
-export const usersTable = sqliteTable("users_table", {
+export const usersTable = sqliteTable('users_table', {
   id: int().primaryKey({ autoIncrement: true }),
   name: text().notNull(),
   age: int().notNull(),
@@ -119,12 +116,13 @@ module.exports = config;
 ```
 
 #### Step 7 - Update `babel` config
+
 ```js copy filename="babel.config.js"
-module.exports = function(api) {
+module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
-    plugins: [["inline-import", { "extensions": [".sql"] }]] // <-- add this
+    plugins: [['inline-import', { extensions: ['.sql'] }]], // <-- add this
   };
 };
 ```
@@ -134,6 +132,7 @@ module.exports = function(api) {
 With Expo, you would need to generate migrations using the `drizzle-kit generate` command and then apply them at runtime using the `drizzle-orm` `migrate()` function
 
 Generate migrations:
+
 ```bash copy
 npx drizzle-kit generate
 ```
@@ -226,16 +225,6 @@ export default function App() {
 #### Step 10 - Prebuild and run expo app
 
 <CodeTabs items={['npm', 'yarn', 'pnpm', 'bun']}>
-```bash copy
-npx expo run:ios
-```
-```bash copy
-yarn expo run:ios
-```
-```bash copy
-pnpm expo run:ios
-```
-```bash copy
-bun expo run:ios
-```
+  ```bash copy npx expo run:ios ``` ```bash copy yarn expo run:ios ``` ```bash copy pnpm expo
+  run:ios ``` ```bash copy bun expo run:ios ```
 </CodeTabs>

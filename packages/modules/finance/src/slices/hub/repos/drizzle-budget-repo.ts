@@ -1,22 +1,19 @@
-import { eq, and, count, asc, sql } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { budgetEntries, accounts } from "@afenda/db";
-import type { PaginationParams, PaginatedResult } from "@afenda/core";
-import type { BudgetEntry } from "../entities/budget.js";
-import type { IBudgetRepo, UpsertBudgetEntryInput } from "../../../slices/hub/ports/budget-repo.js";
+import { eq, and, count, asc, sql } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { budgetEntries, accounts } from '@afenda/db';
+import type { PaginationParams, PaginatedResult } from '@afenda/core';
+import type { BudgetEntry } from '../entities/budget.js';
+import type { IBudgetRepo, UpsertBudgetEntryInput } from '../../../slices/hub/ports/budget-repo.js';
 
-function mapRow(
-  row: typeof budgetEntries.$inferSelect,
-  accountCode?: string,
-): BudgetEntry {
+function mapRow(row: typeof budgetEntries.$inferSelect, accountCode?: string): BudgetEntry {
   return {
     id: row.id!,
     companyId: row.companyId as never,
     ledgerId: row.ledgerId as never,
     accountId: row.accountId,
-    accountCode: accountCode ?? "",
+    accountCode: accountCode ?? '',
     periodId: row.periodId,
-    budgetAmount: { amount: row.budgetAmount, currency: "USD", scale: 2 },
+    budgetAmount: { amount: row.budgetAmount, currency: 'USD', scale: 2 },
     version: row.version ?? 1,
     versionNote: row.versionNote ?? undefined,
     createdAt: row.createdAt,
@@ -24,7 +21,7 @@ function mapRow(
 }
 
 export class DrizzleBudgetRepo implements IBudgetRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async upsert(input: UpsertBudgetEntryInput): Promise<BudgetEntry> {
     const [row] = await this.tx
@@ -58,7 +55,7 @@ export class DrizzleBudgetRepo implements IBudgetRepo {
   async findByLedgerAndPeriod(
     ledgerId: string,
     periodId: string,
-    params: PaginationParams,
+    params: PaginationParams
   ): Promise<PaginatedResult<BudgetEntry>> {
     const page = params.page;
     const limit = params.limit;
@@ -72,29 +69,19 @@ export class DrizzleBudgetRepo implements IBudgetRepo {
         })
         .from(budgetEntries)
         .leftJoin(accounts, eq(budgetEntries.accountId, accounts.id))
-        .where(
-          and(
-            eq(budgetEntries.ledgerId, ledgerId),
-            eq(budgetEntries.periodId, periodId),
-          ),
-        )
+        .where(and(eq(budgetEntries.ledgerId, ledgerId), eq(budgetEntries.periodId, periodId)))
         .orderBy(asc(accounts.code))
         .limit(limit)
         .offset(offset),
       this.tx
         .select({ total: count() })
         .from(budgetEntries)
-        .where(
-          and(
-            eq(budgetEntries.ledgerId, ledgerId),
-            eq(budgetEntries.periodId, periodId),
-          ),
-        ),
+        .where(and(eq(budgetEntries.ledgerId, ledgerId), eq(budgetEntries.periodId, periodId))),
     ]);
     const total = countRows[0]?.total ?? 0;
 
     return {
-      data: rows.map((r) => mapRow(r.budget, r.accountCode ?? "")),
+      data: rows.map((r) => mapRow(r.budget, r.accountCode ?? '')),
       total,
       page,
       limit,

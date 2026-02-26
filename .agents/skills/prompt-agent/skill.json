@@ -6,15 +6,7 @@
   "license": "MIT",
   "internal": true,
   "homepage": "https://clawsec.prompt.security",
-  "keywords": [
-    "security",
-    "audit",
-    "prompt-agent",
-    "agents",
-    "ai",
-    "hardening",
-    "protection"
-  ],
+  "keywords": ["security", "audit", "prompt-agent", "agents", "ai", "hardening", "protection"],
   "sbom": {
     "files": [
       {
@@ -33,10 +25,7 @@
     "emoji": "🛡️",
     "category": "security",
     "requires": {
-      "bins": [
-        "curl",
-        "git"
-      ]
+      "bins": ["curl", "git"]
     },
     "triggers": [
       "security audit",

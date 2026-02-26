@@ -25,7 +25,7 @@ export interface FxReimbursementResult {
 
 export function computeFxReimbursement(
   input: FxReimbursementInput,
-  originalBaseCurrencyAmount: bigint,
+  originalBaseCurrencyAmount: bigint
 ): FxReimbursementResult {
   const baseCurrencyAmount = (input.foreignAmount * BigInt(input.exchangeRateBps)) / 10000n;
   const fxGainLoss = baseCurrencyAmount - originalBaseCurrencyAmount;

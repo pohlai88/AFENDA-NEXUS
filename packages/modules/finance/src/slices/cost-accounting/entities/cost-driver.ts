@@ -2,7 +2,14 @@
  * Cost driver entity — basis for allocating overhead to cost objects.
  */
 
-export type DriverType = "HEADCOUNT" | "MACHINE_HOURS" | "DIRECT_LABOR" | "FLOOR_AREA" | "REVENUE" | "UNITS_PRODUCED" | "CUSTOM";
+export type DriverType =
+  | 'HEADCOUNT'
+  | 'MACHINE_HOURS'
+  | 'DIRECT_LABOR'
+  | 'FLOOR_AREA'
+  | 'REVENUE'
+  | 'UNITS_PRODUCED'
+  | 'CUSTOM';
 
 export interface CostDriver {
   readonly id: string;

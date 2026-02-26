@@ -1,9 +1,9 @@
-import type { CashForecast } from "../entities/cash-forecast.js";
+import type { CashForecast } from '../entities/cash-forecast.js';
 
 export interface CreateCashForecastInput {
   readonly companyId: string;
   readonly forecastDate: Date;
-  readonly forecastType: CashForecast["forecastType"];
+  readonly forecastType: CashForecast['forecastType'];
   readonly description: string;
   readonly amount: bigint;
   readonly currencyCode: string;

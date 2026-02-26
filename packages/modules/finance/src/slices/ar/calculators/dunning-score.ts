@@ -3,7 +3,7 @@
  * Assigns dunning levels (1-4) based on days overdue and amount.
  * Pure calculator — no DB, no side effects.
  */
-import type { DunningLevel } from "../entities/dunning.js";
+import type { DunningLevel } from '../entities/dunning.js';
 
 export interface DunningInput {
   readonly customerId: string;
@@ -38,7 +38,7 @@ export function computeDunningLevel(daysOverdue: number): DunningLevel {
 
 export function computeDunningScore(input: DunningInput): DunningResult | null {
   const daysOverdue = Math.floor(
-    (input.asOfDate.getTime() - input.dueDate.getTime()) / (1000 * 60 * 60 * 24),
+    (input.asOfDate.getTime() - input.dueDate.getTime()) / (1000 * 60 * 60 * 24)
   );
 
   if (daysOverdue <= 0) return null;
@@ -56,7 +56,5 @@ export function computeDunningScore(input: DunningInput): DunningResult | null {
 }
 
 export function computeDunningScores(inputs: readonly DunningInput[]): readonly DunningResult[] {
-  return inputs
-    .map(computeDunningScore)
-    .filter((r): r is DunningResult => r !== null);
+  return inputs.map(computeDunningScore).filter((r): r is DunningResult => r !== null);
 }

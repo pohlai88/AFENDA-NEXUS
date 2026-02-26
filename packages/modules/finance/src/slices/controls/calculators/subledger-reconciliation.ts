@@ -7,15 +7,15 @@
  */
 
 export type SubledgerType =
-  | "AP"
-  | "AR"
-  | "FIXED_ASSETS"
-  | "INTANGIBLES"
-  | "INVENTORY"
-  | "PAYROLL"
-  | "INTERCOMPANY"
-  | "BANK"
-  | "TAX";
+  | 'AP'
+  | 'AR'
+  | 'FIXED_ASSETS'
+  | 'INTANGIBLES'
+  | 'INVENTORY'
+  | 'PAYROLL'
+  | 'INTERCOMPANY'
+  | 'BANK'
+  | 'TAX';
 
 export interface SubledgerBalanceInput {
   readonly subledgerType: SubledgerType;
@@ -45,11 +45,12 @@ export interface ReconciliationSummary {
   readonly unreconciledItems: readonly ReconciliationResult[];
 }
 
-export function reconcileSubledgers(
-  inputs: readonly SubledgerBalanceInput[],
-): { result: ReconciliationSummary; explanation: string } {
+export function reconcileSubledgers(inputs: readonly SubledgerBalanceInput[]): {
+  result: ReconciliationSummary;
+  explanation: string;
+} {
   if (inputs.length === 0) {
-    throw new Error("At least one sub-ledger balance is required");
+    throw new Error('At least one sub-ledger balance is required');
   }
 
   const results: ReconciliationResult[] = inputs.map((input) => {
@@ -77,8 +78,9 @@ export function reconcileSubledgers(
       totalUnreconciled: unreconciled.length,
       unreconciledItems: unreconciled,
     },
-    explanation: unreconciled.length === 0
-      ? `All ${results.length} sub-ledger(s) reconciled to GL`
-      : `${unreconciled.length}/${results.length} sub-ledger(s) unreconciled: ${unreconciled.map((u) => `${u.subledgerType} (diff ${u.difference})`).join(", ")}`,
+    explanation:
+      unreconciled.length === 0
+        ? `All ${results.length} sub-ledger(s) reconciled to GL`
+        : `${unreconciled.length}/${results.length} sub-ledger(s) unreconciled: ${unreconciled.map((u) => `${u.subledgerType} (diff ${u.difference})`).join(', ')}`,
   };
 }

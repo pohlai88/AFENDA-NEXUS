@@ -2,7 +2,14 @@
  * Project cost line entity — individual cost posting against a project.
  */
 
-export type CostCategory = "LABOR" | "MATERIALS" | "SUBCONTRACT" | "TRAVEL" | "EQUIPMENT" | "OVERHEAD" | "OTHER";
+export type CostCategory =
+  | 'LABOR'
+  | 'MATERIALS'
+  | 'SUBCONTRACT'
+  | 'TRAVEL'
+  | 'EQUIPMENT'
+  | 'OVERHEAD'
+  | 'OTHER';
 
 export interface ProjectCostLine {
   readonly id: string;

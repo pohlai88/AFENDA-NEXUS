@@ -41,7 +41,7 @@ export interface StepDownResult {
  * Perform step-down allocation in sequence order.
  */
 export function computeStepDownAllocation(input: StepDownInput): StepDownResult {
-  if (input.pools.length === 0) throw new Error("At least one allocation pool is required");
+  if (input.pools.length === 0) throw new Error('At least one allocation pool is required');
 
   const sorted = [...input.pools].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
   const allocated = new Set<string>();
@@ -65,7 +65,7 @@ export function computeStepDownAllocation(input: StepDownInput): StepDownResult 
 
     // Find driver rows from this pool to non-allocated targets
     const eligibleRows = input.driverRows.filter(
-      (r) => r.fromCostCenterId === pool.costCenterId && !allocated.has(r.toCostCenterId),
+      (r) => r.fromCostCenterId === pool.costCenterId && !allocated.has(r.toCostCenterId)
     );
 
     const totalDriverQty = eligibleRows.reduce((sum, r) => sum + r.driverQuantity, 0n);

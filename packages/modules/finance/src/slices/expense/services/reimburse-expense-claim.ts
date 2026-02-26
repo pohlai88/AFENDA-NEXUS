@@ -3,11 +3,11 @@
  * Links an approved expense claim to an AP payment run for reimbursement.
  */
 
-import { err, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IExpenseClaimRepo } from "../ports/expense-claim-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IExpenseClaimRepo } from '../ports/expense-claim-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface ReimburseExpenseClaimInput {
   readonly tenantId: string;
@@ -25,13 +25,14 @@ export interface ReimburseExpenseClaimResult {
 
 export async function reimburseExpenseClaim(
   input: ReimburseExpenseClaimInput,
-  deps: { expenseClaimRepo: IExpenseClaimRepo; outboxWriter: IOutboxWriter },
+  deps: { expenseClaimRepo: IExpenseClaimRepo; outboxWriter: IOutboxWriter }
 ): Promise<Result<ReimburseExpenseClaimResult>> {
   const claim = await deps.expenseClaimRepo.findById(input.expenseClaimId);
-  if (!claim) return err(new ValidationError("Expense claim not found"));
-  if (claim.status !== "APPROVED") return err(new ValidationError("Only approved claims can be reimbursed"));
+  if (!claim) return err(new ValidationError('Expense claim not found'));
+  if (claim.status !== 'APPROVED')
+    return err(new ValidationError('Only approved claims can be reimbursed'));
 
-  await deps.expenseClaimRepo.update(input.expenseClaimId, { status: "REIMBURSED" });
+  await deps.expenseClaimRepo.update(input.expenseClaimId, { status: 'REIMBURSED' });
 
   await deps.outboxWriter.write({
     tenantId: input.tenantId,

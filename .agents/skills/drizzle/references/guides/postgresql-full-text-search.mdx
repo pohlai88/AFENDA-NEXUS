@@ -3,18 +3,16 @@ title: PostgreSQL full-text search
 slug: postgresql-full-text-search
 ---
 
-import Section from "@mdx/Section.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Section from '@mdx/Section.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 import CodeTabs from '@mdx/CodeTabs.astro';
 import CodeTab from '@mdx/CodeTab.astro';
 import Callout from '@mdx/Callout.astro';
 
 <Prerequisites>
-- Get started with [PostgreSQL](/docs/get-started-postgresql)
-- [Select statement](/docs/select)
-- [Indexes](/docs/indexes-constraints#indexes)
-- [sql operator](/docs/sql)
-- You should have `drizzle-orm@0.31.0` and `drizzle-kit@0.22.0` or higher.  
+  - Get started with [PostgreSQL](/docs/get-started-postgresql) - [Select statement](/docs/select) -
+  [Indexes](/docs/indexes-constraints#indexes) - [sql operator](/docs/sql) - You should have
+  `drizzle-orm@0.31.0` and `drizzle-kit@0.22.0` or higher.
 </Prerequisites>
 
 This guide demonstrates how to implement full-text search in PostgreSQL with Drizzle ORM. Full-text search is a technique used to search for text within a document or a set of documents. A document is the unit of searching in a full text search system. PostgreSQL provides a set of functions to work with full-text search, such as `to_tsvector` and `to_tsquery`:
@@ -28,9 +26,10 @@ import { sql } from 'drizzle-orm';
 const db = drizzle(...);
 
 await db.execute(
-  sql`select to_tsvector('english', 'Guide to PostgreSQL full-text search with Drizzle ORM')`,
+sql`select to_tsvector('english', 'Guide to PostgreSQL full-text search with Drizzle ORM')`,
 );
-```
+
+````
 
 ```json
 [
@@ -39,7 +38,8 @@ await db.execute(
     'guid':1 'orm':10 'postgresql':3 'search':7 'text':6"
   }
 ]
-```
+````
+
 </Section>
 
 The `to_tsquery` function converts a keyword to normalized tokens and returns a `tsquery` that matches the lexemes in a `tsvector`. The `@@` operator is used for direct matches:
@@ -53,8 +53,9 @@ await db.execute(
 ```
 
 ```json
-[ { match: true } ]
+[{ "match": true }]
 ```
+
 </Section>
 
 As for now, Drizzle doesn't support `tsvector` type natively, so you need to convert your data in the `text` column on the fly. To enhance the performance, you can create a `GIN` index on your column like this:
@@ -64,28 +65,28 @@ As for now, Drizzle doesn't support `tsvector` type natively, so you need to con
   ```ts copy {10, 11}
   import { index, pgTable, serial, text } from 'drizzle-orm/pg-core';
 
-  export const posts = pgTable(
-    'posts',
-    {
-      id: serial('id').primaryKey(),
-      title: text('title').notNull(),
-    },
-    (table) => [
-      index('title_search_index').using('gin', sql`to_tsvector('english', ${table.title})`),
-    ]
-  );
-  ```
-  </CodeTab>
-  <CodeTab>
-  ```sql
-  CREATE TABLE IF NOT EXISTS "posts" (
-          "id" serial PRIMARY KEY NOT NULL,
-          "title" text NOT NULL
-  );
+export const posts = pgTable(
+  'posts',
+  {
+    id: serial('id').primaryKey(),
+    title: text('title').notNull(),
+  },
+  (table) => [index('title_search_index').using('gin', sql`to_tsvector('english', ${table.title})`)]
+);
 
-  CREATE INDEX IF NOT EXISTS "title_search_index" ON "posts"
-    USING gin (to_tsvector('english', "title"));
-  ```
+````
+</CodeTab>
+<CodeTab>
+```sql
+CREATE TABLE IF NOT EXISTS "posts" (
+        "id" serial PRIMARY KEY NOT NULL,
+        "title" text NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS "title_search_index" ON "posts"
+  USING gin (to_tsvector('english', "title"));
+````
+
   </CodeTab>
   ```json
   [
@@ -110,10 +111,11 @@ import { posts } from './schema';
 const title = 'trip';
 
 await db
-  .select()
-  .from(posts)
-  .where(sql`to_tsvector('english', ${posts.title}) @@ to_tsquery('english', ${title})`);
-```
+.select()
+.from(posts)
+.where(sql`to_tsvector('english', ${posts.title}) @@ to_tsquery('english', ${title})`);
+
+````
 
 ```json
 [
@@ -122,7 +124,8 @@ await db
   { id: 5, title: 'Trip Planning: Choosing Your Next Destination' },
   { id: 7, title: 'The Ultimate Road Trip Guide for Explorers' }
 ]
-```
+````
+
 </Section>
 
 To match by any of the keywords, you can use the `|` operator:
@@ -132,17 +135,19 @@ To match by any of the keywords, you can use the `|` operator:
 const title = 'Europe | Asia';
 
 await db
-  .select()
-  .from(posts)
-  .where(sql`to_tsvector('english', ${posts.title}) @@ to_tsquery('english', ${title})`);
-```
+.select()
+.from(posts)
+.where(sql`to_tsvector('english', ${posts.title}) @@ to_tsquery('english', ${title})`);
+
+````
 
 ```json
 [
   { id: 1, title: 'Planning Your First Trip to Europe' },
   { id: 2, title: "Cultural Insights: Exploring Asia's Heritage" }
 ]
-```
+````
+
 </Section>
 
 To match multiple keywords, you can use the `plainto_tsquery` function:
@@ -153,19 +158,21 @@ To match multiple keywords, you can use the `plainto_tsquery` function:
 const title = 'discover Italy';
 
 await db
-  .select()
-  .from(posts)
-  .where(sql`to_tsvector('english', ${posts.title}) @@ plainto_tsquery('english', ${title})`);
-```
+.select()
+.from(posts)
+.where(sql`to_tsvector('english', ${posts.title}) @@ plainto_tsquery('english', ${title})`);
+
+````
 
 ```sql
 select * from posts
   where to_tsvector('english', title) @@ plainto_tsquery('english', 'discover Italy');
-```
+````
 
 ```json
-[ { id: 6, title: 'Discovering Hidden Culinary Gems in Italy' } ]
+[{ "id": 6, "title": "Discovering Hidden Culinary Gems in Italy" }]
 ```
+
 </Section>
 
 To match a phrase, you can use the `phraseto_tsquery` function:
@@ -177,19 +184,21 @@ To match a phrase, you can use the `phraseto_tsquery` function:
 const title = 'family trip';
 
 await db
-  .select()
-  .from(posts)
-  .where(sql`to_tsvector('english', ${posts.title}) @@ phraseto_tsquery('english', ${title})`);
-```
+.select()
+.from(posts)
+.where(sql`to_tsvector('english', ${posts.title}) @@ phraseto_tsquery('english', ${title})`);
+
+````
 
 ```sql
 select * from posts
   where to_tsvector('english', title) @@ phraseto_tsquery('english', 'family trip');
-```
+````
 
 ```json
-[ { id: 3, title: 'Top 5 Destinations for a Family Trip' } ]
+[{ "id": 3, "title": "Top 5 Destinations for a Family Trip" }]
 ```
+
 </Section>
 
 You can also use `websearch_to_tsquery` function which is a simplified version of `to_tsquery` with an alternative syntax, similar to the one used by web search engines:
@@ -200,24 +209,26 @@ You can also use `websearch_to_tsquery` function which is a simplified version o
 const title = 'family or first trip Europe or Asia';
 
 await db
-  .select()
-  .from(posts)
-  .where(sql`to_tsvector('english', ${posts.title}) @@ websearch_to_tsquery('english', ${title})`);
-```
+.select()
+.from(posts)
+.where(sql`to_tsvector('english', ${posts.title}) @@ websearch_to_tsquery('english', ${title})`);
+
+````
 
 ```sql
 select * from posts
   where to_tsvector('english', title)
   @@ websearch_to_tsquery('english', 'family or first trip Europe or Asia');
-```
+````
 
 ```json
 [
-  { id: 1, title: 'Planning Your First Trip to Europe' },
-  { id: 2, title: "Cultural Insights: Exploring Asia's Heritage" },
-  { id: 3, title: 'Top 5 Destinations for a Family Trip' }
+  { "id": 1, "title": "Planning Your First Trip to Europe" },
+  { "id": 2, "title": "Cultural Insights: Exploring Asia's Heritage" },
+  { "id": 3, "title": "Top 5 Destinations for a Family Trip" }
 ]
 ```
+
 </Section>
 
 To implement full-text search on multiple columns, you can create index on multiple columns and concatenate the columns with `to_tsvector` function:
@@ -228,37 +239,39 @@ To implement full-text search on multiple columns, you can create index on multi
   import { sql } from 'drizzle-orm';
   import { index, pgTable, serial, text } from 'drizzle-orm/pg-core';
 
-  export const posts = pgTable(
-    'posts',
-    {
-      id: serial('id').primaryKey(),
-      title: text('title').notNull(),
-      description: text('description').notNull(),
-    },
-    (table) => [
-      index('search_index').using(
-        'gin',
-        sql`(
-            setweight(to_tsvector('english', ${table.title}), 'A') ||
-            setweight(to_tsvector('english', ${table.description}), 'B')
-        )`,
-      ),
-    ],
-  );
-  ```
-  </CodeTab>
-  <CodeTab>
-  ```sql
-  CREATE TABLE IF NOT EXISTS "posts" (
-        "id" serial PRIMARY KEY NOT NULL,
-        "title" text NOT NULL,
-        "description" text NOT NULL
-  );
+export const posts = pgTable(
+  'posts',
+  {
+    id: serial('id').primaryKey(),
+    title: text('title').notNull(),
+    description: text('description').notNull(),
+  },
+  (table) => [
+    index('search_index').using(
+      'gin',
+      sql`(
+setweight(to_tsvector('english', ${table.title}), 'A') ||
+setweight(to_tsvector('english', ${table.description}), 'B')
+)`
+    ),
+  ]
+);
 
-  CREATE INDEX IF NOT EXISTS "search_index" ON "posts"
-    USING gin ((setweight(to_tsvector('english', "title"), 'A') ||
-    setweight(to_tsvector('english', "description"), 'B')));
-  ```
+````
+</CodeTab>
+<CodeTab>
+```sql
+CREATE TABLE IF NOT EXISTS "posts" (
+      "id" serial PRIMARY KEY NOT NULL,
+      "title" text NOT NULL,
+      "description" text NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS "search_index" ON "posts"
+  USING gin ((setweight(to_tsvector('english', "title"), 'A') ||
+  setweight(to_tsvector('english', "description"), 'B')));
+````
+
   </CodeTab>
   ```json
   [
@@ -317,13 +330,14 @@ This is how you can query on multiple columns:
 const title = 'plan';
 
 await db.select().from(posts)
-  .where(sql`(
+.where(sql`(
       setweight(to_tsvector('english', ${posts.title}), 'A') ||
       setweight(to_tsvector('english', ${posts.description}), 'B'))
       @@ to_tsquery('english', ${title}
     )`
-  );
-```
+);
+
+````
 
 ```json
 [
@@ -343,7 +357,8 @@ await db.select().from(posts)
     description: 'Plan your next great road trip with tips on route planning, packing, and discovering off-the-beaten-path attractions.'
   }
 ]
-```
+````
+
 </Section>
 
 To rank the search results, you can use the `ts_rank` or `ts_rank_cd` functions and `orderBy` method:
@@ -352,6 +367,7 @@ To rank the search results, you can use the `ts_rank` or `ts_rank_cd` functions 
 `getColumns` available starting from `drizzle-orm@1.0.0-beta.2`(read more [here](/docs/upgrade-v1))
 
 If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
+
 </Callout>
 
 <Section>
@@ -365,20 +381,21 @@ const matchQuery = sql`(
   setweight(to_tsvector('english', ${posts.description}), 'B')), to_tsquery('english', ${search})`;
 
 await db
-  .select({
-    ...getColumns(posts),
-    rank: sql`ts_rank(${matchQuery})`,
-    rankCd: sql`ts_rank_cd(${matchQuery})`,
-  })
-  .from(posts)
-  .where(
-    sql`(
+.select({
+...getColumns(posts),
+rank: sql`ts_rank(${matchQuery})`,
+rankCd: sql`ts_rank_cd(${matchQuery})`,
+})
+.from(posts)
+.where(
+sql`(
       setweight(to_tsvector('english', ${posts.title}), 'A') ||
       setweight(to_tsvector('english', ${posts.description}), 'B')
       ) @@ to_tsquery('english', ${search})`,
-  )
-  .orderBy((t) => desc(t.rank));
-```
+)
+.orderBy((t) => desc(t.rank));
+
+````
 
 ```json
 [
@@ -411,7 +428,8 @@ await db
     rankCd: 0.8
   }
 ]
-```
+````
+
 </Section>
 
 The `ts_rank` function focuses on the frequency of query terms throughout the document. The `ts_rank_cd` function focuses on the proximity of query terms within the document.

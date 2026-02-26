@@ -6,23 +6,23 @@
  *
  * Usage: pnpm gen:outbox-event journal-posted
  */
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 const event = process.argv[2];
 if (!event) {
-  console.error("Usage: pnpm gen:outbox-event <event-name>");
-  console.error("Example: pnpm gen:outbox-event journal-posted");
+  console.error('Usage: pnpm gen:outbox-event <event-name>');
+  console.error('Example: pnpm gen:outbox-event journal-posted');
   process.exit(1);
 }
 
 const root = process.cwd();
 const camelCase = event.replace(/([-_][a-z])/g, (g) => g[1].toUpperCase());
 const PascalCase = camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
-const SCREAMING_SNAKE = event.replace(/-/g, "_").toUpperCase();
+const SCREAMING_SNAKE = event.replace(/-/g, '_').toUpperCase();
 
 // Outbox event type in packages/db/src/outbox/
-const outboxDir = join(root, "packages", "db", "src", "outbox");
+const outboxDir = join(root, 'packages', 'db', 'src', 'outbox');
 mkdirSync(outboxDir, { recursive: true });
 
 const eventFile = join(outboxDir, `${event}.ts`);
@@ -54,13 +54,13 @@ export interface ${PascalCase}OutboxRow {
   readonly createdAt: Date;
   readonly processedAt: Date | null;
 }
-`,
+`
 );
 
 console.log(`Created event type: ${eventFile}`);
 
 // Worker handler stub
-const handlersDir = join(root, "apps", "worker", "src", "handlers");
+const handlersDir = join(root, 'apps', 'worker', 'src', 'handlers');
 mkdirSync(handlersDir, { recursive: true });
 
 const handlerFile = join(handlersDir, `${event}.ts`);
@@ -92,7 +92,7 @@ export async function handle${PascalCase}(
 
   deps.logger.info("Completed ${SCREAMING_SNAKE}");
 }
-`,
+`
 );
 
 console.log(`Created worker handler: ${handlerFile}`);

@@ -1,9 +1,9 @@
-import type { TpBenchmark } from "../entities/tp-benchmark.js";
+import type { TpBenchmark } from '../entities/tp-benchmark.js';
 
 export interface CreateTpBenchmarkInput {
   readonly policyId: string;
   readonly benchmarkYear: number;
-  readonly method: TpBenchmark["method"];
+  readonly method: TpBenchmark['method'];
   readonly comparableCount: number;
   readonly interquartileRangeLowBps: number;
   readonly interquartileRangeMedianBps: number;

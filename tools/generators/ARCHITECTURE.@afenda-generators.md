@@ -24,10 +24,17 @@ boundary_rules:
 # @afenda/generators
 
 ## Purpose
-Scaffolding generators for the AFENDA-NEXUS monorepo. Creates modules, tables, endpoints, and outbox events with correct structure and governance files.
+Scaffolding generators for the AFENDA-NEXUS monorepo. Creates modules, tables, endpoints, outbox events, and frontend feature screens with correct structure and governance files.
 
-## Scripts
+## Scripts — Backend
 - `gen:module <name>` — New domain module with domain/app/infra layers
 - `gen:table <name>` — Drizzle table + migration + RLS policy stub
 - `gen:endpoint <module> <verb> <path>` — REST handler stub
 - `gen:outbox-event <event>` — Outbox payload type + worker handler stub
+
+## Scripts — Frontend (`@afenda/web`)
+- `gen:screen <module> <entity>` — Full feature screen: queries + actions + blocks + route pages (8 files)
+- `gen:form <SchemaName>` — RHF + Zod form component from `@afenda/contracts` schema
+- `gen:table-ui <ViewModelName>` — Data table block with StatusBadge/MoneyCell/DateCell formatters
+
+All frontend generators produce drift-compliant code matching `ARCHITECTURE.@afenda-web.md` patterns.

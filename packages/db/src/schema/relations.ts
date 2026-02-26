@@ -1,5 +1,5 @@
-import { relations } from "drizzle-orm";
-import { tenants, companies, users } from "./platform";
+import { relations } from 'drizzle-orm';
+import { tenants, companies, users } from './platform';
 import {
   accounts,
   counterparties,
@@ -30,8 +30,9 @@ import {
   arAllocationItems,
   dunningRuns,
   dunningLetters,
-} from "./erp";
-import { outbox } from "./outbox-table";
+} from './erp';
+import { documentAttachments, documentLinks } from './erp-document';
+import { outbox } from './outbox-table';
 
 // ─── Platform Relations ─────────────────────────────────────────────────────
 
@@ -42,7 +43,10 @@ export const tenantsRelations = relations(tenants, ({ many }) => ({
 
 export const companiesRelations = relations(companies, ({ one, many }) => ({
   tenant: one(tenants, { fields: [companies.tenantId], references: [tenants.id] }),
-  baseCurrency: one(currencies, { fields: [companies.baseCurrencyId], references: [currencies.id] }),
+  baseCurrency: one(currencies, {
+    fields: [companies.baseCurrencyId],
+    references: [currencies.id],
+  }),
   ledgers: many(ledgers),
 }));
 
@@ -63,7 +67,10 @@ export const fiscalYearsRelations = relations(fiscalYears, ({ one, many }) => ({
 
 export const fiscalPeriodsRelations = relations(fiscalPeriods, ({ one }) => ({
   tenant: one(tenants, { fields: [fiscalPeriods.tenantId], references: [tenants.id] }),
-  fiscalYear: one(fiscalYears, { fields: [fiscalPeriods.fiscalYearId], references: [fiscalYears.id] }),
+  fiscalYear: one(fiscalYears, {
+    fields: [fiscalPeriods.fiscalYearId],
+    references: [fiscalYears.id],
+  }),
 }));
 
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
@@ -82,7 +89,10 @@ export const ledgersRelations = relations(ledgers, ({ one, many }) => ({
 export const glJournalsRelations = relations(glJournals, ({ one, many }) => ({
   tenant: one(tenants, { fields: [glJournals.tenantId], references: [tenants.id] }),
   ledger: one(ledgers, { fields: [glJournals.ledgerId], references: [ledgers.id] }),
-  fiscalPeriod: one(fiscalPeriods, { fields: [glJournals.fiscalPeriodId], references: [fiscalPeriods.id] }),
+  fiscalPeriod: one(fiscalPeriods, {
+    fields: [glJournals.fiscalPeriodId],
+    references: [fiscalPeriods.id],
+  }),
   reversalOf: one(glJournals, { fields: [glJournals.reversalOfId], references: [glJournals.id] }),
   lines: many(glJournalLines),
 }));
@@ -108,12 +118,12 @@ export const icAgreementsRelations = relations(icAgreements, ({ one, many }) => 
   sellerCompany: one(companies, {
     fields: [icAgreements.sellerCompanyId],
     references: [companies.id],
-    relationName: "icAgreementSeller",
+    relationName: 'icAgreementSeller',
   }),
   buyerCompany: one(companies, {
     fields: [icAgreements.buyerCompanyId],
     references: [companies.id],
-    relationName: "icAgreementBuyer",
+    relationName: 'icAgreementBuyer',
   }),
   currency: one(currencies, { fields: [icAgreements.currencyId], references: [currencies.id] }),
   transactions: many(icTransactions),
@@ -121,14 +131,20 @@ export const icAgreementsRelations = relations(icAgreements, ({ one, many }) => 
 
 export const icTransactionsRelations = relations(icTransactions, ({ one, many }) => ({
   tenant: one(tenants, { fields: [icTransactions.tenantId], references: [tenants.id] }),
-  agreement: one(icAgreements, { fields: [icTransactions.agreementId], references: [icAgreements.id] }),
+  agreement: one(icAgreements, {
+    fields: [icTransactions.agreementId],
+    references: [icAgreements.id],
+  }),
   currency: one(currencies, { fields: [icTransactions.currencyId], references: [currencies.id] }),
   legs: many(icTransactionLegs),
 }));
 
 export const icTransactionLegsRelations = relations(icTransactionLegs, ({ one }) => ({
   tenant: one(tenants, { fields: [icTransactionLegs.tenantId], references: [tenants.id] }),
-  transaction: one(icTransactions, { fields: [icTransactionLegs.transactionId], references: [icTransactions.id] }),
+  transaction: one(icTransactions, {
+    fields: [icTransactionLegs.transactionId],
+    references: [icTransactions.id],
+  }),
   company: one(companies, { fields: [icTransactionLegs.companyId], references: [companies.id] }),
   journal: one(glJournals, { fields: [icTransactionLegs.journalId], references: [glJournals.id] }),
 }));
@@ -137,15 +153,24 @@ export const icTransactionLegsRelations = relations(icTransactionLegs, ({ one })
 
 export const icSettlementsRelations = relations(icSettlements, ({ one, many }) => ({
   tenant: one(tenants, { fields: [icSettlements.tenantId], references: [tenants.id] }),
-  agreement: one(icAgreements, { fields: [icSettlements.agreementId], references: [icAgreements.id] }),
+  agreement: one(icAgreements, {
+    fields: [icSettlements.agreementId],
+    references: [icAgreements.id],
+  }),
   currency: one(currencies, { fields: [icSettlements.currencyId], references: [currencies.id] }),
   lines: many(icSettlementLines),
 }));
 
 export const icSettlementLinesRelations = relations(icSettlementLines, ({ one }) => ({
   tenant: one(tenants, { fields: [icSettlementLines.tenantId], references: [tenants.id] }),
-  settlement: one(icSettlements, { fields: [icSettlementLines.settlementId], references: [icSettlements.id] }),
-  transaction: one(icTransactions, { fields: [icSettlementLines.transactionId], references: [icTransactions.id] }),
+  settlement: one(icSettlements, {
+    fields: [icSettlementLines.settlementId],
+    references: [icSettlements.id],
+  }),
+  transaction: one(icTransactions, {
+    fields: [icSettlementLines.transactionId],
+    references: [icTransactions.id],
+  }),
 }));
 
 // ─── Revenue Contract Relations ─────────────────────────────────────────────
@@ -157,31 +182,40 @@ export const revenueContractsRelations = relations(revenueContracts, ({ one, man
   deferredAccount: one(accounts, {
     fields: [revenueContracts.deferredAccountId],
     references: [accounts.id],
-    relationName: "revenueContractDeferred",
+    relationName: 'revenueContractDeferred',
   }),
   revenueAccount: one(accounts, {
     fields: [revenueContracts.revenueAccountId],
     references: [accounts.id],
-    relationName: "revenueContractRevenue",
+    relationName: 'revenueContractRevenue',
   }),
   milestones: many(recognitionMilestones),
 }));
 
 export const recognitionMilestonesRelations = relations(recognitionMilestones, ({ one }) => ({
   tenant: one(tenants, { fields: [recognitionMilestones.tenantId], references: [tenants.id] }),
-  contract: one(revenueContracts, { fields: [recognitionMilestones.contractId], references: [revenueContracts.id] }),
+  contract: one(revenueContracts, {
+    fields: [recognitionMilestones.contractId],
+    references: [revenueContracts.id],
+  }),
 }));
 
 // ─── Classification Rule Relations ──────────────────────────────────────────
 
-export const classificationRuleSetsRelations = relations(classificationRuleSets, ({ one, many }) => ({
-  tenant: one(tenants, { fields: [classificationRuleSets.tenantId], references: [tenants.id] }),
-  rules: many(classificationRules),
-}));
+export const classificationRuleSetsRelations = relations(
+  classificationRuleSets,
+  ({ one, many }) => ({
+    tenant: one(tenants, { fields: [classificationRuleSets.tenantId], references: [tenants.id] }),
+    rules: many(classificationRules),
+  })
+);
 
 export const classificationRulesRelations = relations(classificationRules, ({ one }) => ({
   tenant: one(tenants, { fields: [classificationRules.tenantId], references: [tenants.id] }),
-  ruleSet: one(classificationRuleSets, { fields: [classificationRules.ruleSetId], references: [classificationRuleSets.id] }),
+  ruleSet: one(classificationRuleSets, {
+    fields: [classificationRules.ruleSetId],
+    references: [classificationRuleSets.id],
+  }),
 }));
 
 // ─── AP Relations ──────────────────────────────────────────────────────────
@@ -196,7 +230,10 @@ export const apInvoicesRelations = relations(apInvoices, ({ one, many }) => ({
   ledger: one(ledgers, { fields: [apInvoices.ledgerId], references: [ledgers.id] }),
   currency: one(currencies, { fields: [apInvoices.currencyId], references: [currencies.id] }),
   journal: one(glJournals, { fields: [apInvoices.journalId], references: [glJournals.id] }),
-  paymentTerms: one(paymentTermsTemplates, { fields: [apInvoices.paymentTermsId], references: [paymentTermsTemplates.id] }),
+  paymentTerms: one(paymentTermsTemplates, {
+    fields: [apInvoices.paymentTermsId],
+    references: [paymentTermsTemplates.id],
+  }),
   lines: many(apInvoiceLines),
 }));
 
@@ -215,7 +252,10 @@ export const apPaymentRunsRelations = relations(apPaymentRuns, ({ one, many }) =
 
 export const apPaymentRunItemsRelations = relations(apPaymentRunItems, ({ one }) => ({
   tenant: one(tenants, { fields: [apPaymentRunItems.tenantId], references: [tenants.id] }),
-  paymentRun: one(apPaymentRuns, { fields: [apPaymentRunItems.paymentRunId], references: [apPaymentRuns.id] }),
+  paymentRun: one(apPaymentRuns, {
+    fields: [apPaymentRunItems.paymentRunId],
+    references: [apPaymentRuns.id],
+  }),
   invoice: one(apInvoices, { fields: [apPaymentRunItems.invoiceId], references: [apInvoices.id] }),
 }));
 
@@ -225,7 +265,10 @@ export const arInvoicesRelations = relations(arInvoices, ({ one, many }) => ({
   tenant: one(tenants, { fields: [arInvoices.tenantId], references: [tenants.id] }),
   company: one(companies, { fields: [arInvoices.companyId], references: [companies.id] }),
   ledger: one(ledgers, { fields: [arInvoices.ledgerId], references: [ledgers.id] }),
-  paymentTerms: one(paymentTermsTemplates, { fields: [arInvoices.paymentTermsId], references: [paymentTermsTemplates.id] }),
+  paymentTerms: one(paymentTermsTemplates, {
+    fields: [arInvoices.paymentTermsId],
+    references: [paymentTermsTemplates.id],
+  }),
   journal: one(glJournals, { fields: [arInvoices.journalId], references: [glJournals.id] }),
   lines: many(arInvoiceLines),
 }));
@@ -243,7 +286,10 @@ export const arPaymentAllocationsRelations = relations(arPaymentAllocations, ({ 
 
 export const arAllocationItemsRelations = relations(arAllocationItems, ({ one }) => ({
   tenant: one(tenants, { fields: [arAllocationItems.tenantId], references: [tenants.id] }),
-  paymentAllocation: one(arPaymentAllocations, { fields: [arAllocationItems.paymentAllocationId], references: [arPaymentAllocations.id] }),
+  paymentAllocation: one(arPaymentAllocations, {
+    fields: [arAllocationItems.paymentAllocationId],
+    references: [arPaymentAllocations.id],
+  }),
   invoice: one(arInvoices, { fields: [arAllocationItems.invoiceId], references: [arInvoices.id] }),
 }));
 
@@ -254,7 +300,25 @@ export const dunningRunsRelations = relations(dunningRuns, ({ one, many }) => ({
 
 export const dunningLettersRelations = relations(dunningLetters, ({ one }) => ({
   tenant: one(tenants, { fields: [dunningLetters.tenantId], references: [tenants.id] }),
-  dunningRun: one(dunningRuns, { fields: [dunningLetters.dunningRunId], references: [dunningRuns.id] }),
+  dunningRun: one(dunningRuns, {
+    fields: [dunningLetters.dunningRunId],
+    references: [dunningRuns.id],
+  }),
+}));
+
+// ─── Document Relations ─────────────────────────────────────────────────────
+
+export const documentAttachmentsRelations = relations(documentAttachments, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [documentAttachments.tenantId], references: [tenants.id] }),
+  links: many(documentLinks),
+}));
+
+export const documentLinksRelations = relations(documentLinks, ({ one }) => ({
+  document: one(documentAttachments, {
+    fields: [documentLinks.documentId],
+    references: [documentAttachments.documentId],
+  }),
+  tenant: one(tenants, { fields: [documentLinks.tenantId], references: [tenants.id] }),
 }));
 
 // ─── Outbox Relations ───────────────────────────────────────────────────────

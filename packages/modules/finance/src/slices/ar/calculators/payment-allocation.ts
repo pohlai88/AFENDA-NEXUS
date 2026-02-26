@@ -27,7 +27,7 @@ export interface AllocationResult {
  */
 export function allocatePaymentFifo(
   paymentAmount: bigint,
-  invoices: readonly AllocationInput[],
+  invoices: readonly AllocationInput[]
 ): AllocationResult {
   const sorted = [...invoices].sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
 
@@ -58,7 +58,7 @@ export function allocatePaymentFifo(
  */
 export function allocatePaymentSpecific(
   specificAllocations: readonly { invoiceId: string; amount: bigint }[],
-  invoices: readonly AllocationInput[],
+  invoices: readonly AllocationInput[]
 ): AllocationResult {
   const invoiceMap = new Map(invoices.map((i) => [i.invoiceId, i]));
   const allocations: AllocationOutput[] = [];

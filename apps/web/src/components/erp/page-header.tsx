@@ -1,5 +1,6 @@
-import { cn } from "@/lib/utils";
-import { ChevronRight } from "lucide-react";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { ChevronRight } from 'lucide-react';
 
 interface Breadcrumb {
   label: string;
@@ -7,11 +8,12 @@ interface Breadcrumb {
 }
 
 interface PageHeaderProps {
-  title: string;
+  title?: string;
   description?: string;
   breadcrumbs?: Breadcrumb[];
   actions?: React.ReactNode;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export function PageHeader({
@@ -20,9 +22,10 @@ export function PageHeader({
   breadcrumbs,
   actions,
   className,
+  children,
 }: PageHeaderProps) {
   return (
-    <div className={cn("space-y-1", className)}>
+    <div className={cn('space-y-1', className)}>
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb">
           <ol className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -43,13 +46,23 @@ export function PageHeader({
       )}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
+          {children ?? (
+            <>
+              <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+              {description && <p className="text-sm text-muted-foreground">{description}</p>}
+            </>
           )}
         </div>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
     </div>
   );
+}
+
+export function PageHeaderHeading({ children, className }: { children?: React.ReactNode; className?: string }) {
+  return <h1 className={cn('text-2xl font-bold tracking-tight', className)}>{children}</h1>;
+}
+
+export function PageHeaderDescription({ children, className }: { children?: React.ReactNode; className?: string }) {
+  return <p className={cn('text-sm text-muted-foreground', className)}>{children}</p>;
 }

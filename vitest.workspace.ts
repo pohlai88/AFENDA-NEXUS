@@ -6,12 +6,12 @@
  * Usage: vitest --workspace vitest.workspace.ts --project finance
  */
 export default [
-  "packages/core",
-  "packages/contracts",
-  "packages/authz",
-  "packages/db",
-  "packages/modules/finance",
-  "packages/platform",
-  "apps/worker",
-  "apps/api",
+  'packages/core',
+  'packages/contracts',
+  'packages/authz',
+  'packages/db',
+  'packages/modules/finance',
+  'packages/platform',
+  'apps/worker',
+  'apps/api',
 ];

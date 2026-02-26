@@ -1,8 +1,11 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { deferredTaxItems } from "@afenda/db";
-import type { DeferredTaxItem } from "../entities/deferred-tax-item.js";
-import type { IDeferredTaxItemRepo, CreateDeferredTaxItemInput } from "../ports/deferred-tax-item-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { deferredTaxItems } from '@afenda/db';
+import type { DeferredTaxItem } from '../entities/deferred-tax-item.js';
+import type {
+  IDeferredTaxItemRepo,
+  CreateDeferredTaxItemInput,
+} from '../ports/deferred-tax-item-repo.js';
 
 type Row = typeof deferredTaxItems.$inferSelect;
 
@@ -31,7 +34,11 @@ export class DrizzleDeferredTaxItemRepo implements IDeferredTaxItemRepo {
   constructor(private readonly db: TenantTx) {}
 
   async findById(id: string): Promise<DeferredTaxItem | null> {
-    const rows = await this.db.select().from(deferredTaxItems).where(eq(deferredTaxItems.id, id)).limit(1);
+    const rows = await this.db
+      .select()
+      .from(deferredTaxItems)
+      .where(eq(deferredTaxItems.id, id))
+      .limit(1);
     return rows[0] ? mapToDomain(rows[0]) : null;
   }
 
@@ -57,7 +64,10 @@ export class DrizzleDeferredTaxItemRepo implements IDeferredTaxItemRepo {
   }
 
   async create(tenantId: string, input: CreateDeferredTaxItemInput): Promise<DeferredTaxItem> {
-    const [row] = await this.db.insert(deferredTaxItems).values({ tenantId, ...input }).returning();
+    const [row] = await this.db
+      .insert(deferredTaxItems)
+      .values({ tenantId, ...input })
+      .returning();
     return mapToDomain(row!);
   }
 

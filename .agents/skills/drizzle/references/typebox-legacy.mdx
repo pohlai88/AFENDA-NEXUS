@@ -7,14 +7,14 @@ Starting from `drizzle-orm@1.0.0-beta.15`, `drizzle-typebox` has been deprecated
 You can still use `drizzle-typebox` package but all new update will be added to Drizzle ORM directly
 
 This version of `typebox` is legacy by using `@sinclair/typebox` package
+
 </Callout>
 
 # typebox-legacy
 
 ### Install the dependencies
-<Npm>
-drizzle-orm @sinclair/typebox
-</Npm>
+
+<Npm>drizzle-orm @sinclair/typebox</Npm>
 
 ### Select schema
 
@@ -28,7 +28,7 @@ import { Value } from '@sinclair/typebox/value';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userSelectSchema = createSelectSchema(users);
@@ -68,16 +68,16 @@ import { Value } from '@sinclair/typebox/value';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userInsertSchema = createInsertSchema(users);
 
 const user = { name: 'John' };
-const parsed: { name: string, age: number } = Value.Parse(userInsertSchema, user); // Error: `age` is not defined
+const parsed: { name: string; age: number } = Value.Parse(userInsertSchema, user); // Error: `age` is not defined
 
 const user = { name: 'Jane', age: 30 };
-const parsed: { name: string, age: number } = Value.Parse(userInsertSchema, user); // Will parse successfully
+const parsed: { name: string; age: number } = Value.Parse(userInsertSchema, user); // Will parse successfully
 await db.insert(users).values(parsed);
 ```
 
@@ -93,16 +93,22 @@ import { Value } from '@sinclair/typebox/value';
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const userUpdateSchema = createUpdateSchema(users);
 
 const user = { id: 5, name: 'John' };
-const parsed: { name?: string | undefined, age?: number | undefined } = Value.Parse(userUpdateSchema, user); // Error: `id` is a generated column, it can't be updated
+const parsed: { name?: string | undefined; age?: number | undefined } = Value.Parse(
+  userUpdateSchema,
+  user
+); // Error: `id` is a generated column, it can't be updated
 
 const user = { age: 35 };
-const parsed: { name?: string | undefined, age?: number | undefined } = Value.Parse(userUpdateSchema, user); // Will parse successfully
+const parsed: { name?: string | undefined; age?: number | undefined } = Value.Parse(
+  userUpdateSchema,
+  user
+); // Will parse successfully
 await db.update(users).set(parsed).where(eq(users.name, 'Jane'));
 ```
 
@@ -153,14 +159,14 @@ import { t } from 'elysia'; // Extended Typebox instance
 const users = pgTable('users', {
   id: integer().generatedAlwaysAsIdentity().primaryKey(),
   name: text().notNull(),
-  age: integer().notNull()
+  age: integer().notNull(),
 });
 
 const { createInsertSchema } = createSchemaFactory({ typeboxInstance: t });
 
 const userInsertSchema = createInsertSchema(users, {
   // We can now use the extended instance
-  name: (schema) => t.Number({ ...schema }, { error: '`name` must be a string' })
+  name: (schema) => t.Number({ ...schema }, { error: '`name` must be a string' }),
 });
 ```
 
@@ -491,14 +497,24 @@ sqlite.blob({ mode: 'json' });
 sqlite.text({ mode: 'json' });
 
 // Schema
-Type.Recursive((self) => Type.Union([Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Null()]), Type.Array(self), Type.Record(Type.String(), self)]));
+Type.Recursive((self) =>
+  Type.Union([
+    Type.Union([Type.String(), Type.Number(), Type.Boolean(), Type.Null()]),
+    Type.Array(self),
+    Type.Record(Type.String(), self),
+  ])
+);
 ```
 
 ```ts
 sqlite.blob({ mode: 'buffer' });
 
 // Schema
-t.Union([t.Union([t.String(), t.Number(), t.Boolean(), t.Null()]), t.Array(t.Any()), t.Record(t.String(), t.Any())]);
+t.Union([
+  t.Union([t.String(), t.Number(), t.Boolean(), t.Null()]),
+  t.Array(t.Any()),
+  t.Record(t.String(), t.Any()),
+]);
 ```
 
 ```ts

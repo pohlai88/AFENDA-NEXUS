@@ -1,5 +1,5 @@
-import type { BankStatement } from "../entities/bank-statement.js";
-import type { BankStatementLine } from "../entities/bank-statement-line.js";
+import type { BankStatement } from '../entities/bank-statement.js';
+import type { BankStatementLine } from '../entities/bank-statement-line.js';
 
 export interface CreateBankStatementInput {
   readonly bankAccountId: string;
@@ -10,7 +10,7 @@ export interface CreateBankStatementInput {
   readonly openingBalance: bigint;
   readonly closingBalance: bigint;
   readonly currencyCode: string;
-  readonly format: BankStatement["format"];
+  readonly format: BankStatement['format'];
   readonly lineCount: number;
   readonly importedBy: string;
 }
@@ -20,7 +20,7 @@ export interface CreateStatementLineInput {
   readonly lineNumber: number;
   readonly transactionDate: Date;
   readonly valueDate: Date | null;
-  readonly transactionType: BankStatementLine["transactionType"];
+  readonly transactionType: BankStatementLine['transactionType'];
   readonly amount: bigint;
   readonly currencyCode: string;
   readonly reference: string | null;
@@ -36,5 +36,9 @@ export interface IBankStatementRepo {
   findLinesByStatement(statementId: string): Promise<readonly BankStatementLine[]>;
   findUnmatchedLines(statementId: string): Promise<readonly BankStatementLine[]>;
   createLine(tenantId: string, input: CreateStatementLineInput): Promise<BankStatementLine>;
-  updateLineMatchStatus(lineId: string, status: BankStatementLine["matchStatus"], matchId: string | null): Promise<BankStatementLine>;
+  updateLineMatchStatus(
+    lineId: string,
+    status: BankStatementLine['matchStatus'],
+    matchId: string | null
+  ): Promise<BankStatementLine>;
 }

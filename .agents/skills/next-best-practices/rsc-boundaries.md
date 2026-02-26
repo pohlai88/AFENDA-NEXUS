@@ -1,14 +1,17 @@
 # RSC Boundaries
 
-Detect and prevent invalid patterns when crossing Server/Client component boundaries.
+Detect and prevent invalid patterns when crossing Server/Client component
+boundaries.
 
 ## Detection Rules
 
 ### 1. Async Client Components Are Invalid
 
-Client components **cannot** be async functions. Only Server Components can be async.
+Client components **cannot** be async functions. Only Server Components can be
+async.
 
-**Detect:** File has `'use client'` AND component is `async function` or returns `Promise`
+**Detect:** File has `'use client'` AND component is `async function` or returns
+`Promise`
 
 ```tsx
 // Bad: async client component
@@ -141,7 +144,11 @@ export default function Page() {
 
 // ClientForm.tsx (client)
 ('use client');
-export function ClientForm({ onSubmit }: { onSubmit: (data: FormData) => Promise<void> }) {
+export function ClientForm({
+  onSubmit,
+}: {
+  onSubmit: (data: FormData) => Promise<void>;
+}) {
   return <form action={onSubmit}>...</form>;
 }
 ```

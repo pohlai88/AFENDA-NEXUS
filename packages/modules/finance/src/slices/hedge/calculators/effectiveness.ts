@@ -3,10 +3,10 @@
  * Pure calculator — tests hedge effectiveness using dollar-offset
  * and regression methods.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
-import type { HedgeType } from "../entities/hedge-relationship.js";
+import type { CalculatorResult } from '../../../shared/types.js';
+import type { HedgeType } from '../entities/hedge-relationship.js';
 
-export type EffectivenessMethod = "DOLLAR_OFFSET" | "REGRESSION";
+export type EffectivenessMethod = 'DOLLAR_OFFSET' | 'REGRESSION';
 
 export interface EffectivenessInput {
   readonly hedgeId: string;
@@ -35,27 +35,25 @@ export interface EffectivenessResult {
  * Ineffectiveness = instrument change + item change (i.e. the mismatch).
  */
 export function testEffectiveness(
-  inputs: readonly EffectivenessInput[],
+  inputs: readonly EffectivenessInput[]
 ): CalculatorResult<readonly EffectivenessResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one hedge relationship required");
+    throw new Error('At least one hedge relationship required');
   }
 
   const results: EffectivenessResult[] = inputs.map((input) => {
-    if (input.method === "REGRESSION") {
+    if (input.method === 'REGRESSION') {
       const rSquared = input.regressionRSquared ?? 0;
       const slope = input.regressionSlope ?? 0;
-      const isEffective =
-        rSquared >= 0.8 && slope >= -1.25 && slope <= -0.8;
-      const ineffectivenessAmount =
-        input.hedgingInstrumentFvChange + input.hedgedItemFvChange;
+      const isEffective = rSquared >= 0.8 && slope >= -1.25 && slope <= -0.8;
+      const ineffectivenessAmount = input.hedgingInstrumentFvChange + input.hedgedItemFvChange;
 
       return {
         hedgeId: input.hedgeId,
         isEffective,
         dollarOffsetRatioBps: 0,
         ineffectivenessAmount,
-        recycleToOci: input.hedgeType === "CASH_FLOW" ? input.hedgedItemFvChange : 0n,
+        recycleToOci: input.hedgeType === 'CASH_FLOW' ? input.hedgedItemFvChange : 0n,
         recycleToPnl: isEffective ? ineffectivenessAmount : input.hedgingInstrumentFvChange,
         reason: isEffective
           ? `Regression: R²=${rSquared}, slope=${slope} — effective`
@@ -74,31 +72,29 @@ export function testEffectiveness(
         recycleToPnl: input.hedgingInstrumentFvChange,
         reason:
           input.hedgingInstrumentFvChange === 0n
-            ? "No change in either — effective"
-            : "Hedged item unchanged but instrument changed — ineffective",
+            ? 'No change in either — effective'
+            : 'Hedged item unchanged but instrument changed — ineffective',
       };
     }
 
     // Ratio in bps: |instrument / item| × 10000
-    const absInstrument = input.hedgingInstrumentFvChange < 0n
-      ? -input.hedgingInstrumentFvChange
-      : input.hedgingInstrumentFvChange;
-    const absItem = input.hedgedItemFvChange < 0n
-      ? -input.hedgedItemFvChange
-      : input.hedgedItemFvChange;
+    const absInstrument =
+      input.hedgingInstrumentFvChange < 0n
+        ? -input.hedgingInstrumentFvChange
+        : input.hedgingInstrumentFvChange;
+    const absItem =
+      input.hedgedItemFvChange < 0n ? -input.hedgedItemFvChange : input.hedgedItemFvChange;
 
     const ratioBps = Number((absInstrument * 10000n) / absItem);
     const isEffective = ratioBps >= 8000 && ratioBps <= 12500;
-    const ineffectivenessAmount =
-      input.hedgingInstrumentFvChange + input.hedgedItemFvChange;
+    const ineffectivenessAmount = input.hedgingInstrumentFvChange + input.hedgedItemFvChange;
 
     return {
       hedgeId: input.hedgeId,
       isEffective,
       dollarOffsetRatioBps: ratioBps,
       ineffectivenessAmount,
-      recycleToOci:
-        input.hedgeType === "CASH_FLOW" ? input.hedgedItemFvChange : 0n,
+      recycleToOci: input.hedgeType === 'CASH_FLOW' ? input.hedgedItemFvChange : 0n,
       recycleToPnl: isEffective ? ineffectivenessAmount : input.hedgingInstrumentFvChange,
       reason: isEffective
         ? `Dollar-offset ratio ${ratioBps} bps — within 80-125% band`

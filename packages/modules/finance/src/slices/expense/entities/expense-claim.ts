@@ -2,7 +2,13 @@
  * Expense claim entity — employee expense submission with approval workflow.
  */
 
-export type ClaimStatus = "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "REIMBURSED" | "CANCELLED";
+export type ClaimStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'REIMBURSED'
+  | 'CANCELLED';
 
 export interface ExpenseClaim {
   readonly id: string;

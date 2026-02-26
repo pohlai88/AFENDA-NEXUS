@@ -1,8 +1,9 @@
 ---
-title: "Migrate from Sequelize to Drizzle"
+title: 'Migrate from Sequelize to Drizzle'
 ---
-import Npm from "@mdx/Npm.astro";
-import Steps from "@mdx/Steps.astro";
+
+import Npm from '@mdx/Npm.astro';
+import Steps from '@mdx/Steps.astro';
 
 ## Getting Started
 
@@ -56,7 +57,7 @@ Supplier.init(
     tableName: 'suppliers',
     modelName: 'Supplier',
     timestamps: false,
-  },
+  }
 );
 
 Supplier.hasMany(Product, {
@@ -109,7 +110,7 @@ Product.init(
     tableName: 'products',
     modelName: 'Product',
     timestamps: false,
-  },
+  }
 );
 ```
 
@@ -152,7 +153,7 @@ Order.init(
     tableName: 'orders',
     modelName: 'Order',
     timestamps: false,
-  },
+  }
 );
 ```
 
@@ -194,7 +195,7 @@ OrderDetail.init(
     tableName: 'order_details',
     modelName: 'OrderDetail',
     timestamps: false,
-  },
+  }
 );
 
 Order.hasMany(OrderDetail, { foreignKey: 'orderId', as: 'details' });
@@ -380,12 +381,9 @@ This guide uses the following file structure:
 
 #### Install Drizzle ORM & Drizzle Kit
 
-The first step is to install **Drizzle ORM** and `pg` package which we will use as a driver. The second step is to install **Drizzle Kit** and types for `pg`. [Drizzle Kit](/docs/kit-overview) - CLI companion for automatic SQL migrations generation and rapid prototyping. 
+The first step is to install **Drizzle ORM** and `pg` package which we will use as a driver. The second step is to install **Drizzle Kit** and types for `pg`. [Drizzle Kit](/docs/kit-overview) - CLI companion for automatic SQL migrations generation and rapid prototyping.
 
-<Npm>
-drizzle-orm pg
--D drizzle-kit @types/pg
-</Npm>
+<Npm>drizzle-orm pg -D drizzle-kit @types/pg</Npm>
 
 #### Setup Drizzle config file
 
@@ -480,9 +478,7 @@ export const orderDetails = pgTable(
       .references(() => products.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     quantity: integer('quantity').notNull(),
   },
-  (table) => [
-    primaryKey({ columns: [table.orderId, table.productId], name: 'order_details_pkey' })
-  ]
+  (table) => [primaryKey({ columns: [table.orderId, table.productId], name: 'order_details_pkey' })]
 );
 ```
 
@@ -549,7 +545,7 @@ Also, if you want to use relational queries, you have to update your schema file
 // ...other imports
 import { relations } from 'drizzle-orm';
 
-// ...other tables 
+// ...other tables
 export const suppliersRelations = relations(suppliers, ({ many }) => ({
   products: many(products),
 }));
@@ -622,7 +618,6 @@ import { client, db } from './drizzle/db';
 import { resolve } from 'node:path';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
-
 (async () => {
   await client.connect();
 
@@ -642,6 +637,7 @@ In this section, we will show you how to replace several queries from **Sequeliz
 We will show how to insert new rows into `suppliers` and `products` tables.
 
 1. `POST /suppliers`
+
 ```typescript copy filename="src/controllers/supplier.controller.ts"
 import { Supplier } from '../db/models/supplier';
 
@@ -809,7 +805,7 @@ const response: {
     city: string | null;
     country: string;
   } | null;
-}[]
+}[];
 ```
 
 2. `GET /products`
@@ -890,7 +886,7 @@ const response: {
   name: string;
   unitPrice: string;
   unitsInStock: number;
-}[]
+}[];
 ```
 
 3. `GET /orders/:id`
@@ -906,7 +902,7 @@ import { QueryTypes } from 'sequelize';
 const { id } = req.params;
 
 const response = await sequelize.query(
-      `
+  `
 SELECT 
   orders.id,
   orders."orderDate",
@@ -920,11 +916,11 @@ LEFT JOIN products ON order_details."productId" = products.id
 WHERE orders.id = :orderId
 GROUP BY orders.id
 `,
-      {
-        replacements: { orderId: id },
-        type: QueryTypes.SELECT,
-      },
-    );
+  {
+    replacements: { orderId: id },
+    type: QueryTypes.SELECT,
+  }
+);
 ```
 
 In **Drizzle ORM**, the query is implemented as follows:
@@ -937,19 +933,19 @@ import { orders, orderDetails, products } from '../drizzle/schema';
 const { id } = req.params;
 
 const response = await db
-      .select({
-        id: orders.id,
-        shipCountry: orders.shipCountry,
-        orderDate: orders.orderDate,
-        totalPrice: sql<number>`cast(sum(${orderDetails.quantity} * ${products.unitPrice}) as float)`,
-        totalQuantity: sql<number>`cast(sum(${orderDetails.quantity}) as int)`,
-        totalProducts: sql<number>`cast(count(${orderDetails.productId}) as int)`,
-      })
-      .from(orders)
-      .where(eq(orders.id, id))
-      .groupBy(orders.id)
-      .leftJoin(orderDetails, eq(orderDetails.orderId, orders.id))
-      .leftJoin(products, eq(products.id, orderDetails.productId));
+  .select({
+    id: orders.id,
+    shipCountry: orders.shipCountry,
+    orderDate: orders.orderDate,
+    totalPrice: sql<number>`cast(sum(${orderDetails.quantity} * ${products.unitPrice}) as float)`,
+    totalQuantity: sql<number>`cast(sum(${orderDetails.quantity}) as int)`,
+    totalProducts: sql<number>`cast(count(${orderDetails.productId}) as int)`,
+  })
+  .from(orders)
+  .where(eq(orders.id, id))
+  .groupBy(orders.id)
+  .leftJoin(orderDetails, eq(orderDetails.orderId, orders.id))
+  .leftJoin(products, eq(products.id, orderDetails.productId));
 ```
 
 In **Drizzle ORM**, the result will be type-safe with aggregations too.
@@ -963,7 +959,7 @@ const response: {
   totalPrice: number;
   totalQuantity: number;
   totalProducts: number;
-}[]
+}[];
 ```
 
 **Note:** as of now aggregations are not supported in relational queries, so you have to use `core queries`.
@@ -1002,12 +998,12 @@ import { suppliers } from '../drizzle/schema';
 const { id } = req.params;
 
 await db
-    .update(suppliers)
-    .set({
-      city: 'TestCity1Updated',
-      country: 'TestCountry1Updated',
-    })
-    .where(eq(suppliers.id, id));
+  .update(suppliers)
+  .set({
+    city: 'TestCity1Updated',
+    country: 'TestCountry1Updated',
+  })
+  .where(eq(suppliers.id, id));
 ```
 
 ##### Replace delete queries

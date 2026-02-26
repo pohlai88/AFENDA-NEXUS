@@ -1,55 +1,52 @@
 import Callout from '@mdx/Callout.astro';
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
 import Section from '@mdx/Section.astro';
-import Npx from "@mdx/Npx.astro";
-import Npm from "@mdx/Npm.astro";
+import Npx from '@mdx/Npx.astro';
+import Npm from '@mdx/Npm.astro';
 import CodeTabs from '@mdx/CodeTabs.astro';
 import CodeTab from '@mdx/CodeTab.astro';
 
 # Migrating to Relational Queries version 2
 
-<Callout type='error'>
-This page explains concepts available on drizzle versions `1.0.0-beta.1` and higher.
+<Callout type="error">
+  This page explains concepts available on drizzle versions `1.0.0-beta.1` and higher.
 </Callout>
 
-<Npm>
-drizzle-orm@beta
-drizzle-kit@beta -D
-</Npm>
+<Npm>drizzle-orm@beta drizzle-kit@beta -D</Npm>
 
-<br/>
+<br />
 
 <Prerequisites>
-- **Drizzle Relations v1** - [read here](/docs/relations)
-- **Relational Queries v1** - [read here](/docs/rqb)
-- **drizzle-kit pull** - [read here](/docs/drizzle-kit-pull)
-- **Relations Fundamentals** - [read here](/docs/relations-schema-declaration)
+  - **Drizzle Relations v1** - [read here](/docs/relations) - **Relational Queries v1** - [read
+  here](/docs/rqb) - **drizzle-kit pull** - [read here](/docs/drizzle-kit-pull) - **Relations
+  Fundamentals** - [read here](/docs/relations-schema-declaration)
 </Prerequisites>
 
 <Callout>
 Below is the table of contents. Click an item to jump to that section:
 
-- [What is working differently from v1](#what-was-changed-and-is-working-differently-from-v1)  
-- [New features in v2](2#what-is-new)  
-- [How to migrate relations definition from v1 to v2](#how-to-migrate-relations-schema-definition-from-v1-to-v2)  
-- [How to migrate queries from v1 to v2](#how-to-migrate-queries-from-v1-to-v2)  
-- [Partial upgrade, or how to stay on v1 even after an upgrade?](#partial-upgrade-or-how-to-stay-on-rqb-v1-even-after-an-upgrade)  
+- [What is working differently from v1](#what-was-changed-and-is-working-differently-from-v1)
+- [New features in v2](2#what-is-new)
+- [How to migrate relations definition from v1 to v2](#how-to-migrate-relations-schema-definition-from-v1-to-v2)
+- [How to migrate queries from v1 to v2](#how-to-migrate-queries-from-v1-to-v2)
+- [Partial upgrade, or how to stay on v1 even after an upgrade?](#partial-upgrade-or-how-to-stay-on-rqb-v1-even-after-an-upgrade)
 - [Internal changes(imports, internal types, etc.)](#internal-changes)
-</Callout>
+  </Callout>
 
 ### API changes
+
 #### What is working differently from v1
 
 {/* ##### Drizzle Relations schema definition */}
 
 One of the biggest updates were in **Relations Schema definition**
 
-The first difference is that you no longer need to specify `relations` for each table separately in different objects and 
+The first difference is that you no longer need to specify `relations` for each table separately in different objects and
 then pass them all to `drizzle()` along with your schema. In Relational Queries v2, you now have one dedicated place to
-specify all the relations for all the tables you need. 
+specify all the relations for all the tables you need.
 
-The `r` parameter in the callback provides comprehensive autocomplete 
-functionality - including all tables from your schema and functions such as `one`, `many`, and `through` - essentially 
+The `r` parameter in the callback provides comprehensive autocomplete
+functionality - including all tables from your schema and functions such as `one`, `many`, and `through` - essentially
 offering everything you need to specify your relations.
 
 ```ts
@@ -61,12 +58,13 @@ export const relations = defineRelations(schema, (r) => ({
     ...
 }));
 ```
+
 ```ts
 // index.ts
-import { relations } from "./relations"
-import { drizzle } from "drizzle-orm/..."
+import { relations } from './relations';
+import { drizzle } from 'drizzle-orm/...';
 
-const db = drizzle(process.env.DATABASE_URL, { relations })
+const db = drizzle(process.env.DATABASE_URL, { relations });
 ```
 
 ##### What is different?
@@ -77,9 +75,9 @@ import * as p from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const users = p.pgTable('users', {
-	id: p.integer().primaryKey(),
-	name: p.text(),
-	invitedBy: p.integer('invited_by'),
+  id: p.integer().primaryKey(),
+  name: p.text(),
+  invitedBy: p.integer('invited_by'),
 });
 
 export const posts = p.pgTable('posts', {
@@ -141,7 +139,7 @@ You can still separate it into different `parts`, and you can make the parts any
 
 ```ts
 import { defineRelations, defineRelationsPart } from 'drizzle-orm';
-import * as schema from "./schema";
+import * as schema from './schema';
 
 export const relations = defineRelations(schema, (r) => ({
   users: {
@@ -150,7 +148,7 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.users.id,
     }),
     posts: r.many.posts(),
-  }
+  },
 }));
 
 export const part = defineRelationsPart(schema, (r) => ({
@@ -159,19 +157,19 @@ export const part = defineRelationsPart(schema, (r) => ({
       from: r.posts.authorId,
       to: r.users.id,
     }),
-  }
+  },
 }));
 ```
 
 and then you can provide it to the db instance
 
 ```ts
-const db = drizzle(process.env.DB_URL, { relations: { ...relations, ...part } })
+const db = drizzle(process.env.DB_URL, { relations: { ...relations, ...part } });
 ```
 
 **Define `many` without `one`**
 
-In v1, if you wanted only the `many` side of a relationship, you had to specify the `one` side on the other end, 
+In v1, if you wanted only the `many` side of a relationship, you had to specify the `one` side on the other end,
 which made for a poor developer experience.
 
 In v2, you can simply use the `many` side without any additional steps
@@ -212,12 +210,10 @@ export const relations = defineRelations(schema, (r) => ({
 
 **New `optional` option**
 
-`optional: false` at the type level makes the `author` key in the `posts` object required. 
+`optional: false` at the type level makes the `author` key in the `posts` object required.
 This should be used when you are certain that this specific entity will always exist.
 
-<Callout title="❌ v1">
-Was not supported in v1
-</Callout>
+<Callout title="❌ v1">Was not supported in v1</Callout>
 
 <Callout title='✅ v2'>
 ```ts {9}
@@ -247,7 +243,8 @@ import * as schema from './schema'
 const db = drizzle(process.env.DATABASE_URL, { mode: "planetscale", schema });
 // or
 const db = drizzle(process.env.DATABASE_URL, { mode: "default", schema });
-```
+
+````
 </Callout>
 
 <Callout title='✅ v2'>
@@ -255,7 +252,8 @@ const db = drizzle(process.env.DATABASE_URL, { mode: "default", schema });
 import { relations } from './relations'
 
 const db = drizzle(process.env.DATABASE_URL, { relations });
-```
+````
+
 </Callout>
 
 **`from` and `to` upgrades**
@@ -358,12 +356,15 @@ Additional mapping that could be required for such scenarios can be handled usin
 Used by [relational queries](https://orm.drizzle.team/docs/rqb-v2)
 
 For example, when using bigint we need to cast field to text to preserve data integrity
+
 ```ts
 forJsonSelect(identifier: SQL, sql: SQLGenerator, arrayDimensions?: number): SQL {
 	return sql`${identifier}::text`
 },
 ```
+
 This will change query from:
+
 ```sql
 SELECT
 	row_to_json("t".*)
@@ -375,7 +376,9 @@ SELECT
 		"table"
 	) AS "t"
 ```
+
 to:
+
 ```sql
 SELECT
 	row_to_json("t".*)
@@ -387,18 +390,23 @@ SELECT
 		"table"
 	) AS "t"
 ```
+
 Returned by query object will change from:
+
 ```ts
 {
-	bigint: 5044565289845416000; // Partial data loss due to direct conversion to JSON format
+  bigint: 5044565289845416000; // Partial data loss due to direct conversion to JSON format
 }
 ```
+
 to:
+
 ```ts
 {
-	bigint: "5044565289845416380"; // Data is preserved due to conversion of field to text before JSON-ification
+  bigint: '5044565289845416380'; // Data is preserved due to conversion of field to text before JSON-ification
 }
 ```
+
 </Callout>
 
 <Callout title='✅ v2'>
@@ -431,13 +439,13 @@ You don't need to do it now!
 ```ts
 import * as p from "drizzle-orm/pg-core";
 
-export const users = p.pgTable("users", {
+export const users = p.pgTable('users', {
   id: p.integer().primaryKey(),
   name: p.text(),
   verified: p.boolean().notNull(),
 });
 
-export const groups = p.pgTable("groups", {
+export const groups = p.pgTable('groups', {
   id: p.integer().primaryKey(),
   name: p.text(),
 });
@@ -524,9 +532,7 @@ const response = await db.query.users.findMany({
 
 **Predefined filters**
 
-<Callout title="❌ v1">
-Was not supported in v1
-</Callout>
+<Callout title="❌ v1">Was not supported in v1</Callout>
 
 <Callout title='✅ v2'>
 ```ts {10-12}
@@ -577,6 +583,7 @@ const response = db.query.users.findMany({
 ```
 
 For a complete API Reference please check our [Select Filters docs](/docs/rqb-v2#select-filters)
+
 </Callout>
 
 <Callout collapsed='Complex filter example using RAW'>
@@ -640,9 +647,7 @@ const response = db.query.users.findMany({
 
 ##### Filtering by relations
 
-<Callout title="❌ v1">
-Was not supported in v1
-</Callout>
+<Callout title="❌ v1">Was not supported in v1</Callout>
 
 <Callout title='✅ v2'>
 Example: Get all users whose ID>10 and who have at least one post with content starting with “M”
@@ -651,23 +656,22 @@ Example: Get all users whose ID>10 and who have at least one post with content s
 const usersWithPosts = await db.query.usersTable.findMany({
   where: {
     id: {
-      gt: 10
+      gt: 10,
     },
     posts: {
       content: {
-        like: 'M%'
-      }
-    }
+        like: 'M%',
+      },
+    },
   },
 });
 ```
+
 </Callout>
 
 ##### Using offset on related objects
 
-<Callout title="❌ v1">
-Was not supported in v1
-</Callout>
+<Callout title="❌ v1">Was not supported in v1</Callout>
 
 <Callout title='✅ v2'>
 ```ts
@@ -692,24 +696,23 @@ In new version `drizzle-kit pull` supports pulling `relations.ts` file in a new 
 
 ##### Step 1
 
-<Npx>
-drizzle-kit pull
-</Npx>
+<Npx>drizzle-kit pull</Npx>
 
-#### Step 2 
+#### Step 2
 
-Transfer generated relations code from `drizzle/relations.ts` to the file you are using to specify your relations 
+Transfer generated relations code from `drizzle/relations.ts` to the file you are using to specify your relations
+
 ```plaintext {4-5}
  ├ 📂 drizzle
  │ ├ 📂 meta
  │ ├ 📜 migration.sql
  │ ├ 📜 relations.ts ────────┐
  │ └ 📜 schema.ts            |
- ├ 📂 src                    │ 
+ ├ 📂 src                    │
  │ ├ 📂 db                   │
  │ │ ├ 📜 relations.ts <─────┘
- │ │ └ 📜 schema.ts 
- │ └ 📜 index.ts         
+ │ │ └ 📜 schema.ts
+ │ └ 📜 index.ts
  └ …
 ```
 
@@ -719,14 +722,16 @@ Transfer generated relations code from `drizzle/relations.ts` to the file you ar
 import * as schema from './schema'
 ```
 
-You may need to change this import to a file where ALL your schema tables are located. 
+You may need to change this import to a file where ALL your schema tables are located.
 
 If there are multiple schema files, you can do the following:
+
 ```ts
 import * as schema1 from './schema1'
 import * as schema2 from './schema2'
 ...
 ```
+
 </Callout>
 
 #### Step 3
@@ -739,7 +744,8 @@ import * as schema from './schema'
 import { drizzle } from 'drizzle-orm/...'
 
 const db = drizzle('<url>', { schema })
-```
+
+````
 </Callout>
 
 <Callout title='After'>
@@ -749,13 +755,14 @@ import { relations } from './relations'
 import { drizzle } from 'drizzle-orm/...'
 
 const db = drizzle('<url>', { relations })
-```
+````
+
 </Callout>
 
 <Callout>
-If you had MySQL dialect, you can remove `mode` from `drizzle()` as long as it's not needed in version 2
+  If you had MySQL dialect, you can remove `mode` from `drizzle()` as long as it's not needed in
+  version 2
 </Callout>
-
 
 ##### Manual migration
 
@@ -767,10 +774,11 @@ If you want to migrate manually, you can check our [Drizzle Relations section](/
 
 You can check our [Select Filters docs](/docs/rqb-v2#select-filters) to see examples and a complete API reference.
 
-With the new syntax, you can use `AND`, `OR`, `NOT`, and `RAW`, plus all the filtering operators that 
+With the new syntax, you can use `AND`, `OR`, `NOT`, and `RAW`, plus all the filtering operators that
 were previously available in Relations v1.
 
 **Examples**
+
 <CodeTabs items={["simple eq", "using AND", "using OR", "using NOT", "complex example using RAW"]}>
 <CodeTab>
 ```ts
@@ -967,37 +975,29 @@ We've made an upgrade in a way, that all previous queries and relations definiti
 
 To define relations using Relational Queries v1, you would need to import it from `drizzle-orm`
 
-<Callout type='error' title='v1'>
-```ts
-import { relations } from 'drizzle-orm';
-```
+<Callout type="error" title="v1">
+  ```ts import {relations} from 'drizzle-orm'; ```
 </Callout>
 
 In Relational Queries v2 we moved it to `drizzle-orm/_relations` to give you some time for a migration
 
-<Callout title='v2'>
-```ts
-import { relations } from "drizzle-orm/_relations";
-```
-</Callout>
+<Callout title="v2">```ts import {relations} from "drizzle-orm/_relations"; ```</Callout>
 
 ##### Step 2: Replace your queries to `._query`
 
 To use Relational Queries v1 you had to write `db.query.`
 
-<Callout type='error' title='v1'>
-```ts
-await db.query.users.findMany();
-```
+<Callout type="error" title="v1">
+  ```ts await db.query.users.findMany(); ```
 </Callout>
 
-In Relational Queries v2, we moved it to `db._query` so that `db.query` could be used for a new syntax, 
+In Relational Queries v2, we moved it to `db._query` so that `db.query` could be used for a new syntax,
 while still giving you the option to use the old syntax via `db._query`.
 
-We had a long discussion about whether we should just deprecate `db.query` and replace it with 
-something like `db.query2` or `db.queryV2`. In the end, we decided that all new APIs should remain 
+We had a long discussion about whether we should just deprecate `db.query` and replace it with
+something like `db.query2` or `db.queryV2`. In the end, we decided that all new APIs should remain
 as simple as `db.query`, and that requiring you to replace all of your queries with `db._query` if you
-want to keep using the old syntax is preferable to forcing everyone in the future to use 
+want to keep using the old syntax is preferable to forcing everyone in the future to use
 `db.queryV2`, `db.queryV3`, `db.queryV4`, etc.
 
 <Callout title='v2'>
@@ -1007,12 +1007,13 @@ await db._query.users.findMany();
 
 // Using RQBv2
 await db.query.users.findMany();
-```
+
+````
 </Callout>
 
 ##### Step 3
 
-Define new relations or pull them using [this guide](#how-to-migrate-relations-schema-definition-from-v1-to-v2), 
+Define new relations or pull them using [this guide](#how-to-migrate-relations-schema-definition-from-v1-to-v2),
 then use them in your new queries or migrate your existing queries one by one.
 
 
@@ -1032,7 +1033,8 @@ export async function migrate<
 ) {
   ...
 }
-```
+````
+
 </Callout>
 <Callout title='now'>
 ```ts {3,5}
@@ -1133,47 +1135,24 @@ export interface DrizzleConfig<
 </Callout>
 </Callout>
 
-3. The following entities have been moved from `drizzle-orm` and `drizzle-orm/relations` to `drizzle-orm/_relations`. The original imports now 
-include new types used by Relational Queries v2, so make sure to update your imports if you intend to use the older types:
+3. The following entities have been moved from `drizzle-orm` and `drizzle-orm/relations` to `drizzle-orm/_relations`. The original imports now
+   include new types used by Relational Queries v2, so make sure to update your imports if you intend to use the older types:
 
-<Callout collapsed='A list of all moved entities'>
-- `Relation`
-- `Relations`
-- `One`
-- `Many`
-- `TableRelationsKeysOnly`
-- `ExtractTableRelationsFromSchema`
-- `ExtractObjectValues`
-- `ExtractRelationsFromTableExtraConfigSchema`
-- `getOperators`
-- `Operators`
-- `getOrderByOperators`
-- `OrderByOperators`
-- `FindTableByDBName`
-- `DBQueryConfig`
-- `TableRelationalConfig`
-- `TablesRelationalConfig`
-- `RelationalSchemaConfig`
-- `ExtractTablesWithRelations`
-- `ReturnTypeOrValue`
-- `BuildRelationResult`
-- `NonUndefinedKeysOnly`
-- `BuildQueryResult`
-- `RelationConfig`
-- `extractTablesRelationalConfig`
-- `relations`
-- `createOne`
-- `createMany`
-- `NormalizedRelation`
-- `normalizeRelation`
-- `createTableRelationsHelpers`
-- `TableRelationsHelpers`
-- `BuildRelationalQueryResult`
-- `mapRelationalRow`
+<Callout collapsed="A list of all moved entities">
+  - `Relation` - `Relations` - `One` - `Many` - `TableRelationsKeysOnly` -
+  `ExtractTableRelationsFromSchema` - `ExtractObjectValues` -
+  `ExtractRelationsFromTableExtraConfigSchema` - `getOperators` - `Operators` -
+  `getOrderByOperators` - `OrderByOperators` - `FindTableByDBName` - `DBQueryConfig` -
+  `TableRelationalConfig` - `TablesRelationalConfig` - `RelationalSchemaConfig` -
+  `ExtractTablesWithRelations` - `ReturnTypeOrValue` - `BuildRelationResult` -
+  `NonUndefinedKeysOnly` - `BuildQueryResult` - `RelationConfig` - `extractTablesRelationalConfig` -
+  `relations` - `createOne` - `createMany` - `NormalizedRelation` - `normalizeRelation` -
+  `createTableRelationsHelpers` - `TableRelationsHelpers` - `BuildRelationalQueryResult` -
+  `mapRelationalRow`
 </Callout>
 
-4. In the same manner, `${dialect}-core/query-builders/query` files were moved to `${dialect}-core/query-builders/_query` 
-with RQB v2's alternatives being put in their place
+4. In the same manner, `${dialect}-core/query-builders/query` files were moved to `${dialect}-core/query-builders/_query`
+   with RQB v2's alternatives being put in their place
 
 <Callout collapsed='Examples'>
 <Callout type='error' title='before'>

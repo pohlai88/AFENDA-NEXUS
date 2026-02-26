@@ -11,23 +11,23 @@
  * 6. Root tsconfig.json references match manifest library packages
  */
 
-import { readFileSync, existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { readFileSync, existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
-const ROOT = resolve(import.meta.dirname, "../../..");
-const MANIFEST_PATH = join(ROOT, ".afenda/project.manifest.json");
+const ROOT = resolve(import.meta.dirname, '../../..');
+const MANIFEST_PATH = join(ROOT, '.afenda/project.manifest.json');
 
 function loadManifest() {
   if (!existsSync(MANIFEST_PATH)) {
-    console.error("FATAL: .afenda/project.manifest.json not found");
+    console.error('FATAL: .afenda/project.manifest.json not found');
     process.exit(1);
   }
-  return JSON.parse(readFileSync(MANIFEST_PATH, "utf-8"));
+  return JSON.parse(readFileSync(MANIFEST_PATH, 'utf-8'));
 }
 
 function checkPackageExists(pkg) {
   const dir = join(ROOT, pkg.root_dir);
-  const pkgJson = join(dir, "package.json");
+  const pkgJson = join(dir, 'package.json');
   const errors = [];
 
   if (!existsSync(dir)) {
@@ -55,7 +55,7 @@ function main() {
 
   for (const pkg of packages) {
     // Skip unmanaged entries (e.g. tools/scripts) — no package.json expected
-    if (pkg.type === "unmanaged") {
+    if (pkg.type === 'unmanaged') {
       console.log(`  SKIP ${pkg.root_dir} (unmanaged)`);
       continue;
     }
@@ -71,7 +71,7 @@ function main() {
     }
   }
 
-  console.log(`\n${totalErrors === 0 ? "PASS" : "FAIL"}: ${totalErrors} error(s)`);
+  console.log(`\n${totalErrors === 0 ? 'PASS' : 'FAIL'}: ${totalErrors} error(s)`);
   process.exit(totalErrors > 0 ? 1 : 0);
 }
 

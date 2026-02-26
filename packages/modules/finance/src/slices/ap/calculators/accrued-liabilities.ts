@@ -32,7 +32,7 @@ export interface AccrualEntry {
  */
 export function computeAccruedLiabilities(
   receipts: readonly UninvoicedReceipt[],
-  accruedLiabilityAccountId: string,
+  accruedLiabilityAccountId: string
 ): readonly AccrualEntry[] {
   return receipts.map((r) => ({
     receiptId: r.receiptId,

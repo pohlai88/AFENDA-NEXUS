@@ -6,22 +6,25 @@
  *
  * Usage: pnpm gen:table invoice
  */
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 const name = process.argv[2];
 if (!name) {
-  console.error("Usage: pnpm gen:table <name>");
+  console.error('Usage: pnpm gen:table <name>');
   process.exit(1);
 }
 
 const root = process.cwd();
-const snakeCase = name.replace(/([A-Z])/g, "_$1").toLowerCase().replace(/^_/, "");
+const snakeCase = name
+  .replace(/([A-Z])/g, '_$1')
+  .toLowerCase()
+  .replace(/^_/, '');
 const camelCase = name.replace(/([-_][a-z])/g, (g) => g[1].toUpperCase());
 const PascalCase = camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
 
 // Schema file in packages/db/src/schema/
-const schemaDir = join(root, "packages", "db", "src", "schema");
+const schemaDir = join(root, 'packages', 'db', 'src', 'schema');
 mkdirSync(schemaDir, { recursive: true });
 
 const schemaFile = join(schemaDir, `${snakeCase}.ts`);
@@ -52,14 +55,14 @@ export const ${camelCase} = pgTable(
 // ALTER TABLE ${snakeCase} FORCE ROW LEVEL SECURITY;
 // CREATE POLICY tenant_isolation ON ${snakeCase}
 //   USING (tenant_id = current_setting('app.tenant_id')::uuid);
-`,
+`
 );
 
 console.log(`Created schema: ${schemaFile}`);
 
 // Migration stub
-const timestamp_ = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
-const migrationDir = join(root, "packages", "db", "migrations");
+const timestamp_ = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+const migrationDir = join(root, 'packages', 'db', 'migrations');
 mkdirSync(migrationDir, { recursive: true });
 
 const migrationFile = join(migrationDir, `${timestamp_}_create_${snakeCase}.sql`);
@@ -83,7 +86,7 @@ CREATE POLICY tenant_isolation ON ${snakeCase}
 
 -- Index
 CREATE INDEX idx_${snakeCase}_tenant ON ${snakeCase}(tenant_id);
-`,
+`
 );
 
 console.log(`Created migration: ${migrationFile}`);

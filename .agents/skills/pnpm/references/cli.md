@@ -175,7 +175,8 @@ corepack prepare pnpm@latest --activate
 ## Version Notes
 
 - **pnpm 10.x** - Current stable (recommended)
-- **pnpm 11.x** - Alpha release with breaking changes (pure ESM, new config format)
+- **pnpm 11.x** - Alpha release with breaking changes (pure ESM, new config
+  format)
   - Node.js v18/v19 support dropped
   - `.npmrc` project configs → `packageConfigs` in `pnpm-workspace.yaml`
   - New build permission system

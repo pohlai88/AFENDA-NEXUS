@@ -28,13 +28,17 @@ export interface Pain001Output {
 }
 
 function escapeXml(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 function formatMinorUnits(amount: bigint, decimalPlaces: number = 2): string {
   const str = amount.toString();
   if (decimalPlaces === 0) return str;
-  const padded = str.padStart(decimalPlaces + 1, "0");
+  const padded = str.padStart(decimalPlaces + 1, '0');
   return `${padded.slice(0, -decimalPlaces)}.${padded.slice(-decimalPlaces)}`;
 }
 
@@ -45,14 +49,16 @@ function formatDate(d: Date): string {
 export function buildPain001(
   messageId: string,
   debtorName: string,
-  instructions: readonly PaymentInstruction[],
+  instructions: readonly PaymentInstruction[]
 ): Pain001Output {
   let controlSum = 0n;
   for (const instr of instructions) {
     controlSum += instr.amount;
   }
 
-  const txBlocks = instructions.map((instr) => `
+  const txBlocks = instructions
+    .map(
+      (instr) => `
     <CdtTrfTxInf>
       <PmtId><EndToEndId>${escapeXml(instr.paymentId)}</EndToEndId></PmtId>
       <Amt><InstdAmt Ccy="${escapeXml(instr.currencyCode)}">${formatMinorUnits(instr.amount)}</InstdAmt></Amt>
@@ -60,7 +66,9 @@ export function buildPain001(
       <Cdtr><Nm>${escapeXml(instr.creditorName)}</Nm></Cdtr>
       <CdtrAcct><Id><IBAN>${escapeXml(instr.creditorIban)}</IBAN></Id></CdtrAcct>
       <RmtInf><Ustrd>${escapeXml(instr.remittanceInfo)}</Ustrd></RmtInf>
-    </CdtTrfTxInf>`).join("");
+    </CdtTrfTxInf>`
+    )
+    .join('');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
@@ -78,8 +86,8 @@ export function buildPain001(
       <NbOfTxs>${instructions.length}</NbOfTxs>
       <ReqdExctnDt>${instructions.length > 0 ? formatDate(instructions[0]!.executionDate) : formatDate(new Date())}</ReqdExctnDt>
       <Dbtr><Nm>${escapeXml(debtorName)}</Nm></Dbtr>
-      <DbtrAcct><Id><IBAN>${instructions.length > 0 ? escapeXml(instructions[0]!.debtorIban) : ""}</IBAN></Id></DbtrAcct>
-      <DbtrAgt><FinInstnId><BIC>${instructions.length > 0 ? escapeXml(instructions[0]!.debtorBic) : ""}</BIC></FinInstnId></DbtrAgt>${txBlocks}
+      <DbtrAcct><Id><IBAN>${instructions.length > 0 ? escapeXml(instructions[0]!.debtorIban) : ''}</IBAN></Id></DbtrAcct>
+      <DbtrAgt><FinInstnId><BIC>${instructions.length > 0 ? escapeXml(instructions[0]!.debtorBic) : ''}</BIC></FinInstnId></DbtrAgt>${txBlocks}
     </PmtInf>
   </CstmrCdtTrfInitn>
 </Document>`;

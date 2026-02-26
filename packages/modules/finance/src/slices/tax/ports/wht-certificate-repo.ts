@@ -1,9 +1,9 @@
-import type { WhtCertificate } from "../entities/wht-certificate.js";
+import type { WhtCertificate } from '../entities/wht-certificate.js';
 
 export interface CreateWhtCertificateInput {
   readonly payeeId: string;
   readonly payeeName: string;
-  readonly payeeType: WhtCertificate["payeeType"];
+  readonly payeeType: WhtCertificate['payeeType'];
   readonly countryCode: string;
   readonly incomeType: string;
   readonly grossAmount: bigint;
@@ -26,5 +26,5 @@ export interface IWhtCertificateRepo {
   findByPeriod(periodStart: Date, periodEnd: Date): Promise<readonly WhtCertificate[]>;
   findAll(): Promise<readonly WhtCertificate[]>;
   create(tenantId: string, input: CreateWhtCertificateInput): Promise<WhtCertificate>;
-  updateStatus(id: string, status: WhtCertificate["status"]): Promise<WhtCertificate>;
+  updateStatus(id: string, status: WhtCertificate['status']): Promise<WhtCertificate>;
 }

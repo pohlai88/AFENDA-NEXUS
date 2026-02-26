@@ -12,7 +12,7 @@ export interface CovenantTestInput {
   readonly isMinimumThreshold: boolean;
 }
 
-export type CovenantComplianceStatus = "COMPLIANT" | "WARNING" | "BREACHED";
+export type CovenantComplianceStatus = 'COMPLIANT' | 'WARNING' | 'BREACHED';
 
 export interface CovenantTestResult {
   readonly covenantId: string;
@@ -29,17 +29,15 @@ export function testCovenant(input: CovenantTestInput): CovenantTestResult {
     ? input.currentValue - input.thresholdValue
     : input.thresholdValue - input.currentValue;
 
-  const headroomPct = input.thresholdValue !== 0
-    ? (diff / input.thresholdValue) * 100
-    : 0;
+  const headroomPct = input.thresholdValue !== 0 ? (diff / input.thresholdValue) * 100 : 0;
 
   let status: CovenantComplianceStatus;
   if (diff < 0) {
-    status = "BREACHED";
+    status = 'BREACHED';
   } else if (headroomPct < WARNING_THRESHOLD_PCT) {
-    status = "WARNING";
+    status = 'WARNING';
   } else {
-    status = "COMPLIANT";
+    status = 'COMPLIANT';
   }
 
   return {

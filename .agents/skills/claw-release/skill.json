@@ -8,9 +8,7 @@
   "keywords": ["release", "versioning", "deployment", "automation", "ci-cd", "skills"],
 
   "sbom": {
-    "files": [
-      { "path": "SKILL.md", "required": true, "description": "Release workflow guide" }
-    ]
+    "files": [{ "path": "SKILL.md", "required": true, "description": "Release workflow guide" }]
   },
 
   "openclaw": {

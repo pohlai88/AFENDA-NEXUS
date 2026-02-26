@@ -1,11 +1,11 @@
-import type { LeaseContract } from "../entities/lease-contract.js";
+import type { LeaseContract } from '../entities/lease-contract.js';
 
 export interface CreateLeaseContractInput {
   readonly companyId: string;
   readonly leaseNumber: string;
   readonly description: string;
-  readonly lesseeOrLessor: LeaseContract["lesseeOrLessor"];
-  readonly leaseType: LeaseContract["leaseType"];
+  readonly lesseeOrLessor: LeaseContract['lesseeOrLessor'];
+  readonly leaseType: LeaseContract['leaseType'];
   readonly counterpartyId: string;
   readonly counterpartyName: string;
   readonly assetDescription: string;
@@ -28,5 +28,5 @@ export interface ILeaseContractRepo {
   findByCompany(companyId: string): Promise<readonly LeaseContract[]>;
   findAll(): Promise<readonly LeaseContract[]>;
   create(tenantId: string, input: CreateLeaseContractInput): Promise<LeaseContract>;
-  updateStatus(id: string, status: LeaseContract["status"]): Promise<LeaseContract>;
+  updateStatus(id: string, status: LeaseContract['status']): Promise<LeaseContract>;
 }

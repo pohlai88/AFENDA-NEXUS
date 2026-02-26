@@ -1,7 +1,9 @@
 ---
 name: clawsec-feed
 version: 0.0.4
-description: Security advisory feed with automated NVD CVE polling for OpenClaw-related vulnerabilities. Updated daily.
+description:
+  Security advisory feed with automated NVD CVE polling for OpenClaw-related
+  vulnerabilities. Updated daily.
 homepage: https://clawsec.prompt.security
 metadata: { 'openclaw': { 'emoji': '📡', 'category': 'security' } }
 clawdis:
@@ -12,9 +14,11 @@ clawdis:
 
 # ClawSec Feed 📡
 
-Security advisory feed monitoring for AI agents. Subscribe to community-driven threat intelligence and stay informed about emerging threats.
+Security advisory feed monitoring for AI agents. Subscribe to community-driven
+threat intelligence and stay informed about emerging threats.
 
-This feed is automatically updated daily with CVEs related to OpenClaw, clawdbot, and Moltbot from the NIST National Vulnerability Database (NVD).
+This feed is automatically updated daily with CVEs related to OpenClaw,
+clawdbot, and Moltbot from the NIST National Vulnerability Database (NVD).
 
 **An open source project by [Prompt Security](https://prompt.security)**
 
@@ -28,7 +32,9 @@ You can get clawsec-feed in two ways:
 
 **If you've installed clawsec-suite, you may already have this!**
 
-ClawSec-feed is bundled alongside ClawSec Suite to provide crucial CVE and threat intelligence information. When you install the suite, if you don't already have the feed installed, it will be deployed from the bundled copy.
+ClawSec-feed is bundled alongside ClawSec Suite to provide crucial CVE and
+threat intelligence information. When you install the suite, if you don't
+already have the feed installed, it will be deployed from the bundled copy.
 
 **Advantages:**
 
@@ -57,8 +63,7 @@ Continue below for standalone installation instructions.
 
 ---
 
-Installation Steps:
-Agents should review scripts before execution!
+Installation Steps: Agents should review scripts before execution!
 
 ```bash
 # Get latest clawsec-feed release tag
@@ -70,7 +75,8 @@ SKILL_URL="https://github.com/prompt-security/clawsec/releases/download/$LATEST_
 curl -sSL --fail --show-error "$SKILL_URL"
 ```
 
-Once you have this skill file, proceed to **[Deploy ClawSec Feed](#deploy-clawsec-feed)** below.
+Once you have this skill file, proceed to
+**[Deploy ClawSec Feed](#deploy-clawsec-feed)** below.
 
 ---
 
@@ -287,7 +293,8 @@ ClawSec Feed deployed successfully. I will now:
 
 Subscribes to the community advisory feed for:
 
-- **Known malicious skills/plugins** - Skills that have been identified as harmful
+- **Known malicious skills/plugins** - Skills that have been identified as
+  harmful
 - **Prompt injection patterns** - Attack patterns observed in the wild
 - **Vulnerable skill versions** - Skills with known security flaws
 - **Security best practice updates** - New recommendations for agent safety
@@ -582,7 +589,8 @@ fi
 
 ## Rate Limiting
 
-**Important:** To avoid excessive requests to the feed server, follow these guidelines:
+**Important:** To avoid excessive requests to the feed server, follow these
+guidelines:
 
 | Check Type           | Recommended Interval | Minimum Interval |
 | -------------------- | -------------------- | ---------------- |
@@ -649,11 +657,15 @@ fi
 
 ## Initial Download Integrity
 
-**Bootstrap Trust Problem:** The initial download of this skill cannot be verified by the skill itself. To establish trust:
+**Bootstrap Trust Problem:** The initial download of this skill cannot be
+verified by the skill itself. To establish trust:
 
-1. **Verify the source URL** - Ensure you are downloading from `https://clawsec.prompt.security`
-2. **Check release signatures** - GitHub signs our releases; verify the release is from the checksums.
-3. **Compare checksums** - After download, compare the SHA-256 hash against the published `checksums.json`:
+1. **Verify the source URL** - Ensure you are downloading from
+   `https://clawsec.prompt.security`
+2. **Check release signatures** - GitHub signs our releases; verify the release
+   is from the checksums.
+3. **Compare checksums** - After download, compare the SHA-256 hash against the
+   published `checksums.json`:
 
 ```bash
 # After downloading SKILL.md, verify its integrity
@@ -667,7 +679,8 @@ if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
 fi
 ```
 
-**Note:** For maximum security, verify checksums.json via a separate trusted channel (e.g., direct from GitHub release page UI, not via curl).
+**Note:** For maximum security, verify checksums.json via a separate trusted
+channel (e.g., direct from GitHub release page UI, not via curl).
 
 ---
 
@@ -682,4 +695,5 @@ fi
 
 MIT License - See repository for details.
 
-Built with 📡 by the [Prompt Security](https://prompt.security) team and the agent community.
+Built with 📡 by the [Prompt Security](https://prompt.security) team and the
+agent community.

@@ -1,11 +1,11 @@
 /**
  * Newsletter Signup - Minimal Form Example
- * 
+ *
  * A simple, single-field form demonstrating the essential patterns:
  * - React Hook Form + Zod
  * - Accessibility basics
  * - Loading and success states
- * 
+ *
  * Use this as a starting point for simple forms.
  */
 
@@ -23,7 +23,7 @@ type FormData = z.infer<typeof schema>;
 
 export function NewsletterSignup() {
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
@@ -39,7 +39,7 @@ export function NewsletterSignup() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    
+
     setIsSuccess(true);
     reset();
   };
@@ -74,7 +74,7 @@ export function NewsletterSignup() {
           {isSubmitting ? 'Subscribing...' : 'Subscribe'}
         </button>
       </div>
-      
+
       {errors.email && (
         <span id="newsletter-email-error" role="alert" className="field-error">
           {errors.email.message}

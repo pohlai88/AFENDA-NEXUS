@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 
-import fs from "node:fs/promises";
-import path from "node:path";
-import os from "node:os";
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
 
-const DEFAULT_PRIMARY_PATH = path.join(os.homedir(), ".openclaw", "security-audit.json");
-const DEFAULT_FALLBACK_PATH = ".clawsec/allowlist.json";
+const DEFAULT_PRIMARY_PATH = path.join(os.homedir(), '.openclaw', 'security-audit.json');
+const DEFAULT_FALLBACK_PATH = '.clawsec/allowlist.json';
 
 function isObject(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function normalizeString(value, fallback = "") {
+function normalizeString(value, fallback = '') {
   return String(value ?? fallback).trim();
 }
 
@@ -84,13 +84,17 @@ function normalizeSuppressionConfig(payload, source) {
       const normalized = validateSuppression(rawSuppressions[i], i);
       suppressions.push(normalized);
     } catch (err) {
-      throw new Error(`Invalid suppression at index ${i} in ${source}: ${err.message}`, { cause: err });
+      throw new Error(`Invalid suppression at index ${i} in ${source}: ${err.message}`, {
+        cause: err,
+      });
     }
   }
 
   // Extract enabledFor sentinel (array of pipeline names this config activates for)
   const enabledFor = Array.isArray(payload.enabledFor)
-    ? payload.enabledFor.filter((v) => typeof v === "string" && v.trim() !== "").map((v) => v.trim().toLowerCase())
+    ? payload.enabledFor
+        .filter((v) => typeof v === 'string' && v.trim() !== '')
+        .map((v) => v.trim().toLowerCase())
     : [];
 
   return {
@@ -102,26 +106,28 @@ function normalizeSuppressionConfig(payload, source) {
 
 async function loadConfigFromPath(configPath) {
   try {
-    const raw = await fs.readFile(configPath, "utf8");
+    const raw = await fs.readFile(configPath, 'utf8');
     const parsed = JSON.parse(raw);
     return normalizeSuppressionConfig(parsed, configPath);
   } catch (err) {
-    if (err.code === "ENOENT") {
+    if (err.code === 'ENOENT') {
       // File doesn't exist - return null to try fallback
       return null;
     }
-    if (err.code === "EACCES") {
+    if (err.code === 'EACCES') {
       throw new Error(`Permission denied reading config file: ${configPath}`, { cause: err });
     }
     if (err instanceof SyntaxError) {
-      throw new Error(`Malformed JSON in config file ${configPath}: ${err.message}`, { cause: err });
+      throw new Error(`Malformed JSON in config file ${configPath}: ${err.message}`, {
+        cause: err,
+      });
     }
     // Re-throw validation errors or other errors
     throw err;
   }
 }
 
-const EMPTY_RESULT = Object.freeze({ suppressions: [], source: "none" });
+const EMPTY_RESULT = Object.freeze({ suppressions: [], source: 'none' });
 
 /**
  * Resolve config from the 4-tier priority chain.
@@ -173,7 +179,10 @@ async function resolveConfig(customPath) {
  * @param {string} [options.pipeline="audit"] - Pipeline to check in enabledFor sentinel
  * @returns {Promise<{suppressions: Array, source: string}>}
  */
-export async function loadSuppressionConfig(customPath = null, { enabled = false, pipeline = "audit" } = {}) {
+export async function loadSuppressionConfig(
+  customPath = null,
+  { enabled = false, pipeline = 'audit' } = {}
+) {
   // Gate 1: suppression must be explicitly opted-in via CLI flag
   if (!enabled) {
     return EMPTY_RESULT;
@@ -199,11 +208,11 @@ export async function loadSuppressionConfig(customPath = null, { enabled = false
 // CLI usage when run directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
-  const enableFlag = args.includes("--enable-suppressions");
-  const customPath = args.find((a) => !a.startsWith("--")) || null;
+  const enableFlag = args.includes('--enable-suppressions');
+  const customPath = args.find((a) => !a.startsWith('--')) || null;
 
   if (!enableFlag) {
-    process.stdout.write("Suppression is disabled. Pass --enable-suppressions to activate.\n");
+    process.stdout.write('Suppression is disabled. Pass --enable-suppressions to activate.\n');
     process.exit(0);
   }
 
@@ -211,14 +220,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const config = await loadSuppressionConfig(customPath, { enabled: true });
 
     if (config.suppressions.length === 0) {
-      process.stdout.write("No active suppressions (config missing, no enabledFor sentinel, or empty)\n");
-      process.stdout.write(JSON.stringify(config, null, 2) + "\n");
+      process.stdout.write(
+        'No active suppressions (config missing, no enabledFor sentinel, or empty)\n'
+      );
+      process.stdout.write(JSON.stringify(config, null, 2) + '\n');
       process.exit(0);
     }
 
     process.stdout.write(`Config loaded successfully from: ${config.source}\n`);
     process.stdout.write(`Found ${config.suppressions.length} suppression(s):\n`);
-    process.stdout.write(JSON.stringify(config, null, 2) + "\n");
+    process.stdout.write(JSON.stringify(config, null, 2) + '\n');
     process.exit(0);
   } catch (err) {
     process.stderr.write(`Error loading suppression config: ${err.message}\n`);

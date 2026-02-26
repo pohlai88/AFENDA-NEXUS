@@ -1,5 +1,5 @@
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { Journal } from "../entities/journal.js";
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type { Journal } from '../entities/journal.js';
 
 export interface CreateJournalInput {
   readonly tenantId: string;
@@ -20,5 +20,9 @@ export interface IJournalRepo {
   findById(id: string): Promise<Result<Journal>>;
   save(journal: Journal): Promise<Result<Journal>>;
   create(input: CreateJournalInput): Promise<Result<Journal>>;
-  findByPeriod(periodId: string, status?: Journal["status"], pagination?: PaginationParams): Promise<Result<PaginatedResult<Journal>>>;
+  findByPeriod(
+    periodId?: string,
+    status?: Journal['status'],
+    pagination?: PaginationParams
+  ): Promise<Result<PaginatedResult<Journal>>>;
 }

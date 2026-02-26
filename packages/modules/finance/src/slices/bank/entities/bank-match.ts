@@ -2,8 +2,8 @@
  * Bank match entity — links a bank statement line to a GL journal or other source document.
  */
 
-export type MatchType = "AUTO" | "MANUAL";
-export type MatchConfidence = "HIGH" | "MEDIUM" | "LOW";
+export type MatchType = 'AUTO' | 'MANUAL';
+export type MatchConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 
 export interface BankMatch {
   readonly id: string;

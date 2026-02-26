@@ -10,38 +10,39 @@ description: v1 pre-release
 
 > Check the migration guide for RQBv1 to RQBv2 migration steps: https://orm.drizzle.team/docs/relations-v1-v2
 
-> Check new RQBv2 schema docs: https://orm.drizzle.team/docs/relations-v2 
+> Check new RQBv2 schema docs: https://orm.drizzle.team/docs/relations-v2
 
 > Check new RQBv2 query docs: https://orm.drizzle.team/docs/rqb-v2
 
 # New Features
 
-## MSSQL dialect 
+## MSSQL dialect
 
 Drizzle now supports MSSQL in `drizzle-orm`, `drizzle-kit` and `drizzle-seed` packages. It support most of the columns, query builder capabilities, migration strategies, etc.
 
 The only feature that is not yet supported is `RQBv2`
 
 ```ts
-// Make sure to install the 'mssql' package 
+// Make sure to install the 'mssql' package
 import { drizzle } from 'drizzle-orm/node-mssql';
 
 const db = drizzle(process.env.DATABASE_URL);
- 
+
 const result = await db.execute('select 1');
 ```
+
 ```ts
-// Make sure to install the 'pg' package 
+// Make sure to install the 'pg' package
 import { drizzle } from 'drizzle-orm/node-mssql';
 
 // You can specify any property from the mssql connection options
-const db = drizzle({ 
-  connection: { 
+const db = drizzle({
+  connection: {
     connectionString: process.env.DATABASE_URL,
-    ssl: true
-  }
+    ssl: true,
+  },
 });
- 
+
 const result = await db.execute('select 1');
 ```
 
@@ -52,25 +53,26 @@ Drizzle now supports MSSQL in `drizzle-orm`, `drizzle-kit` and `drizzle-seed` pa
 The only feature that is not yet supported is `RQBv2`
 
 ```ts
-// Make sure to install the 'pg' package 
+// Make sure to install the 'pg' package
 import { drizzle } from 'drizzle-orm/cockroach';
 
 const db = drizzle(process.env.DATABASE_URL);
- 
+
 const result = await db.execute('select 1');
 ```
+
 ```ts
-// Make sure to install the 'pg' package 
+// Make sure to install the 'pg' package
 import { drizzle } from 'drizzle-orm/cockroach';
 
 // You can specify any property from the node-postgres connection options
-const db = drizzle({ 
-  connection: { 
+const db = drizzle({
+  connection: {
     connectionString: process.env.DATABASE_URL,
-    ssl: true
-  }
+    ssl: true,
+  },
 });
- 
+
 const result = await db.execute('select 1');
 ```
 
@@ -80,7 +82,7 @@ In a case you need to separate relations config into several parts you can use `
 
 ```ts
 import { defineRelations, defineRelationsPart } from 'drizzle-orm';
-import * as schema from "./schema";
+import * as schema from './schema';
 export const relations = defineRelations(schema, (r) => ({
   users: {
     invitee: r.one.users({
@@ -88,7 +90,7 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.users.id,
     }),
     posts: r.many.posts(),
-  }
+  },
 }));
 export const part = defineRelationsPart(schema, (r) => ({
   posts: {
@@ -96,14 +98,14 @@ export const part = defineRelationsPart(schema, (r) => ({
       from: r.posts.authorId,
       to: r.users.id,
     }),
-  }
+  },
 }));
 ```
 
 and then you can provide it to the db instance
 
 ```ts
-const db = drizzle(process.env.DB_URL, { relations: { ...relations, ...part } })
+const db = drizzle(process.env.DB_URL, { relations: { ...relations, ...part } });
 ```
 
 ## Folders v3 migrations
@@ -111,6 +113,7 @@ const db = drizzle(process.env.DB_URL, { relations: { ...relations, ...part } })
 > Linked discussion: https://github.com/drizzle-team/drizzle-orm/discussions/2832
 
 We've updated the migrations folder structure by:
+
 - removing journal.json
 - grouping SQL files and snapshots into separate migration folders
 - removing the `drizzle-kit drop` command
@@ -118,9 +121,11 @@ We've updated the migrations folder structure by:
 These changes eliminate potential Git conflicts with the journal file and simplify the process of dropping or fixing conflicted migrations
 
 In upcoming beta releases, we'll introduce commutativity checks to help guide you through team migration conflicts, detect possible collisions, and suggest ways to resolve them
+
 > Commutativity discussion: https://github.com/drizzle-team/drizzle-orm/discussions/5005
 
 To migrate previous folders to a new format you would need to run
+
 ```
 drizzle-kit up
 ```
@@ -130,6 +135,7 @@ drizzle-kit up
 Architecture rewrite to close major kit and migration issues. We’ve completed a set of valuable and necessary updates to help us iterate faster, improve test coverage, and enhance overall stability.
 
 Summary of work completed:
+
 - Migrated from database snapshots to database DDL snapshots
 - Reworked the entire architecture for detecting and applying diffs
 - Added significant improvements for defaults, expressions, and types detection
@@ -143,7 +149,7 @@ This flag will create a drizzle migration table in the database and will mark fi
 
 ## `schemaFilter` behavior update
 
-`drizzle-kit` will start managing all the schemas defined in your code. If you want to filter them, you can use `schemaFilter` 
+`drizzle-kit` will start managing all the schemas defined in your code. If you want to filter them, you can use `schemaFilter`
 Previously, only the public schema was managed unless you explicitly added more schemas to `schemaFilter`.
 
 It now also supports glob patterns, allowing you to filter schemas in any way you like
@@ -154,8 +160,8 @@ Previously to mark PostgreSQL table with RLS enabled you would need to:
 
 ```ts
 // OLD syntax
-pgTable('name', {}).enableRLS()
-``` 
+pgTable('name', {}).enableRLS();
+```
 
 We moved this option to a different place
 
@@ -185,11 +191,11 @@ We've added a few more MySQL column types:
 
 ## More Updates and Fixes
 
-- Fixed pg-native Pool detection in node-postgres transactions  
-- Allowed subqueries in select fields  
-- Updated typo algorythm => algorithm  
+- Fixed pg-native Pool detection in node-postgres transactions
+- Allowed subqueries in select fields
+- Updated typo algorythm => algorithm
 - Fixed `$onUpdate` not handling `SQL` values (fixes [#2388](https://github.com/drizzle-team/drizzle-orm/issues/2388), tests implemented by [L-Mario564](https://github.com/L-Mario564) in [#2911](https://github.com/drizzle-team/drizzle-orm/pull/2911))
-- Fixed `pg` mappers not handling `Date` instances in `bun-sql:postgresql` driver responses for `date`, `timestamp` types (fixes [#4493](https://github.com/drizzle-team/drizzle-orm/issues/4493))  
+- Fixed `pg` mappers not handling `Date` instances in `bun-sql:postgresql` driver responses for `date`, `timestamp` types (fixes [#4493](https://github.com/drizzle-team/drizzle-orm/issues/4493))
 
 ## Bugs fixed
 
@@ -215,7 +221,7 @@ We've added a few more MySQL column types:
 
 - [[BUG]: Introspect generated files don't show columns in Views as arrays](https://github.com/drizzle-team/drizzle-orm/issues/4764)
 
-- [[BUG]: drizzle kit wrong  schema with default string](https://github.com/drizzle-team/drizzle-orm/issues/4760)
+- [[BUG]: drizzle kit wrong schema with default string](https://github.com/drizzle-team/drizzle-orm/issues/4760)
 
 - [[BUG]: drizzle-kit pull fails to wrap gen_random_uuid() with sql function call resulting in syntax errors](https://github.com/drizzle-team/drizzle-orm/issues/4730)
 
@@ -273,7 +279,7 @@ We've added a few more MySQL column types:
 
 - [SQLite columns are not marked as unique, instead a unique index has been created](https://github.com/drizzle-team/drizzle-orm/issues/4152)
 
-- [[BUG]:Introspect does not pull foreign key names when `on delete` and  `on update` are set to other than `no action`](https://github.com/drizzle-team/drizzle-orm/issues/4115)
+- [[BUG]:Introspect does not pull foreign key names when `on delete` and `on update` are set to other than `no action`](https://github.com/drizzle-team/drizzle-orm/issues/4115)
 
 - [[BUG]: `drizzle-kit pull` made a broken schema as TypeScript. (looks forget to import `tinyint` from drizzle-orm/mysql-core)](https://github.com/drizzle-team/drizzle-orm/issues/4110)
 
@@ -281,7 +287,7 @@ We've added a few more MySQL column types:
 
 - [[BUG]:Inconsistent behavior in many-to-many relations with junction table: identical patterns yield different results](https://github.com/drizzle-team/drizzle-orm/issues/3937)
 
-- [[BUG]:Error Typescript for query where in relation (version  "drizzle-orm": "^0.38.3")](https://github.com/drizzle-team/drizzle-orm/issues/3911)
+- [[BUG]:Error Typescript for query where in relation (version "drizzle-orm": "^0.38.3")](https://github.com/drizzle-team/drizzle-orm/issues/3911)
 
 - [[BUG]: findFirst not return undefined or null when not data is found.](https://github.com/drizzle-team/drizzle-orm/issues/3872)
 
@@ -321,7 +327,7 @@ We've added a few more MySQL column types:
 
 - [[BUG]: `pgEnum` generates faulty migrations](https://github.com/drizzle-team/drizzle-orm/issues/3514)
 
-- [[BUG]: Query include relations => relation table has jsonb field =>  SqliteError: JSON cannot hold BLOB values ](https://github.com/drizzle-team/drizzle-orm/issues/3497)
+- [[BUG]: Query include relations => relation table has jsonb field => SqliteError: JSON cannot hold BLOB values ](https://github.com/drizzle-team/drizzle-orm/issues/3497)
 
 - [MYSQL Introspect: Warning: Can't parse bit(1) from database](https://github.com/drizzle-team/drizzle-orm/issues/3480)
 
@@ -371,7 +377,7 @@ We've added a few more MySQL column types:
 
 - [[BUG]: default value in migration generates invalid sql.ts file](https://github.com/drizzle-team/drizzle-orm/issues/3087)
 
-- [[BUG]: drizzle-kit triggers a _ZodError when uniqueIndex is used together with sql lower](https://github.com/drizzle-team/drizzle-orm/issues/3062)
+- [[BUG]: drizzle-kit triggers a \_ZodError when uniqueIndex is used together with sql lower](https://github.com/drizzle-team/drizzle-orm/issues/3062)
 
 - [[BUG]: drizzle-kit introspect TypeError: Cannot read properties of null (reading 'camelCase')](https://github.com/drizzle-team/drizzle-orm/issues/3046)
 
@@ -411,7 +417,7 @@ We've added a few more MySQL column types:
 
 - [[BUG]: Issues with nested conditions & placeholders in SQLite query](https://github.com/drizzle-team/drizzle-orm/issues/2529)
 
-- [[BUG]:  Postgis `geometry` query select fails when using `with`](https://github.com/drizzle-team/drizzle-orm/issues/2526)
+- [[BUG]: Postgis `geometry` query select fails when using `with`](https://github.com/drizzle-team/drizzle-orm/issues/2526)
 
 - [[BUG]: Geometry config type doesn't appear to affect the output sql](https://github.com/drizzle-team/drizzle-orm/issues/2454)
 

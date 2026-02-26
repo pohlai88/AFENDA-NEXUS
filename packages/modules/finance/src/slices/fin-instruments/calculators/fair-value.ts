@@ -3,8 +3,8 @@
  * Pure calculator — assigns fair value levels and computes
  * unrealized gain/loss for fair value instruments.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
-import type { FairValueLevel, InstrumentClassification } from "../entities/financial-instrument.js";
+import type { CalculatorResult } from '../../../shared/types.js';
+import type { FairValueLevel, InstrumentClassification } from '../entities/financial-instrument.js';
 
 export interface FairValueInput {
   readonly instrumentId: string;
@@ -32,14 +32,14 @@ export interface FairValueResult {
  * - Amortized Cost: no fair value adjustment (carrying amount unchanged)
  */
 export function computeFairValue(
-  inputs: readonly FairValueInput[],
+  inputs: readonly FairValueInput[]
 ): CalculatorResult<readonly FairValueResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one instrument required");
+    throw new Error('At least one instrument required');
   }
 
   const results: FairValueResult[] = inputs.map((input) => {
-    if (input.classification === "AMORTIZED_COST") {
+    if (input.classification === 'AMORTIZED_COST') {
       return {
         instrumentId: input.instrumentId,
         unrealizedGainLoss: 0n,
@@ -59,8 +59,8 @@ export function computeFairValue(
       unrealizedGainLoss,
       isGain,
       newCarryingAmount: input.newFairValue,
-      recognizedInPnl: input.classification === "FVTPL" ? unrealizedGainLoss : 0n,
-      recognizedInOci: input.classification === "FVOCI" ? unrealizedGainLoss : 0n,
+      recognizedInPnl: input.classification === 'FVTPL' ? unrealizedGainLoss : 0n,
+      recognizedInOci: input.classification === 'FVOCI' ? unrealizedGainLoss : 0n,
       fairValueLevel: input.fairValueLevel,
     };
   });

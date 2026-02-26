@@ -2,7 +2,7 @@
  * IC Loan entity — intercompany loan management.
  */
 
-export type IcLoanStatus = "ACTIVE" | "REPAID" | "WRITTEN_OFF";
+export type IcLoanStatus = 'ACTIVE' | 'REPAID' | 'WRITTEN_OFF';
 
 export interface IcLoan {
   readonly id: string;

@@ -2,16 +2,17 @@
 title: Conditional filters in query
 slug: conditional-filters-in-query
 ---
-import Section from "@mdx/Section.astro";
-import IsSupportedChipGroup from "@mdx/IsSupportedChipGroup.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
 
-<IsSupportedChipGroup chips={{PostgreSQL: true, MySQL: true, SQLite: true}}/>
+import Section from '@mdx/Section.astro';
+import IsSupportedChipGroup from '@mdx/IsSupportedChipGroup.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
+
+<IsSupportedChipGroup chips={{ PostgreSQL: true, MySQL: true, SQLite: true }} />
 
 <Prerequisites>
-- Get started with [PostgreSQL](/docs/get-started-postgresql), [MySQL](/docs/get-started-mysql) and [SQLite](/docs/get-started-sqlite);
-- [Select statement](/docs/select);
-- [Filtering](/docs/select#filtering) and [Filter operators](/docs/operators);
+  - Get started with [PostgreSQL](/docs/get-started-postgresql), [MySQL](/docs/get-started-mysql)
+  and [SQLite](/docs/get-started-sqlite); - [Select statement](/docs/select); -
+  [Filtering](/docs/select#filtering) and [Filter operators](/docs/operators);
 </Prerequisites>
 
 To pass a conditional filter in query you can use `.where()` method and logical operator like below:
@@ -23,21 +24,23 @@ import { ilike } from 'drizzle-orm';
 const db = drizzle(...)
 
 const searchPosts = async (term?: string) => {
-  await db
-    .select()
-    .from(posts)
-    .where(term ? ilike(posts.title, term) : undefined);
+await db
+.select()
+.from(posts)
+.where(term ? ilike(posts.title, term) : undefined);
 };
 
 await searchPosts();
 await searchPosts('AI');
-```
+
+````
 
 
 ```sql
 select * from posts;
 select * from posts where title ilike 'AI';
-```
+````
+
 </Section>
 
 To combine conditional filters you can use `and()` or `or()` operators like below:
@@ -47,21 +50,22 @@ To combine conditional filters you can use `and()` or `or()` operators like belo
 import { and, gt, ilike, inArray } from 'drizzle-orm';
 
 const searchPosts = async (term?: string, categories: string[] = [], views = 0) => {
-  await db
-    .select()
-    .from(posts)
-    .where(
-      and(
-        term ? ilike(posts.title, term) : undefined,
-        categories.length > 0 ? inArray(posts.category, categories) : undefined,
-        views > 100 ? gt(posts.views, views) : undefined,
-      ),
-    );
+await db
+.select()
+.from(posts)
+.where(
+and(
+term ? ilike(posts.title, term) : undefined,
+categories.length > 0 ? inArray(posts.category, categories) : undefined,
+views > 100 ? gt(posts.views, views) : undefined,
+),
+);
 };
 
 await searchPosts();
 await searchPosts('AI', ['Tech', 'Art', 'Science'], 200);
-```
+
+````
 
 ```sql
 select * from posts;
@@ -71,7 +75,8 @@ select * from posts
     and category in ('Tech', 'Science', 'Art')
     and views > 200
   );
-```
+````
+
 </Section>
 
 If you need to combine conditional filters in different part of the project you can create a variable, push filters and then use it in `.where()` method with `and()` or `or()` operators like below:
@@ -126,6 +131,7 @@ await searchPosts(8, 200);
 select * from posts where length(title) < 8;
 select * from posts where (length(title) < 8 and views > 200);
 ```
+
 </Section>
 
 Drizzle filter operators are just SQL expressions under the hood. This is example of how `lt` operator is implemented in Drizzle:

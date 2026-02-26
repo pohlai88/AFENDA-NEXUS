@@ -4,7 +4,6 @@
     "apps/*",
     "packages/*",
     "packages/modules/*",
-    "packages/industry/*",
     "tools/*"
   ],
   "packages": {
@@ -37,21 +36,6 @@
       "name": "@afenda/finance",
       "type": "library",
       "layer": "module"
-    },
-    "packages/industry/fnb": {
-      "name": "@afenda/industry-fnb",
-      "type": "library",
-      "layer": "industry-overlay"
-    },
-    "packages/industry/manufacturing": {
-      "name": "@afenda/industry-manufacturing",
-      "type": "library",
-      "layer": "industry-overlay"
-    },
-    "packages/industry/agriculture": {
-      "name": "@afenda/industry-agriculture",
-      "type": "library",
-      "layer": "industry-overlay"
     },
     "packages/typescript-config": {
       "name": "@afenda/typescript-config",

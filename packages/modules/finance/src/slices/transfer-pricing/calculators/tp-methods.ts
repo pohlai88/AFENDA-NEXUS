@@ -3,9 +3,9 @@
  * Pure calculator — validates intercompany transaction prices using
  * CUP, Resale Price, Cost Plus, TNMM, and Profit Split methods.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type TpMethod = "CUP" | "RESALE_PRICE" | "COST_PLUS" | "TNMM" | "PROFIT_SPLIT";
+export type TpMethod = 'CUP' | 'RESALE_PRICE' | 'COST_PLUS' | 'TNMM' | 'PROFIT_SPLIT';
 
 export interface TpMethodInput {
   readonly transactionId: string;
@@ -38,10 +38,10 @@ export interface TpMethodResult {
  * Computes arm's-length range and validates transaction price.
  */
 export function validateTpMethod(
-  inputs: readonly TpMethodInput[],
+  inputs: readonly TpMethodInput[]
 ): CalculatorResult<readonly TpMethodResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one transaction required");
+    throw new Error('At least one transaction required');
   }
 
   const results: TpMethodResult[] = inputs.map((input) => {
@@ -49,7 +49,7 @@ export function validateTpMethod(
     let computedMarginBps: number;
 
     switch (input.method) {
-      case "CUP":
+      case 'CUP':
         // Direct price comparison — benchmark values ARE the arm's-length prices
         return {
           transactionId: input.transactionId,
@@ -62,46 +62,44 @@ export function validateTpMethod(
           armsLengthPriceLow: BigInt(input.benchmarkLowBps),
           armsLengthPriceMedian: BigInt(input.benchmarkMedianBps),
           armsLengthPriceHigh: BigInt(input.benchmarkHighBps),
-          reason: "CUP: Direct comparable price analysis",
+          reason: 'CUP: Direct comparable price analysis',
         };
 
-      case "COST_PLUS":
+      case 'COST_PLUS':
         base = input.costBase ?? 0n;
         if (base === 0n) {
-          return makeZeroResult(input, "Cost base is zero — cannot compute");
+          return makeZeroResult(input, 'Cost base is zero — cannot compute');
         }
-        computedMarginBps = base > 0n
-          ? Number(((input.transactionPrice - base) * 10000n) / base)
-          : 0;
+        computedMarginBps =
+          base > 0n ? Number(((input.transactionPrice - base) * 10000n) / base) : 0;
         break;
 
-      case "RESALE_PRICE":
+      case 'RESALE_PRICE':
         base = input.revenueBase ?? input.transactionPrice;
         if (base === 0n) {
-          return makeZeroResult(input, "Revenue base is zero — cannot compute");
+          return makeZeroResult(input, 'Revenue base is zero — cannot compute');
         }
         computedMarginBps = Number(((base - input.transactionPrice) * 10000n) / base);
         break;
 
-      case "TNMM":
+      case 'TNMM':
         base = input.revenueBase ?? 0n;
         if (base === 0n) {
-          return makeZeroResult(input, "Revenue base is zero — cannot compute TNMM");
+          return makeZeroResult(input, 'Revenue base is zero — cannot compute TNMM');
         }
         computedMarginBps = Number(((input.netProfitBase ?? 0n) * 10000n) / base);
         break;
 
-      case "PROFIT_SPLIT": {
+      case 'PROFIT_SPLIT': {
         const totalPool = input.totalProfitPool ?? 0n;
         if (totalPool === 0n) {
-          return makeZeroResult(input, "Total profit pool is zero");
+          return makeZeroResult(input, 'Total profit pool is zero');
         }
         const factorBps = input.contributionFactorBps ?? 5000;
         const expectedShare = (totalPool * BigInt(factorBps)) / 10000n;
         computedMarginBps = factorBps;
         const isWithinRange =
-          computedMarginBps >= input.benchmarkLowBps &&
-          computedMarginBps <= input.benchmarkHighBps;
+          computedMarginBps >= input.benchmarkLowBps && computedMarginBps <= input.benchmarkHighBps;
         return {
           transactionId: input.transactionId,
           method: input.method,
@@ -117,14 +115,14 @@ export function validateTpMethod(
     }
 
     const isWithinRange =
-      computedMarginBps >= input.benchmarkLowBps &&
-      computedMarginBps <= input.benchmarkHighBps;
+      computedMarginBps >= input.benchmarkLowBps && computedMarginBps <= input.benchmarkHighBps;
 
     const medianPrice =
-      input.method === "COST_PLUS"
+      input.method === 'COST_PLUS'
         ? base + (base * BigInt(input.benchmarkMedianBps)) / 10000n
-        : input.method === "RESALE_PRICE"
-          ? (input.revenueBase ?? 0n) - ((input.revenueBase ?? 0n) * BigInt(input.benchmarkMedianBps)) / 10000n
+        : input.method === 'RESALE_PRICE'
+          ? (input.revenueBase ?? 0n) -
+            ((input.revenueBase ?? 0n) * BigInt(input.benchmarkMedianBps)) / 10000n
           : input.transactionPrice;
 
     const adjustmentRequired = isWithinRange ? 0n : medianPrice - input.transactionPrice;

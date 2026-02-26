@@ -1,12 +1,16 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import Fastify, { type FastifyInstance } from "fastify";
-import type { FinanceRuntime, FinanceDeps } from "../app/ports/finance-runtime.js";
-import { registerArInvoiceRoutes } from "../slices/ar/routes/ar-invoice-routes.js";
-import { registerArPaymentRoutes } from "../slices/ar/routes/ar-payment-routes.js";
-import { registerArAgingRoutes } from "../slices/ar/routes/ar-aging-routes.js";
-import { registerArDunningRoutes } from "../slices/ar/routes/ar-dunning-routes.js";
-import { registerErrorHandler, registerBigIntSerializer } from "../shared/routes/fastify-plugins.js";
-import { money } from "@afenda/core";
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import Fastify, { type FastifyInstance } from 'fastify';
+import type { FinanceRuntime, FinanceDeps } from '../app/ports/finance-runtime.js';
+import { registerArInvoiceRoutes } from '../slices/ar/routes/ar-invoice-routes.js';
+import { registerArPaymentRoutes } from '../slices/ar/routes/ar-payment-routes.js';
+import { registerArAgingRoutes } from '../slices/ar/routes/ar-aging-routes.js';
+import { registerArDunningRoutes } from '../slices/ar/routes/ar-dunning-routes.js';
+import { DefaultAuthorizationPolicy } from '../shared/authorization/default-authorization-policy.js';
+import {
+  registerErrorHandler,
+  registerBigIntSerializer,
+} from '../shared/routes/fastify-plugins.js';
+import { money } from '@afenda/core';
 import {
   IDS,
   AR_IDS,
@@ -36,10 +40,10 @@ import {
   mockArInvoiceRepo,
   mockArPaymentAllocationRepo,
   mockDunningRepo,
-} from "./helpers.js";
+} from './helpers.js';
 
-const BASE_HEADERS = { "x-tenant-id": "t1", "x-user-id": "u1" };
-const JSON_HEADERS = { ...BASE_HEADERS, "content-type": "application/json" };
+const BASE_HEADERS = { 'x-tenant-id': 't1', 'x-user-id': 'u1' };
+const JSON_HEADERS = { ...BASE_HEADERS, 'content-type': 'application/json' };
 
 function buildArApp(depsOverrides: Partial<FinanceDeps> = {}): {
   app: FastifyInstance;
@@ -77,7 +81,7 @@ function buildArApp(depsOverrides: Partial<FinanceDeps> = {}): {
   const runtime: FinanceRuntime = {
     async withTenant<T>(
       _ctx: { tenantId: string; userId: string },
-      fn: (d: FinanceDeps) => Promise<T>,
+      fn: (d: FinanceDeps) => Promise<T>
     ): Promise<T> {
       return fn(deps);
     },
@@ -86,51 +90,60 @@ function buildArApp(depsOverrides: Partial<FinanceDeps> = {}): {
   const app = Fastify({ logger: false });
   registerErrorHandler(app);
   registerBigIntSerializer(app);
-  registerArInvoiceRoutes(app, runtime);
-  registerArPaymentRoutes(app, runtime);
-  registerArAgingRoutes(app, runtime);
-  registerArDunningRoutes(app, runtime);
+  const policy = new DefaultAuthorizationPolicy();
+  registerArInvoiceRoutes(app, runtime, policy);
+  registerArPaymentRoutes(app, runtime, policy);
+  registerArAgingRoutes(app, runtime, policy);
+  registerArDunningRoutes(app, runtime, policy);
 
   return { app, deps };
 }
 
 // ─── AR Invoice Routes ─────────────────────────────────────────────────────
 
-describe("AR Invoice Routes", () => {
+describe('AR Invoice Routes', () => {
   let app: FastifyInstance;
 
-  describe("POST /ar/invoices", () => {
+  describe('POST /ar/invoices', () => {
     beforeAll(async () => {
       ({ app } = buildArApp());
       await app.ready();
     });
     afterAll(() => app.close());
 
-    it("creates an AR invoice — 201", async () => {
+    it('creates an AR invoice — 201', async () => {
       const res = await app.inject({
-        method: "POST",
-        url: "/ar/invoices",
+        method: 'POST',
+        url: '/ar/invoices',
         headers: JSON_HEADERS,
         payload: {
           companyId: IDS.company,
           customerId: AR_IDS.customer,
           ledgerId: IDS.ledger,
-          invoiceNumber: "AR-TEST-001",
-          invoiceDate: "2025-01-15",
-          dueDate: "2025-02-14",
-          currencyCode: "USD",
-          lines: [{ accountId: AR_IDS.revenueAccount, quantity: 1, unitPrice: 500, amount: 500, taxAmount: 0 }],
+          invoiceNumber: 'AR-TEST-001',
+          invoiceDate: '2025-01-15',
+          dueDate: '2025-02-14',
+          currencyCode: 'USD',
+          lines: [
+            {
+              accountId: AR_IDS.revenueAccount,
+              quantity: 1,
+              unitPrice: 500,
+              amount: 500,
+              taxAmount: 0,
+            },
+          ],
         },
       });
       expect(res.statusCode).toBe(201);
       const body = res.json();
-      expect(body.invoiceNumber).toBe("AR-TEST-001");
+      expect(body.invoiceNumber).toBe('AR-TEST-001');
     });
 
-    it("rejects invalid body — 400", async () => {
+    it('rejects invalid body — 400', async () => {
       const res = await app.inject({
-        method: "POST",
-        url: "/ar/invoices",
+        method: 'POST',
+        url: '/ar/invoices',
         headers: JSON_HEADERS,
         payload: { lines: [] },
       });
@@ -138,19 +151,19 @@ describe("AR Invoice Routes", () => {
     });
   });
 
-  describe("GET /ar/invoices", () => {
+  describe('GET /ar/invoices', () => {
     beforeAll(async () => {
-      const inv = makeArInvoice({ status: "POSTED" });
+      const inv = makeArInvoice({ status: 'POSTED' });
       const invoices = new Map([[inv.id, inv]]);
       ({ app } = buildArApp({ arInvoiceRepo: mockArInvoiceRepo(invoices) }));
       await app.ready();
     });
     afterAll(() => app.close());
 
-    it("lists AR invoices — 200", async () => {
+    it('lists AR invoices — 200', async () => {
       const res = await app.inject({
-        method: "GET",
-        url: "/ar/invoices",
+        method: 'GET',
+        url: '/ar/invoices',
         headers: BASE_HEADERS,
       });
       expect(res.statusCode).toBe(200);
@@ -159,7 +172,7 @@ describe("AR Invoice Routes", () => {
     });
   });
 
-  describe("GET /ar/invoices/:id", () => {
+  describe('GET /ar/invoices/:id', () => {
     beforeAll(async () => {
       const inv = makeArInvoice();
       const invoices = new Map([[inv.id, inv]]);
@@ -168,37 +181,37 @@ describe("AR Invoice Routes", () => {
     });
     afterAll(() => app.close());
 
-    it("returns AR invoice by ID — 200", async () => {
+    it('returns AR invoice by ID — 200', async () => {
       const res = await app.inject({
-        method: "GET",
+        method: 'GET',
         url: `/ar/invoices/${AR_IDS.invoice}`,
         headers: BASE_HEADERS,
       });
       expect(res.statusCode).toBe(200);
     });
 
-    it("returns 404 for unknown ID", async () => {
+    it('returns 404 for unknown ID', async () => {
       const res = await app.inject({
-        method: "GET",
-        url: "/ar/invoices/00000000-0000-4000-8000-ffffffffffff",
+        method: 'GET',
+        url: '/ar/invoices/00000000-0000-4000-8000-ffffffffffff',
         headers: BASE_HEADERS,
       });
       expect(res.statusCode).toBe(404);
     });
   });
 
-  describe("POST /ar/invoices/:id/post", () => {
+  describe('POST /ar/invoices/:id/post', () => {
     beforeAll(async () => {
-      const inv = makeArInvoice({ status: "APPROVED" });
+      const inv = makeArInvoice({ status: 'APPROVED' });
       const invoices = new Map([[inv.id, inv]]);
       ({ app } = buildArApp({ arInvoiceRepo: mockArInvoiceRepo(invoices) }));
       await app.ready();
     });
     afterAll(() => app.close());
 
-    it("posts an APPROVED AR invoice — 200", async () => {
+    it('posts an APPROVED AR invoice — 200', async () => {
       const res = await app.inject({
-        method: "POST",
+        method: 'POST',
         url: `/ar/invoices/${AR_IDS.invoice}/post`,
         headers: JSON_HEADERS,
         payload: { fiscalPeriodId: IDS.period, arAccountId: AR_IDS.arAccount },
@@ -207,41 +220,41 @@ describe("AR Invoice Routes", () => {
     });
   });
 
-  describe("POST /ar/invoices/:id/write-off", () => {
+  describe('POST /ar/invoices/:id/write-off', () => {
     beforeAll(async () => {
-      const inv = makeArInvoice({ status: "POSTED" });
+      const inv = makeArInvoice({ status: 'POSTED' });
       const invoices = new Map([[inv.id, inv]]);
       ({ app } = buildArApp({ arInvoiceRepo: mockArInvoiceRepo(invoices) }));
       await app.ready();
     });
     afterAll(() => app.close());
 
-    it("writes off a POSTED invoice — 200", async () => {
+    it('writes off a POSTED invoice — 200', async () => {
       const res = await app.inject({
-        method: "POST",
+        method: 'POST',
         url: `/ar/invoices/${AR_IDS.invoice}/write-off`,
         headers: JSON_HEADERS,
-        payload: { reason: "Bad debt" },
+        payload: { reason: 'Bad debt' },
       });
       expect(res.statusCode).toBe(200);
     });
   });
 
-  describe("POST /ar/credit-notes", () => {
+  describe('POST /ar/credit-notes', () => {
     beforeAll(async () => {
-      const inv = makeArInvoice({ status: "POSTED" });
+      const inv = makeArInvoice({ status: 'POSTED' });
       const invoices = new Map([[inv.id, inv]]);
       ({ app } = buildArApp({ arInvoiceRepo: mockArInvoiceRepo(invoices) }));
       await app.ready();
     });
     afterAll(() => app.close());
 
-    it("creates a credit note — 201", async () => {
+    it('creates a credit note — 201', async () => {
       const res = await app.inject({
-        method: "POST",
-        url: "/ar/credit-notes",
+        method: 'POST',
+        url: '/ar/credit-notes',
         headers: JSON_HEADERS,
-        payload: { originalInvoiceId: AR_IDS.invoice, reason: "Overcharge" },
+        payload: { originalInvoiceId: AR_IDS.invoice, reason: 'Overcharge' },
       });
       expect(res.statusCode).toBe(201);
     });
@@ -250,16 +263,16 @@ describe("AR Invoice Routes", () => {
 
 // ─── AR Payment Routes ─────────────────────────────────────────────────────
 
-describe("AR Payment Routes", () => {
+describe('AR Payment Routes', () => {
   let app: FastifyInstance;
 
-  describe("POST /ar/payments", () => {
+  describe('POST /ar/payments', () => {
     beforeAll(async () => {
       const inv = makeArInvoice({
-        status: "POSTED",
+        status: 'POSTED',
         customerId: AR_IDS.customer,
-        totalAmount: money(50000n, "USD"),
-        paidAmount: money(0n, "USD"),
+        totalAmount: money(50000n, 'USD'),
+        paidAmount: money(0n, 'USD'),
       });
       const invoices = new Map([[inv.id, inv]]);
       ({ app } = buildArApp({ arInvoiceRepo: mockArInvoiceRepo(invoices) }));
@@ -267,17 +280,17 @@ describe("AR Payment Routes", () => {
     });
     afterAll(() => app.close());
 
-    it("allocates payment — 201", async () => {
+    it('allocates payment — 201', async () => {
       const res = await app.inject({
-        method: "POST",
-        url: "/ar/payments",
+        method: 'POST',
+        url: '/ar/payments',
         headers: JSON_HEADERS,
         payload: {
           customerId: AR_IDS.customer,
-          paymentDate: "2025-03-01",
-          paymentRef: "PAY-001",
+          paymentDate: '2025-03-01',
+          paymentRef: 'PAY-001',
           paymentAmount: 300,
-          currencyCode: "USD",
+          currencyCode: 'USD',
         },
       });
       expect(res.statusCode).toBe(201);
@@ -287,22 +300,22 @@ describe("AR Payment Routes", () => {
 
 // ─── AR Aging Routes ───────────────────────────────────────────────────────
 
-describe("AR Aging Routes", () => {
+describe('AR Aging Routes', () => {
   let app: FastifyInstance;
 
-  describe("GET /ar/aging", () => {
+  describe('GET /ar/aging', () => {
     beforeAll(async () => {
-      const inv = makeArInvoice({ status: "POSTED", dueDate: new Date("2025-03-01") });
+      const inv = makeArInvoice({ status: 'POSTED', dueDate: new Date('2025-03-01') });
       const invoices = new Map([[inv.id, inv]]);
       ({ app } = buildArApp({ arInvoiceRepo: mockArInvoiceRepo(invoices) }));
       await app.ready();
     });
     afterAll(() => app.close());
 
-    it("returns aging report — 200", async () => {
+    it('returns aging report — 200', async () => {
       const res = await app.inject({
-        method: "GET",
-        url: "/ar/aging?asOfDate=2025-04-15",
+        method: 'GET',
+        url: '/ar/aging?asOfDate=2025-04-15',
         headers: BASE_HEADERS,
       });
       expect(res.statusCode).toBe(200);
@@ -314,14 +327,14 @@ describe("AR Aging Routes", () => {
 
 // ─── AR Dunning Routes ─────────────────────────────────────────────────────
 
-describe("AR Dunning Routes", () => {
+describe('AR Dunning Routes', () => {
   let app: FastifyInstance;
 
-  describe("POST /ar/dunning", () => {
+  describe('POST /ar/dunning', () => {
     beforeAll(async () => {
       const inv = makeArInvoice({
-        status: "POSTED",
-        dueDate: new Date("2025-01-01"),
+        status: 'POSTED',
+        dueDate: new Date('2025-01-01'),
         customerId: AR_IDS.customer,
       });
       const invoices = new Map([[inv.id, inv]]);
@@ -330,12 +343,12 @@ describe("AR Dunning Routes", () => {
     });
     afterAll(() => app.close());
 
-    it("runs dunning — 201", async () => {
+    it('runs dunning — 201', async () => {
       const res = await app.inject({
-        method: "POST",
-        url: "/ar/dunning",
+        method: 'POST',
+        url: '/ar/dunning',
         headers: JSON_HEADERS,
-        payload: { runDate: "2025-04-15" },
+        payload: { runDate: '2025-04-15' },
       });
       expect(res.statusCode).toBe(201);
     });

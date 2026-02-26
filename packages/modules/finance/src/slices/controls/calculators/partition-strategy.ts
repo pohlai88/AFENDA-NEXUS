@@ -7,7 +7,7 @@
  * Outputs DDL-ready partition definitions.
  */
 
-export type PartitionMethod = "RANGE" | "LIST" | "HASH";
+export type PartitionMethod = 'RANGE' | 'LIST' | 'HASH';
 
 export interface TableVolumeMetrics {
   readonly tableName: string;
@@ -51,11 +51,15 @@ function estimateSizeMb(rowCount: bigint, avgRowSizeBytes: number): number {
 
 function generateFiscalPeriods(oldest: string, newest: string): string[] {
   const periods: string[] = [];
-  const [startYear, startPeriod] = oldest.split("-P").map(Number);
-  const [endYear, endPeriod] = newest.split("-P").map(Number);
+  const [startYear, startPeriod] = oldest.split('-P').map(Number);
+  const [endYear, endPeriod] = newest.split('-P').map(Number);
 
-  if (startYear === undefined || startPeriod === undefined ||
-      endYear === undefined || endPeriod === undefined) {
+  if (
+    startYear === undefined ||
+    startPeriod === undefined ||
+    endYear === undefined ||
+    endPeriod === undefined
+  ) {
     return [oldest, newest];
   }
 
@@ -63,7 +67,7 @@ function generateFiscalPeriods(oldest: string, newest: string): string[] {
   let period = startPeriod;
 
   while (year < endYear || (year === endYear && period <= endPeriod)) {
-    periods.push(`${year}-P${String(period).padStart(2, "0")}`);
+    periods.push(`${year}-P${String(period).padStart(2, '0')}`);
     period++;
     if (period > 12) {
       period = 1;
@@ -74,11 +78,12 @@ function generateFiscalPeriods(oldest: string, newest: string): string[] {
   return periods;
 }
 
-export function computePartitionStrategy(
-  tables: readonly TableVolumeMetrics[],
-): { result: PartitionStrategyReport; explanation: string } {
+export function computePartitionStrategy(tables: readonly TableVolumeMetrics[]): {
+  result: PartitionStrategyReport;
+  explanation: string;
+} {
   if (tables.length === 0) {
-    throw new Error("At least one table volume metric is required");
+    throw new Error('At least one table volume metric is required');
   }
 
   const plans: PartitionPlan[] = [];
@@ -87,7 +92,7 @@ export function computePartitionStrategy(
   for (const table of tables) {
     if (table.estimatedRowCount < MIN_ROWS_FOR_PARTITIONING) {
       recommendations.push(
-        `${table.tableName}: ${table.estimatedRowCount} rows — below ${MIN_ROWS_FOR_PARTITIONING} threshold, partitioning not recommended yet`,
+        `${table.tableName}: ${table.estimatedRowCount} rows — below ${MIN_ROWS_FOR_PARTITIONING} threshold, partitioning not recommended yet`
       );
       continue;
     }
@@ -110,13 +115,13 @@ export function computePartitionStrategy(
     ddl.push(
       `-- Partition ${table.tableName} by ${table.partitionKeyColumn} (RANGE)`,
       `ALTER TABLE ${table.tableName} RENAME TO ${table.tableName}_old;`,
-      `CREATE TABLE ${table.tableName} (LIKE ${table.tableName}_old INCLUDING ALL) PARTITION BY RANGE (${table.partitionKeyColumn});`,
+      `CREATE TABLE ${table.tableName} (LIKE ${table.tableName}_old INCLUDING ALL) PARTITION BY RANGE (${table.partitionKeyColumn});`
     );
 
     for (let i = 0; i < periods.length; i += groupSize) {
       const fromPeriod = periods[i]!;
       const toPeriod = periods[Math.min(i + groupSize, periods.length) - 1]!;
-      const partName = `${table.tableName}_${fromPeriod.replace(/-/g, "_")}`;
+      const partName = `${table.tableName}_${fromPeriod.replace(/-/g, '_')}`;
       const estRows = rowsPerPeriod * BigInt(Math.min(groupSize, periods.length - i));
       const estSize = estimateSizeMb(estRows, table.avgRowSizeBytes);
 
@@ -129,21 +134,21 @@ export function computePartitionStrategy(
       });
 
       const nextPeriod = periods[Math.min(i + groupSize, periods.length)];
-      const toVal = nextPeriod ?? "MAXVALUE";
+      const toVal = nextPeriod ?? 'MAXVALUE';
       ddl.push(
-        `CREATE TABLE ${partName} PARTITION OF ${table.tableName} FOR VALUES FROM ('${fromPeriod}') TO (${toVal === "MAXVALUE" ? "MAXVALUE" : `'${toVal}'`});`,
+        `CREATE TABLE ${partName} PARTITION OF ${table.tableName} FOR VALUES FROM ('${fromPeriod}') TO (${toVal === 'MAXVALUE' ? 'MAXVALUE' : `'${toVal}'`});`
       );
     }
 
     ddl.push(
       `-- Migrate data`,
       `INSERT INTO ${table.tableName} SELECT * FROM ${table.tableName}_old;`,
-      `DROP TABLE ${table.tableName}_old;`,
+      `DROP TABLE ${table.tableName}_old;`
     );
 
     plans.push({
       tableName: table.tableName,
-      method: "RANGE",
+      method: 'RANGE',
       partitionKeyColumn: table.partitionKeyColumn,
       partitions,
       totalPartitions: partitions.length,
@@ -152,14 +157,15 @@ export function computePartitionStrategy(
     });
 
     recommendations.push(
-      `${table.tableName}: ${partitions.length} partitions (${groupSize} period(s) each), ~${totalSizeMb} MB total`,
+      `${table.tableName}: ${partitions.length} partitions (${groupSize} period(s) each), ~${totalSizeMb} MB total`
     );
   }
 
   return {
     result: { plans, recommendations },
-    explanation: plans.length === 0
-      ? `${tables.length} table(s) analyzed — none qualify for partitioning`
-      : `${plans.length}/${tables.length} table(s) partitioned: ${plans.map((p) => `${p.tableName} (${p.totalPartitions} partitions)`).join(", ")}`,
+    explanation:
+      plans.length === 0
+        ? `${tables.length} table(s) analyzed — none qualify for partitioning`
+        : `${plans.length}/${tables.length} table(s) partitioned: ${plans.map((p) => `${p.tableName} (${p.totalPartitions} partitions)`).join(', ')}`,
   };
 }

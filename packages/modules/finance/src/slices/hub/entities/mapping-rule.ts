@@ -4,11 +4,11 @@
  * Lifecycle: DRAFT → PUBLISHED → DEPRECATED
  */
 
-export type MappingRuleStatus = "DRAFT" | "PUBLISHED" | "DEPRECATED";
+export type MappingRuleStatus = 'DRAFT' | 'PUBLISHED' | 'DEPRECATED';
 
 export interface MappingRuleCondition {
   readonly field: string;
-  readonly operator: "EQ" | "NEQ" | "IN" | "NOT_IN" | "GT" | "LT" | "GTE" | "LTE";
+  readonly operator: 'EQ' | 'NEQ' | 'IN' | 'NOT_IN' | 'GT' | 'LT' | 'GTE' | 'LTE';
   readonly value: string | readonly string[];
 }
 

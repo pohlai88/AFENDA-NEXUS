@@ -1,10 +1,10 @@
-import type { Covenant } from "../entities/covenant.js";
+import type { Covenant } from '../entities/covenant.js';
 
 export interface CreateCovenantInput {
   readonly companyId: string;
   readonly lenderId: string;
   readonly lenderName: string;
-  readonly covenantType: Covenant["covenantType"];
+  readonly covenantType: Covenant['covenantType'];
   readonly description: string;
   readonly thresholdValue: number;
   readonly testFrequency: string;
@@ -16,5 +16,10 @@ export interface ICovenantRepo {
   findByCompany(companyId: string): Promise<readonly Covenant[]>;
   findAll(): Promise<readonly Covenant[]>;
   create(tenantId: string, input: CreateCovenantInput): Promise<Covenant>;
-  updateTestResult(id: string, currentValue: number, status: Covenant["status"], lastTestDate: Date): Promise<Covenant>;
+  updateTestResult(
+    id: string,
+    currentValue: number,
+    status: Covenant['status'],
+    lastTestDate: Date
+  ): Promise<Covenant>;
 }

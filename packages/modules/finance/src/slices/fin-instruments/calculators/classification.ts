@@ -3,10 +3,10 @@
  * Pure calculator — classifies financial instruments into
  * AC (Amortized Cost), FVOCI, or FVTPL.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
-import type { InstrumentClassification, InstrumentType } from "../entities/financial-instrument.js";
+import type { CalculatorResult } from '../../../shared/types.js';
+import type { InstrumentClassification, InstrumentType } from '../entities/financial-instrument.js';
 
-export type BusinessModel = "HOLD_TO_COLLECT" | "HOLD_TO_COLLECT_AND_SELL" | "OTHER";
+export type BusinessModel = 'HOLD_TO_COLLECT' | 'HOLD_TO_COLLECT_AND_SELL' | 'OTHER';
 
 export interface ClassificationInput {
   readonly instrumentId: string;
@@ -35,10 +35,10 @@ export interface ClassificationResult {
  * 7. Other business model → FVTPL
  */
 export function classifyInstruments(
-  inputs: readonly ClassificationInput[],
+  inputs: readonly ClassificationInput[]
 ): CalculatorResult<readonly ClassificationResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one instrument required");
+    throw new Error('At least one instrument required');
   }
 
   const results: ClassificationResult[] = inputs.map((input) => {
@@ -46,8 +46,8 @@ export function classifyInstruments(
     if (input.isDesignatedFvtpl) {
       return {
         instrumentId: input.instrumentId,
-        classification: "FVTPL" as InstrumentClassification,
-        reason: "Designated at FVTPL (fair value option)",
+        classification: 'FVTPL' as InstrumentClassification,
+        reason: 'Designated at FVTPL (fair value option)',
       };
     }
 
@@ -56,14 +56,14 @@ export function classifyInstruments(
       if (input.isDesignatedFvoci) {
         return {
           instrumentId: input.instrumentId,
-          classification: "FVOCI" as InstrumentClassification,
-          reason: "Equity investment designated at FVOCI",
+          classification: 'FVOCI' as InstrumentClassification,
+          reason: 'Equity investment designated at FVOCI',
         };
       }
       return {
         instrumentId: input.instrumentId,
-        classification: "FVTPL" as InstrumentClassification,
-        reason: "Equity investment — default FVTPL",
+        classification: 'FVTPL' as InstrumentClassification,
+        reason: 'Equity investment — default FVTPL',
       };
     }
 
@@ -71,30 +71,30 @@ export function classifyInstruments(
     if (!input.passesSppiTest) {
       return {
         instrumentId: input.instrumentId,
-        classification: "FVTPL" as InstrumentClassification,
-        reason: "Fails SPPI test — mandatory FVTPL",
+        classification: 'FVTPL' as InstrumentClassification,
+        reason: 'Fails SPPI test — mandatory FVTPL',
       };
     }
 
     // Business model test
     switch (input.businessModel) {
-      case "HOLD_TO_COLLECT":
+      case 'HOLD_TO_COLLECT':
         return {
           instrumentId: input.instrumentId,
-          classification: "AMORTIZED_COST" as InstrumentClassification,
-          reason: "Hold to collect + passes SPPI → Amortized Cost",
+          classification: 'AMORTIZED_COST' as InstrumentClassification,
+          reason: 'Hold to collect + passes SPPI → Amortized Cost',
         };
-      case "HOLD_TO_COLLECT_AND_SELL":
+      case 'HOLD_TO_COLLECT_AND_SELL':
         return {
           instrumentId: input.instrumentId,
-          classification: "FVOCI" as InstrumentClassification,
-          reason: "Hold to collect & sell + passes SPPI → FVOCI",
+          classification: 'FVOCI' as InstrumentClassification,
+          reason: 'Hold to collect & sell + passes SPPI → FVOCI',
         };
       default:
         return {
           instrumentId: input.instrumentId,
-          classification: "FVTPL" as InstrumentClassification,
-          reason: "Other business model → FVTPL",
+          classification: 'FVTPL' as InstrumentClassification,
+          reason: 'Other business model → FVTPL',
         };
     }
   });
@@ -102,6 +102,6 @@ export function classifyInstruments(
   return {
     result: results,
     inputs: { count: inputs.length },
-    explanation: `Classification: ${results.filter((r) => r.classification === "AMORTIZED_COST").length} AC, ${results.filter((r) => r.classification === "FVOCI").length} FVOCI, ${results.filter((r) => r.classification === "FVTPL").length} FVTPL`,
+    explanation: `Classification: ${results.filter((r) => r.classification === 'AMORTIZED_COST').length} AC, ${results.filter((r) => r.classification === 'FVOCI').length} FVOCI, ${results.filter((r) => r.classification === 'FVTPL').length} FVTPL`,
   };
 }

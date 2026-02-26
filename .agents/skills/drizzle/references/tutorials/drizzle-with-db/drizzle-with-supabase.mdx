@@ -1,13 +1,17 @@
 ---
-title: "Drizzle with Supabase Database"
-date: "2024-05-07"
-svgs: ['<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="9.63139" height="40.8516" rx="4.8157" transform="matrix(0.873028 0.48767 -0.497212 0.867629 43.4805 67.3037)" fill="currentColor"></rect><rect width="9.63139" height="40.8516" rx="4.8157" transform="matrix(0.873028 0.48767 -0.497212 0.867629 76.9395 46.5342)" fill="currentColor"></rect><rect width="9.63139" height="40.8516" rx="4.8157" transform="matrix(0.873028 0.48767 -0.497212 0.867629 128.424 46.5352)" fill="currentColor"></rect><rect width="9.63139" height="40.8516" rx="4.8157" transform="matrix(0.873028 0.48767 -0.497212 0.867629 94.957 67.3037)" fill="currentColor"></rect></svg>', <svg width="24" height="25" viewBox="0 0 24 25" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M13.3501 21.1611C12.9303 21.6898 12.079 21.4002 12.0689 20.7251L11.921 10.8511H18.5603C19.7628 10.8511 20.4335 12.24 19.6857 13.1818L13.3501 21.1611Z" /><path d="M10.6499 5.27307C11.0697 4.7443 11.921 5.03403 11.9311 5.70913L11.996 15.5831H5.43981C4.23723 15.5831 3.56652 14.1942 4.31432 13.2524L10.6499 5.27307Z"/></svg>]
+title: 'Drizzle with Supabase Database'
+date: '2024-05-07'
+svgs:
+  [
+    '<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="9.63139" height="40.8516" rx="4.8157" transform="matrix(0.873028 0.48767 -0.497212 0.867629 43.4805 67.3037)" fill="currentColor"></rect><rect width="9.63139" height="40.8516" rx="4.8157" transform="matrix(0.873028 0.48767 -0.497212 0.867629 76.9395 46.5342)" fill="currentColor"></rect><rect width="9.63139" height="40.8516" rx="4.8157" transform="matrix(0.873028 0.48767 -0.497212 0.867629 128.424 46.5352)" fill="currentColor"></rect><rect width="9.63139" height="40.8516" rx="4.8157" transform="matrix(0.873028 0.48767 -0.497212 0.867629 94.957 67.3037)" fill="currentColor"></rect></svg>',
+    <svg width="24" height="25" viewBox="0 0 24 25" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M13.3501 21.1611C12.9303 21.6898 12.079 21.4002 12.0689 20.7251L11.921 10.8511H18.5603C19.7628 10.8511 20.4335 12.24 19.6857 13.1818L13.3501 21.1611Z" /><path d="M10.6499 5.27307C11.0697 4.7443 11.921 5.03403 11.9311 5.70913L11.996 15.5831H5.43981C4.23723 15.5831 3.56652 14.1942 4.31432 13.2524L10.6499 5.27307Z"/></svg>,
+  ]
 ---
 
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
 import Npm from '@mdx/Npm.astro';
 import Steps from '@mdx/Steps.astro';
-import Section from "@mdx/Section.astro";
+import Section from '@mdx/Section.astro';
 import Callout from '@mdx/Callout.astro';
 
 This tutorial demonstrates how to use Drizzle ORM with [Supabase Database](https://supabase.com/docs/guides/database/overview). Every Supabase project comes with a full [Postgres](https://www.postgresql.org/) database.
@@ -24,12 +28,11 @@ drizzle-orm
 </Npm>
 
 - You should have installed `postgres` package for connecting to the Postgres database. Read more about this package [here](https://www.npmjs.com/package/postgres)
-<Npm>
-  postgres
-</Npm>
+
+  <Npm>postgres</Npm>
 
 - You should have the latest version of [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started#installing-the-supabase-cli) installed (Only if you want to use the Supabase CLI for migrations)
-</Prerequisites>
+  </Prerequisites>
 
 Check [Supabase documentation](https://supabase.com/docs/guides/database/connecting-to-postgres#connecting-with-drizzle) to learn how to connect to the database with Drizzle ORM.
 
@@ -133,7 +136,7 @@ Generate migrations:
 npx drizzle-kit generate
 ```
 
-These migrations are stored in the `supabase/migrations`  directory, as specified in your `drizzle.config.ts`. This directory will contain the SQL files necessary to update your database schema and a `meta` folder for storing snapshots of the schema at different migration stages.
+These migrations are stored in the `supabase/migrations` directory, as specified in your `drizzle.config.ts`. This directory will contain the SQL files necessary to update your database schema and a `meta` folder for storing snapshots of the schema at different migration stages.
 
 Example of a generated migration:
 
@@ -169,6 +172,7 @@ npx drizzle-kit migrate
 ```
 
 Learn more about [migration process](/docs/migrations). You can also apply migrations using [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started):
+
 - For tables that already exist, manually review the generated migration files from `npx drizzle-kit generate` and comment out or adjust any unsafe pure create statements (e.g., `CREATE SCHEMA "auth";`) while ensuring safe conditional creates (e.g., `CREATE TABLE IF NOT EXISTS "auth"."users"`) are properly handled.
 
 Alternatively, you can push changes directly to the database using [Drizzle kit push command](/docs/kit-overview#prototyping-with-db-push):
@@ -177,10 +181,14 @@ Alternatively, you can push changes directly to the database using [Drizzle kit 
 npx drizzle-kit push
 ```
 
-<Callout type="warning">Push command is good for situations where you need to quickly test new schema designs or changes in a local development environment, allowing for fast iterations without the overhead of managing migration files.</Callout>
+<Callout type="warning">
+  Push command is good for situations where you need to quickly test new schema designs or changes
+  in a local development environment, allowing for fast iterations without the overhead of managing
+  migration files.
+</Callout>
 
 To apply migrations using the Supabase CLI you should follow these steps:
- 
+
 Generate migrations using Drizzle Kit:
 
 ```bash copy
@@ -204,6 +212,7 @@ Push changes to the database:
 ```bash copy
 supabase db push
 ```
+
 </Steps>
 
 ## Basic file structure
@@ -258,6 +267,7 @@ Read more about select query in the [documentation](/docs/select).
 `getColumns` available starting from `drizzle-orm@1.0.0-beta.2`(read more [here](/docs/upgrade-v1))
 
 If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
+
 </Callout>
 
 ```typescript copy filename="src/db/queries/select.ts" {5, 16, 41}
@@ -278,7 +288,7 @@ export async function getUserById(id: SelectUser['id']): Promise<
 
 export async function getUsersWithPostsCount(
   page = 1,
-  pageSize = 5,
+  pageSize = 5
 ): Promise<
   Array<{
     postsCount: number;
@@ -303,7 +313,7 @@ export async function getUsersWithPostsCount(
 
 export async function getPostsForLast24Hours(
   page = 1,
-  pageSize = 5,
+  pageSize = 5
 ): Promise<
   Array<{
     id: number;
@@ -324,6 +334,7 @@ export async function getPostsForLast24Hours(
 ```
 
 Alternatively, you can use [relational query syntax](/docs/rqb).
+
 #### Update data
 
 Read more about update query in the [documentation](/docs/update).

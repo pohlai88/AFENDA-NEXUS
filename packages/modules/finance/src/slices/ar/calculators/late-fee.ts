@@ -24,7 +24,7 @@ export interface LateFeeResult {
 export function computeLateFee(input: LateFeeInput): LateFeeResult {
   const daysOverdue = Math.max(
     0,
-    Math.floor((input.asOfDate.getTime() - input.dueDate.getTime()) / (1000 * 60 * 60 * 24)),
+    Math.floor((input.asOfDate.getTime() - input.dueDate.getTime()) / (1000 * 60 * 60 * 24))
   );
 
   if (daysOverdue === 0) {
@@ -38,7 +38,9 @@ export function computeLateFee(input: LateFeeInput): LateFeeResult {
 
   // Simple interest: principal × rate × days / 365
   // Use integer math: (amount * rate * days) / (365 * 100)
-  const interestAmount = (input.outstandingAmount * BigInt(input.annualRatePercent) * BigInt(daysOverdue)) / (365n * 100n);
+  const interestAmount =
+    (input.outstandingAmount * BigInt(input.annualRatePercent) * BigInt(daysOverdue)) /
+    (365n * 100n);
 
   return {
     invoiceId: input.invoiceId,

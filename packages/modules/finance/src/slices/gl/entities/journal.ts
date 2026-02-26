@@ -1,4 +1,4 @@
-import type { CompanyId, LedgerId, Money } from "@afenda/core";
+import type { CompanyId, LedgerId, Money } from '@afenda/core';
 
 export interface JournalLine {
   readonly accountId: string;
@@ -18,7 +18,7 @@ export interface Journal {
   readonly fiscalPeriodId: string;
   readonly description: string;
   readonly date: Date;
-  readonly status: "DRAFT" | "POSTED" | "REVERSED" | "VOIDED";
+  readonly status: 'DRAFT' | 'PENDING_APPROVAL' | 'POSTED' | 'REVERSED' | 'VOIDED';
   readonly lines: readonly JournalLine[];
   readonly reversalOfId?: string;
   readonly reversedById?: string;

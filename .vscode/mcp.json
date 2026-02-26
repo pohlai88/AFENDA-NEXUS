@@ -1,0 +1,21 @@
+{
+  "servers": {
+    "shadcn": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "shadcn@latest", "mcp", "--cwd", "${workspaceFolder}/apps/web"]
+    },
+    "better-auth": {
+      "type": "http",
+      "url": "https://mcp.inkeep.com/better-auth/mcp"
+    },
+    "neon": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@neondatabase/mcp-server-neon", "start"],
+      "env": {
+        "NEON_API_KEY": "napi_pbu7zv32cluaofcpfh24o3r9buq4q104qg7vxtjj6l1tfrcqpmb1xq6558s9exwc"
+      }
+    }
+  }
+}

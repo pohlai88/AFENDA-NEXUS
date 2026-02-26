@@ -25,7 +25,7 @@ export interface IcPayable {
   readonly invoiceDate: Date;
 }
 
-export type IcMatchStatus = "MATCHED" | "RECEIVABLE_ONLY" | "PAYABLE_ONLY" | "AMOUNT_MISMATCH";
+export type IcMatchStatus = 'MATCHED' | 'RECEIVABLE_ONLY' | 'PAYABLE_ONLY' | 'AMOUNT_MISMATCH';
 
 export interface IcMatchResult {
   readonly status: IcMatchStatus;
@@ -50,7 +50,7 @@ export interface IcMatchingSummary {
  */
 export function matchIcReceivables(
   receivables: readonly IcReceivable[],
-  payables: readonly IcPayable[],
+  payables: readonly IcPayable[]
 ): IcMatchingSummary {
   const usedPayables = new Set<string>();
   const matches: IcMatchResult[] = [];
@@ -66,10 +66,10 @@ export function matchIcReceivables(
       matched = true;
 
       if (rec.amount === pay.amount) {
-        matches.push({ status: "MATCHED", receivable: rec, payable: pay, difference: 0n });
+        matches.push({ status: 'MATCHED', receivable: rec, payable: pay, difference: 0n });
       } else {
         matches.push({
-          status: "AMOUNT_MISMATCH",
+          status: 'AMOUNT_MISMATCH',
           receivable: rec,
           payable: pay,
           difference: rec.amount - pay.amount,
@@ -79,18 +79,28 @@ export function matchIcReceivables(
     }
 
     if (!matched) {
-      matches.push({ status: "RECEIVABLE_ONLY", receivable: rec, payable: null, difference: rec.amount });
+      matches.push({
+        status: 'RECEIVABLE_ONLY',
+        receivable: rec,
+        payable: null,
+        difference: rec.amount,
+      });
     }
   }
 
   for (const pay of payables) {
     if (usedPayables.has(pay.invoiceId)) continue;
-    matches.push({ status: "PAYABLE_ONLY", receivable: null, payable: pay, difference: -pay.amount });
+    matches.push({
+      status: 'PAYABLE_ONLY',
+      receivable: null,
+      payable: pay,
+      difference: -pay.amount,
+    });
   }
 
-  const matchedCount = matches.filter((m) => m.status === "MATCHED").length;
-  const unmatchedReceivables = matches.filter((m) => m.status === "RECEIVABLE_ONLY").length;
-  const unmatchedPayables = matches.filter((m) => m.status === "PAYABLE_ONLY").length;
+  const matchedCount = matches.filter((m) => m.status === 'MATCHED').length;
+  const unmatchedReceivables = matches.filter((m) => m.status === 'RECEIVABLE_ONLY').length;
+  const unmatchedPayables = matches.filter((m) => m.status === 'PAYABLE_ONLY').length;
   const totalReceivable = receivables.reduce((s, r) => s + r.amount, 0n);
   const totalPayable = payables.reduce((s, p) => s + p.amount, 0n);
 

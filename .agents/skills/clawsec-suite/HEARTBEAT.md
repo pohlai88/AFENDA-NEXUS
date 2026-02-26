@@ -1,12 +1,14 @@
 # ClawSec Suite — Heartbeat Check
 
-Run this periodically (cron/systemd/CI/agent scheduler). It assumes POSIX shell, `curl`, and `jq`.
+Run this periodically (cron/systemd/CI/agent scheduler). It assumes POSIX shell,
+`curl`, and `jq`.
 
 ## Goals
 
 1. Check whether `clawsec-suite` has an update available.
 2. Poll the advisory feed.
-3. Report new advisories, highlight affected installed skills, and require approval before removal actions.
+3. Report new advisories, highlight affected installed skills, and require
+   approval before removal actions.
 
 ---
 
@@ -199,4 +201,5 @@ Heartbeat output should include:
 - installed skills that appear in advisory `affected` lists,
 - and a double-confirmation reminder before risky install/remove actions.
 
-If your runtime sends alerts, treat `critical` and `high` advisories affecting installed skills as immediate notifications.
+If your runtime sends alerts, treat `critical` and `high` advisories affecting
+installed skills as immediate notifications.

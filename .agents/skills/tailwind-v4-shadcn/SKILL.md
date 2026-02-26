@@ -21,11 +21,12 @@ license: MIT
 
 # Tailwind v4 + shadcn/ui Production Stack
 
-**Production-tested**: WordPress Auditor (https://wordpress-auditor.webfonts.workers.dev)
-**Last Updated**: 2025-12-04
+**Production-tested**: WordPress Auditor
+(https://wordpress-auditor.webfonts.workers.dev) **Last Updated**: 2025-12-04
 **Status**: Production Ready ✅
 
 ## Table of Contents
+
 1. [Before You Start](#-before-you-start-read-this)
 2. [Quick Start](#quick-start-5-minutes---follow-this-exact-order)
 3. [Four-Step Architecture](#the-four-step-architecture-critical)
@@ -45,7 +46,8 @@ license: MIT
 
 ## ⚠️ BEFORE YOU START (READ THIS!)
 
-**CRITICAL FOR AI AGENTS**: If you're Claude Code helping a user set up Tailwind v4:
+**CRITICAL FOR AI AGENTS**: If you're Claude Code helping a user set up Tailwind
+v4:
 
 1. **Explicitly state you're using this skill** at the start of the conversation
 2. **Reference patterns from the skill** rather than general knowledge
@@ -54,11 +56,13 @@ license: MIT
 
 **USER ACTION REQUIRED**: Tell Claude to check this skill first!
 
-Say: **"I'm setting up Tailwind v4 + shadcn/ui - check the tailwind-v4-shadcn skill first"**
+Say: **"I'm setting up Tailwind v4 + shadcn/ui - check the tailwind-v4-shadcn
+skill first"**
 
 ### Why This Matters (Real-World Results)
 
 **Without skill activation:**
+
 - ❌ Setup time: ~5 minutes
 - ❌ Errors encountered: 2-3 (tw-animate-css, duplicate @layer base)
 - ❌ Manual fixes needed: 2+ commits
@@ -66,6 +70,7 @@ Say: **"I'm setting up Tailwind v4 + shadcn/ui - check the tailwind-v4-shadcn sk
 - ❌ User confidence: Required debugging
 
 **With skill activation:**
+
 - ✅ Setup time: ~1 minute
 - ✅ Errors encountered: 0
 - ✅ Manual fixes needed: 0
@@ -78,7 +83,8 @@ Say: **"I'm setting up Tailwind v4 + shadcn/ui - check the tailwind-v4-shadcn sk
 2. **Duplicate @layer base blocks** (shadcn init adds its own)
 3. **Wrong template selection** (vanilla TS vs React)
 4. **Missing post-init cleanup** (incompatible CSS rules)
-5. **Wrong plugin syntax** (using @import or require() instead of @plugin directive)
+5. **Wrong plugin syntax** (using @import or require() instead of @plugin
+   directive)
 
 All of these are handled automatically when the skill is active.
 
@@ -103,19 +109,19 @@ pnpm dlx shadcn@latest init
 
 ```typescript
 // vite.config.ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  }
-})
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+});
 ```
 
 ### 3. Update components.json
@@ -123,7 +129,7 @@ export default defineConfig({
 ```json
 {
   "tailwind": {
-    "config": "",              // ← CRITICAL: Empty for v4
+    "config": "", // ← CRITICAL: Empty for v4
     "css": "src/index.css",
     "cssVariables": true
   }
@@ -146,10 +152,10 @@ This pattern is **mandatory** - skipping steps will break your theme.
 
 ```css
 /* src/index.css */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
-  --background: hsl(0 0% 100%);      /* ← hsl() wrapper required */
+  --background: hsl(0 0% 100%); /* ← hsl() wrapper required */
   --foreground: hsl(222.2 84% 4.9%);
   --primary: hsl(221.2 83.2% 53.3%);
   /* ... all light mode colors */
@@ -164,6 +170,7 @@ This pattern is **mandatory** - skipping steps will break your theme.
 ```
 
 **Critical Rules:**
+
 - ✅ Define at root level (NOT inside `@layer base`)
 - ✅ Use `hsl()` wrapper on all color values
 - ✅ Use `.dark` for dark mode (NOT `.dark { @theme { } }`)
@@ -180,6 +187,7 @@ This pattern is **mandatory** - skipping steps will break your theme.
 ```
 
 **Why This Is Required:**
+
 - Generates utility classes (`bg-background`, `text-primary`)
 - Without this, `bg-primary` etc. won't exist
 
@@ -188,13 +196,14 @@ This pattern is **mandatory** - skipping steps will break your theme.
 ```css
 @layer base {
   body {
-    background-color: var(--background);  /* NO hsl() here */
+    background-color: var(--background); /* NO hsl() here */
     color: var(--foreground);
   }
 }
 ```
 
 **Critical Rules:**
+
 - ✅ Reference variables directly: `var(--background)`
 - ❌ Never double-wrap: `hsl(var(--background))`
 
@@ -248,11 +257,13 @@ See `reference/dark-mode.md` for ModeToggle component code.
 ### ✅ Always Do:
 
 1. **Wrap color values with `hsl()` in `:root` and `.dark`**
+
    ```css
-   --background: hsl(0 0% 100%);  /* ✅ Correct */
+   --background: hsl(0 0% 100%); /* ✅ Correct */
    ```
 
 2. **Use `@theme inline` to map all CSS variables**
+
    ```css
    @theme inline {
      --color-background: var(--background);
@@ -260,6 +271,7 @@ See `reference/dark-mode.md` for ModeToggle component code.
    ```
 
 3. **Set `"tailwind.config": ""` in components.json**
+
    ```json
    { "tailwind": { "config": "" } }
    ```
@@ -277,14 +289,18 @@ See `reference/dark-mode.md` for ModeToggle component code.
 ### ❌ Never Do:
 
 1. **Put `:root` or `.dark` inside `@layer base`**
+
    ```css
    /* WRONG */
    @layer base {
-     :root { --background: hsl(...); }
+     :root {
+       --background: hsl(...);
+     }
    }
    ```
 
 2. **Use `.dark { @theme { } }` pattern**
+
    ```css
    /* WRONG - v4 doesn't support nested @theme */
    .dark {
@@ -295,6 +311,7 @@ See `reference/dark-mode.md` for ModeToggle component code.
    ```
 
 3. **Double-wrap colors**
+
    ```css
    /* WRONG */
    body {
@@ -303,20 +320,22 @@ See `reference/dark-mode.md` for ModeToggle component code.
    ```
 
 4. **Use `tailwind.config.ts` for theme colors**
+
    ```typescript
    /* WRONG - v4 ignores this */
    export default {
      theme: {
        extend: {
-         colors: { primary: 'hsl(var(--primary))' }
-       }
-     }
-   }
+         colors: { primary: 'hsl(var(--primary))' },
+       },
+     },
+   };
    ```
 
 5. **Use `@apply` directive (deprecated in v4)**
 
 6. **Use `dark:` variants for semantic colors**
+
    ```tsx
    /* WRONG */
    <div className="bg-primary dark:bg-primary-dark" />
@@ -333,14 +352,15 @@ Always use semantic names for colors:
 
 ```css
 :root {
-  --destructive: hsl(0 84.2% 60.2%);        /* Red - errors, critical */
-  --success: hsl(142.1 76.2% 36.3%);        /* Green - success states */
-  --warning: hsl(38 92% 50%);               /* Yellow - warnings */
-  --info: hsl(221.2 83.2% 53.3%);           /* Blue - info, primary */
+  --destructive: hsl(0 84.2% 60.2%); /* Red - errors, critical */
+  --success: hsl(142.1 76.2% 36.3%); /* Green - success states */
+  --warning: hsl(38 92% 50%); /* Yellow - warnings */
+  --info: hsl(221.2 83.2% 53.3%); /* Blue - info, primary */
 }
 ```
 
 **Usage:**
+
 ```tsx
 <div className="bg-destructive text-destructive-foreground">Critical</div>
 <div className="bg-success text-success-foreground">Success</div>
@@ -352,13 +372,13 @@ Always use semantic names for colors:
 
 ## Common Issues & Quick Fixes
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| `bg-primary` doesn't work | Missing `@theme inline` mapping | Add `@theme inline` block |
-| Colors all black/white | Double `hsl()` wrapping | Use `var(--color)` not `hsl(var(--color))` |
-| Dark mode not switching | Missing ThemeProvider | Wrap app in `<ThemeProvider>` |
-| Build fails | `tailwind.config.ts` exists | Delete the file |
-| Text invisible | Wrong contrast colors | Check color definitions in `:root`/`.dark` |
+| Symptom                   | Cause                           | Fix                                        |
+| ------------------------- | ------------------------------- | ------------------------------------------ |
+| `bg-primary` doesn't work | Missing `@theme inline` mapping | Add `@theme inline` block                  |
+| Colors all black/white    | Double `hsl()` wrapping         | Use `var(--color)` not `hsl(var(--color))` |
+| Dark mode not switching   | Missing ThemeProvider           | Wrap app in `<ThemeProvider>`              |
+| Build fails               | `tailwind.config.ts` exists     | Delete the file                            |
+| Text invisible            | Wrong contrast colors           | Check color definitions in `:root`/`.dark` |
 
 See `reference/common-gotchas.md` for complete troubleshooting guide.
 
@@ -404,16 +424,24 @@ Load `references/advanced-usage.md` for advanced patterns including:
 
 - **Custom Colors**: Add semantic colors beyond default palette
 - **v3 Migration**: See `references/migration-guide.md` for complete guide
-- **Component Best Practices**: Semantic tokens, cn() utility, composition patterns
+- **Component Best Practices**: Semantic tokens, cn() utility, composition
+  patterns
 
 **Quick Example:**
+
 ```css
-:root { --brand: hsl(280 65% 60%); }
-@theme inline { --color-brand: var(--brand); }
+:root {
+  --brand: hsl(280 65% 60%);
+}
+@theme inline {
+  --color-brand: var(--brand);
+}
 ```
+
 Usage: `<div className="bg-brand">Branded</div>`
 
-For detailed patterns and component composition examples, load `references/advanced-usage.md`.
+For detailed patterns and component composition examples, load
+`references/advanced-usage.md`.
 
 ---
 
@@ -452,7 +480,8 @@ bun add tailwindcss-animate  # ❌ Deprecated
 bun add tw-animate-css      # ❌ Doesn't exist
 ```
 
-**If you see import errors for these packages**, remove them and use native CSS animations or `@tailwindcss/motion` instead.
+**If you see import errors for these packages**, remove them and use native CSS
+animations or `@tailwindcss/motion` instead.
 
 ---
 
@@ -461,19 +490,22 @@ bun add tw-animate-css      # ❌ Doesn't exist
 Tailwind v4 supports official plugins using the `@plugin` directive in CSS.
 
 **Quick Example:**
+
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms";
 ```
 
-**Common Error:**
-❌ WRONG: `@import "@tailwindcss/typography"` (doesn't work)
+**Common Error:** ❌ WRONG: `@import "@tailwindcss/typography"` (doesn't work)
 ✅ CORRECT: `@plugin "@tailwindcss/typography"` (use @plugin directive)
 
-**Built-in Features:** Container queries are now core (no `@tailwindcss/container-queries` plugin needed).
+**Built-in Features:** Container queries are now core (no
+`@tailwindcss/container-queries` plugin needed).
 
-Load `references/plugins-reference.md` for complete documentation including Typography plugin (prose classes), Forms plugin, installation steps, and common plugin errors.
+Load `references/plugins-reference.md` for complete documentation including
+Typography plugin (prose classes), Forms plugin, installation steps, and common
+plugin errors.
 
 ---
 
@@ -494,6 +526,7 @@ For deeper understanding, see:
 Load reference files based on user's specific needs:
 
 ### Load `references/common-gotchas.md` when:
+
 - User reports "colors not working" or "bg-primary doesn't exist"
 - Dark mode not switching properly
 - Build fails with Tailwind errors
@@ -501,24 +534,28 @@ Load reference files based on user's specific needs:
 - Debugging theme problems
 
 ### Load `references/dark-mode.md` when:
+
 - User asks to implement dark mode
 - Theme switching not working
 - Need ThemeProvider component code
 - Questions about system theme detection
 
 ### Load `references/migration-guide.md` when:
+
 - Migrating from Tailwind v3 to v4
 - User has hardcoded colors to migrate
 - Questions about v3 → v4 changes
 - Need migration checklist
 
 ### Load `references/plugins-reference.md` when:
+
 - User needs Typography plugin (prose class)
 - User needs Forms plugin
 - Questions about @plugin directive
 - Plugin installation errors
 
 ### Load `references/advanced-usage.md` when:
+
 - User asks about custom colors beyond defaults
 - Need advanced component patterns
 - Questions about component best practices
@@ -539,6 +576,7 @@ Load reference files based on user's specific needs:
 ## Production Example
 
 This skill is based on the WordPress Auditor project:
+
 - **Live**: https://wordpress-auditor.webfonts.workers.dev
 - **Stack**: Vite + React 19 + Tailwind v4 + shadcn/ui + Cloudflare Workers
 - **Dark Mode**: Full system/light/dark support

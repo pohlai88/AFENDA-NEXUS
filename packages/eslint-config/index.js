@@ -3,44 +3,44 @@
  *
  * Enforces module boundary rules from PROJECT.md §2/§7.
  */
-import tseslint from "typescript-eslint";
+import tseslint from 'typescript-eslint';
 
 export default [
   {
-    ignores: ["dist/**", ".next/**", "*.config.*", "node_modules/**"],
+    ignores: ['dist/**', '.next/**', '*.config.*', 'node_modules/**'],
   },
   ...tseslint.configs.recommended,
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tseslint.parser,
     },
     rules: {
-      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-      "no-console": ["warn", { allow: ["warn", "error"] }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
   // CIG-04: Module boundary — route/handler files must not import DB or ORM directly.
   // DB access goes through composition roots (e.g. createFinanceRuntime).
   {
     files: [
-      "**/routes/**/*.ts",
-      "**/route.ts",
-      "**/route.tsx",
-      "**/app/api/**/*.ts",
-      "**/app/api/**/*.tsx",
-      "**/page.ts",
-      "**/page.tsx",
+      '**/routes/**/*.ts',
+      '**/route.ts',
+      '**/route.tsx',
+      '**/app/api/**/*.ts',
+      '**/app/api/**/*.tsx',
+      '**/page.ts',
+      '**/page.tsx',
     ],
     rules: {
-      "no-restricted-imports": [
-        "error",
+      'no-restricted-imports': [
+        'error',
         {
           patterns: [
             {
-              group: ["@afenda/db", "@afenda/db/*", "drizzle-orm", "drizzle-orm/*", "drizzle-kit"],
+              group: ['@afenda/db', '@afenda/db/*', 'drizzle-orm', 'drizzle-orm/*', 'drizzle-kit'],
               message:
-                "Routes/handlers must not import DB or ORM directly. Use the app-layer composition root.",
+                'Routes/handlers must not import DB or ORM directly. Use the app-layer composition root.',
             },
           ],
         },

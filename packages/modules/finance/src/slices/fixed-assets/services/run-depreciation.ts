@@ -3,13 +3,13 @@
  * Creates depreciation schedule entries and emits outbox events.
  */
 
-import type { Result } from "@afenda/core";
-import type { IAssetRepo } from "../ports/asset-repo.js";
-import type { IDepreciationScheduleRepo } from "../ports/depreciation-schedule-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import { computeDepreciation } from "../calculators/depreciation.js";
-import type { DepreciationScheduleEntry } from "../entities/depreciation-schedule.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import type { IAssetRepo } from '../ports/asset-repo.js';
+import type { IDepreciationScheduleRepo } from '../ports/depreciation-schedule-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import { computeDepreciation } from '../calculators/depreciation.js';
+import type { DepreciationScheduleEntry } from '../entities/depreciation-schedule.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface RunDepreciationInput {
   readonly tenantId: string;
@@ -26,7 +26,11 @@ export interface RunDepreciationResult {
 
 export async function runDepreciation(
   input: RunDepreciationInput,
-  deps: { assetRepo: IAssetRepo; depreciationScheduleRepo: IDepreciationScheduleRepo; outboxWriter: IOutboxWriter },
+  deps: {
+    assetRepo: IAssetRepo;
+    depreciationScheduleRepo: IDepreciationScheduleRepo;
+    outboxWriter: IOutboxWriter;
+  }
 ): Promise<Result<RunDepreciationResult>> {
   const assets = await deps.assetRepo.findActive();
   const periodMonths = monthsBetween(input.periodStart, input.periodEnd);
@@ -61,7 +65,7 @@ export async function runDepreciation(
     await deps.assetRepo.update(asset.id, {
       accumulatedDepreciation: result.newAccumulatedDepreciation,
       netBookValue: result.newNetBookValue,
-      status: result.isFullyDepreciated ? "FULLY_DEPRECIATED" : asset.status,
+      status: result.isFullyDepreciated ? 'FULLY_DEPRECIATED' : asset.status,
     });
 
     entries.push(entry);
@@ -71,7 +75,11 @@ export async function runDepreciation(
   await deps.outboxWriter.write({
     tenantId: input.tenantId,
     eventType: FinanceEventType.ASSET_DEPRECIATED,
-    payload: { entriesCreated: entries.length, totalDepreciation: totalDepreciation.toString(), userId: input.userId },
+    payload: {
+      entriesCreated: entries.length,
+      totalDepreciation: totalDepreciation.toString(),
+      userId: input.userId,
+    },
   });
 
   return { ok: true, value: { entriesCreated: entries.length, totalDepreciation, entries } };

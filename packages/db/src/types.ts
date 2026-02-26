@@ -1,5 +1,5 @@
-import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
-import type { tenants, companies, users } from "./schema/platform.js";
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
+import type { tenants, companies, users } from './schema/platform.js';
 import type {
   accounts,
   counterparties,
@@ -22,10 +22,12 @@ import type {
   recognitionMilestones,
   classificationRuleSets,
   classificationRules,
-} from "./schema/erp.js";
-import type { auditLogs } from "./schema/audit.js";
-import type { outbox } from "./schema/outbox-table.js";
-import type { idempotencyStore } from "./schema/idempotency-store.js";
+} from './schema/erp.js';
+// Auth tables live in neon_auth schema, managed by Neon Auth service.
+// Do NOT define Drizzle schemas for neon_auth.* tables.
+import type { auditLogs } from './schema/audit.js';
+import type { outbox } from './schema/outbox-table.js';
+import type { idempotencyStore } from './schema/idempotency-store.js';
 
 // ─── Platform ───────────────────────────────────────────────────────────────
 
@@ -102,6 +104,12 @@ export type NewClassificationRuleSet = InferInsertModel<typeof classificationRul
 
 export type ClassificationRule = InferSelectModel<typeof classificationRules>;
 export type NewClassificationRule = InferInsertModel<typeof classificationRules>;
+
+// ─── Auth ───────────────────────────────────────────────────────────────
+// Auth types are managed by Neon Auth (neon_auth schema).
+// Use the Neon Auth SDK session types directly:
+//   import type { Session } from '@neondatabase/auth';
+// Do NOT add Drizzle InferSelectModel types for auth tables here.
 
 // ─── Audit ──────────────────────────────────────────────────────────────
 

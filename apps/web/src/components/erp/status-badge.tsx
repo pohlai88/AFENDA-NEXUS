@@ -1,14 +1,6 @@
-import { cn } from "@/lib/utils";
-import { getStatusConfig } from "@/lib/constants";
-import {
-  FileEdit,
-  CheckCircle,
-  Undo2,
-  XCircle,
-  Clock,
-  ShieldCheck,
-  Lock,
-} from "lucide-react";
+import { cn } from '@/lib/utils';
+import { getStatusConfig } from '@/lib/constants';
+import { FileEdit, CheckCircle, Undo2, XCircle, Clock, ShieldCheck, Lock } from 'lucide-react';
 
 const statusIcons: Record<string, React.ElementType> = {
   DRAFT: FileEdit,
@@ -27,14 +19,10 @@ const statusIcons: Record<string, React.ElementType> = {
 };
 
 const variantStyles: Record<string, string> = {
-  default:
-    "bg-success/10 text-success border-success/20",
-  secondary:
-    "bg-muted text-muted-foreground border-border",
-  destructive:
-    "bg-destructive/10 text-destructive border-destructive/20",
-  outline:
-    "bg-info/10 text-info border-info/20",
+  default: 'bg-success/10 text-success border-success/20',
+  secondary: 'bg-muted text-muted-foreground border-border',
+  destructive: 'bg-destructive/10 text-destructive border-destructive/20',
+  outline: 'bg-info/10 text-info border-info/20',
 };
 
 interface StatusBadgeProps {
@@ -50,9 +38,9 @@ export function StatusBadge({ status, className, showIcon = true }: StatusBadgeP
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 text-xs font-medium",
+        'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-0.5 text-xs font-medium',
         variantStyles[config.variant] ?? variantStyles.secondary,
-        className,
+        className
       )}
     >
       {showIcon && Icon && <Icon className="h-3 w-3" aria-hidden="true" />}

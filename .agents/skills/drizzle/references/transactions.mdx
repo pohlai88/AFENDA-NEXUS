@@ -67,20 +67,16 @@ const newBalance: number = await db.transaction(async (tx) => {
 You can use transactions with **[relational queries](/docs/rqb)**:
 
 ```ts
-const db = drizzle({ schema })
+const db = drizzle({ schema });
 
 await db.transaction(async (tx) => {
   await tx.query.users.findMany({
     with: {
-      accounts: true
-    }
+      accounts: true,
+    },
   });
 });
 ```
-
-
-
-
 
 We provide dialect-specific transaction configuration APIs:
 
@@ -99,15 +95,16 @@ await db.transaction(
 );
 
 interface PgTransactionConfig {
-  isolationLevel?:
-    | "read uncommitted"
-    | "read committed"
-    | "repeatable read"
-    | "serializable";
-  accessMode?: "read only" | "read write";
-  deferrable?: boolean;
+isolationLevel?:
+| "read uncommitted"
+| "read committed"
+| "repeatable read"
+| "serializable";
+accessMode?: "read only" | "read write";
+deferrable?: boolean;
 }
-```
+
+````
 </Tab>
 <Tab>
 ```ts {6-8}
@@ -131,7 +128,8 @@ interface MySqlTransactionConfig {
   accessMode?: "read only" | "read write";
   withConsistentSnapshot?: boolean;
 }
-```
+````
+
 </Tab>
 <Tab>
 ```ts {6}
@@ -145,9 +143,10 @@ await db.transaction(
 );
 
 interface SQLiteTransactionConfig {
-    behavior?: 'deferred' | 'immediate' | 'exclusive';
+behavior?: 'deferred' | 'immediate' | 'exclusive';
 }
-```
+
+````
 </Tab>
 <Tab>
 ```ts {6-8}
@@ -171,7 +170,8 @@ interface SingleStoreTransactionConfig {
   accessMode?: "read only" | "read write";
   withConsistentSnapshot?: boolean;
 }
-```
+````
+
 </Tab>
 <Tab>
 ```ts copy {6-8}
@@ -185,9 +185,10 @@ await db.transaction(
 );
 
 interface MsSqlTransactionConfig {
-  isolationLevel?: 'read uncommitted' | 'read committed' | 'repeatable read' | 'serializable' | 'snapshot';
+isolationLevel?: 'read uncommitted' | 'read committed' | 'repeatable read' | 'serializable' | 'snapshot';
 }
-```
+
+````
 </Tab>
 <Tab>
 ```ts copy {6-8}
@@ -211,7 +212,7 @@ interface CockroachTransactionConfig {
   accessMode?: "read only" | "read write";
   deferrable?: boolean;
 }
-```
+````
+
 </Tab>
 </Tabs>
-

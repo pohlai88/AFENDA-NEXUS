@@ -1,5 +1,5 @@
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { FiscalPeriod } from "../entities/fiscal-period.js";
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type { FiscalPeriod } from '../entities/fiscal-period.js';
 
 export interface IFiscalPeriodRepo {
   findById(id: string): Promise<Result<FiscalPeriod>>;
@@ -11,5 +11,8 @@ export interface IFiscalPeriodRepo {
   /** GAP-14: Batch load periods by IDs — avoids N+1 queries in close-year */
   findByIds(ids: readonly string[]): Promise<Result<FiscalPeriod[]>>;
   /** GAP-12: Ledger-scoped period lookup */
-  findByLedger(ledgerId: string, pagination?: PaginationParams): Promise<Result<PaginatedResult<FiscalPeriod>>>;
+  findByLedger(
+    ledgerId: string,
+    pagination?: PaginationParams
+  ): Promise<Result<PaginatedResult<FiscalPeriod>>>;
 }

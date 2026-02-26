@@ -7,112 +7,112 @@
  *
  * Usage: pnpm gen:module inventory
  */
-import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const name = process.argv[2];
 if (!name) {
-  console.error("Usage: pnpm gen:module <name>");
+  console.error('Usage: pnpm gen:module <name>');
   process.exit(1);
 }
 
 const root = process.cwd();
-const dir = join(root, "packages", "modules", name);
+const dir = join(root, 'packages', 'modules', name);
 const pkg = `@afenda/${name}`;
 
 console.log(`Generating module: ${pkg} at ${dir}`);
 
 // Create directory structure
 const dirs = [
-  join(dir, "src", "domain", "entities"),
-  join(dir, "src", "app", "ports"),
-  join(dir, "src", "app", "services"),
-  join(dir, "src", "infra", "repositories"),
-  join(dir, "src", "infra", "routes"),
+  join(dir, 'src', 'domain', 'entities'),
+  join(dir, 'src', 'app', 'ports'),
+  join(dir, 'src', 'app', 'services'),
+  join(dir, 'src', 'infra', 'repositories'),
+  join(dir, 'src', 'infra', 'routes'),
 ];
 for (const d of dirs) mkdirSync(d, { recursive: true });
 
 // package.json
 writeFileSync(
-  join(dir, "package.json"),
+  join(dir, 'package.json'),
   JSON.stringify(
     {
       name: pkg,
-      version: "0.0.0",
+      version: '0.0.0',
       private: true,
-      type: "module",
-      main: "./src/public.ts",
-      types: "./src/public.ts",
+      type: 'module',
+      main: './src/public.ts',
+      types: './src/public.ts',
       exports: {
-        ".": {
-          import: "./dist/public.js",
-          types: "./dist/public.d.ts",
-          default: "./src/public.ts",
+        '.': {
+          import: './dist/public.js',
+          types: './dist/public.d.ts',
+          default: './src/public.ts',
         },
       },
-      files: ["dist", `ARCHITECTURE.${pkg.replace("/", "-")}.md`],
+      files: ['dist', `ARCHITECTURE.${pkg.replace('/', '-')}.md`],
       sideEffects: false,
       scripts: {
-        build: "tsup && tsc -p tsconfig.build.json --emitDeclarationOnly",
-        dev: "tsup --watch",
-        typecheck: "tsc --noEmit",
-        lint: "eslint src/",
+        build: 'tsup && tsc -p tsconfig.build.json --emitDeclarationOnly',
+        dev: 'tsup --watch',
+        typecheck: 'tsc --noEmit',
+        lint: 'eslint src/',
       },
       dependencies: {
-        "@afenda/core": "workspace:*",
-        "@afenda/contracts": "workspace:*",
-        "@afenda/db": "workspace:*",
-        "@afenda/platform": "workspace:*",
+        '@afenda/core': 'workspace:*',
+        '@afenda/contracts': 'workspace:*',
+        '@afenda/db': 'workspace:*',
+        '@afenda/platform': 'workspace:*',
       },
       devDependencies: {
-        "@afenda/typescript-config": "workspace:*",
-        "@afenda/eslint-config": "workspace:*",
-        tsup: "catalog:",
-        typescript: "catalog:",
+        '@afenda/typescript-config': 'workspace:*',
+        '@afenda/eslint-config': 'workspace:*',
+        tsup: 'catalog:',
+        typescript: 'catalog:',
       },
     },
     null,
-    2,
-  ) + "\n",
+    2
+  ) + '\n'
 );
 
 // tsconfig.json
 writeFileSync(
-  join(dir, "tsconfig.json"),
+  join(dir, 'tsconfig.json'),
   JSON.stringify(
     {
-      extends: "@afenda/typescript-config/library.json",
+      extends: '@afenda/typescript-config/library.json',
       compilerOptions: {
         composite: true,
         declaration: true,
         declarationMap: true,
-        outDir: "./dist",
+        outDir: './dist',
         noEmit: false,
       },
-      include: ["src/**/*"],
-      exclude: ["node_modules", "dist", "**/*.test.*", "**/*.spec.*"],
+      include: ['src/**/*'],
+      exclude: ['node_modules', 'dist', '**/*.test.*', '**/*.spec.*'],
     },
     null,
-    2,
-  ) + "\n",
+    2
+  ) + '\n'
 );
 
 // tsconfig.build.json
 writeFileSync(
-  join(dir, "tsconfig.build.json"),
+  join(dir, 'tsconfig.build.json'),
   JSON.stringify(
     {
-      extends: "./tsconfig.json",
+      extends: './tsconfig.json',
       compilerOptions: { composite: false, incremental: false, tsBuildInfoFile: null },
     },
     null,
-    2,
-  ) + "\n",
+    2
+  ) + '\n'
 );
 
 // tsup.config.ts
 writeFileSync(
-  join(dir, "tsup.config.ts"),
+  join(dir, 'tsup.config.ts'),
   `import { defineConfig } from "tsup";
 
 export default defineConfig({
@@ -124,12 +124,12 @@ export default defineConfig({
   tsconfig: "./tsconfig.build.json",
   external: ["@afenda/core", "@afenda/contracts", "@afenda/db", "@afenda/platform"],
 });
-`,
+`
 );
 
 // eslint.config.js
 writeFileSync(
-  join(dir, "eslint.config.js"),
+  join(dir, 'eslint.config.js'),
   `import baseConfig from "@afenda/eslint-config";
 
 export default [
@@ -143,21 +143,24 @@ export default [
     },
   },
 ];
-`,
+`
 );
 
 // domain/index.ts
-writeFileSync(join(dir, "src", "domain", "index.ts"), `// Domain exports for ${name}\n`);
+writeFileSync(join(dir, 'src', 'domain', 'index.ts'), `// Domain exports for ${name}\n`);
 
 // app/index.ts
-writeFileSync(join(dir, "src", "app", "index.ts"), `// Application layer exports for ${name}\n`);
+writeFileSync(join(dir, 'src', 'app', 'index.ts'), `// Application layer exports for ${name}\n`);
 
 // infra/index.ts
-writeFileSync(join(dir, "src", "infra", "index.ts"), `// Infrastructure layer exports for ${name}\n`);
+writeFileSync(
+  join(dir, 'src', 'infra', 'index.ts'),
+  `// Infrastructure layer exports for ${name}\n`
+);
 
 // public.ts
 writeFileSync(
-  join(dir, "src", "public.ts"),
+  join(dir, 'src', 'public.ts'),
   `/**
  * ${pkg} — Public API surface.
  *
@@ -172,11 +175,11 @@ export * from "./app/index.js";
 
 // Infra adapters
 export * from "./infra/index.js";
-`,
+`
 );
 
 // ARCHITECTURE.md (full frontmatter schema per docs/ARCHITECTURE-SPEC.md)
-const archName = pkg.replace("/", "-");
+const archName = pkg.replace('/', '-');
 writeFileSync(
   join(dir, `ARCHITECTURE.${archName}.md`),
   `---
@@ -220,36 +223,36 @@ Domain module for **${name}** functionality.
 
 ## Exports
 - *(Add exports as they are created)*
-`,
+`
 );
 
 // Update manifest
 try {
-  const manifestPath = join(root, ".afenda", "project.manifest.json");
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
+  const manifestPath = join(root, '.afenda', 'project.manifest.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
   manifest.packages[`packages/modules/${name}`] = {
     name: pkg,
-    type: "library",
-    layer: "module",
+    type: 'library',
+    layer: 'module',
   };
-  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
   console.log(`Updated .afenda/project.manifest.json`);
 } catch {
-  console.warn("Could not update manifest -- update manually.");
+  console.warn('Could not update manifest -- update manually.');
 }
 
 // Update root tsconfig references
 try {
-  const tsconfigPath = join(root, "tsconfig.json");
-  const tsconfig = JSON.parse(readFileSync(tsconfigPath, "utf-8"));
+  const tsconfigPath = join(root, 'tsconfig.json');
+  const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf-8'));
   const ref = `./packages/modules/${name}`;
   if (!tsconfig.references.some((r) => r.path === ref)) {
     tsconfig.references.push({ path: ref });
-    writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2) + "\n");
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2) + '\n');
     console.log(`Updated root tsconfig.json references`);
   }
 } catch {
-  console.warn("Could not update root tsconfig -- update manually.");
+  console.warn('Could not update root tsconfig -- update manually.');
 }
 
 console.log(`[DONE] Module ${pkg} scaffolded. Run \`pnpm install\` to resolve deps.`);

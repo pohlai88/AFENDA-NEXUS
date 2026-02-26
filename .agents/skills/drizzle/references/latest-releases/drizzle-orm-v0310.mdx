@@ -93,17 +93,23 @@ For queries, you can use predefined functions for vectors or create custom ones 
 You can also use the following helpers:
 
 ```ts
-import { l2Distance, l1Distance, innerProduct, 
-          cosineDistance, hammingDistance, jaccardDistance } from 'drizzle-orm'
+import {
+  l2Distance,
+  l1Distance,
+  innerProduct,
+  cosineDistance,
+  hammingDistance,
+  jaccardDistance,
+} from 'drizzle-orm';
 
-l2Distance(table.column, [3, 1, 2]) // table.column <-> '[3, 1, 2]'
-l1Distance(table.column, [3, 1, 2]) // table.column <+> '[3, 1, 2]'
+l2Distance(table.column, [3, 1, 2]); // table.column <-> '[3, 1, 2]'
+l1Distance(table.column, [3, 1, 2]); // table.column <+> '[3, 1, 2]'
 
-innerProduct(table.column, [3, 1, 2]) // table.column <#> '[3, 1, 2]'
-cosineDistance(table.column, [3, 1, 2]) // table.column <=> '[3, 1, 2]'
+innerProduct(table.column, [3, 1, 2]); // table.column <#> '[3, 1, 2]'
+cosineDistance(table.column, [3, 1, 2]); // table.column <=> '[3, 1, 2]'
 
-hammingDistance(table.column, '101') // table.column <~> '101'
-jaccardDistance(table.column, '101') // table.column <%> '101'
+hammingDistance(table.column, '101'); // table.column <~> '101'
+jaccardDistance(table.column, '101'); // table.column <%> '101'
 ```
 
 If `pg_vector` has some other functions to use, you can replicate implimentation from existing one we have. Here is how it can be done
@@ -111,7 +117,7 @@ If `pg_vector` has some other functions to use, you can replicate implimentation
 ```ts
 export function l2Distance(
   column: SQLWrapper | AnyColumn,
-  value: number[] | string[] | TypedQueryBuilder<any> | string,
+  value: number[] | string[] | TypedQueryBuilder<any> | string
 ): SQL {
   if (is(value, TypedQueryBuilder<any>) || typeof value === 'string') {
     return sql`${column} <-> ${value}`;
@@ -130,17 +136,19 @@ Let's take a few examples of `pg_vector` queries from the `pg_vector` docs and t
 import { l2Distance } from 'drizzle-orm';
 
 // SELECT * FROM items ORDER BY embedding <-> '[3,1,2]' LIMIT 5;
-db.select().from(items).orderBy(l2Distance(items.embedding, [3,1,2]))
+db.select()
+  .from(items)
+  .orderBy(l2Distance(items.embedding, [3, 1, 2]));
 
 // SELECT embedding <-> '[3,1,2]' AS distance FROM items;
-db.select({ distance: l2Distance(items.embedding, [3,1,2]) })
+db.select({ distance: l2Distance(items.embedding, [3, 1, 2]) });
 
 // SELECT * FROM items ORDER BY embedding <-> (SELECT embedding FROM items WHERE id = 1) LIMIT 5;
 const subquery = db.select({ embedding: items.embedding }).from(items).where(eq(items.id, 1));
-db.select().from(items).orderBy(l2Distance(items.embedding, subquery)).limit(5)
+db.select().from(items).orderBy(l2Distance(items.embedding, subquery)).limit(5);
 
 // SELECT (embedding <#> '[3,1,2]') * -1 AS inner_product FROM items;
-db.select({ innerProduct: sql`(${maxInnerProduct(items.embedding, [3,1,2])}) * -1` }).from(items)
+db.select({ innerProduct: sql`(${maxInnerProduct(items.embedding, [3, 1, 2])}) * -1` }).from(items);
 
 // and more!
 ```
@@ -157,8 +165,8 @@ Type `point` has 2 modes for mappings from the database: `tuple` and `xy`.
 
 ```ts
 const items = pgTable('items', {
- point: point('point'),
- pointObj: point('point_xy', { mode: 'xy' }),
+  point: point('point'),
+  pointObj: point('point_xy', { mode: 'xy' }),
 });
 ```
 
@@ -170,8 +178,8 @@ Type `line` has 2 modes for mappings from the database: `tuple` and `abc`.
 
 ```ts
 const items = pgTable('items', {
- line: line('line'),
- lineObj: line('line_abc', { mode: 'abc' }),
+  line: line('line'),
+  lineObj: line('line_abc', { mode: 'abc' }),
 });
 ```
 
@@ -222,13 +230,14 @@ We have addressed this issue so that you won't need to take all these steps. Sim
 Currently, we only support the `postgis` option, but we plan to add more extensions if they create tables in the `public` schema.
 
 The `postgis` option will skip the `geography_columns`, `geometry_columns`, and `spatial_ref_sys` tables
+
 ```ts
-import { defineConfig } from 'drizzle-kit'
+import { defineConfig } from 'drizzle-kit';
 
 export default defaultConfig({
-  dialect: "postgresql",
-  extensionsFilters: ["postgis"],
-})
+  dialect: 'postgresql',
+  extensionsFilters: ['postgis'],
+});
 ```
 
 ## Improvements
@@ -238,25 +247,25 @@ export default defaultConfig({
 - support full set of SSL params in kit config, provide types from node:tls connection
 
 ```ts
-import { defineConfig } from 'drizzle-kit'
+import { defineConfig } from 'drizzle-kit';
 
 export default defaultConfig({
-  dialect: "postgresql",
+  dialect: 'postgresql',
   dbCredentials: {
     ssl: true, //"require" | "allow" | "prefer" | "verify-full" | options from node:tls
-  }
-})
+  },
+});
 ```
 
 ```ts
-import { defineConfig } from 'drizzle-kit'
+import { defineConfig } from 'drizzle-kit';
 
 export default defaultConfig({
-  dialect: "mysql",
+  dialect: 'mysql',
   dbCredentials: {
-    ssl: "", // string | SslOptions (ssl options from mysql2 package)
-  }
-})
+    ssl: '', // string | SslOptions (ssl options from mysql2 package)
+  },
+});
 ```
 
 ### Normilized SQLite urls for `libsql` and `better-sqlite3` drivers
@@ -276,10 +285,10 @@ export const users = sqliteTable(
   },
   (table) => ({
     emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(sql`lower(${table.email})`),
-  }),
+  })
 );
-
 ```
+
 ```sql
 -- before
 CREATE UNIQUE INDEX `emailUniqueIndex` ON `users` (`lower("users"."email")`);
@@ -290,11 +299,10 @@ CREATE UNIQUE INDEX `emailUniqueIndex` ON `users` (lower("email"));
 
 ## Bug Fixes
 
-- [BUG]: multiple constraints not added (only the first one is generated) - [#2341](https://github.com/drizzle-team/drizzle-orm/issues/2341) 
+- [BUG]: multiple constraints not added (only the first one is generated) - [#2341](https://github.com/drizzle-team/drizzle-orm/issues/2341)
 - Drizzle Studio: Error: Connection terminated unexpectedly - [#435](https://github.com/drizzle-team/drizzle-kit-mirror/issues/435)
 - Unable to run sqlite migrations local - [#432](https://github.com/drizzle-team/drizzle-kit-mirror/issues/432)
 - error: unknown option '--config' - [#423](https://github.com/drizzle-team/drizzle-kit-mirror/issues/423)
-
 
 ## How `push` and `generate` works for indexes
 
@@ -305,13 +313,13 @@ CREATE UNIQUE INDEX `emailUniqueIndex` ON `users` (lower("email"));
 Example
 
 ```ts
-index().on(table.id, table.email) // will work well and name will be autogeneretaed
-index('my_name').on(table.id, table.email) // will work well
+index().on(table.id, table.email); // will work well and name will be autogeneretaed
+index('my_name').on(table.id, table.email); // will work well
 
 // but
 
-index().on(sql`lower(${table.email})`) // error
-index('my_name').on(sql`lower(${table.email})`) // will work well
+index().on(sql`lower(${table.email})`); // error
+index('my_name').on(sql`lower(${table.email})`); // will work well
 ```
 
 #### Push won't generate statements if these fields(list below) were changed in an existing index:

@@ -2,14 +2,14 @@
  * CO-03: Goodwill on acquisition calculator (IFRS 3).
  * Pure calculator — computes goodwill = consideration − parent's share of fair-value net assets.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface GoodwillCalcInput {
   readonly childEntityId: string;
   readonly considerationPaid: bigint;
   readonly fairValueNetAssets: bigint;
   readonly parentOwnershipPctBps: number;
-  readonly nciMeasurementMethod: "PROPORTIONATE" | "FULL_FAIR_VALUE";
+  readonly nciMeasurementMethod: 'PROPORTIONATE' | 'FULL_FAIR_VALUE';
   readonly nciFairValue: bigint;
   readonly currencyCode: string;
 }
@@ -29,10 +29,10 @@ export interface GoodwillCalcResult {
  * - Full fair-value NCI method: goodwill = (consideration + NCI fair value) − total FVNA
  */
 export function computeGoodwill(
-  inputs: readonly GoodwillCalcInput[],
+  inputs: readonly GoodwillCalcInput[]
 ): CalculatorResult<readonly GoodwillCalcResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one acquisition required");
+    throw new Error('At least one acquisition required');
   }
 
   const results: GoodwillCalcResult[] = [];
@@ -48,14 +48,13 @@ export function computeGoodwill(
     let goodwillAmount: bigint;
     let nciAtAcquisition: bigint;
 
-    if (input.nciMeasurementMethod === "PROPORTIONATE") {
+    if (input.nciMeasurementMethod === 'PROPORTIONATE') {
       nciAtAcquisition =
         (input.fairValueNetAssets * BigInt(10000 - input.parentOwnershipPctBps)) / 10000n;
       goodwillAmount = input.considerationPaid - parentShareOfNetAssets;
     } else {
       nciAtAcquisition = input.nciFairValue;
-      goodwillAmount =
-        input.considerationPaid + input.nciFairValue - input.fairValueNetAssets;
+      goodwillAmount = input.considerationPaid + input.nciFairValue - input.fairValueNetAssets;
     }
 
     const isBargainPurchase = goodwillAmount < 0n;

@@ -3,7 +3,8 @@ title: DrizzleORM v0.29.4 release
 pubDate: 2024-02-22
 description: Added Neon HTTP Batch support and updated the default behavior and instances of database-js.
 ---
-import Section from "@mdx/Section.astro";
+
+import Section from '@mdx/Section.astro';
 
 ## New Features
 
@@ -21,14 +22,15 @@ const sql = neon(process.env.DRIZZLE_DATABASE_URL!);
 const db = drizzle(sql);
 
 const batchResponse: BatchType = await db.batch([
-	db.insert(usersTable).values({ id: 1, name: 'John' }).returning({
-		id: usersTable.id,
-	}),
-	db.insert(usersTable).values({ id: 2, name: 'Dan' }),
-	db.query.usersTable.findMany({}),
-	db.query.usersTable.findFirst({}),
+db.insert(usersTable).values({ id: 1, name: 'John' }).returning({
+id: usersTable.id,
+}),
+db.insert(usersTable).values({ id: 2, name: 'Dan' }),
+db.query.usersTable.findMany({}),
+db.query.usersTable.findFirst({}),
 ]);
-```
+
+````
 
 ```ts
 type BatchType = [
@@ -49,7 +51,8 @@ type BatchType = [
 		invitedBy: number | null;
 	} | undefined,
 ];
-```
+````
+
 </Section>
 
 ## Improvements
@@ -64,9 +67,9 @@ import { drizzle } from 'drizzle-orm/planetscale-serverless';
 
 // create the connection
 const client = new Client({
-	host: process.env['DATABASE_HOST'],
-	username: process.env['DATABASE_USERNAME'],
-	password: process.env['DATABASE_PASSWORD'],
+  host: process.env['DATABASE_HOST'],
+  username: process.env['DATABASE_USERNAME'],
+  password: process.env['DATABASE_PASSWORD'],
 });
 
 const db = drizzle(client);
@@ -83,12 +86,12 @@ Previously our docs stated to use `connect()` and only this function was can be 
 ```mdx
 Warning: You need to pass an instance of Client:
 
-import { Client } from "@planetscale/database";
+import { Client } from '@planetscale/database';
 
 const client = new Client({
-  host: process.env["DATABASE_HOST"],
-  username: process.env["DATABASE_USERNAME"],
-  password: process.env["DATABASE_PASSWORD"],
+host: process.env["DATABASE_HOST"],
+username: process.env["DATABASE_USERNAME"],
+password: process.env["DATABASE_PASSWORD"],
 });
 
 const db = drizzle(client);

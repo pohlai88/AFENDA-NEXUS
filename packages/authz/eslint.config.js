@@ -1,12 +1,12 @@
-import baseConfig from "@afenda/eslint-config";
+import baseConfig from '@afenda/eslint-config';
 
 export default [
-  { ignores: ["dist/**", "*.config.*"] },
+  { ignores: ['dist/**', '*.config.*'] },
   ...baseConfig,
   {
     languageOptions: {
       parserOptions: {
-        project: "./tsconfig.eslint.json",
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },

@@ -3,7 +3,8 @@ pubDate: 2023-11-29
 title: DrizzleORM v0.29.1 release
 description: Fixed issues include forwarding arguments correctly when using the withReplica feature, resolving the selectDistinctOn not working with multiple columns problem, and providing detailed JSDoc for all query builders in all dialects. Additionally, introduced new helpers for aggregate functions in SQL and a new ESLint Drizzle Plugin package.
 ---
-import Npm from "@mdx/Npm.astro";
+
+import Npm from '@mdx/Npm.astro';
 
 ## Fixes
 
@@ -19,7 +20,7 @@ You can now access more information, hints, documentation links, etc. while deve
 ### New helpers for aggregate functions in SQL
 
 > Remember, aggregation functions are often used with the GROUP BY clause of the SELECT statement. So if you are selecting using aggregating functions and other columns in one query,
-be sure to use the `.groupBy` clause
+> be sure to use the `.groupBy` clause
 
 Here is a list of functions and equivalent using `sql` template:
 
@@ -30,12 +31,16 @@ await db.select({ value: count() }).from(users);
 await db.select({ value: count(users.id) }).from(users);
 
 // It's equivalent to writing
-await db.select({ 
-  value: sql`count('*'))`.mapWith(Number) 
-}).from(users);
-await db.select({ 
-  value: sql`count(${users.id})`.mapWith(Number) 
-}).from(users);
+await db
+  .select({
+    value: sql`count('*'))`.mapWith(Number),
+  })
+  .from(users);
+await db
+  .select({
+    value: sql`count(${users.id})`.mapWith(Number),
+  })
+  .from(users);
 ```
 
 countDistinct
@@ -44,9 +49,11 @@ countDistinct
 await db.select({ value: countDistinct(users.id) }).from(users);
 
 // It's equivalent to writing
-await db.select({ 
-  value: sql`count(${users.id})`.mapWith(Number) 
-}).from(users);
+await db
+  .select({
+    value: sql`count(${users.id})`.mapWith(Number),
+  })
+  .from(users);
 ```
 
 avg
@@ -55,9 +62,11 @@ avg
 await db.select({ value: avg(users.id) }).from(users);
 
 // It's equivalent to writing
-await db.select({ 
-  value: sql`avg(${users.id})`.mapWith(String) 
-}).from(users);
+await db
+  .select({
+    value: sql`avg(${users.id})`.mapWith(String),
+  })
+  .from(users);
 ```
 
 avgDistinct
@@ -66,9 +75,11 @@ avgDistinct
 await db.select({ value: avgDistinct(users.id) }).from(users);
 
 // It's equivalent to writing
-await db.select({ 
-  value: sql`avg(distinct ${users.id})`.mapWith(String) 
-}).from(users);
+await db
+  .select({
+    value: sql`avg(distinct ${users.id})`.mapWith(String),
+  })
+  .from(users);
 ```
 
 sum
@@ -77,9 +88,11 @@ sum
 await db.select({ value: sum(users.id) }).from(users);
 
 // It's equivalent to writing
-await db.select({ 
-  value: sql`sum(${users.id})`.mapWith(String) 
-}).from(users);
+await db
+  .select({
+    value: sql`sum(${users.id})`.mapWith(String),
+  })
+  .from(users);
 ```
 
 sumDistinct
@@ -88,9 +101,11 @@ sumDistinct
 await db.select({ value: sumDistinct(users.id) }).from(users);
 
 // It's equivalent to writing
-await db.select({ 
-  value: sql`sum(distinct ${users.id})`.mapWith(String) 
-}).from(users);
+await db
+  .select({
+    value: sql`sum(distinct ${users.id})`.mapWith(String),
+  })
+  .from(users);
 ```
 
 max
@@ -99,9 +114,11 @@ max
 await db.select({ value: max(users.id) }).from(users);
 
 // It's equivalent to writing
-await db.select({ 
-  value: sql`max(${expression})`.mapWith(users.id) 
-}).from(users);
+await db
+  .select({
+    value: sql`max(${expression})`.mapWith(users.id),
+  })
+  .from(users);
 ```
 
 min
@@ -110,9 +127,11 @@ min
 await db.select({ value: min(users.id) }).from(users);
 
 // It's equivalent to writing
-await db.select({ 
-  value: sql`min(${users.id})`.mapWith(users.id) 
-}).from(users);
+await db
+  .select({
+    value: sql`min(${users.id})`.mapWith(users.id),
+  })
+  .from(users);
 ```
 
 To find more information check docs: [aggregation helpers](/docs/select#aggregations-helpers)
@@ -125,15 +144,11 @@ For cases where it's impossible to perform type checks for specific scenarios, o
 
 ### Install
 
-<Npm>
-eslint eslint-plugin-drizzle
-</Npm>
+<Npm>eslint eslint-plugin-drizzle</Npm>
 
 You can install those packages for typescript support in your IDE
 
-<Npm>
-@typescript-eslint/eslint-plugin @typescript-eslint/parser
-</Npm>
+<Npm>@typescript-eslint/eslint-plugin @typescript-eslint/parser</Npm>
 
 ### Usage
 
@@ -147,8 +162,8 @@ parserOptions:
 plugins:
   - drizzle
 rules:
-  'drizzle/enforce-delete-with-where': "error"
-  'drizzle/enforce-update-with-where': "error"
+  'drizzle/enforce-delete-with-where': 'error'
+  'drizzle/enforce-update-with-where': 'error'
 ```
 
 #### All config
@@ -158,7 +173,7 @@ This plugin exports an all config that makes use of all rules (except for deprec
 ```yaml copy
 root: true
 extends:
-  - "plugin:drizzle/all"
+  - 'plugin:drizzle/all'
 parser: '@typescript-eslint/parser'
 parserOptions:
   project: './tsconfig.json'
@@ -171,7 +186,7 @@ At the moment, `all` is equivalent to `recommended`
 ```yaml copy
 root: true
 extends:
-  - "plugin:drizzle/recommended"
+  - 'plugin:drizzle/recommended'
 parser: '@typescript-eslint/parser'
 parserOptions:
   project: './tsconfig.json'

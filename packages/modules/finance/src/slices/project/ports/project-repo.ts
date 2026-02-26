@@ -1,6 +1,6 @@
-import type { Project } from "../entities/project.js";
-import type { ProjectCostLine } from "../entities/project-cost-line.js";
-import type { ProjectBilling } from "../entities/project-billing.js";
+import type { Project } from '../entities/project.js';
+import type { ProjectCostLine } from '../entities/project-cost-line.js';
+import type { ProjectBilling } from '../entities/project-billing.js';
 
 export interface CreateProjectInput {
   readonly companyId: string;
@@ -9,7 +9,7 @@ export interface CreateProjectInput {
   readonly description: string | null;
   readonly customerId: string | null;
   readonly managerId: string;
-  readonly billingType: Project["billingType"];
+  readonly billingType: Project['billingType'];
   readonly budgetAmount: bigint;
   readonly currencyCode: string;
   readonly startDate: Date;
@@ -20,7 +20,7 @@ export interface CreateProjectCostLineInput {
   readonly projectId: string;
   readonly lineNumber: number;
   readonly costDate: Date;
-  readonly category: ProjectCostLine["category"];
+  readonly category: ProjectCostLine['category'];
   readonly description: string;
   readonly amount: bigint;
   readonly currencyCode: string;

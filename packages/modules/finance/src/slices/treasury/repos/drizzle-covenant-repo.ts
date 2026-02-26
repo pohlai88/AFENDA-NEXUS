@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { covenants } from "@afenda/db";
-import type { Covenant } from "../entities/covenant.js";
-import type { ICovenantRepo, CreateCovenantInput } from "../ports/covenant-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { covenants } from '@afenda/db';
+import type { Covenant } from '../entities/covenant.js';
+import type { ICovenantRepo, CreateCovenantInput } from '../ports/covenant-repo.js';
 
 type Row = typeof covenants.$inferSelect;
 
@@ -13,11 +13,11 @@ function mapToDomain(row: Row): Covenant {
     companyId: row.companyId,
     lenderId: row.lenderId,
     lenderName: row.lenderName,
-    covenantType: row.covenantType as Covenant["covenantType"],
+    covenantType: row.covenantType as Covenant['covenantType'],
     description: row.description,
     thresholdValue: row.thresholdValue,
     currentValue: row.currentValue,
-    status: row.status as Covenant["status"],
+    status: row.status as Covenant['status'],
     testFrequency: row.testFrequency,
     lastTestDate: row.lastTestDate,
     nextTestDate: row.nextTestDate,
@@ -45,12 +45,24 @@ export class DrizzleCovenantRepo implements ICovenantRepo {
   }
 
   async create(tenantId: string, input: CreateCovenantInput): Promise<Covenant> {
-    const [row] = await this.db.insert(covenants).values({ tenantId, ...input }).returning();
+    const [row] = await this.db
+      .insert(covenants)
+      .values({ tenantId, ...input })
+      .returning();
     return mapToDomain(row!);
   }
 
-  async updateTestResult(id: string, currentValue: number, status: Covenant["status"], lastTestDate: Date): Promise<Covenant> {
-    const [row] = await this.db.update(covenants).set({ currentValue, status, lastTestDate }).where(eq(covenants.id, id)).returning();
+  async updateTestResult(
+    id: string,
+    currentValue: number,
+    status: Covenant['status'],
+    lastTestDate: Date
+  ): Promise<Covenant> {
+    const [row] = await this.db
+      .update(covenants)
+      .set({ currentValue, status, lastTestDate })
+      .where(eq(covenants.id, id))
+      .returning();
     return mapToDomain(row!);
   }
 }

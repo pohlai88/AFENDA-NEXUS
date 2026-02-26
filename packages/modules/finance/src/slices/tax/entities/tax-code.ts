@@ -3,7 +3,7 @@
  * Supports multi-jurisdiction tax lookups.
  */
 
-export type JurisdictionLevel = "COUNTRY" | "STATE" | "CITY" | "SPECIAL";
+export type JurisdictionLevel = 'COUNTRY' | 'STATE' | 'CITY' | 'SPECIAL';
 
 export interface TaxCode {
   readonly id: string;

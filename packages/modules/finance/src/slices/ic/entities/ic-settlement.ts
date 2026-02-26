@@ -1,4 +1,4 @@
-import type { TenantId, CompanyId } from "@afenda/core";
+import type { TenantId, CompanyId } from '@afenda/core';
 
 /**
  * @see IC-04 — Settlement tracking
@@ -9,8 +9,8 @@ import type { TenantId, CompanyId } from "@afenda/core";
  * recording the settlement method, amount, and any FX gain/loss.
  */
 
-export type SettlementMethod = "NETTING" | "CASH" | "JOURNAL";
-export type SettlementStatus = "DRAFT" | "CONFIRMED" | "CANCELLED";
+export type SettlementMethod = 'NETTING' | 'CASH' | 'JOURNAL';
+export type SettlementStatus = 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
 
 export interface IcSettlement {
   readonly id: string;

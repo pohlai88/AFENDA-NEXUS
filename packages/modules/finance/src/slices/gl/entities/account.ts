@@ -1,11 +1,11 @@
-import type { CompanyId } from "@afenda/core";
+import type { CompanyId } from '@afenda/core';
 
 // Re-export from shared for backward compatibility
-export { normalBalanceFor } from "../../../shared/types.js";
-export type { AccountType, NormalBalance } from "../../../shared/types.js";
-import type { AccountType } from "../../../shared/types.js";
-import type { NormalBalance } from "../../../shared/types.js";
-import { normalBalanceFor } from "../../../shared/types.js";
+export { normalBalanceFor } from '../../../shared/types.js';
+export type { AccountType, NormalBalance } from '../../../shared/types.js';
+import type { AccountType } from '../../../shared/types.js';
+import type { NormalBalance } from '../../../shared/types.js';
+import { normalBalanceFor } from '../../../shared/types.js';
 
 /**
  * GAP-13: Validates that an account's net balance is on the expected side.
@@ -17,11 +17,11 @@ import { normalBalanceFor } from "../../../shared/types.js";
 export function isBalanceDirectionValid(
   type: AccountType,
   totalDebit: bigint,
-  totalCredit: bigint,
+  totalCredit: bigint
 ): boolean {
   if (totalDebit === totalCredit) return true;
   const normal = normalBalanceFor(type);
-  return normal === "DEBIT" ? totalDebit >= totalCredit : totalCredit >= totalDebit;
+  return normal === 'DEBIT' ? totalDebit >= totalCredit : totalCredit >= totalDebit;
 }
 
 export interface Account {

@@ -131,7 +131,8 @@ CMD ["node", "dist/index.js"]
 - run: pnpm install --frozen-lockfile
 ```
 
-**Note:** pnpm 11+ ships with its own Node.js version and doesn't rely on system installation.
+**Note:** pnpm 11+ ships with its own Node.js version and doesn't rely on system
+installation.
 
 ## Migration from npm
 

@@ -4,7 +4,7 @@
  * Pure calculator — no DB, no side effects.
  */
 
-export type ProfitabilityDimension = "PRODUCT" | "CUSTOMER" | "SEGMENT" | "REGION";
+export type ProfitabilityDimension = 'PRODUCT' | 'CUSTOMER' | 'SEGMENT' | 'REGION';
 
 export interface RevenueItem {
   readonly dimensionId: string;
@@ -54,16 +54,19 @@ export interface ProfitabilityResult {
  */
 export function computeProfitability(input: ProfitabilityInput): ProfitabilityResult {
   if (input.revenueItems.length === 0 && input.costItems.length === 0) {
-    throw new Error("At least one revenue or cost item is required");
+    throw new Error('At least one revenue or cost item is required');
   }
 
   // Group by dimension
-  const dimensions = new Map<string, {
-    dimensionType: ProfitabilityDimension;
-    revenue: bigint;
-    directCost: bigint;
-    allocatedOverhead: bigint;
-  }>();
+  const dimensions = new Map<
+    string,
+    {
+      dimensionType: ProfitabilityDimension;
+      revenue: bigint;
+      directCost: bigint;
+      allocatedOverhead: bigint;
+    }
+  >();
 
   for (const rev of input.revenueItems) {
     const existing = dimensions.get(rev.dimensionId) ?? {
@@ -98,12 +101,9 @@ export function computeProfitability(input: ProfitabilityInput): ProfitabilityRe
     const grossMargin = data.revenue - data.directCost;
     const netMargin = data.revenue - totalCost;
 
-    const grossMarginPct = data.revenue > 0n
-      ? Number((grossMargin * 10000n) / data.revenue) / 100
-      : 0;
-    const netMarginPct = data.revenue > 0n
-      ? Number((netMargin * 10000n) / data.revenue) / 100
-      : 0;
+    const grossMarginPct =
+      data.revenue > 0n ? Number((grossMargin * 10000n) / data.revenue) / 100 : 0;
+    const netMarginPct = data.revenue > 0n ? Number((netMargin * 10000n) / data.revenue) / 100 : 0;
 
     lines.push({
       dimensionId,
@@ -133,12 +133,10 @@ export function computeProfitability(input: ProfitabilityInput): ProfitabilityRe
     totalCost,
     totalGrossMargin,
     totalNetMargin,
-    overallGrossMarginPct: totalRevenue > 0n
-      ? Number((totalGrossMargin * 10000n) / totalRevenue) / 100
-      : 0,
-    overallNetMarginPct: totalRevenue > 0n
-      ? Number((totalNetMargin * 10000n) / totalRevenue) / 100
-      : 0,
+    overallGrossMarginPct:
+      totalRevenue > 0n ? Number((totalGrossMargin * 10000n) / totalRevenue) / 100 : 0,
+    overallNetMarginPct:
+      totalRevenue > 0n ? Number((totalNetMargin * 10000n) / totalRevenue) / 100 : 0,
     currencyCode: input.currencyCode,
   };
 }

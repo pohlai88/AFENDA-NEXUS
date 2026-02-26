@@ -1,5 +1,5 @@
-import type { Result } from "@afenda/core";
-import type { TrialBalance } from "../entities/gl-balance.js";
+import type { Result } from '@afenda/core';
+import type { TrialBalance } from '../entities/gl-balance.js';
 
 export interface BalanceUpsertLine {
   readonly accountId: string;
@@ -8,11 +8,7 @@ export interface BalanceUpsertLine {
 }
 
 export interface IGlBalanceRepo {
-  getTrialBalance(
-    ledgerId: string,
-    year: string,
-    period?: number,
-  ): Promise<Result<TrialBalance>>;
+  getTrialBalance(ledgerId: string, year: string, period?: number): Promise<Result<TrialBalance>>;
 
   upsertForJournal(input: {
     tenantId: string;

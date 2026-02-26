@@ -1,6 +1,8 @@
 # AFENDA-NEXUS Agent Resources
 
-This directory contains AI agent skills and tooling for the AFENDA-NEXUS monorepo. All skill metadata lives in `skills-registry.json`; INDEX.md and INSTALLED-SKILLS.md are auto-generated from it.
+This directory contains AI agent skills and tooling for the AFENDA-NEXUS
+monorepo. All skill metadata lives in `skills-registry.json`; INDEX.md and
+INSTALLED-SKILLS.md are auto-generated from it.
 
 ---
 
@@ -24,13 +26,13 @@ This directory contains AI agent skills and tooling for the AFENDA-NEXUS monorep
 
 ## Automation
 
-| Command | Purpose |
-|---------|---------|
-| `node .agents/tools/agents-gen.mjs` | Regenerate INDEX.md + INSTALLED-SKILLS.md from registry |
-| `node .agents/tools/agents-gen.mjs --check` | Dry-run: report drift without writing |
-| `node .agents/tools/agents-drift.mjs` | Full drift guard against PROJECT.md |
-| `node .agents/tools/agents-drift.mjs --fix` | Drift guard + auto-fix (regenerate docs) |
-| `node .agents/tools/agents-drift.mjs --section 12` | Check only PROJECT.md section 12 |
+| Command                                            | Purpose                                                 |
+| -------------------------------------------------- | ------------------------------------------------------- |
+| `node .agents/tools/agents-gen.mjs`                | Regenerate INDEX.md + INSTALLED-SKILLS.md from registry |
+| `node .agents/tools/agents-gen.mjs --check`        | Dry-run: report drift without writing                   |
+| `node .agents/tools/agents-drift.mjs`              | Full drift guard against PROJECT.md                     |
+| `node .agents/tools/agents-drift.mjs --fix`        | Drift guard + auto-fix (regenerate docs)                |
+| `node .agents/tools/agents-drift.mjs --section 12` | Check only PROJECT.md section 12                        |
 
 ---
 
@@ -52,7 +54,8 @@ Skills are referenced by name:
 
 1. **Browse INDEX.md** — Quick reference to all skills by category
 2. **Read relevant skills** — Navigate to `skills/<name>/SKILL.md`
-3. **Add a skill** — Create directory, add SKILL.md from template, update `skills-registry.json`, run `agents-gen.mjs`
+3. **Add a skill** — Create directory, add SKILL.md from template, update
+   `skills-registry.json`, run `agents-gen.mjs`
 4. **Validate** — Run `agents-drift.mjs` to catch drift against PROJECT.md
 
 ### For New Team Members
@@ -119,9 +122,11 @@ Content: commands, code examples, best practices, troubleshooting.
 
 - [PROJECT.md](../PROJECT.md) — Architecture spec and conventions
 - [INDEX.md](./INDEX.md) — Auto-generated skill index
-- [INSTALLED-SKILLS.md](./skills/INSTALLED-SKILLS.md) — Auto-generated detailed reference
+- [INSTALLED-SKILLS.md](./skills/INSTALLED-SKILLS.md) — Auto-generated detailed
+  reference
 
 ---
 
-**Maintained by:** AFENDA-NEXUS Team
-**Contributing:** Follow [SKILL-TEMPLATE.md](./skills/SKILL-TEMPLATE.md) and update `skills-registry.json`
+**Maintained by:** AFENDA-NEXUS Team **Contributing:** Follow
+[SKILL-TEMPLATE.md](./skills/SKILL-TEMPLATE.md) and update
+`skills-registry.json`

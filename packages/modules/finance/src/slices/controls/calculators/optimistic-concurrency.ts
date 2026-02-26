@@ -18,7 +18,7 @@ export interface VersionedEntity {
   readonly updatedAt: Date;
 }
 
-export type ConcurrencyOutcome = "OK" | "VERSION_CONFLICT" | "STALE_READ";
+export type ConcurrencyOutcome = 'OK' | 'VERSION_CONFLICT' | 'STALE_READ';
 
 export interface ConcurrencyCheckResult {
   readonly entityId: string;
@@ -37,11 +37,12 @@ export interface ConcurrencyReport {
   readonly totalOk: number;
 }
 
-export function checkOptimisticConcurrency(
-  entities: readonly VersionedEntity[],
-): { result: ConcurrencyReport; explanation: string } {
+export function checkOptimisticConcurrency(entities: readonly VersionedEntity[]): {
+  result: ConcurrencyReport;
+  explanation: string;
+} {
   if (entities.length === 0) {
-    throw new Error("At least one versioned entity is required");
+    throw new Error('At least one versioned entity is required');
   }
 
   const results: ConcurrencyCheckResult[] = entities.map((entity) => {
@@ -49,7 +50,7 @@ export function checkOptimisticConcurrency(
       return {
         entityId: entity.entityId,
         entityType: entity.entityType,
-        outcome: "OK" as const,
+        outcome: 'OK' as const,
         currentVersion: entity.currentVersion,
         expectedVersion: entity.expectedVersion,
         nextVersion: entity.currentVersion + 1,
@@ -61,7 +62,7 @@ export function checkOptimisticConcurrency(
       return {
         entityId: entity.entityId,
         entityType: entity.entityType,
-        outcome: "STALE_READ" as const,
+        outcome: 'STALE_READ' as const,
         currentVersion: entity.currentVersion,
         expectedVersion: entity.expectedVersion,
         nextVersion: null,
@@ -74,7 +75,7 @@ export function checkOptimisticConcurrency(
     return {
       entityId: entity.entityId,
       entityType: entity.entityType,
-      outcome: "VERSION_CONFLICT" as const,
+      outcome: 'VERSION_CONFLICT' as const,
       currentVersion: entity.currentVersion,
       expectedVersion: entity.expectedVersion,
       nextVersion: null,
@@ -84,8 +85,8 @@ export function checkOptimisticConcurrency(
     };
   });
 
-  const conflicts = results.filter((r) => r.outcome !== "OK");
-  const ok = results.filter((r) => r.outcome === "OK");
+  const conflicts = results.filter((r) => r.outcome !== 'OK');
+  const ok = results.filter((r) => r.outcome === 'OK');
 
   return {
     result: {
@@ -94,8 +95,9 @@ export function checkOptimisticConcurrency(
       totalConflicts: conflicts.length,
       totalOk: ok.length,
     },
-    explanation: conflicts.length === 0
-      ? `All ${results.length} entity version(s) verified — no conflicts`
-      : `${conflicts.length}/${results.length} version conflict(s): ${conflicts.map((c) => `${c.entityType}:${c.entityId} (${c.outcome})`).join(", ")}`,
+    explanation:
+      conflicts.length === 0
+        ? `All ${results.length} entity version(s) verified — no conflicts`
+        : `${conflicts.length}/${results.length} version conflict(s): ${conflicts.map((c) => `${c.entityType}:${c.entityId} (${c.outcome})`).join(', ')}`,
   };
 }

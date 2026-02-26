@@ -1,8 +1,8 @@
 import Npm from '@mdx/Npm.astro';
 import Callout from '@mdx/Callout.astro';
-import Prerequisites from "@mdx/Prerequisites.astro";
-import CodeTabs from "@mdx/CodeTabs.astro";
-import WhatsNextPostgres from "@mdx/WhatsNextPostgres.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
+import CodeTabs from '@mdx/CodeTabs.astro';
+import WhatsNextPostgres from '@mdx/WhatsNextPostgres.astro';
 import Breadcrumbs from '@mdx/Breadcrumbs.astro';
 import FileStructure from '@mdx/get-started/FileStructure.mdx';
 import InstallPackages from '@mdx/get-started/InstallPackages.mdx';
@@ -17,51 +17,54 @@ import RunFile from '@mdx/get-started/RunFile.mdx';
 import SetupConfig from '@mdx/get-started/SetupConfig.mdx';
 import TransferCode from '@mdx/get-started/TransferCode.mdx';
 
-<Breadcrumbs/>
+<Breadcrumbs />
 
 # Get Started with Drizzle and PlanetScale in existing project
 
-<Prerequisites>  
-  - **dotenv** - package for managing environment variables - [read here](https://www.npmjs.com/package/dotenv)
-  - **tsx** - package for running TypeScript files - [read here](https://tsx.is)
-  - **PlanetScale** - MySQL database platform - [read here](https://planetscale.com)
-  - **database-js** - PlanetScale serverless driver - [read here](https://github.com/planetscale/database-js)
+<Prerequisites>
+  - **dotenv** - package for managing environment variables - [read
+  here](https://www.npmjs.com/package/dotenv) - **tsx** - package for running TypeScript files -
+  [read here](https://tsx.is) - **PlanetScale** - MySQL database platform - [read
+  here](https://planetscale.com) - **database-js** - PlanetScale serverless driver - [read
+  here](https://github.com/planetscale/database-js)
 </Prerequisites>
 
-<Callout title='PlanetScale also offers Postgres' type='info'>
-Looking for PostgreSQL? Check out our [PlanetScale Postgres guide](/docs/get-started/planetscale-postgres-existing)
+<Callout title="PlanetScale also offers Postgres" type="info">
+  Looking for PostgreSQL? Check out our [PlanetScale Postgres
+  guide](/docs/get-started/planetscale-postgres-existing)
 </Callout>
 
-<Callout title='important' type='warning'>
-For this tutorial, we will use the `database-js` driver to make **HTTP** calls to the PlanetScale database. If you need to
-connect to PlanetScale through TCP, you can refer to our [MySQL Get Started](/docs/get-started/mysql-new) page
+<Callout title="important" type="warning">
+  For this tutorial, we will use the `database-js` driver to make **HTTP** calls to the PlanetScale
+  database. If you need to connect to PlanetScale through TCP, you can refer to our [MySQL Get
+  Started](/docs/get-started/mysql-new) page
 </Callout>
 
-<FileStructure/>
+<FileStructure />
 
 #### Step 1 - Install **@planetscale/database** package
 
-<InstallPackages lib='@planetscale/database'/>
+<InstallPackages lib="@planetscale/database" />
 
 #### Step 2 - Setup connection variables
 
-<SetupEnv env_variable='DATABASE_URL' />
+<SetupEnv env_variable="DATABASE_URL" />
 
 #### Step 3 - Setup Drizzle config file
 
-<SetupConfig dialect='mysql' env_variable='DATABASE_URL'/>
+<SetupConfig dialect="mysql" env_variable="DATABASE_URL" />
 
 #### Step 4 - Introspect your database
 
-<IntrospectMySQL/>
+<IntrospectMySQL />
 
 #### Step 5 - Transfer code to your actual schema file
 
-<TransferCode/>
+<TransferCode />
 
 #### Step 6 - Connect Drizzle ORM to the database
 
-<ConnectPlanetScale/>
+<ConnectPlanetScale />
 
 #### Step 7 - Query the database
 
@@ -69,15 +72,15 @@ connect to PlanetScale through TCP, you can refer to our [MySQL Get Started](/do
 
 #### Step 8 - Run index.ts file
 
-<RunFile/>
+<RunFile />
 
 #### Step 9 - Update your table schema (optional)
 
-<UpdateSchema/>
+<UpdateSchema />
 
 #### Step 10 - Applying changes to the database (optional)
 
-<ApplyChanges/>
+<ApplyChanges />
 
 #### Step 11 - Query the database with a new field (optional)
 
@@ -88,11 +91,13 @@ import { drizzle } from 'drizzle-orm/planetscale-serverless';
 import { usersTable } from './db/schema';
 
 async function main() {
-  const db = drizzle({ connection: {
+  const db = drizzle({
+    connection: {
       host: process.env.DATABASE_HOST!,
       username: process.env.DATABASE_USERNAME!,
       password: process.env.DATABASE_PASSWORD!,
-    }});
+    },
+  });
 
   const user: typeof usersTable.$inferInsert = {
     name: 'John',
@@ -102,10 +107,10 @@ async function main() {
   };
 
   await db.insert(usersTable).values(user);
-  console.log('New user created!')
+  console.log('New user created!');
 
   const users = await db.select().from(usersTable);
-  console.log('Getting all users from the database: ', users)
+  console.log('Getting all users from the database: ', users);
   /*
   const users: {
     id: number;
@@ -122,10 +127,10 @@ async function main() {
       age: 31,
     })
     .where(eq(usersTable.email, user.email));
-  console.log('User info updated!')
+  console.log('User info updated!');
 
   await db.delete(usersTable).where(eq(usersTable.email, user.email));
-  console.log('User deleted!')
+  console.log('User deleted!');
 }
 
 main();

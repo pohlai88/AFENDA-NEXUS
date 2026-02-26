@@ -12,6 +12,7 @@ Create a GraphQL server from a Drizzle schema in one line, and easily enhance it
 ## Quick start
 
 Make sure your `drizzle-orm` version is at least `0.30.9`, and update if needed:
+
 <Npm>drizzle-orm@latest</Npm>
 
 ### Apollo Server
@@ -37,7 +38,8 @@ const server = new ApolloServer({ schema });
 const { url } = await startStandaloneServer(server);
 
 console.log(`🚀 Server ready at ${url}`);
-```
+
+````
 </CodeTab>
 <CodeTab>
 ```typescript copy
@@ -62,7 +64,8 @@ export const posts = pgTable('posts', {
 export const postsRelations = relations(posts, ({ one }) => ({
   author: one(users, { fields: [posts.authorId], references: [users.id] }),
 }));
-```
+````
+
 </CodeTab>
 </CodeTabs>
 
@@ -88,9 +91,10 @@ const yoga = createYoga({ schema });
 const server = createServer(yoga);
 
 server.listen(4000, () => {
-  console.info('Server is running on http://localhost:4000/graphql');
+console.info('Server is running on http://localhost:4000/graphql');
 });
-```
+
+````
 </CodeTab>
 <CodeTab>
 ```typescript copy
@@ -115,14 +119,16 @@ export const posts = pgTable('posts', {
 export const postsRelations = relations(posts, ({ one }) => ({
   author: one(users, { fields: [posts.authorId], references: [users.id] }),
 }));
-```
+````
+
 </CodeTab>
 </CodeTabs>
 
 ## Customizing schema
 
-<Callout type='info' emoji='ℹ️'>
-`buildSchema()` produces schema and types using standard `graphql` SDK, so its output is compatible with any library that supports it.
+<Callout type="info" emoji="ℹ️">
+  `buildSchema()` produces schema and types using standard `graphql` SDK, so its output is
+  compatible with any library that supports it.
 </Callout>
 
 If you want to customize your schema, you can use `entities` object to build your own new schema:
@@ -144,12 +150,12 @@ const { entities } = buildSchema(db);
 
 // You can customize which parts of queries or mutations you want
 const schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: 'Query',
-    fields: {
-      // Select only wanted queries out of all generated
-      users: entities.queries.users,
-      customer: entities.queries.customersSingle,
+query: new GraphQLObjectType({
+name: 'Query',
+fields: {
+// Select only wanted queries out of all generated
+users: entities.queries.users,
+customer: entities.queries.customersSingle,
 
       // Create a custom one
       customUsers: {
@@ -169,26 +175,28 @@ const schema = new GraphQLSchema({
         },
       },
     },
-  }),
-  // Same rules apply to mutations
-  mutation: new GraphQLObjectType({
-    name: 'Mutation',
-    fields: entities.mutations,
-  }),
-  // In case you need types inside your schema
-  types: [...Object.values(entities.types), ...Object.values(entities.inputs)],
+
+}),
+// Same rules apply to mutations
+mutation: new GraphQLObjectType({
+name: 'Mutation',
+fields: entities.mutations,
+}),
+// In case you need types inside your schema
+types: [...Object.values(entities.types), ...Object.values(entities.inputs)],
 });
 
 const yoga = createYoga({
-  schema,
+schema,
 });
 
 const server = createServer(yoga);
 
 server.listen(4000, () => {
-  console.info('Server is running on http://localhost:4000/graphql');
+console.info('Server is running on http://localhost:4000/graphql');
 })
-```
+
+````
 </CodeTab>
 <CodeTab>
 ```typescript copy
@@ -213,6 +221,7 @@ export const posts = pgTable('posts', {
 export const postsRelations = relations(posts, ({ one }) => ({
   author: one(users, { fields: [posts.authorId], references: [users.id] }),
 }));
-```
+````
+
 </CodeTab>
 </CodeTabs>

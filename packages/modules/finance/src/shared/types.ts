@@ -21,9 +21,9 @@ export interface CalculatorResult<T> {
 
 // ── Account classification types ─────────────────────────────────────────
 
-export type AccountType = "ASSET" | "LIABILITY" | "EQUITY" | "REVENUE" | "EXPENSE";
+export type AccountType = 'ASSET' | 'LIABILITY' | 'EQUITY' | 'REVENUE' | 'EXPENSE';
 
-export type NormalBalance = "DEBIT" | "CREDIT";
+export type NormalBalance = 'DEBIT' | 'CREDIT';
 
 /**
  * Derives the normal balance side from the account type.
@@ -31,12 +31,12 @@ export type NormalBalance = "DEBIT" | "CREDIT";
  */
 export function normalBalanceFor(type: AccountType): NormalBalance {
   switch (type) {
-    case "ASSET":
-    case "EXPENSE":
-      return "DEBIT";
-    case "LIABILITY":
-    case "EQUITY":
-    case "REVENUE":
-      return "CREDIT";
+    case 'ASSET':
+    case 'EXPENSE':
+      return 'DEBIT';
+    case 'LIABILITY':
+    case 'EQUITY':
+    case 'REVENUE':
+      return 'CREDIT';
   }
 }

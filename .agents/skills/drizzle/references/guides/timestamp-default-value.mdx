@@ -3,15 +3,16 @@ title: SQL Timestamp as a default value
 slug: timestamp-default-value
 ---
 
-import Section from "@mdx/Section.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Section from '@mdx/Section.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 import CodeTabs from '@mdx/CodeTabs.astro';
 import CodeTab from '@mdx/CodeTab.astro';
 
 <Prerequisites>
-- Get started with [PostgreSQL](/docs/get-started-postgresql), [MySQL](/docs/get-started-mysql) and [SQLite](/docs/get-started-sqlite)
-- Learn about column data types for [PostgreSQL](/docs/column-types/pg), [MySQL](/docs/column-types/mysql) and [SQLite](/docs/column-types/sqlite)
-- [sql operator](/docs/sql)
+  - Get started with [PostgreSQL](/docs/get-started-postgresql), [MySQL](/docs/get-started-mysql)
+  and [SQLite](/docs/get-started-sqlite) - Learn about column data types for
+  [PostgreSQL](/docs/column-types/pg), [MySQL](/docs/column-types/mysql) and
+  [SQLite](/docs/column-types/sqlite) - [sql operator](/docs/sql)
 </Prerequisites>
 
 ### PostgreSQL
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"timestamp2" timestamp DEFAULT now() NOT NULL
 );
 ```
+
 </Section>
 
 The `mode` option defines how values are handled in the application. Values with `string` mode are treated as `string` in the application, but stored as timestamps in the database.
@@ -63,6 +65,7 @@ The `mode` option defines how values are handled in the application. Values with
   }
 ]
 ```
+
 </Section>
 
 To set unix timestamp as a default value in PostgreSQL, you can use the `sql` operator and `extract(epoch from now())` function which returns the number of seconds since `1970-01-01 00:00:00 UTC`:
@@ -98,15 +101,15 @@ CREATE TABLE IF NOT EXISTS "users" (
 
 ```ts
 // Data returned by the application
-[ 
-  { 
-    id: 1, 
-    timestamp: 1712846784 // number
-  } 
-]
+[
+  {
+    id: 1,
+    timestamp: 1712846784, // number
+  },
+];
 ```
-</Section>
 
+</Section>
 
 ### MySQL
 
@@ -138,6 +141,7 @@ CREATE TABLE `users` (
 	CONSTRAINT `users_id` PRIMARY KEY(`id`)
 );
 ```
+
 </Section>
 
 `fsp` option defines the number of fractional seconds to include in the timestamp. The default value is `0`.
@@ -164,6 +168,7 @@ The `mode` option defines how values are handled in the application. Values with
   }
 ]
 ```
+
 </Section>
 
 To set unix timestamp as a default value in MySQL, you can use the `sql` operator and `unix_timestamp()` function which returns the number of seconds since `1970-01-01 00:00:00 UTC`:
@@ -200,13 +205,14 @@ CREATE TABLE `users` (
 
 ```ts
 // Data returned by the application
-[ 
-  { 
-    id: 1, 
-    timestamp: 1712847986 // number
-  } 
-]
+[
+  {
+    id: 1,
+    timestamp: 1712847986, // number
+  },
+];
 ```
+
 </Section>
 
 ### SQLite
@@ -247,10 +253,11 @@ CREATE TABLE `users` (
 [
   {
     id: 1,
-    timestamp: '2024-04-11 15:40:43' // string
-  }
-]
+    timestamp: '2024-04-11 15:40:43', // string
+  },
+];
 ```
+
 </Section>
 
 To set unix timestamp as a default value in SQLite, you can use the `sql` operator and `unixepoch()` function which returns the number of seconds since `1970-01-01 00:00:00 UTC`:
@@ -282,6 +289,7 @@ CREATE TABLE `users` (
 	`timestamp3` integer DEFAULT (unixepoch()) NOT NULL
 );
 ```
+
 </Section>
 
 The `mode` option defines how values are handled in the application. In the application, values with `timestamp` and `timestamp_ms` modes are treated as `Date` objects, but stored as integers in the database.
@@ -308,4 +316,5 @@ The difference is that `timestamp` handles seconds, while `timestamp_ms` handles
   }
 ]
 ```
+
 </Section>

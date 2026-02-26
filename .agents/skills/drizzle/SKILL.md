@@ -1,11 +1,18 @@
 ---
 name: drizzle
-description: Complete Drizzle ORM documentation in markdown format. Use when working with Drizzle ORM - covers schema definition, queries, migrations, database connections (PostgreSQL, MySQL, SQLite), integrations (Neon, Supabase, PlanetScale, Cloudflare D1, Turso), column types, relations, transactions, and framework usage (Next.js, SvelteKit, Astro).
+description:
+  Complete Drizzle ORM documentation in markdown format. Use when working with
+  Drizzle ORM - covers schema definition, queries, migrations, database
+  connections (PostgreSQL, MySQL, SQLite), integrations (Neon, Supabase,
+  PlanetScale, Cloudflare D1, Turso), column types, relations, transactions, and
+  framework usage (Next.js, SvelteKit, Astro).
 ---
 
 # Drizzle ORM Documentation
 
-Complete Drizzle ORM documentation embedded in markdown. Read from `references/` to answer questions about schema design, querying, migrations, and database integrations.
+Complete Drizzle ORM documentation embedded in markdown. Read from `references/`
+to answer questions about schema design, querying, migrations, and database
+integrations.
 
 ## Documentation Structure
 
@@ -22,9 +29,11 @@ All documentation is in `references/` organized by topic:
 
 Connect to various databases and platforms:
 
-- **PostgreSQL:** `connect-neon.mdx`, `connect-supabase.mdx`, `connect-effect-postgres.mdx`, `connect-pglite.mdx`
+- **PostgreSQL:** `connect-neon.mdx`, `connect-supabase.mdx`,
+  `connect-effect-postgres.mdx`, `connect-pglite.mdx`
 - **MySQL:** `connect-planetscale.mdx`, `connect-tidb.mdx`
-- **SQLite:** `connect-cloudflare-d1.mdx`, `connect-turso.mdx`, `connect-bun-sqlite.mdx`, `connect-expo-sqlite.mdx`, `connect-op-sqlite.mdx`
+- **SQLite:** `connect-cloudflare-d1.mdx`, `connect-turso.mdx`,
+  `connect-bun-sqlite.mdx`, `connect-expo-sqlite.mdx`, `connect-op-sqlite.mdx`
 - **Serverless:** `connect-drizzle-proxy.mdx`, `connect-cloudflare-do.mdx`
 - **Edge:** `connect-nile.mdx`, `connect-sqlite-cloud.mdx`
 
@@ -123,8 +132,10 @@ Version-specific features and updates.
 
 1. **Start with `references/get-started/`** for installation and basics
 2. **For database setup:** Find relevant `connect-*.mdx` file
-3. **For schema design:** Check `references/column-types/` and `references/relations/`
-4. **For queries:** Use query-specific files (select, insert, update, delete, joins)
+3. **For schema design:** Check `references/column-types/` and
+   `references/relations/`
+4. **For queries:** Use query-specific files (select, insert, update, delete,
+   joins)
 5. **For migrations:** See `references/migrate/`
 6. **For validation:** Check `references/zod.mdx` or other validator files
 7. **For best practices:** Browse `references/guides/`

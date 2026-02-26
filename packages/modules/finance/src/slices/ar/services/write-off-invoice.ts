@@ -1,10 +1,10 @@
-import type { Result } from "@afenda/core";
-import { err, AppError } from "@afenda/core";
-import type { ArInvoice } from "../entities/ar-invoice.js";
-import type { IArInvoiceRepo } from "../ports/ar-invoice-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import { err, AppError } from '@afenda/core';
+import type { ArInvoice } from '../entities/ar-invoice.js';
+import type { IArInvoiceRepo } from '../ports/ar-invoice-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface WriteOffInvoiceInput {
   readonly tenantId: string;
@@ -20,7 +20,7 @@ export async function writeOffInvoice(
     arInvoiceRepo: IArInvoiceRepo;
     outboxWriter: IOutboxWriter;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<ArInvoice>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor.userId ?? input.userId;
@@ -30,9 +30,11 @@ export async function writeOffInvoice(
 
   const invoice = found.value;
 
-  const allowedStatuses: ArInvoice["status"][] = ["POSTED", "PARTIALLY_PAID"];
+  const allowedStatuses: ArInvoice['status'][] = ['POSTED', 'PARTIALLY_PAID'];
   if (!allowedStatuses.includes(invoice.status)) {
-    return err(new AppError("VALIDATION", `Cannot write off invoice with status: ${invoice.status}`));
+    return err(
+      new AppError('VALIDATION', `Cannot write off invoice with status: ${invoice.status}`)
+    );
   }
 
   const written = await deps.arInvoiceRepo.writeOff(invoice.id);

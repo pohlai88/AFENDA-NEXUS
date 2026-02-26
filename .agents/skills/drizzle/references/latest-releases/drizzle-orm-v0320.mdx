@@ -23,8 +23,10 @@ const usersTable = mysqlTable('users', {
   verified: boolean('verified').notNull().default(false),
 });
 
-
-const result = await db.insert(usersTable).values([{ name: 'John' }, { name: 'John1' }]).$returningId();
+const result = await db
+  .insert(usersTable)
+  .values([{ name: 'John' }, { name: 'John1' }])
+  .$returningId();
 //    ^? { id: number }[]
 ```
 
@@ -39,8 +41,10 @@ const usersTableDefFn = mysqlTable('users_default_fn', {
   name: text('name').notNull(),
 });
 
-
-const result = await db.insert(usersTableDefFn).values([{ name: 'John' }, { name: 'John1' }]).$returningId();
+const result = await db
+  .insert(usersTableDefFn)
+  .values([{ name: 'John' }, { name: 'John1' }])
+  .$returningId();
 //  ^? { customId: string }[]
 ```
 
@@ -53,25 +57,25 @@ You can now specify sequences in Postgres within any schema you need and define 
 ##### **Example**
 
 ```ts
-import { pgSchema, pgSequence } from "drizzle-orm/pg-core";
+import { pgSchema, pgSequence } from 'drizzle-orm/pg-core';
 
 // No params specified
-export const customSequence = pgSequence("name");
+export const customSequence = pgSequence('name');
 
 // Sequence with params
-export const customSequence = pgSequence("name", {
-      startWith: 100,
-      maxValue: 10000,
-      minValue: 100,
-      cycle: true,
-      cache: 10,
-      increment: 2
+export const customSequence = pgSequence('name', {
+  startWith: 100,
+  maxValue: 10000,
+  minValue: 100,
+  cycle: true,
+  cache: 10,
+  increment: 2,
 });
 
 // Sequence in custom schema
 export const customSchema = pgSchema('custom_schema');
 
-export const customSequence = customSchema.sequence("name");
+export const customSequence = customSchema.sequence('name');
 ```
 
 ### 🎉 PostgreSQL Identity Columns
@@ -81,12 +85,12 @@ export const customSequence = customSchema.sequence("name");
 ##### **Example**
 
 ```ts
-import { pgTable, integer, text } from 'drizzle-orm/pg-core' 
+import { pgTable, integer, text } from 'drizzle-orm/pg-core';
 
-export const ingredients = pgTable("ingredients", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity({ startWith: 1000 }),
-  name: text("name").notNull(),
-  description: text("description"),
+export const ingredients = pgTable('ingredients', {
+  id: integer('id').primaryKey().generatedAlwaysAsIdentity({ startWith: 1000 }),
+  name: text('name').notNull(),
+  description: text('description'),
 });
 ```
 
@@ -103,28 +107,26 @@ You can now specify generated columns on any column supported by PostgreSQL to u
 > Note: we will add `tsVector` column type before latest release
 
 ```ts
-import { SQL, sql } from "drizzle-orm";
-import { customType, index, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { SQL, sql } from 'drizzle-orm';
+import { customType, index, integer, pgTable, text } from 'drizzle-orm/pg-core';
 
 const tsVector = customType<{ data: string }>({
   dataType() {
-    return "tsvector";
+    return 'tsvector';
   },
 });
 
 export const test = pgTable(
-  "test",
+  'test',
   {
-    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    content: text("content"),
-    contentSearch: tsVector("content_search", {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    content: text('content'),
+    contentSearch: tsVector('content_search', {
       dimensions: 3,
-    }).generatedAlwaysAs(
-      (): SQL => sql`to_tsvector('english', ${test.content})`
-    ),
+    }).generatedAlwaysAs((): SQL => sql`to_tsvector('english', ${test.content})`),
   },
   (t) => ({
-    idx: index("idx_content_search").using("gin", t.contentSearch),
+    idx: index('idx_content_search').using('gin', t.contentSearch),
   })
 );
 ```
@@ -132,12 +134,12 @@ export const test = pgTable(
 In case you don't need to reference any columns from your table, you can use just `sql` template or a `string`
 
 ```ts
-export const users = pgTable("users", {
-  id: integer("id"),
-  name: text("name"),
-  generatedName: text("gen_name").generatedAlwaysAs(sql`hello world!`),
-  generatedName1: text("gen_name1").generatedAlwaysAs("hello world!"),
-}),
+export const users = pgTable('users', {
+  id: integer('id'),
+  name: text('name'),
+  generatedName: text('gen_name').generatedAlwaysAs(sql`hello world!`),
+  generatedName1: text('gen_name1').generatedAlwaysAs('hello world!'),
+});
 ```
 
 ### 🎉 MySQL Generated Columns
@@ -157,19 +159,19 @@ Drizzle Kit will also have limitations for `push` command:
 ##### **Example**
 
 ```ts
-export const users = mysqlTable("users", {
-  id: int("id"),
-  id2: int("id2"),
-  name: text("name"),
-  generatedName: text("gen_name").generatedAlwaysAs(
+export const users = mysqlTable('users', {
+  id: int('id'),
+  id2: int('id2'),
+  name: text('name'),
+  generatedName: text('gen_name').generatedAlwaysAs(
     (): SQL => sql`${schema2.users.name} || 'hello'`,
-    { mode: "stored" }
+    { mode: 'stored' }
   ),
-  generatedName1: text("gen_name1").generatedAlwaysAs(
+  generatedName1: text('gen_name1').generatedAlwaysAs(
     (): SQL => sql`${schema2.users.name} || 'hello'`,
-    { mode: "virtual" }
+    { mode: 'virtual' }
   ),
-}),
+});
 ```
 
 In case you don't need to reference any columns from your table, you can use just `sql` template or a `string` in `.generatedAlwaysAs()`
@@ -211,16 +213,15 @@ You can now customize migration file prefixes to make the format suitable for yo
 - `unix` will result in unix seconds prefixes `1719481298_name.sql` file names;
 - `none` will omit the prefix completely;
 
-
 ##### **Example**: Supabase migrations format
+
 ```ts
-import { defineConfig } from "drizzle-kit";
+import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
-  dialect: "postgresql",
+  dialect: 'postgresql',
   migrations: {
-    prefix: 'supabase'
-  }
+    prefix: 'supabase',
+  },
 });
-
 ```

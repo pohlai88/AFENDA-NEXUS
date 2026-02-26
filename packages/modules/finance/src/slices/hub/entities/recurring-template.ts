@@ -1,6 +1,6 @@
-import type { CompanyId, LedgerId, Money } from "@afenda/core";
+import type { CompanyId, LedgerId, Money } from '@afenda/core';
 
-export type RecurringFrequency = "MONTHLY" | "QUARTERLY" | "YEARLY";
+export type RecurringFrequency = 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
 
 export interface RecurringTemplateLine {
   readonly accountCode: string;

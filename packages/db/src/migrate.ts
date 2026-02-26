@@ -1,6 +1,6 @@
-import postgres from "postgres";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate as drizzleMigrate } from "drizzle-orm/postgres-js/migrator";
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { migrate as drizzleMigrate } from 'drizzle-orm/postgres-js/migrator';
 
 /**
  * Run Drizzle migrations against a direct (non-pooled) connection.
@@ -13,14 +13,14 @@ import { migrate as drizzleMigrate } from "drizzle-orm/postgres-js/migrator";
 export async function migrate(connectionString: string): Promise<void> {
   const client = postgres(connectionString, {
     max: 1,
-    ssl: "require",
+    ssl: 'require',
     connect_timeout: 30,
-    onnotice: () => { },
+    onnotice: () => {},
   });
   const db = drizzle({ client });
 
   try {
-    await drizzleMigrate(db, { migrationsFolder: "./drizzle" });
+    await drizzleMigrate(db, { migrationsFolder: './drizzle' });
   } finally {
     await client.end();
   }

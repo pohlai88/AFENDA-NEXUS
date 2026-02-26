@@ -10,12 +10,12 @@
  *   node tools/scripts/generate-evidence-pack.mjs --output evidence-pack.json
  *   pnpm audit:pack
  */
-import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { execSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const ROOT = resolve(import.meta.dirname, "../..");
-const VERSION = "1.0.0";
+const ROOT = resolve(import.meta.dirname, '../..');
+const VERSION = '1.0.0';
 
 const args = process.argv.slice(2);
 function getArg(name) {
@@ -23,30 +23,32 @@ function getArg(name) {
   return idx >= 0 && idx + 1 < args.length ? args[idx + 1] : undefined;
 }
 
-const outputPath = getArg("output");
+const outputPath = getArg('output');
 
 // ─── Run audit tools ─────────────────────────────────────────────────────────
 
 function runTool(label, command) {
   console.error(`  Running ${label}...`);
   try {
-    const stdout = execSync(command, { cwd: ROOT, encoding: "utf-8", timeout: 60_000 });
-    return { status: "ok", data: JSON.parse(stdout) };
+    const stdout = execSync(command, { cwd: ROOT, encoding: 'utf-8', timeout: 60_000 });
+    return { status: 'ok', data: JSON.parse(stdout) };
   } catch (err) {
     // Tool may exit non-zero (e.g. AIS has failures) but still produce valid JSON
     if (err.stdout) {
       try {
-        return { status: "ok", data: JSON.parse(err.stdout) };
-      } catch { /* fall through */ }
+        return { status: 'ok', data: JSON.parse(err.stdout) };
+      } catch {
+        /* fall through */
+      }
     }
-    return { status: "error", error: err.message?.slice(0, 200) ?? "unknown error" };
+    return { status: 'error', error: err.message?.slice(0, 200) ?? 'unknown error' };
   }
 }
 
 console.error(`\n  Evidence Pack Generator v${VERSION}\n`);
 
-const ais = runTool("AIS Benchmark", "node tools/scripts/audit-ais.mjs --json");
-const sox = runTool("SOX ITGC", "node tools/scripts/audit-sox.mjs --json");
+const ais = runTool('AIS Benchmark', 'node tools/scripts/audit-ais.mjs --json');
+const sox = runTool('SOX ITGC', 'node tools/scripts/audit-sox.mjs --json');
 
 // ─── Assemble pack ───────────────────────────────────────────────────────────
 
@@ -55,7 +57,7 @@ const timestamp = now.toISOString();
 const dateSlug = timestamp.slice(0, 10);
 
 const pack = {
-  schemaVersion: "1.0",
+  schemaVersion: '1.0',
   generatedAt: timestamp,
   generatorVersion: VERSION,
   tools: {},
@@ -68,7 +70,7 @@ const pack = {
 };
 
 // Add AIS
-if (ais.status === "ok") {
+if (ais.status === 'ok') {
   pack.tools.AIS = ais.data;
   pack.summary.totalChecks += ais.data.summary?.total ?? 0;
   pack.summary.totalPass += ais.data.summary?.pass ?? 0;
@@ -79,7 +81,7 @@ if (ais.status === "ok") {
 }
 
 // Add SOX
-if (sox.status === "ok") {
+if (sox.status === 'ok') {
   pack.tools.SOX = sox.data;
   pack.summary.totalChecks += sox.data.summary?.total ?? 0;
   pack.summary.totalPass += sox.data.summary?.pass ?? 0;
@@ -94,11 +96,11 @@ if (sox.status === "ok") {
 const json = JSON.stringify(pack, null, 2);
 
 if (outputPath) {
-  writeFileSync(outputPath, json, "utf-8");
+  writeFileSync(outputPath, json, 'utf-8');
   console.error(`\n  Evidence pack written to ${outputPath}`);
 } else {
   const defaultFile = `evidence-pack-${dateSlug}.json`;
-  writeFileSync(resolve(ROOT, defaultFile), json, "utf-8");
+  writeFileSync(resolve(ROOT, defaultFile), json, 'utf-8');
   console.error(`\n  Evidence pack written to ${defaultFile}`);
 }
 

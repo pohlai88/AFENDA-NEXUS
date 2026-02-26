@@ -3,11 +3,11 @@
  * Transfers work-in-progress costs to recognized revenue via GL journal posting.
  */
 
-import { err, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IProjectRepo } from "../ports/project-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IProjectRepo } from '../ports/project-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface TransferWipToRevenueInput {
   readonly tenantId: string;
@@ -29,14 +29,15 @@ export interface TransferWipToRevenueResult {
 
 export async function transferWipToRevenue(
   input: TransferWipToRevenueInput,
-  deps: { projectRepo: IProjectRepo; outboxWriter: IOutboxWriter },
+  deps: { projectRepo: IProjectRepo; outboxWriter: IOutboxWriter }
 ): Promise<Result<TransferWipToRevenueResult>> {
-  if (input.wipAmount <= 0n) return err(new ValidationError("WIP amount must be positive"));
-  if (input.revenueAmount <= 0n) return err(new ValidationError("Revenue amount must be positive"));
+  if (input.wipAmount <= 0n) return err(new ValidationError('WIP amount must be positive'));
+  if (input.revenueAmount <= 0n) return err(new ValidationError('Revenue amount must be positive'));
 
   const project = await deps.projectRepo.findById(input.projectId);
-  if (!project) return err(new ValidationError("Project not found"));
-  if (project.status !== "ACTIVE") return err(new ValidationError("Project must be active for WIP transfer"));
+  if (!project) return err(new ValidationError('Project not found'));
+  if (project.status !== 'ACTIVE')
+    return err(new ValidationError('Project must be active for WIP transfer'));
 
   const grossProfit = input.revenueAmount - input.wipAmount;
 

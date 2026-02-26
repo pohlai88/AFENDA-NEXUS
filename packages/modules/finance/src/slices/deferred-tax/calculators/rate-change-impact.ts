@@ -3,7 +3,7 @@
  * Pure calculator — recomputes deferred tax balances when enacted
  * tax rates change, producing the P&L or OCI adjustment.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface RateChangeInput {
   readonly itemId: string;
@@ -35,17 +35,18 @@ export interface RateChangeSummary {
  * Recognized in same component as original (P&L or OCI).
  */
 export function computeRateChangeImpact(
-  inputs: readonly RateChangeInput[],
+  inputs: readonly RateChangeInput[]
 ): CalculatorResult<RateChangeSummary> {
   if (inputs.length === 0) {
-    throw new Error("At least one item required");
+    throw new Error('At least one item required');
   }
 
   let totalPnlImpact = 0n;
   let totalOciImpact = 0n;
 
   const items: RateChangeResult[] = inputs.map((input) => {
-    const absDiff = input.temporaryDifference < 0n ? -input.temporaryDifference : input.temporaryDifference;
+    const absDiff =
+      input.temporaryDifference < 0n ? -input.temporaryDifference : input.temporaryDifference;
     const oldDt = (absDiff * BigInt(input.oldTaxRateBps)) / 10000n;
     const newDt = (absDiff * BigInt(input.newTaxRateBps)) / 10000n;
     const adjustment = newDt - oldDt;

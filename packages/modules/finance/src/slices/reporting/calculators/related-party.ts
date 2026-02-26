@@ -3,29 +3,29 @@
  * Pure calculator — identifies and categorizes related party transactions
  * and balances for disclosure purposes.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export type RelatedPartyType =
-  | "PARENT"
-  | "SUBSIDIARY"
-  | "ASSOCIATE"
-  | "JOINT_VENTURE"
-  | "KEY_MANAGEMENT"
-  | "CLOSE_FAMILY"
-  | "POST_EMPLOYMENT_PLAN"
-  | "OTHER";
+  | 'PARENT'
+  | 'SUBSIDIARY'
+  | 'ASSOCIATE'
+  | 'JOINT_VENTURE'
+  | 'KEY_MANAGEMENT'
+  | 'CLOSE_FAMILY'
+  | 'POST_EMPLOYMENT_PLAN'
+  | 'OTHER';
 
 export type TransactionNature =
-  | "SALE_OF_GOODS"
-  | "PURCHASE_OF_GOODS"
-  | "RENDERING_OF_SERVICES"
-  | "RECEIVING_OF_SERVICES"
-  | "LEASE"
-  | "LOAN"
-  | "GUARANTEE"
-  | "MANAGEMENT_FEE"
-  | "DIVIDEND"
-  | "OTHER";
+  | 'SALE_OF_GOODS'
+  | 'PURCHASE_OF_GOODS'
+  | 'RENDERING_OF_SERVICES'
+  | 'RECEIVING_OF_SERVICES'
+  | 'LEASE'
+  | 'LOAN'
+  | 'GUARANTEE'
+  | 'MANAGEMENT_FEE'
+  | 'DIVIDEND'
+  | 'OTHER';
 
 export interface RelatedPartyTransaction {
   readonly partyId: string;
@@ -64,7 +64,7 @@ export interface RelatedPartyResult {
  * Aggregates related party transactions into disclosure format grouped by party.
  */
 export function computeRelatedPartyDisclosures(
-  transactions: readonly RelatedPartyTransaction[],
+  transactions: readonly RelatedPartyTransaction[]
 ): CalculatorResult<RelatedPartyResult> {
   if (transactions.length === 0) {
     return {
@@ -75,7 +75,7 @@ export function computeRelatedPartyDisclosures(
         nonArmsLengthCount: 0,
       },
       inputs: { transactionCount: 0 },
-      explanation: "No related party transactions to disclose",
+      explanation: 'No related party transactions to disclose',
     };
   }
 
@@ -96,11 +96,18 @@ export function computeRelatedPartyDisclosures(
     const first = partyTxns[0]!;
 
     // Aggregate by transaction nature
-    const byNature = new Map<TransactionNature, { amount: bigint; balance: bigint; currency: string }>();
+    const byNature = new Map<
+      TransactionNature,
+      { amount: bigint; balance: bigint; currency: string }
+    >();
     let hasNonArmsLength = false;
 
     for (const tx of partyTxns) {
-      const existing = byNature.get(tx.transactionNature) ?? { amount: 0n, balance: 0n, currency: tx.currencyCode };
+      const existing = byNature.get(tx.transactionNature) ?? {
+        amount: 0n,
+        balance: 0n,
+        currency: tx.currencyCode,
+      };
       existing.amount += tx.transactionAmount;
       existing.balance += tx.outstandingBalance;
       byNature.set(tx.transactionNature, existing);

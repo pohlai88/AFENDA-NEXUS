@@ -8,7 +8,7 @@ entrypoints: ["src/index.ts"]
 public_api: null
 exports_map: null
 dependency_kinds:
-  allowed_runtime: ["@afenda/core", "@afenda/contracts", "@afenda/authz", "@afenda/db", "@afenda/platform", "@afenda/finance", "fastify", "zod"]
+  allowed_runtime: ["@afenda/core", "@afenda/contracts", "@afenda/authz", "@afenda/db", "@afenda/platform", "@afenda/finance", "fastify", "zod", "@fastify/multipart", "@opentelemetry/auto-instrumentations-node", "@opentelemetry/exporter-trace-otlp-proto", "@opentelemetry/resources", "@opentelemetry/sdk-node", "@opentelemetry/semantic-conventions", "ioredis"]
   allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "@types/node", "tsup", "tsx", "typescript", "vitest"]
   allowed_peer: []
 enforced_structure:

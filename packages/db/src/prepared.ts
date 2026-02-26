@@ -1,13 +1,14 @@
-import { and, eq, sql } from "drizzle-orm";
-import type { DbClient } from "./client.js";
+import { and, eq, sql } from 'drizzle-orm';
+import type { DbClient } from './client.js';
 import {
   glJournals,
   glBalances,
   accounts,
   currencies,
   ledgers,
-} from "./schema/erp.js";
-import { companies } from "./schema/platform.js";
+  icAgreements,
+} from './schema/erp.js';
+import { companies } from './schema/platform.js';
 
 /**
  * Hot-path prepared statements — usable on BOTH pooled and direct connections.
@@ -29,23 +30,23 @@ export function createPreparedQueries(db: DbClient) {
     .from(glJournals)
     .where(
       and(
-        eq(glJournals.tenantId, sql.placeholder("tenantId")),
-        eq(glJournals.id, sql.placeholder("id")),
-      ),
+        eq(glJournals.tenantId, sql.placeholder('tenantId')),
+        eq(glJournals.id, sql.placeholder('id'))
+      )
     )
-    .prepare("find_journal_by_id");
+    .prepare('find_journal_by_id');
 
   const findJournalsByPeriod = db
     .select()
     .from(glJournals)
     .where(
       and(
-        eq(glJournals.tenantId, sql.placeholder("tenantId")),
-        eq(glJournals.fiscalPeriodId, sql.placeholder("periodId")),
-        eq(glJournals.status, sql.placeholder("status")),
-      ),
+        eq(glJournals.tenantId, sql.placeholder('tenantId')),
+        eq(glJournals.fiscalPeriodId, sql.placeholder('periodId')),
+        eq(glJournals.status, sql.placeholder('status'))
+      )
     )
-    .prepare("find_journals_by_period");
+    .prepare('find_journals_by_period');
 
   // ─── Trial Balance ───────────────────────────────────────────────────
 
@@ -62,12 +63,12 @@ export function createPreparedQueries(db: DbClient) {
     .innerJoin(accounts, eq(glBalances.accountId, accounts.id))
     .where(
       and(
-        eq(glBalances.tenantId, sql.placeholder("tenantId")),
-        eq(glBalances.ledgerId, sql.placeholder("ledgerId")),
-        eq(glBalances.fiscalYear, sql.placeholder("year")),
-      ),
+        eq(glBalances.tenantId, sql.placeholder('tenantId')),
+        eq(glBalances.ledgerId, sql.placeholder('ledgerId')),
+        eq(glBalances.fiscalYear, sql.placeholder('year'))
+      )
     )
-    .prepare("get_trial_balance");
+    .prepare('get_trial_balance');
 
   // ─── Reference Data Queries (multi-company, multi-national) ──────────
 
@@ -76,23 +77,18 @@ export function createPreparedQueries(db: DbClient) {
     .from(accounts)
     .where(
       and(
-        eq(accounts.tenantId, sql.placeholder("tenantId")),
-        eq(accounts.accountType, sql.placeholder("accountType")),
-        eq(accounts.isActive, true),
-      ),
+        eq(accounts.tenantId, sql.placeholder('tenantId')),
+        eq(accounts.accountType, sql.placeholder('accountType')),
+        eq(accounts.isActive, true)
+      )
     )
-    .prepare("find_accounts_by_type");
+    .prepare('find_accounts_by_type');
 
   const listActiveCurrencies = db
     .select()
     .from(currencies)
-    .where(
-      and(
-        eq(currencies.tenantId, sql.placeholder("tenantId")),
-        eq(currencies.isActive, true),
-      ),
-    )
-    .prepare("list_active_currencies");
+    .where(and(eq(currencies.tenantId, sql.placeholder('tenantId')), eq(currencies.isActive, true)))
+    .prepare('list_active_currencies');
 
   const listCompanyLedgers = db
     .select({
@@ -106,13 +102,23 @@ export function createPreparedQueries(db: DbClient) {
     })
     .from(ledgers)
     .innerJoin(companies, eq(ledgers.companyId, companies.id))
+    .where(and(eq(ledgers.tenantId, sql.placeholder('tenantId')), eq(ledgers.isActive, true)))
+    .prepare('list_company_ledgers');
+
+  // ─── Inter-Company (multi-company within tenant) ───────────────────────────
+
+  const findIcAgreementByPair = db
+    .select()
+    .from(icAgreements)
     .where(
       and(
-        eq(ledgers.tenantId, sql.placeholder("tenantId")),
-        eq(ledgers.isActive, true),
-      ),
+        eq(icAgreements.tenantId, sql.placeholder('tenantId')),
+        eq(icAgreements.sellerCompanyId, sql.placeholder('sellerCompanyId')),
+        eq(icAgreements.buyerCompanyId, sql.placeholder('buyerCompanyId')),
+        eq(icAgreements.isActive, true)
+      )
     )
-    .prepare("list_company_ledgers");
+    .prepare('find_ic_agreement_by_pair');
 
   return {
     findJournalById,
@@ -121,5 +127,6 @@ export function createPreparedQueries(db: DbClient) {
     findAccountsByType,
     listActiveCurrencies,
     listCompanyLedgers,
+    findIcAgreementByPair,
   } as const;
 }

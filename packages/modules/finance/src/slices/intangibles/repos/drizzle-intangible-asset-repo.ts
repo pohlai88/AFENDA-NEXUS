@@ -1,8 +1,11 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { intangibleAssets } from "@afenda/db";
-import type { IntangibleAsset, IntangibleAssetStatus } from "../entities/intangible-asset.js";
-import type { IIntangibleAssetRepo, CreateIntangibleAssetInput } from "../ports/intangible-asset-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { intangibleAssets } from '@afenda/db';
+import type { IntangibleAsset, IntangibleAssetStatus } from '../entities/intangible-asset.js';
+import type {
+  IIntangibleAssetRepo,
+  CreateIntangibleAssetInput,
+} from '../ports/intangible-asset-repo.js';
 
 type Row = typeof intangibleAssets.$inferSelect;
 
@@ -14,8 +17,8 @@ function mapToDomain(row: Row): IntangibleAsset {
     assetNumber: row.assetNumber,
     name: row.name,
     description: row.description,
-    category: row.category as IntangibleAsset["category"],
-    usefulLifeType: row.usefulLifeType as IntangibleAsset["usefulLifeType"],
+    category: row.category as IntangibleAsset['category'],
+    usefulLifeType: row.usefulLifeType as IntangibleAsset['usefulLifeType'],
     acquisitionDate: row.acquisitionDate,
     acquisitionCost: row.acquisitionCost,
     residualValue: row.residualValue,
@@ -27,7 +30,7 @@ function mapToDomain(row: Row): IntangibleAsset {
     glAccountId: row.glAccountId,
     amortizationAccountId: row.amortizationAccountId,
     accumulatedAmortizationAccountId: row.accumulatedAmortizationAccountId,
-    status: row.status as IntangibleAsset["status"],
+    status: row.status as IntangibleAsset['status'],
     isInternallyGenerated: row.isInternallyGenerated,
     developmentPhase: null, // TODO: add column to DB schema
     disposedAt: null, // TODO: add column to DB schema
@@ -41,7 +44,11 @@ export class DrizzleIntangibleAssetRepo implements IIntangibleAssetRepo {
   constructor(private readonly db: TenantTx) {}
 
   async findById(id: string): Promise<IntangibleAsset | null> {
-    const rows = await this.db.select().from(intangibleAssets).where(eq(intangibleAssets.id, id)).limit(1);
+    const rows = await this.db
+      .select()
+      .from(intangibleAssets)
+      .where(eq(intangibleAssets.id, id))
+      .limit(1);
     return rows[0] ? mapToDomain(rows[0]) : null;
   }
 
@@ -59,7 +66,10 @@ export class DrizzleIntangibleAssetRepo implements IIntangibleAssetRepo {
   }
 
   async create(tenantId: string, input: CreateIntangibleAssetInput): Promise<IntangibleAsset> {
-    const [row] = await this.db.insert(intangibleAssets).values({ tenantId, ...input }).returning();
+    const [row] = await this.db
+      .insert(intangibleAssets)
+      .values({ tenantId, ...input })
+      .returning();
     return mapToDomain(row!);
   }
 
@@ -72,7 +82,11 @@ export class DrizzleIntangibleAssetRepo implements IIntangibleAssetRepo {
     return mapToDomain(row!);
   }
 
-  async updateAmortization(id: string, accumulatedAmortization: bigint, netBookValue: bigint): Promise<IntangibleAsset> {
+  async updateAmortization(
+    id: string,
+    accumulatedAmortization: bigint,
+    netBookValue: bigint
+  ): Promise<IntangibleAsset> {
     const [row] = await this.db
       .update(intangibleAssets)
       .set({ accumulatedAmortization, netBookValue })

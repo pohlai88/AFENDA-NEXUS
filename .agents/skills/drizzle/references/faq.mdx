@@ -7,7 +7,7 @@ import Callout from '@mdx/Callout.astro';
 Those are logically 2 different commands. `generate` is used to create an sql file together with additional
 information needed for `drizzle-kit` (or any other migration tool).
 
-After generating those migrations, they won't be applied to a database. 
+After generating those migrations, they won't be applied to a database.
 You need to do it in the next step. You can read more about it **[here](/docs/migrations)**
 
 On the other hand, `push` doesn't need any migrations to be generated. It will
@@ -23,13 +23,13 @@ we recommend it only for local development and local databases. To read more abo
 Example
 
 ```ts
-index().on(table.id, table.email) // will work well and name will be autogeneretaed
-index('my_name').on(table.id, table.email) // will work well
+index().on(table.id, table.email); // will work well and name will be autogeneretaed
+index('my_name').on(table.id, table.email); // will work well
 
 // but
 
-index().on(sql`lower(${table.email})`) // error
-index('my_name').on(sql`lower(${table.email})`) // will work well
+index().on(sql`lower(${table.email})`); // error
+index('my_name').on(sql`lower(${table.email})`); // will work well
 ```
 
 2. **Push won't generate statements if these fields(list below) were changed in an existing index:**

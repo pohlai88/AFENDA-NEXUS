@@ -112,7 +112,9 @@ function readPackage(pkg, context) {
 }
 
 function afterAllResolved(lockfile, context) {
-  context.log(`Resolved ${Object.keys(lockfile.packages || {}).length} packages`);
+  context.log(
+    `Resolved ${Object.keys(lockfile.packages || {}).length} packages`
+  );
   return lockfile;
 }
 
@@ -158,7 +160,8 @@ Suppress warnings:
 
 ## Store
 
-Content-addressable storage - packages stored once globally, hard-linked to projects.
+Content-addressable storage - packages stored once globally, hard-linked to
+projects.
 
 ```
 ~/.pnpm-store/              # Global store
@@ -236,7 +239,8 @@ strict-dep-builds=true
 
 pnpm 10.x+ includes security hardening:
 
-- **Path traversal protection** - Validates symlinks in `file:` and `git:` dependencies
+- **Path traversal protection** - Validates symlinks in `file:` and `git:`
+  dependencies
 - **Tarball validation** - Prevents malicious extraction on Windows
 - **Bin linking protection** - Validates `directories.bin` field
 

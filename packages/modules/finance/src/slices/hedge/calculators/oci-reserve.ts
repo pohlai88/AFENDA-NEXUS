@@ -3,7 +3,7 @@
  * Pure calculator — tracks OCI reserve balance, reclassifications to P&L,
  * and basis adjustments.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface OciReserveInput {
   readonly hedgeId: string;
@@ -29,10 +29,10 @@ export interface OciReserveResult {
  * closing = opening + effective portion - reclassified to P&L - basis adjustment
  */
 export function computeOciReserve(
-  inputs: readonly OciReserveInput[],
+  inputs: readonly OciReserveInput[]
 ): CalculatorResult<readonly OciReserveResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one hedge required");
+    throw new Error('At least one hedge required');
   }
 
   const results: OciReserveResult[] = inputs.map((input) => {

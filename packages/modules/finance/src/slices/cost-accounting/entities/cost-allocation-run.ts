@@ -2,8 +2,8 @@
  * Cost allocation run entity — a batch allocation execution.
  */
 
-export type AllocationRunStatus = "DRAFT" | "RUNNING" | "COMPLETED" | "FAILED" | "REVERSED";
-export type AllocationMethodType = "DIRECT" | "STEP_DOWN" | "RECIPROCAL";
+export type AllocationRunStatus = 'DRAFT' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'REVERSED';
+export type AllocationMethodType = 'DIRECT' | 'STEP_DOWN' | 'RECIPROCAL';
 
 export interface CostAllocationRun {
   readonly id: string;

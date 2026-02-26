@@ -18,10 +18,7 @@
     { "path": "./packages/authz" },
     { "path": "./packages/db" },
     { "path": "./packages/platform" },
-    { "path": "./packages/modules/finance" },
-    { "path": "./packages/industry/fnb" },
-    { "path": "./packages/industry/manufacturing" },
-    { "path": "./packages/industry/agriculture" }
+    { "path": "./packages/modules/finance" }
   ],
   "files": []
 }

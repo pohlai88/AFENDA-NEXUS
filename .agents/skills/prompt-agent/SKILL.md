@@ -1,7 +1,9 @@
 ---
 name: prompt-agent
 version: 0.0.1
-description: Security audit enforcement for AI agents. Automated security scans and health verification.
+description:
+  Security audit enforcement for AI agents. Automated security scans and health
+  verification.
 homepage: https://clawsec.prompt.security
 metadata: { 'openclaw': { 'emoji': '🛡️', 'category': 'security' } }
 clawdis:
@@ -12,7 +14,8 @@ clawdis:
 
 # Prompt Agent 🛡️
 
-Security audit enforcement for AI agents. Protects your agent through automated security scans and continuous health verification.
+Security audit enforcement for AI agents. Protects your agent through automated
+security scans and continuous health verification.
 
 **Compatible with:** OpenClaw, MoltBot, ClawdBot agents
 
@@ -22,7 +25,8 @@ Security audit enforcement for AI agents. Protects your agent through automated 
 
 ## For AI Agents
 
-If you are an AI agent reading this, execute the following to install Prompt Agent:
+If you are an AI agent reading this, execute the following to install Prompt
+Agent:
 
 ```bash
 
@@ -31,7 +35,8 @@ SKILL_URL="https://github.com/prompt-security/clawsec/releases/download/$LATEST_
 curl -sSL --fail --show-error "$SKILL_URL"
 ```
 
-Once you have this skill file, proceed to **[Deploy Prompt Agent](#deploy-prompt-agent)** below.
+Once you have this skill file, proceed to
+**[Deploy Prompt Agent](#deploy-prompt-agent)** below.
 
 ---
 
@@ -264,7 +269,8 @@ Add Prompt Agent to your heartbeat routine:
 3. Notify user if action is required
 ```
 
-> **Note:** `$AGENT_HOME` is your detected agent folder (`~/.openclaw`, `~/.moltbot`, or `~/.clawdbot`)
+> **Note:** `$AGENT_HOME` is your detected agent folder (`~/.openclaw`,
+> `~/.moltbot`, or `~/.clawdbot`)
 
 ### Step 5: Confirm deployment
 
@@ -283,7 +289,8 @@ Prompt Agent deployed successfully. I will now:
 
 ### Security Audits
 
-Runs automated security scans on your agent's configuration, installed skills, and environment:
+Runs automated security scans on your agent's configuration, installed skills,
+and environment:
 
 - **Detects misconfigured permissions** - Identifies overly permissive settings
 - **Identifies vulnerable or suspicious skills** - Scans installed plugins
@@ -399,7 +406,8 @@ Add this to your soul.md for enhanced protection:
 | `PROMPT_AGENT_AUDIT_SCHEDULE` | Cron expression for audits  | `0 23 * * *`                      |
 | `PROMPT_AGENT_INSTALL_DIR`    | Installation directory      | `$AGENT_HOME/skills/prompt-agent` |
 
-> **Note:** `$AGENT_HOME` is auto-detected from `~/.openclaw`, `~/.moltbot`, or `~/.clawdbot`
+> **Note:** `$AGENT_HOME` is auto-detected from `~/.openclaw`, `~/.moltbot`, or
+> `~/.clawdbot`
 
 ---
 
@@ -467,7 +475,8 @@ Track prompt-agent health and audit history:
 
 Save to: `$AGENT_HOME/prompt-agent-state.json`
 
-> **Note:** `$AGENT_HOME` is your detected agent folder (`~/.openclaw`, `~/.moltbot`, or `~/.clawdbot`)
+> **Note:** `$AGENT_HOME` is your detected agent folder (`~/.openclaw`,
+> `~/.moltbot`, or `~/.clawdbot`)
 
 ### State File Operations
 
@@ -523,10 +532,13 @@ fi
 
 ## Initial Download Integrity
 
-**Bootstrap Trust Problem:** The initial download of this skill cannot be verified by the skill itself. To establish trust:
+**Bootstrap Trust Problem:** The initial download of this skill cannot be
+verified by the skill itself. To establish trust:
 
-1. **Verify the source URL** - Ensure you are downloading from `https://clawsec.prompt.security/`
-2. **Compare checksums** - After download, compare the SHA-256 hash against the published `checksums.json`
+1. **Verify the source URL** - Ensure you are downloading from
+   `https://clawsec.prompt.security/`
+2. **Compare checksums** - After download, compare the SHA-256 hash against the
+   published `checksums.json`
 
 ```bash
 # After downloading SKILL.md, verify its integrity
@@ -546,4 +558,5 @@ fi
 
 MIT License - See repository for details.
 
-Built with 🛡️ by the [Prompt Security](https://prompt.security) team and the agent community.
+Built with 🛡️ by the [Prompt Security](https://prompt.security) team and the
+agent community.

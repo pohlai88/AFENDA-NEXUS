@@ -7,14 +7,14 @@ Starting from `drizzle-orm@1.0.0-beta.15`, `drizzle-typebox` has been deprecated
 You can still use `drizzle-typebox` package but all new update will be added to Drizzle ORM directly
 
 This version of `typebox` is using new `typebox` package
+
 </Callout>
 
 # typebox
 
 #### Install the dependencies
-<Npm>
-drizzle-orm typebox
-</Npm>
+
+<Npm>drizzle-orm typebox</Npm>
 
 Allows you to generate [typebox](https://sinclairzx81.github.io/typebox/#/) schemas from Drizzle ORM schemas
 
@@ -33,11 +33,11 @@ import { Type } from 'typebox';
 import { Value } from 'typebox/value';
 
 const users = pgTable('users', {
-	id: serial('id').primaryKey(),
-	name: text('name').notNull(),
-	email: text('email').notNull(),
-	role: text('role', { enum: ['admin', 'user'] }).notNull(),
-	createdAt: timestamp('created_at').notNull().defaultNow(),
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull(),
+  role: text('role', { enum: ['admin', 'user'] }).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // Schema for inserting a user - can be used to validate API requests
@@ -51,20 +51,20 @@ const selectUserSchema = createSelectSchema(users);
 
 // Overriding the fields
 const insertUserSchema = createInsertSchema(users, {
-	role: Type.String(),
+  role: Type.String(),
 });
 
 // Refining the fields - useful if you want to change the fields before they become nullable/optional in the final schema
 const insertUserSchema = createInsertSchema(users, {
-	id: (schema) => Type.Number({ ...schema, minimum: 0 }),
-	role: Type.String(),
+  id: (schema) => Type.Number({ ...schema, minimum: 0 }),
+  role: Type.String(),
 });
 
 // Usage
 
 const isUserValid: boolean = Value.Check(insertUserSchema, {
-	name: 'John Doe',
-	email: 'johndoe@test.com',
-	role: 'admin',
+  name: 'John Doe',
+  email: 'johndoe@test.com',
+  role: 'admin',
 });
 ```

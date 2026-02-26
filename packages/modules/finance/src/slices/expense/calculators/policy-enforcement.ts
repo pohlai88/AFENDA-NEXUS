@@ -4,7 +4,7 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { ExpensePolicy } from "../entities/expense-policy.js";
+import type { ExpensePolicy } from '../entities/expense-policy.js';
 
 export interface PolicyCheckLine {
   readonly lineNumber: number;
@@ -19,7 +19,7 @@ export interface PolicyViolation {
   readonly lineNumber: number;
   readonly rule: string;
   readonly message: string;
-  readonly severity: "ERROR" | "WARNING";
+  readonly severity: 'ERROR' | 'WARNING';
 }
 
 export interface PolicyCheckResult {
@@ -35,7 +35,7 @@ export interface PolicyCheckResult {
 export function enforceExpensePolicy(
   lines: readonly PolicyCheckLine[],
   policies: readonly ExpensePolicy[],
-  claimCurrencyCode: string,
+  claimCurrencyCode: string
 ): PolicyCheckResult {
   const violations: PolicyViolation[] = [];
   let totalAmount = 0n;
@@ -48,18 +48,18 @@ export function enforceExpensePolicy(
     if (line.amount > policy.maxAmountPerItem) {
       violations.push({
         lineNumber: line.lineNumber,
-        rule: "MAX_AMOUNT_PER_ITEM",
+        rule: 'MAX_AMOUNT_PER_ITEM',
         message: `Amount ${line.amount} exceeds max ${policy.maxAmountPerItem} for ${line.category}`,
-        severity: "ERROR",
+        severity: 'ERROR',
       });
     }
 
     if (policy.requiresReceipt && !line.hasReceipt) {
       violations.push({
         lineNumber: line.lineNumber,
-        rule: "RECEIPT_REQUIRED",
+        rule: 'RECEIPT_REQUIRED',
         message: `Receipt required for ${line.category}`,
-        severity: "ERROR",
+        severity: 'ERROR',
       });
     }
   }
@@ -71,14 +71,14 @@ export function enforceExpensePolicy(
   if (claimLimitExceeded && claimPolicy) {
     violations.push({
       lineNumber: 0,
-      rule: "MAX_AMOUNT_PER_CLAIM",
+      rule: 'MAX_AMOUNT_PER_CLAIM',
       message: `Total ${totalAmount} exceeds claim limit ${claimPolicy.maxAmountPerClaim}`,
-      severity: "ERROR",
+      severity: 'ERROR',
     });
   }
 
   return {
-    isCompliant: violations.filter((v) => v.severity === "ERROR").length === 0,
+    isCompliant: violations.filter((v) => v.severity === 'ERROR').length === 0,
     violations,
     totalAmount,
     claimLimitExceeded,

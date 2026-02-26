@@ -1,12 +1,12 @@
-import type { IntangibleAsset, IntangibleAssetStatus } from "../entities/intangible-asset.js";
+import type { IntangibleAsset, IntangibleAssetStatus } from '../entities/intangible-asset.js';
 
 export interface CreateIntangibleAssetInput {
   readonly companyId: string;
   readonly assetNumber: string;
   readonly name: string;
   readonly description: string | null;
-  readonly category: IntangibleAsset["category"];
-  readonly usefulLifeType: IntangibleAsset["usefulLifeType"];
+  readonly category: IntangibleAsset['category'];
+  readonly usefulLifeType: IntangibleAsset['usefulLifeType'];
   readonly acquisitionDate: Date;
   readonly acquisitionCost: bigint;
   readonly residualValue: bigint;
@@ -25,5 +25,9 @@ export interface IIntangibleAssetRepo {
   findByCompany(companyId: string): Promise<readonly IntangibleAsset[]>;
   create(tenantId: string, input: CreateIntangibleAssetInput): Promise<IntangibleAsset>;
   updateStatus(id: string, status: IntangibleAssetStatus): Promise<IntangibleAsset>;
-  updateAmortization(id: string, accumulatedAmortization: bigint, netBookValue: bigint): Promise<IntangibleAsset>;
+  updateAmortization(
+    id: string,
+    accumulatedAmortization: bigint,
+    netBookValue: bigint
+  ): Promise<IntangibleAsset>;
 }

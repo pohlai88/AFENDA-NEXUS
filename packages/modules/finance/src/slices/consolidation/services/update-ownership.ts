@@ -3,13 +3,13 @@
  * Records ownership changes over time, closes old records, creates new ones.
  */
 
-import { err, NotFoundError, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IOwnershipRecordRepo } from "../ports/ownership-record-repo.js";
-import type { IGroupEntityRepo } from "../ports/group-entity-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { OwnershipRecord } from "../entities/ownership-record.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, NotFoundError, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IOwnershipRecordRepo } from '../ports/ownership-record-repo.js';
+import type { IGroupEntityRepo } from '../ports/group-entity-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { OwnershipRecord } from '../entities/ownership-record.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface UpdateOwnershipInput {
   readonly tenantId: string;
@@ -36,26 +36,26 @@ export async function updateOwnership(
     ownershipRecordRepo: IOwnershipRecordRepo;
     groupEntityRepo: IGroupEntityRepo;
     outboxWriter: IOutboxWriter;
-  },
+  }
 ): Promise<Result<UpdateOwnershipResult>> {
   if (input.newOwnershipPctBps < 0 || input.newOwnershipPctBps > 10000) {
-    return err(new ValidationError("Ownership BPS must be between 0 and 10000"));
+    return err(new ValidationError('Ownership BPS must be between 0 and 10000'));
   }
 
   const parent = await deps.groupEntityRepo.findById(input.parentEntityId);
-  if (!parent) return err(new NotFoundError("GroupEntity", input.parentEntityId));
+  if (!parent) return err(new NotFoundError('GroupEntity', input.parentEntityId));
 
   const child = await deps.groupEntityRepo.findById(input.childEntityId);
-  if (!child) return err(new NotFoundError("GroupEntity", input.childEntityId));
+  if (!child) return err(new NotFoundError('GroupEntity', input.childEntityId));
 
   if (parent.id === child.id) {
-    return err(new ValidationError("Parent and child entity must differ"));
+    return err(new ValidationError('Parent and child entity must differ'));
   }
 
   // Close existing active ownership record if any
   const existingRecords = await deps.ownershipRecordRepo.findByParent(input.parentEntityId);
   const activeRecord = existingRecords.find(
-    (r) => r.childEntityId === input.childEntityId && r.effectiveTo === null,
+    (r) => r.childEntityId === input.childEntityId && r.effectiveTo === null
   );
 
   let closedRecord: OwnershipRecord | null = null;

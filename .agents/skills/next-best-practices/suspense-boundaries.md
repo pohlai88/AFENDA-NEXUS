@@ -4,7 +4,8 @@ Client hooks that cause CSR bailout without Suspense boundaries.
 
 ## useSearchParams
 
-Always requires Suspense boundary in static routes. Without it, the entire page becomes client-side rendered.
+Always requires Suspense boundary in static routes. Without it, the entire page
+becomes client-side rendered.
 
 ```tsx
 // Bad: Entire page becomes CSR

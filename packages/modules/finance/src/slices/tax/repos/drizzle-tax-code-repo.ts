@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { taxCodes } from "@afenda/db";
-import type { TaxCode } from "../entities/tax-code.js";
-import type { ITaxCodeRepo, CreateTaxCodeInput } from "../ports/tax-code-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { taxCodes } from '@afenda/db';
+import type { TaxCode } from '../entities/tax-code.js';
+import type { ITaxCodeRepo, CreateTaxCodeInput } from '../ports/tax-code-repo.js';
 
 type Row = typeof taxCodes.$inferSelect;
 
@@ -13,7 +13,7 @@ function mapToDomain(row: Row): TaxCode {
     code: row.code,
     name: row.name,
     description: row.description,
-    jurisdictionLevel: row.jurisdictionLevel as TaxCode["jurisdictionLevel"],
+    jurisdictionLevel: row.jurisdictionLevel as TaxCode['jurisdictionLevel'],
     countryCode: row.countryCode,
     stateCode: row.stateCode,
     cityCode: row.cityCode,
@@ -26,7 +26,7 @@ function mapToDomain(row: Row): TaxCode {
 }
 
 export class DrizzleTaxCodeRepo implements ITaxCodeRepo {
-  constructor(private readonly db: TenantTx) { }
+  constructor(private readonly db: TenantTx) {}
 
   async findById(id: string): Promise<TaxCode | null> {
     const rows = await this.db.select().from(taxCodes).where(eq(taxCodes.id, id)).limit(1);
@@ -49,18 +49,21 @@ export class DrizzleTaxCodeRepo implements ITaxCodeRepo {
   }
 
   async create(tenantId: string, input: CreateTaxCodeInput): Promise<TaxCode> {
-    const [row] = await this.db.insert(taxCodes).values({
-      tenantId,
-      code: input.code,
-      name: input.name,
-      description: input.description,
-      jurisdictionLevel: input.jurisdictionLevel,
-      countryCode: input.countryCode,
-      stateCode: input.stateCode,
-      cityCode: input.cityCode,
-      parentId: input.parentId,
-      isCompound: input.isCompound,
-    }).returning();
+    const [row] = await this.db
+      .insert(taxCodes)
+      .values({
+        tenantId,
+        code: input.code,
+        name: input.name,
+        description: input.description,
+        jurisdictionLevel: input.jurisdictionLevel,
+        countryCode: input.countryCode,
+        stateCode: input.stateCode,
+        cityCode: input.cityCode,
+        parentId: input.parentId,
+        isCompound: input.isCompound,
+      })
+      .returning();
     return mapToDomain(row!);
   }
 

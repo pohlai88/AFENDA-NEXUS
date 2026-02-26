@@ -1,15 +1,15 @@
-import Npm from "@mdx/Npm.astro";
-import AnchorCards from "@mdx/AnchorCards.astro";
-import Callout from "@mdx/Callout.astro";
-import CodeTabs from "@mdx/CodeTabs.astro";
-import CodeTab from "@mdx/CodeTab.astro";
-import IsSupportedChipGroup from "@mdx/IsSupportedChipGroup.astro";
-import Section from "@mdx/Section.astro";
-import Tabs from "@mdx/Tabs.astro";
-import Tab from "@mdx/Tab.astro";
-import SimpleLinkCards from "@mdx/SimpleLinkCards.astro";
-import Steps from "@mdx/Steps.astro";
-import YoutubeCards from "@mdx/YoutubeCards.astro";
+import Npm from '@mdx/Npm.astro';
+import AnchorCards from '@mdx/AnchorCards.astro';
+import Callout from '@mdx/Callout.astro';
+import CodeTabs from '@mdx/CodeTabs.astro';
+import CodeTab from '@mdx/CodeTab.astro';
+import IsSupportedChipGroup from '@mdx/IsSupportedChipGroup.astro';
+import Section from '@mdx/Section.astro';
+import Tabs from '@mdx/Tabs.astro';
+import Tab from '@mdx/Tab.astro';
+import SimpleLinkCards from '@mdx/SimpleLinkCards.astro';
+import Steps from '@mdx/Steps.astro';
+import YoutubeCards from '@mdx/YoutubeCards.astro';
 
 ## Npm
 
@@ -21,24 +21,24 @@ import YoutubeCards from "@mdx/YoutubeCards.astro";
 
 <AnchorCards
   cards={{
-    Anchor1: "#anchor1",
-    Anchor2: "#anchor2",
-    Anchor3: "#anchor3",
-    Anchor4: "#anchor4",
+    Anchor1: '#anchor1',
+    Anchor2: '#anchor2',
+    Anchor3: '#anchor3',
+    Anchor4: '#anchor4',
   }}
 />
 
 ## Callout
 
-<Callout emoji={"😀"}>Callout example</Callout>
+<Callout emoji={'😀'}>Callout example</Callout>
 
 <Callout>Callout example</Callout>
 
-<Callout type={"info"}>Callout example</Callout>
+<Callout type={'info'}>Callout example</Callout>
 
-<Callout type={"warning"}>Callout example</Callout>
+<Callout type={'warning'}>Callout example</Callout>
 
-<Callout type={"error"}>Callout example</Callout>
+<Callout type={'error'}>Callout example</Callout>
 
 ## CodeTabs with CodeTab
 
@@ -105,9 +105,7 @@ import YoutubeCards from "@mdx/YoutubeCards.astro";
 
 ## IsSupportedChipGroup
 
-<IsSupportedChipGroup
-  chips={{ PostgreSQL: true, SQLite: true, MySQL: false }}
-/>
+<IsSupportedChipGroup chips={{ PostgreSQL: true, SQLite: true, MySQL: false }} />
 
 ## Section
 
@@ -123,13 +121,13 @@ int1: integer('int1').default(42),
 int2: integer('int2').default(sql`(abs(42))`)
 });
 
-```
+````
 ```sql
 CREATE TABLE `table` (
   `int1` integer DEFAULT 42,
   `int2` integer DEFAULT (abs(42))
 );
-```
+````
 
 </Section>
 
@@ -199,6 +197,7 @@ CREATE TABLE `table` (
     );
     ```
     </Section>
+
   </Tab>
 </Tabs>
 
@@ -206,9 +205,9 @@ CREATE TABLE `table` (
 
 <SimpleLinkCards
   cards={{
-    "PostgreSQL column types": "/docs/column-types/pg",
-    "MySQL column types": "/docs/column-types/mysql",
-    "SQLite column types": "/docs/column-types/sqlite",
+    'PostgreSQL column types': '/docs/column-types/pg',
+    'MySQL column types': '/docs/column-types/mysql',
+    'SQLite column types': '/docs/column-types/sqlite',
   }}
 />
 
@@ -235,40 +234,42 @@ module.exports = function (api) {
   api.cache(true);
 
   return {
-    presets: ["babel-preset-expo"],
-    plugins: [["inline-import", { extensions: [".sql"] }]], // <-- add this
+    presets: ['babel-preset-expo'],
+    plugins: [['inline-import', { extensions: ['.sql'] }]], // <-- add this
   };
 };
 ```
+
 </Steps>
 
 ## YoutubeCards
 
-<YoutubeCards cards={[
-	{
-		id: "4ZhtoOFKFP8",
-		title: "Easiest Database Setup in Next.js&nbsp;14 with Turso&nbsp;&&nbsp;Drizzle",
-		description: "Sam Meech-Ward",
-		time: '38:08'
-	}, 
-	{
-		id: "NfVELsEZFsA",
-		title: "Next.js Project with Vercel, Neon, Drizzle, TailwindCSS, FlowBite and more!",
-		description: "CodingEntrepreneurs",
-		time: '5:46:28'
-	}, 
-	{
-		id: "_SLxGYzv6jo",
-		title: "I Have A New Favorite Database&nbsp;Tool",
-		description: "Theo - t3.gg",
-		time: '5:46'
-	}
-]}/>
-
+<YoutubeCards
+  cards={[
+    {
+      id: '4ZhtoOFKFP8',
+      title: 'Easiest Database Setup in Next.js&nbsp;14 with Turso&nbsp;&&nbsp;Drizzle',
+      description: 'Sam Meech-Ward',
+      time: '38:08',
+    },
+    {
+      id: 'NfVELsEZFsA',
+      title: 'Next.js Project with Vercel, Neon, Drizzle, TailwindCSS, FlowBite and more!',
+      description: 'CodingEntrepreneurs',
+      time: '5:46:28',
+    },
+    {
+      id: '_SLxGYzv6jo',
+      title: 'I Have A New Favorite Database&nbsp;Tool',
+      description: 'Theo - t3.gg',
+      time: '5:46',
+    },
+  ]}
+/>
 
 ## Collapsable code block
 
-```prisma  copy filename="prisma/schema.prisma" collapsable
+```prisma copy filename="prisma/schema.prisma" collapsable
 generator client {
   provider = "prisma-client-js"
 }

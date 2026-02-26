@@ -48,21 +48,20 @@ export const DEFAULT_ECL_MATRIX: EclProvisionMatrix = {
 
 export function computeEclProvision(
   input: EclInput,
-  matrix: EclProvisionMatrix = DEFAULT_ECL_MATRIX,
+  matrix: EclProvisionMatrix = DEFAULT_ECL_MATRIX
 ): EclResult {
   const buckets: EclBucketResult[] = [
-    computeBucket("current", input.current, matrix.current),
-    computeBucket("days30", input.days30, matrix.days30),
-    computeBucket("days60", input.days60, matrix.days60),
-    computeBucket("days90", input.days90, matrix.days90),
-    computeBucket("over90", input.over90, matrix.over90),
+    computeBucket('current', input.current, matrix.current),
+    computeBucket('days30', input.days30, matrix.days30),
+    computeBucket('days60', input.days60, matrix.days60),
+    computeBucket('days90', input.days90, matrix.days90),
+    computeBucket('over90', input.over90, matrix.over90),
   ];
 
   const totalGross = buckets.reduce((s, b) => s + b.grossAmount, 0n);
   const totalProvision = buckets.reduce((s, b) => s + b.provisionAmount, 0n);
-  const weightedLossRate = totalGross > 0n
-    ? Number((totalProvision * 10000n) / totalGross) / 100
-    : 0;
+  const weightedLossRate =
+    totalGross > 0n ? Number((totalProvision * 10000n) / totalGross) / 100 : 0;
 
   return { buckets, totalGross, totalProvision, weightedLossRate };
 }

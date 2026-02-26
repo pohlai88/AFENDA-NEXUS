@@ -3,13 +3,14 @@ title: Empty array as a default value
 slug: empty-array-default-value
 ---
 
-import Section from "@mdx/Section.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Section from '@mdx/Section.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 
 <Prerequisites>
-- Get started with [PostgreSQL](/docs/get-started-postgresql), [MySQL](/docs/get-started-mysql) and [SQLite](/docs/get-started-sqlite)
-- Learn about column data types for [PostgreSQL](/docs/column-types/pg), [MySQL](/docs/column-types/mysql) and [SQLite](/docs/column-types/sqlite)
-- [sql operator](/docs/sql)
+  - Get started with [PostgreSQL](/docs/get-started-postgresql), [MySQL](/docs/get-started-mysql)
+  and [SQLite](/docs/get-started-sqlite) - Learn about column data types for
+  [PostgreSQL](/docs/column-types/pg), [MySQL](/docs/column-types/mysql) and
+  [SQLite](/docs/column-types/sqlite) - [sql operator](/docs/sql)
 </Prerequisites>
 
 ### PostgreSQL
@@ -43,8 +44,8 @@ CREATE TABLE IF NOT EXISTS "users" (
 	"tags2" text[] DEFAULT ARRAY[]::text[] NOT NULL
 );
 ```
-</Section>
 
+</Section>
 
 ### MySQL
 
@@ -80,9 +81,10 @@ CREATE TABLE `users` (
 	CONSTRAINT `users_id` PRIMARY KEY(`id`)
 );
 ```
+
 </Section>
 
-The `mode` option defines how values are handled in the application. With `json` mode, values are treated as JSON object literal. 
+The `mode` option defines how values are handled in the application. With `json` mode, values are treated as JSON object literal.
 
 You can specify `.$type<..>()` for json object inference, it will not check runtime values. It provides compile time protection for default values, insert and select schemas.
 
@@ -115,8 +117,9 @@ CREATE TABLE `users` (
 	`tags2` text DEFAULT '[]' NOT NULL
 );
 ```
+
 </Section>
 
-The `mode` option defines how values are handled in the application. With `json` mode, values are treated as JSON object literal. 
+The `mode` option defines how values are handled in the application. With `json` mode, values are treated as JSON object literal.
 
 You can specify `.$type<..>()` for json object inference, it will not check runtime values. It provides compile time protection for default values, insert and select schemas.

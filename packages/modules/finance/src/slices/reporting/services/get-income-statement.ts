@@ -1,11 +1,11 @@
-import type { Result } from "@afenda/core";
-import { ok } from "@afenda/core";
-import type { IncomeStatement } from "../entities/financial-reports.js";
-import { classifyIncomeStatement } from "../calculators/report-classifier.js";
-import type { ClassifiableRow } from "../../reporting/calculators/report-classifier.js";
-import type { IGlBalanceRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
+import type { Result } from '@afenda/core';
+import { ok } from '@afenda/core';
+import type { IncomeStatement } from '../entities/financial-reports.js';
+import { classifyIncomeStatement } from '../calculators/report-classifier.js';
+import type { ClassifiableRow } from '../../reporting/calculators/report-classifier.js';
+import type { IGlBalanceRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
 
 export interface GetIncomeStatementInput {
   readonly ledgerId: string;
@@ -25,7 +25,7 @@ export async function getIncomeStatement(
     balanceRepo: IGlBalanceRepo;
     ledgerRepo: ILedgerRepo;
   },
-  _ctx?: FinanceContext,
+  _ctx?: FinanceContext
 ): Promise<Result<IncomeStatement>> {
   const ledgerResult = await deps.ledgerRepo.findById(input.ledgerId);
   if (!ledgerResult.ok) return ledgerResult;

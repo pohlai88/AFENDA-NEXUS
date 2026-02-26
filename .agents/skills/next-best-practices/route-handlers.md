@@ -72,7 +72,10 @@ export async function GET() {
 
 ```tsx
 // app/api/users/[id]/route.ts
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
   const user = await getUser(id);
 
@@ -139,5 +142,5 @@ return new Response(stream, {
 | Public REST API          | Yes            | No             |
 | File uploads             | Both work      | Both work      |
 
-**Prefer Server Actions** for mutations triggered from your UI.
-**Use Route Handlers** for external integrations and public APIs.
+**Prefer Server Actions** for mutations triggered from your UI. **Use Route
+Handlers** for external integrations and public APIs.

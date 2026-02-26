@@ -1,25 +1,34 @@
-import { describe, it, expect } from "vitest";
-import { ok, err, NotFoundError, companyId } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import { createIcTransaction } from "../slices/ic/services/create-ic-transaction.js";
-import type { IntercompanyRelationship, IntercompanyDocument } from "../slices/ic/entities/intercompany.js";
-import type { IIcAgreementRepo, IIcTransactionRepo, CreateIcDocumentInput } from "../app/ports/ic-repo.js";
-import { IDS, mockJournalRepo, mockOutboxWriter } from "./helpers.js";
+import { describe, it, expect } from 'vitest';
+import { ok, err, NotFoundError, companyId } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import { createIcTransaction } from '../slices/ic/services/create-ic-transaction.js';
+import type {
+  IntercompanyRelationship,
+  IntercompanyDocument,
+} from '../slices/ic/entities/intercompany.js';
+import type {
+  IIcAgreementRepo,
+  IIcTransactionRepo,
+  CreateIcDocumentInput,
+} from '../app/ports/ic-repo.js';
+import { IDS, mockJournalRepo, mockOutboxWriter } from './helpers.js';
 
-const AGREEMENT_ID = "00000000-0000-4000-8000-000000000099";
-const SELLER = "00000000-0000-4000-8000-000000000030";
-const BUYER = "00000000-0000-4000-8000-000000000031";
+const AGREEMENT_ID = '00000000-0000-4000-8000-000000000099';
+const SELLER = '00000000-0000-4000-8000-000000000030';
+const BUYER = '00000000-0000-4000-8000-000000000031';
 
-function makeAgreement(overrides: Partial<IntercompanyRelationship> = {}): IntercompanyRelationship {
+function makeAgreement(
+  overrides: Partial<IntercompanyRelationship> = {}
+): IntercompanyRelationship {
   return {
     id: AGREEMENT_ID,
-    tenantId: "t1" as never,
+    tenantId: 't1' as never,
     sellerCompanyId: companyId(SELLER),
     buyerCompanyId: companyId(BUYER),
-    pricingRule: "COST",
+    pricingRule: 'COST',
     markupPercent: null,
     isActive: true,
-    createdAt: new Date("2025-01-01"),
+    createdAt: new Date('2025-01-01'),
     ...overrides,
   };
 }
@@ -28,11 +37,11 @@ function mockIcAgreementRepo(agreement?: IntercompanyRelationship): IIcAgreement
   return {
     async findById(id: string): Promise<Result<IntercompanyRelationship>> {
       if (agreement && agreement.id === id) return ok(agreement);
-      return err(new NotFoundError("IcAgreement", id));
+      return err(new NotFoundError('IcAgreement', id));
     },
     async findByCompanyPair(): Promise<Result<IntercompanyRelationship>> {
       if (agreement) return ok(agreement);
-      return err(new NotFoundError("IcAgreement", "pair"));
+      return err(new NotFoundError('IcAgreement', 'pair'));
     },
   };
 }
@@ -44,38 +53,38 @@ function mockIcTransactionRepo(): IIcTransactionRepo & { docs: CreateIcDocumentI
     async create(input: CreateIcDocumentInput): Promise<Result<IntercompanyDocument>> {
       docs.push(input);
       return ok({
-        id: "ic-doc-001",
-        tenantId: "t1" as never,
+        id: 'ic-doc-001',
+        tenantId: 't1' as never,
         relationshipId: input.relationshipId,
         sourceCompanyId: input.sourceCompanyId as never,
         mirrorCompanyId: input.mirrorCompanyId as never,
         sourceJournalId: input.sourceJournalId,
         mirrorJournalId: input.mirrorJournalId,
-        status: "PAIRED",
+        status: 'PAIRED',
         createdAt: new Date(),
       });
     },
     async findById(): Promise<Result<IntercompanyDocument>> {
-      return err(new NotFoundError("IcDocument", "not-impl"));
+      return err(new NotFoundError('IcDocument', 'not-impl'));
     },
   };
 }
 
 const BASE_INPUT = {
-  tenantId: "t1",
-  userId: "u1",
+  tenantId: 't1',
+  userId: 'u1',
   agreementId: AGREEMENT_ID,
   sourceLedgerId: IDS.ledger,
-  mirrorLedgerId: "00000000-0000-4000-8000-000000000041",
+  mirrorLedgerId: '00000000-0000-4000-8000-000000000041',
   fiscalPeriodId: IDS.period,
-  description: "IC Sale Q1",
-  postingDate: new Date("2025-01-15"),
-  sourceLines: [{ accountId: "a1", debit: 1000n, credit: 0n }],
-  mirrorLines: [{ accountId: "a2", debit: 0n, credit: 1000n }],
+  description: 'IC Sale Q1',
+  postingDate: new Date('2025-01-15'),
+  sourceLines: [{ accountId: 'a1', debit: 1000n, credit: 0n }],
+  mirrorLines: [{ accountId: 'a2', debit: 0n, credit: 1000n }],
 };
 
-describe("createIcTransaction()", () => {
-  it("creates paired journals and IC document", async () => {
+describe('createIcTransaction()', () => {
+  it('creates paired journals and IC document', async () => {
     const icTxRepo = mockIcTransactionRepo();
     const outbox = mockOutboxWriter();
     const deps = {
@@ -87,14 +96,14 @@ describe("createIcTransaction()", () => {
     const result = await createIcTransaction(BASE_INPUT, deps);
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.value.status).toBe("PAIRED");
+      expect(result.value.status).toBe('PAIRED');
       expect(result.value.relationshipId).toBe(AGREEMENT_ID);
     }
     expect(icTxRepo.docs.length).toBe(1);
-    expect(outbox.events.some((e) => e.eventType === "IC_TRANSACTION_CREATED")).toBe(true);
+    expect(outbox.events.some((e) => e.eventType === 'IC_TRANSACTION_CREATED')).toBe(true);
   });
 
-  it("rejects when agreement not found", async () => {
+  it('rejects when agreement not found', async () => {
     const deps = {
       icAgreementRepo: mockIcAgreementRepo(),
       icTransactionRepo: mockIcTransactionRepo(),
@@ -105,7 +114,7 @@ describe("createIcTransaction()", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("rejects inactive agreement", async () => {
+  it('rejects inactive agreement', async () => {
     const deps = {
       icAgreementRepo: mockIcAgreementRepo(makeAgreement({ isActive: false })),
       icTransactionRepo: mockIcTransactionRepo(),
@@ -114,36 +123,30 @@ describe("createIcTransaction()", () => {
     };
     const result = await createIcTransaction(BASE_INPUT, deps);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.message).toContain("inactive");
+    if (!result.ok) expect(result.error.message).toContain('inactive');
   });
 
-  it("rejects when source lines are empty", async () => {
+  it('rejects when source lines are empty', async () => {
     const deps = {
       icAgreementRepo: mockIcAgreementRepo(makeAgreement()),
       icTransactionRepo: mockIcTransactionRepo(),
       journalRepo: mockJournalRepo(),
       outboxWriter: mockOutboxWriter(),
     };
-    const result = await createIcTransaction(
-      { ...BASE_INPUT, sourceLines: [] },
-      deps,
-    );
+    const result = await createIcTransaction({ ...BASE_INPUT, sourceLines: [] }, deps);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.code).toBe("INSUFFICIENT_LINES");
+    if (!result.ok) expect(result.error.code).toBe('INSUFFICIENT_LINES');
   });
 
-  it("rejects when mirror lines are empty", async () => {
+  it('rejects when mirror lines are empty', async () => {
     const deps = {
       icAgreementRepo: mockIcAgreementRepo(makeAgreement()),
       icTransactionRepo: mockIcTransactionRepo(),
       journalRepo: mockJournalRepo(),
       outboxWriter: mockOutboxWriter(),
     };
-    const result = await createIcTransaction(
-      { ...BASE_INPUT, mirrorLines: [] },
-      deps,
-    );
+    const result = await createIcTransaction({ ...BASE_INPUT, mirrorLines: [] }, deps);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.code).toBe("INSUFFICIENT_LINES");
+    if (!result.ok) expect(result.error.code).toBe('INSUFFICIENT_LINES');
   });
 });

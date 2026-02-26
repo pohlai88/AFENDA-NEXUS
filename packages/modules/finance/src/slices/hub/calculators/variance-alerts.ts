@@ -6,11 +6,11 @@
  * Evaluates budget variance rows against configurable thresholds
  * and produces alert entries for accounts that exceed them.
  */
-import type { Money } from "@afenda/core";
-import type { BudgetVarianceRow } from "../entities/budget.js";
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { Money } from '@afenda/core';
+import type { BudgetVarianceRow } from '../entities/budget.js';
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type AlertSeverity = "WARNING" | "CRITICAL";
+export type AlertSeverity = 'WARNING' | 'CRITICAL';
 
 export interface VarianceThreshold {
   readonly percentageWarning: number;
@@ -44,7 +44,7 @@ export const DEFAULT_THRESHOLD: VarianceThreshold = {
 
 export function evaluateVarianceAlerts(
   rows: readonly BudgetVarianceRow[],
-  threshold: VarianceThreshold = DEFAULT_THRESHOLD,
+  threshold: VarianceThreshold = DEFAULT_THRESHOLD
 ): CalculatorResult<VarianceAlertResult> {
   const alerts: VarianceAlert[] = [];
 
@@ -52,24 +52,25 @@ export function evaluateVarianceAlerts(
     if (row.budgetAmount.amount === 0n) continue;
 
     const absVariance = row.variance.amount < 0n ? -row.variance.amount : row.variance.amount;
-    const absBudget = row.budgetAmount.amount < 0n ? -row.budgetAmount.amount : row.budgetAmount.amount;
+    const absBudget =
+      row.budgetAmount.amount < 0n ? -row.budgetAmount.amount : row.budgetAmount.amount;
 
     const pct = absBudget > 0n ? Number((absVariance * 10000n) / absBudget) / 100 : 0;
 
     let severity: AlertSeverity | null = null;
-    let reason = "";
+    let reason = '';
 
     if (threshold.absoluteCritical && absVariance >= threshold.absoluteCritical) {
-      severity = "CRITICAL";
+      severity = 'CRITICAL';
       reason = `Absolute variance ${absVariance} exceeds critical threshold ${threshold.absoluteCritical}`;
     } else if (pct >= threshold.percentageCritical) {
-      severity = "CRITICAL";
+      severity = 'CRITICAL';
       reason = `Variance ${pct.toFixed(2)}% exceeds critical threshold ${threshold.percentageCritical}%`;
     } else if (threshold.absoluteWarning && absVariance >= threshold.absoluteWarning) {
-      severity = "WARNING";
+      severity = 'WARNING';
       reason = `Absolute variance ${absVariance} exceeds warning threshold ${threshold.absoluteWarning}`;
     } else if (pct >= threshold.percentageWarning) {
-      severity = "WARNING";
+      severity = 'WARNING';
       reason = `Variance ${pct.toFixed(2)}% exceeds warning threshold ${threshold.percentageWarning}%`;
     }
 
@@ -91,10 +92,10 @@ export function evaluateVarianceAlerts(
     result: {
       alerts,
       totalChecked: rows.length,
-      warningCount: alerts.filter((a) => a.severity === "WARNING").length,
-      criticalCount: alerts.filter((a) => a.severity === "CRITICAL").length,
+      warningCount: alerts.filter((a) => a.severity === 'WARNING').length,
+      criticalCount: alerts.filter((a) => a.severity === 'CRITICAL').length,
     },
     inputs: { rowCount: rows.length, threshold },
-    explanation: `Checked ${rows.length} rows: ${alerts.length} alerts (${alerts.filter((a) => a.severity === "CRITICAL").length} critical, ${alerts.filter((a) => a.severity === "WARNING").length} warning)`,
+    explanation: `Checked ${rows.length} rows: ${alerts.length} alerts (${alerts.filter((a) => a.severity === 'CRITICAL').length} critical, ${alerts.filter((a) => a.severity === 'WARNING').length} warning)`,
   };
 }

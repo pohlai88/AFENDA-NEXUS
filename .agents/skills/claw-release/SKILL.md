@@ -1,9 +1,12 @@
 ---
 name: claw-release
 version: 0.0.1
-description: Release automation for Claw skills and website. Guides through version bumping, tagging, and release verification.
+description:
+  Release automation for Claw skills and website. Guides through version
+  bumping, tagging, and release verification.
 homepage: https://clawsec.prompt.security
-metadata: { 'openclaw': { 'emoji': '🚀', 'category': 'utility', 'internal': true } }
+metadata:
+  { 'openclaw': { 'emoji': '🚀', 'category': 'utility', 'internal': true } }
 clawdis:
   emoji: '🚀'
   requires:
@@ -87,7 +90,8 @@ After pushing, the CI/CD pipeline will:
 
 Verify at:
 
-- **GitHub Releases:** `https://github.com/prompt-security/clawsec/releases/tag/<skill-name>-v<version>`
+- **GitHub Releases:**
+  `https://github.com/prompt-security/clawsec/releases/tag/<skill-name>-v<version>`
 - **GitHub Actions:** Check workflow run status
 
 ---

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "test:e2e": {
+      "dependsOn": ["@afenda/web#build", "@afenda/api#build"],
+      "inputs": [
+        "tests/**",
+        "playwright.config.ts",
+        "fixtures/**",
+        "pages/**",
+        "global-setup.ts",
+        "global-teardown.ts"
+      ],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "cache": false
+    }
+  }
+}

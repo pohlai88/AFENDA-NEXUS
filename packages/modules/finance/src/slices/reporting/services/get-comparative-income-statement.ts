@@ -1,12 +1,12 @@
-import type { Result } from "@afenda/core";
-import { money, ok } from "@afenda/core";
-import type { ComparativeIncomeStatement } from "../entities/financial-reports.js";
-import { classifyIncomeStatement } from "../calculators/report-classifier.js";
-import { buildComparativeSection } from "../../reporting/calculators/comparative-report.js";
-import type { ClassifiableRow } from "../../reporting/calculators/report-classifier.js";
-import type { IGlBalanceRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
+import type { Result } from '@afenda/core';
+import { money, ok } from '@afenda/core';
+import type { ComparativeIncomeStatement } from '../entities/financial-reports.js';
+import { classifyIncomeStatement } from '../calculators/report-classifier.js';
+import { buildComparativeSection } from '../../reporting/calculators/comparative-report.js';
+import type { ClassifiableRow } from '../../reporting/calculators/report-classifier.js';
+import type { IGlBalanceRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
 
 export interface GetComparativeIncomeStatementInput {
   readonly ledgerId: string;
@@ -28,7 +28,7 @@ export async function getComparativeIncomeStatement(
     balanceRepo: IGlBalanceRepo;
     ledgerRepo: ILedgerRepo;
   },
-  _ctx?: FinanceContext,
+  _ctx?: FinanceContext
 ): Promise<Result<ComparativeIncomeStatement>> {
   const ledgerResult = await deps.ledgerRepo.findById(input.ledgerId);
   if (!ledgerResult.ok) return ledgerResult;
@@ -53,8 +53,16 @@ export async function getComparativeIncomeStatement(
   const { result: currentIS } = classifyIncomeStatement(toRows(currentTrialResult.value), currency);
   const { result: priorIS } = classifyIncomeStatement(toRows(priorTrialResult.value), currency);
 
-  const revenue = buildComparativeSection({ current: currentIS.revenue, prior: priorIS.revenue, currency }).result;
-  const expenses = buildComparativeSection({ current: currentIS.expenses, prior: priorIS.expenses, currency }).result;
+  const revenue = buildComparativeSection({
+    current: currentIS.revenue,
+    prior: priorIS.revenue,
+    currency,
+  }).result;
+  const expenses = buildComparativeSection({
+    current: currentIS.expenses,
+    prior: priorIS.expenses,
+    currency,
+  }).result;
 
   const netIncomeVarianceAmount = currentIS.netIncome.amount - priorIS.netIncome.amount;
 

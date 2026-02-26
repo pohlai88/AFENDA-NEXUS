@@ -1,15 +1,15 @@
-import { describe, it, expect } from "vitest";
-import { checkRecognition } from "../calculators/recognition.js";
-import { computeAmortization } from "../calculators/amortization.js";
-import { classifySoftwareCosts } from "../calculators/software-capitalization.js";
+import { describe, it, expect } from 'vitest';
+import { checkRecognition } from '../calculators/recognition.js';
+import { computeAmortization } from '../calculators/amortization.js';
+import { classifySoftwareCosts } from '../calculators/software-capitalization.js';
 
 // ── Recognition ──────────────────────────────────────────────────────────────
 
-describe("checkRecognition", () => {
+describe('checkRecognition', () => {
   const baseInput = {
-    assetId: "ia-1",
+    assetId: 'ia-1',
     amount: 100000n,
-    currencyCode: "USD",
+    currencyCode: 'USD',
     isIdentifiable: true,
     hasControl: true,
     hasFutureEconomicBenefit: true,
@@ -20,56 +20,56 @@ describe("checkRecognition", () => {
     hasAdequateResources: true,
   };
 
-  it("expenses research phase expenditure", () => {
-    const result = checkRecognition([{ ...baseInput, expenditurePhase: "RESEARCH" }]);
+  it('expenses research phase expenditure', () => {
+    const result = checkRecognition([{ ...baseInput, expenditurePhase: 'RESEARCH' }]);
     expect(result.result[0]!.canCapitalize).toBe(false);
     expect(result.result[0]!.expenseAmount).toBe(100000n);
   });
 
-  it("capitalizes development phase when all criteria met", () => {
-    const result = checkRecognition([{ ...baseInput, expenditurePhase: "DEVELOPMENT" }]);
+  it('capitalizes development phase when all criteria met', () => {
+    const result = checkRecognition([{ ...baseInput, expenditurePhase: 'DEVELOPMENT' }]);
     expect(result.result[0]!.canCapitalize).toBe(true);
     expect(result.result[0]!.capitalizeAmount).toBe(100000n);
   });
 
-  it("rejects development if not technically feasible", () => {
+  it('rejects development if not technically feasible', () => {
     const result = checkRecognition([
-      { ...baseInput, expenditurePhase: "DEVELOPMENT", isTechnicallyFeasible: false },
+      { ...baseInput, expenditurePhase: 'DEVELOPMENT', isTechnicallyFeasible: false },
     ]);
     expect(result.result[0]!.canCapitalize).toBe(false);
-    expect(result.result[0]!.failedCriteria).toContain("Not technically feasible");
+    expect(result.result[0]!.failedCriteria).toContain('Not technically feasible');
   });
 
-  it("capitalizes acquired intangibles meeting general criteria", () => {
-    const result = checkRecognition([{ ...baseInput, expenditurePhase: "ACQUISITION" }]);
+  it('capitalizes acquired intangibles meeting general criteria', () => {
+    const result = checkRecognition([{ ...baseInput, expenditurePhase: 'ACQUISITION' }]);
     expect(result.result[0]!.canCapitalize).toBe(true);
   });
 
-  it("rejects if not identifiable", () => {
+  it('rejects if not identifiable', () => {
     const result = checkRecognition([
-      { ...baseInput, expenditurePhase: "ACQUISITION", isIdentifiable: false },
+      { ...baseInput, expenditurePhase: 'ACQUISITION', isIdentifiable: false },
     ]);
     expect(result.result[0]!.canCapitalize).toBe(false);
-    expect(result.result[0]!.failedCriteria).toContain("Not identifiable");
+    expect(result.result[0]!.failedCriteria).toContain('Not identifiable');
   });
 
-  it("throws on empty input", () => {
-    expect(() => checkRecognition([])).toThrow("At least one");
+  it('throws on empty input', () => {
+    expect(() => checkRecognition([])).toThrow('At least one');
   });
 });
 
 // ── Amortization ─────────────────────────────────────────────────────────────
 
-describe("computeAmortization", () => {
-  it("computes straight-line amortization for finite life", () => {
+describe('computeAmortization', () => {
+  it('computes straight-line amortization for finite life', () => {
     const result = computeAmortization([
       {
-        assetId: "ia-1",
-        usefulLifeType: "FINITE",
+        assetId: 'ia-1',
+        usefulLifeType: 'FINITE',
         acquisitionCost: 120000n,
         residualValue: 0n,
         usefulLifeMonths: 60,
-        amortizationMethod: "STRAIGHT_LINE",
+        amortizationMethod: 'STRAIGHT_LINE',
         accumulatedAmortization: 0n,
         periodMonths: 12,
       },
@@ -80,11 +80,11 @@ describe("computeAmortization", () => {
     expect(result.result[0]!.requiresImpairmentTest).toBe(false);
   });
 
-  it("returns zero for indefinite-life and flags impairment test", () => {
+  it('returns zero for indefinite-life and flags impairment test', () => {
     const result = computeAmortization([
       {
-        assetId: "ia-2",
-        usefulLifeType: "INDEFINITE",
+        assetId: 'ia-2',
+        usefulLifeType: 'INDEFINITE',
         acquisitionCost: 500000n,
         residualValue: 0n,
         usefulLifeMonths: null,
@@ -98,15 +98,15 @@ describe("computeAmortization", () => {
     expect(result.result[0]!.newNetBookValue).toBe(500000n);
   });
 
-  it("caps amortization at residual value", () => {
+  it('caps amortization at residual value', () => {
     const result = computeAmortization([
       {
-        assetId: "ia-3",
-        usefulLifeType: "FINITE",
+        assetId: 'ia-3',
+        usefulLifeType: 'FINITE',
         acquisitionCost: 100000n,
         residualValue: 10000n,
         usefulLifeMonths: 12,
-        amortizationMethod: "STRAIGHT_LINE",
+        amortizationMethod: 'STRAIGHT_LINE',
         accumulatedAmortization: 85000n,
         periodMonths: 12,
       },
@@ -116,36 +116,36 @@ describe("computeAmortization", () => {
     expect(result.result[0]!.isFullyAmortized).toBe(true);
   });
 
-  it("throws on empty input", () => {
-    expect(() => computeAmortization([])).toThrow("At least one");
+  it('throws on empty input', () => {
+    expect(() => computeAmortization([])).toThrow('At least one');
   });
 });
 
 // ── Software Capitalization ──────────────────────────────────────────────────
 
-describe("classifySoftwareCosts", () => {
-  it("capitalizes application development if feasible", () => {
+describe('classifySoftwareCosts', () => {
+  it('capitalizes application development if feasible', () => {
     const result = classifySoftwareCosts([
       {
-        projectId: "sw-1",
-        phase: "APPLICATION_DEVELOPMENT",
+        projectId: 'sw-1',
+        phase: 'APPLICATION_DEVELOPMENT',
         amount: 50000n,
-        currencyCode: "USD",
-        costType: "INTERNAL_LABOR",
+        currencyCode: 'USD',
+        costType: 'INTERNAL_LABOR',
         isTechnicallyFeasible: true,
       },
     ]);
     expect(result.result[0]!.capitalizeAmount).toBe(50000n);
   });
 
-  it("expenses preliminary phase costs", () => {
+  it('expenses preliminary phase costs', () => {
     const result = classifySoftwareCosts([
       {
-        projectId: "sw-1",
-        phase: "PRELIMINARY",
+        projectId: 'sw-1',
+        phase: 'PRELIMINARY',
         amount: 20000n,
-        currencyCode: "USD",
-        costType: "EXTERNAL_SERVICES",
+        currencyCode: 'USD',
+        costType: 'EXTERNAL_SERVICES',
         isTechnicallyFeasible: true,
       },
     ]);
@@ -153,21 +153,21 @@ describe("classifySoftwareCosts", () => {
     expect(result.result[0]!.capitalizeAmount).toBe(0n);
   });
 
-  it("always expenses hosting costs regardless of phase", () => {
+  it('always expenses hosting costs regardless of phase', () => {
     const result = classifySoftwareCosts([
       {
-        projectId: "sw-1",
-        phase: "APPLICATION_DEVELOPMENT",
+        projectId: 'sw-1',
+        phase: 'APPLICATION_DEVELOPMENT',
         amount: 10000n,
-        currencyCode: "USD",
-        costType: "HOSTING",
+        currencyCode: 'USD',
+        costType: 'HOSTING',
         isTechnicallyFeasible: true,
       },
     ]);
     expect(result.result[0]!.expenseAmount).toBe(10000n);
   });
 
-  it("throws on empty input", () => {
-    expect(() => classifySoftwareCosts([])).toThrow("At least one");
+  it('throws on empty input', () => {
+    expect(() => classifySoftwareCosts([])).toThrow('At least one');
   });
 });

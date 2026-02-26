@@ -1,7 +1,7 @@
 ---
 title: DrizzleORM v0.30.0 release
 pubDate: 2024-03-07
-description: Modified the 'postgres.js' driver instance to always return strings for dates, and then Drizzle will provide you with either strings of mapped dates, depending on the selected 'mode'. Fixed many bugs related to timestamps and dates. 
+description: Modified the 'postgres.js' driver instance to always return strings for dates, and then Drizzle will provide you with either strings of mapped dates, depending on the selected 'mode'. Fixed many bugs related to timestamps and dates.
 ---
 
 ## Breaking Changes
@@ -24,8 +24,8 @@ const transparentParser = (val: any) => val;
 
 // Override postgres.js default date parsers: https://github.com/porsager/postgres/discussions/761
 for (const type of ['1184', '1082', '1083', '1114']) {
-	client.options.parsers[type as any] = transparentParser;
-	client.options.serializers[type as any] = transparentParser;
+  client.options.parsers[type as any] = transparentParser;
+  client.options.serializers[type as any] = transparentParser;
 }
 ```
 

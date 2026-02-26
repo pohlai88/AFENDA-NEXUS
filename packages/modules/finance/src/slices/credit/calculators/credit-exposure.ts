@@ -6,7 +6,7 @@
 
 export interface ExposureItem {
   readonly documentId: string;
-  readonly documentType: "INVOICE" | "ORDER" | "PAYMENT";
+  readonly documentType: 'INVOICE' | 'ORDER' | 'PAYMENT';
   readonly amount: bigint;
   readonly currencyCode: string;
 }
@@ -41,13 +41,13 @@ export function computeCreditExposure(input: CreditExposureInput): CreditExposur
 
   for (const item of input.items) {
     switch (item.documentType) {
-      case "INVOICE":
+      case 'INVOICE':
         totalOutstanding += item.amount;
         break;
-      case "ORDER":
+      case 'ORDER':
         totalOpenOrders += item.amount;
         break;
-      case "PAYMENT":
+      case 'PAYMENT':
         totalPayments += item.amount;
         break;
     }
@@ -58,9 +58,12 @@ export function computeCreditExposure(input: CreditExposureInput): CreditExposur
   const isOverLimit = currentExposure > input.creditLimit;
 
   // Utilization as integer percentage (0-100+)
-  const utilizationPct = input.creditLimit > 0n
-    ? Number((currentExposure * 100n) / input.creditLimit)
-    : currentExposure > 0n ? 999 : 0;
+  const utilizationPct =
+    input.creditLimit > 0n
+      ? Number((currentExposure * 100n) / input.creditLimit)
+      : currentExposure > 0n
+        ? 999
+        : 0;
 
   return {
     customerId: input.customerId,

@@ -5,8 +5,8 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { TaxCode } from "../entities/tax-code.js";
-import type { TaxRate } from "../entities/tax-rate.js";
+import type { TaxCode } from '../entities/tax-code.js';
+import type { TaxRate } from '../entities/tax-rate.js';
 
 export interface TaxLookupAddress {
   readonly countryCode: string;
@@ -28,16 +28,17 @@ export function lookupTaxCode(
   address: TaxLookupAddress,
   codes: readonly TaxCode[],
   rates: readonly TaxRate[],
-  asOfDate: Date = new Date(),
+  asOfDate: Date = new Date()
 ): TaxLookupResult | null {
   const activeCodes = codes.filter((c) => c.isActive);
 
   // Try city-level first
   if (address.cityCode) {
     const cityCode = activeCodes.find(
-      (c) => c.countryCode === address.countryCode
-        && c.stateCode === address.stateCode
-        && c.cityCode === address.cityCode,
+      (c) =>
+        c.countryCode === address.countryCode &&
+        c.stateCode === address.stateCode &&
+        c.cityCode === address.cityCode
     );
     if (cityCode) {
       const rate = findActiveRate(cityCode.id, rates, asOfDate);
@@ -54,9 +55,10 @@ export function lookupTaxCode(
   // Try state-level
   if (address.stateCode) {
     const stateCode = activeCodes.find(
-      (c) => c.countryCode === address.countryCode
-        && c.stateCode === address.stateCode
-        && c.jurisdictionLevel === "STATE",
+      (c) =>
+        c.countryCode === address.countryCode &&
+        c.stateCode === address.stateCode &&
+        c.jurisdictionLevel === 'STATE'
     );
     if (stateCode) {
       const rate = findActiveRate(stateCode.id, rates, asOfDate);
@@ -72,7 +74,7 @@ export function lookupTaxCode(
 
   // Fall back to country-level
   const countryCode = activeCodes.find(
-    (c) => c.countryCode === address.countryCode && c.jurisdictionLevel === "COUNTRY",
+    (c) => c.countryCode === address.countryCode && c.jurisdictionLevel === 'COUNTRY'
   );
   if (countryCode) {
     const rate = findActiveRate(countryCode.id, rates, asOfDate);
@@ -88,13 +90,20 @@ export function lookupTaxCode(
   return null;
 }
 
-function findActiveRate(taxCodeId: string, rates: readonly TaxRate[], asOfDate: Date): TaxRate | null {
-  return rates.find(
-    (r) => r.taxCodeId === taxCodeId
-      && r.isActive
-      && r.effectiveFrom <= asOfDate
-      && (r.effectiveTo === null || r.effectiveTo >= asOfDate),
-  ) ?? null;
+function findActiveRate(
+  taxCodeId: string,
+  rates: readonly TaxRate[],
+  asOfDate: Date
+): TaxRate | null {
+  return (
+    rates.find(
+      (r) =>
+        r.taxCodeId === taxCodeId &&
+        r.isActive &&
+        r.effectiveFrom <= asOfDate &&
+        (r.effectiveTo === null || r.effectiveTo >= asOfDate)
+    ) ?? null
+  );
 }
 
 /**
@@ -114,7 +123,7 @@ export interface CompoundTaxResult {
  */
 export function computeCompoundTax(
   taxableAmount: bigint,
-  applicableRates: readonly { jurisdictionCode: string; rateBps: number }[],
+  applicableRates: readonly { jurisdictionCode: string; rateBps: number }[]
 ): CompoundTaxResult {
   let totalRateBps = 0;
   for (const r of applicableRates) {

@@ -3,7 +3,8 @@ title: DrizzleORM v0.28.6 release
 pubDate: 2023-09-06
 description: Changed datetime mapping for MySQL, added LibSQL batch API support, added JSON mode for text in SQLite, added '.toSQL()' to Relational Query API calls, added new PostgreSQL operators for Arrays, added more SQL operators for the 'where' function in Relational Queries, and fixed bugs.
 ---
-import Section from "@mdx/Section.astro";
+
+import Section from '@mdx/Section.astro';
 
 ## Changes
 
@@ -37,28 +38,29 @@ const batchResponse = await db.batch([
 
 ```ts
 type BatchResponse = [
-	{
-		id: number;
-	}[],
-	ResultSet,
-	{
-		id: number;
-		name: string;
-		verified: number;
-		invitedBy: number | null;
-	}[],
-	{
-		id: number;
-		name: string;
-		verified: number;
-		invitedBy: number | null;
-	}[],
-	{
-		id: number;
-		invitedBy: number | null;
-	}[],
+  {
+    id: number;
+  }[],
+  ResultSet,
+  {
+    id: number;
+    name: string;
+    verified: number;
+    invitedBy: number | null;
+  }[],
+  {
+    id: number;
+    name: string;
+    verified: number;
+    invitedBy: number | null;
+  }[],
+  {
+    id: number;
+    invitedBy: number | null;
+  }[],
 ];
 ```
+
 </Section>
 
 All possible builders that can be used inside `db.batch`:
@@ -84,7 +86,7 @@ Read more in [docs](/docs/get-started-postgresql#http-proxy)
 
 ```ts copy {2}
 const test = sqliteTable('test', {
-	dataTyped: text('data_typed', { mode: 'json' }).$type<{ a: 1 }>().notNull(),
+  dataTyped: text('data_typed', { mode: 'json' }).$type<{ a: 1 }>().notNull(),
 });
 ```
 
@@ -102,20 +104,27 @@ List of operators and usage examples
 Read more in [docs](/docs/get-started-postgresql#http-proxy)
 
 ```ts copy {2,5,8,11,12,13,14}
-const contains = await db.select({ id: posts.id }).from(posts)
-	.where(arrayContains(posts.tags, ['Typescript', 'ORM']));
+const contains = await db
+  .select({ id: posts.id })
+  .from(posts)
+  .where(arrayContains(posts.tags, ['Typescript', 'ORM']));
 
-const contained = await db.select({ id: posts.id }).from(posts)
-	.where(arrayContained(posts.tags, ['Typescript', 'ORM']));
+const contained = await db
+  .select({ id: posts.id })
+  .from(posts)
+  .where(arrayContained(posts.tags, ['Typescript', 'ORM']));
 
-const overlaps = await db.select({ id: posts.id }).from(posts)
-	.where(arrayOverlaps(posts.tags, ['Typescript', 'ORM']));
+const overlaps = await db
+  .select({ id: posts.id })
+  .from(posts)
+  .where(arrayOverlaps(posts.tags, ['Typescript', 'ORM']));
 
-const withSubQuery = await db.select({ id: posts.id }).from(posts)
-	.where(arrayContains(
-		posts.tags,
-		db.select({ tags: posts.tags }).from(posts).where(eq(posts.id, 1)),
-	));
+const withSubQuery = await db
+  .select({ id: posts.id })
+  .from(posts)
+  .where(
+    arrayContains(posts.tags, db.select({ tags: posts.tags }).from(posts).where(eq(posts.id, 1)))
+  );
 ```
 
 ### 🎉 Add more SQL operators for where filter function in Relational Queries
@@ -128,16 +137,18 @@ You can find more examples in [docs](/docs/rqb#select-filters)
 import { inArray } from "drizzle-orm/pg-core";
 
 await db.users.findFirst({
-  where: (table, _) => inArray(table.id, [ ... ])
+where: (table, \_) => inArray(table.id, [ ... ])
 })
-```
+
+````
 
 ```ts copy {3}
 // After
 await db.users.findFirst({
   where: (table, { inArray }) => inArray(table.id, [ ... ])
 })
-```
+````
+
 </Section>
 
 ## Fixes

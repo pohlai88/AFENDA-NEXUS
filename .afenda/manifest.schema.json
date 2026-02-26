@@ -40,7 +40,18 @@
         },
         "layer": {
           "type": ["string", "null"],
-          "enum": ["domain-primitives", "contracts", "authorization", "infrastructure", "platform", "module", "industry-overlay", "app", "tool", null],
+          "enum": [
+            "domain-primitives",
+            "contracts",
+            "authorization",
+            "infrastructure",
+            "platform",
+            "module",
+            "industry-overlay",
+            "app",
+            "tool",
+            null
+          ],
           "description": "Architectural layer — null for config/unmanaged"
         }
       }

@@ -2,7 +2,7 @@
  * Credit limit entity — per-customer credit limit with review tracking.
  */
 
-export type CreditStatus = "ACTIVE" | "ON_HOLD" | "SUSPENDED" | "CLOSED";
+export type CreditStatus = 'ACTIVE' | 'ON_HOLD' | 'SUSPENDED' | 'CLOSED';
 
 export interface CreditLimit {
   readonly id: string;

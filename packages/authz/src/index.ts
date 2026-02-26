@@ -1,51 +1,60 @@
 /**
- * @afenda/authz — Policies, roles, permission evaluation.
+ * @afenda/authz — Authorization (pure RBAC).
  *
- * Pure authorization logic. No DB — infra adapters load policies.
+ * - Permissions: ERP access control roles (see ./permissions.ts)
+ * - Authz: Pure policy evaluation (can / assertCan)
+ *
+ * Authentication is handled by Neon Auth (@neondatabase/auth).
  */
-import type { TenantId, UserId } from "@afenda/core";
+import type { TenantId, UserId } from '@afenda/core';
 
-// ─── Permission Types ───────────────────────────────────────────────────────
+// ─── Permissions (ERP RBAC) ─────────────────────────────────────────────────
 
-export type Action = "create" | "read" | "update" | "delete" | "post" | "void" | "reverse";
+export {
+  roles,
+  owner,
+  admin,
+  accountant,
+  clerk,
+  viewer,
+  member,
+  erpStatements,
+  type RoleName,
+  type Action,
+  type Permission,
+  type RoleDefinition,
+} from './permissions.js';
+
+// ─── Role (re-export for backward compat) ───────────────────────────────────
+
+export type Role = import('./permissions.js').RoleDefinition;
 export type Resource = string;
 
-export interface Permission {
-  readonly resource: Resource;
-  readonly action: Action;
-}
-
-// ─── Role ───────────────────────────────────────────────────────────────────
-
-export interface Role {
-  readonly name: string;
-  readonly permissions: readonly Permission[];
-}
+// Re-export branded ID types for consumers
+export type { TenantId, UserId };
 
 // ─── Policy ─────────────────────────────────────────────────────────────────
 
 export interface PolicyContext {
-  readonly tenantId: TenantId;
-  readonly userId: UserId;
+  readonly tenantId: string;
+  readonly userId: string;
   readonly roles: readonly Role[];
 }
 
 export function can(
   ctx: PolicyContext,
   resource: Resource,
-  action: Action,
+  action: import('./permissions.js').Action
 ): boolean {
   return ctx.roles.some((role) =>
-    role.permissions.some(
-      (p) => p.resource === resource && p.action === action,
-    ),
+    role.permissions.some((p) => p.resource === resource && p.action === action)
   );
 }
 
 export function assertCan(
   ctx: PolicyContext,
   resource: Resource,
-  action: Action,
+  action: import('./permissions.js').Action
 ): void {
   if (!can(ctx, resource, action)) {
     throw new Error(`Forbidden: ${action} on ${resource}`);

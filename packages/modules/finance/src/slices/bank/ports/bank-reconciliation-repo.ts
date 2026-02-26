@@ -1,4 +1,4 @@
-import type { BankReconciliation } from "../entities/bank-reconciliation.js";
+import type { BankReconciliation } from '../entities/bank-reconciliation.js';
 
 export interface CreateBankReconciliationInput {
   readonly bankAccountId: string;

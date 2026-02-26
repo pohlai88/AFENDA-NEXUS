@@ -5,15 +5,7 @@
   "author": "prompt-security",
   "license": "MIT",
   "homepage": "https://clawsec.prompt.security",
-  "keywords": [
-    "security",
-    "advisory",
-    "feed",
-    "agents",
-    "ai",
-    "threat-intel",
-    "monitoring"
-  ],
+  "keywords": ["security", "advisory", "feed", "agents", "ai", "threat-intel", "monitoring"],
   "sbom": {
     "files": [
       {
@@ -33,10 +25,7 @@
     "category": "security",
     "feed_url": "https://api.github.com/repos/prompt-security/ClawSec/releases?skill=clawsec-feed",
     "requires": {
-      "bins": [
-        "curl",
-        "jq"
-      ]
+      "bins": ["curl", "jq"]
     },
     "triggers": [
       "security advisories",

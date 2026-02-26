@@ -1,17 +1,17 @@
-import { describe, it, expect } from "vitest";
-import { computeEquityStatement } from "../calculators/equity-statement.js";
-import { generateNotes } from "../calculators/notes-engine.js";
-import { computeSegmentReport } from "../calculators/segment-reporting.js";
-import { computeRelatedPartyDisclosures } from "../calculators/related-party.js";
-import { tagWithXbrl } from "../calculators/xbrl-tagger.js";
+import { describe, it, expect } from 'vitest';
+import { computeEquityStatement } from '../calculators/equity-statement.js';
+import { generateNotes } from '../calculators/notes-engine.js';
+import { computeSegmentReport } from '../calculators/segment-reporting.js';
+import { computeRelatedPartyDisclosures } from '../calculators/related-party.js';
+import { tagWithXbrl } from '../calculators/xbrl-tagger.js';
 
 // ── Equity Statement ─────────────────────────────────────────────────────────
 
-describe("computeEquityStatement", () => {
-  it("computes closing balances from movements", () => {
+describe('computeEquityStatement', () => {
+  it('computes closing balances from movements', () => {
     const result = computeEquityStatement([
       {
-        component: "RETAINED_EARNINGS",
+        component: 'RETAINED_EARNINGS',
         openingBalance: 500000n,
         profitOrLoss: 100000n,
         otherComprehensiveIncome: 0n,
@@ -22,7 +22,7 @@ describe("computeEquityStatement", () => {
         otherMovements: 0n,
       },
       {
-        component: "SHARE_CAPITAL",
+        component: 'SHARE_CAPITAL',
         openingBalance: 200000n,
         profitOrLoss: 0n,
         otherComprehensiveIncome: 0n,
@@ -34,12 +34,12 @@ describe("computeEquityStatement", () => {
       },
     ]);
 
-    const re = result.result.rows.find((r) => r.component === "RETAINED_EARNINGS")!;
+    const re = result.result.rows.find((r) => r.component === 'RETAINED_EARNINGS')!;
     // closing = 500000 + 100000 - 20000 = 580000
     expect(re.closingBalance).toBe(580000n);
     expect(re.totalMovements).toBe(80000n);
 
-    const sc = result.result.rows.find((r) => r.component === "SHARE_CAPITAL")!;
+    const sc = result.result.rows.find((r) => r.component === 'SHARE_CAPITAL')!;
     expect(sc.closingBalance).toBe(250000n);
 
     expect(result.result.totalOpeningEquity).toBe(700000n);
@@ -47,10 +47,10 @@ describe("computeEquityStatement", () => {
     expect(result.result.totalComprehensiveIncome).toBe(100000n);
   });
 
-  it("handles OCI and treasury shares", () => {
+  it('handles OCI and treasury shares', () => {
     const result = computeEquityStatement([
       {
-        component: "OCI_RESERVE",
+        component: 'OCI_RESERVE',
         openingBalance: 10000n,
         profitOrLoss: 0n,
         otherComprehensiveIncome: 5000n,
@@ -65,83 +65,81 @@ describe("computeEquityStatement", () => {
     expect(result.result.rows[0]!.closingBalance).toBe(13000n);
   });
 
-  it("throws on empty input", () => {
-    expect(() => computeEquityStatement([])).toThrow("At least one equity component");
+  it('throws on empty input', () => {
+    expect(() => computeEquityStatement([])).toThrow('At least one equity component');
   });
 });
 
 // ── Notes Engine ─────────────────────────────────────────────────────────────
 
-describe("generateNotes", () => {
-  it("generates notes from templates and data", () => {
+describe('generateNotes', () => {
+  it('generates notes from templates and data', () => {
     const result = generateNotes(
       [
         {
-          id: "note-1",
-          category: "REVENUE",
-          title: "Revenue Recognition",
-          templateText: "Revenue for the period was {{revenue}} in {{currency}}.",
-          requiredFields: ["revenue", "currency"],
+          id: 'note-1',
+          category: 'REVENUE',
+          title: 'Revenue Recognition',
+          templateText: 'Revenue for the period was {{revenue}} in {{currency}}.',
+          requiredFields: ['revenue', 'currency'],
           isRequired: true,
         },
       ],
-      [
-        { templateId: "note-1", fields: { revenue: 1000000n, currency: "USD" } },
-      ],
+      [{ templateId: 'note-1', fields: { revenue: 1000000n, currency: 'USD' } }]
     );
     expect(result.result.completeCount).toBe(1);
-    expect(result.result.notes[0]!.content).toBe("Revenue for the period was 1000000 in USD.");
+    expect(result.result.notes[0]!.content).toBe('Revenue for the period was 1000000 in USD.');
     expect(result.result.notes[0]!.isComplete).toBe(true);
   });
 
-  it("detects missing required fields", () => {
+  it('detects missing required fields', () => {
     const result = generateNotes(
       [
         {
-          id: "note-1",
-          category: "REVENUE",
-          title: "Revenue",
-          templateText: "Revenue: {{amount}}",
-          requiredFields: ["amount"],
+          id: 'note-1',
+          category: 'REVENUE',
+          title: 'Revenue',
+          templateText: 'Revenue: {{amount}}',
+          requiredFields: ['amount'],
           isRequired: true,
         },
       ],
-      [{ templateId: "note-1", fields: {} }],
+      [{ templateId: 'note-1', fields: {} }]
     );
     expect(result.result.notes[0]!.isComplete).toBe(false);
-    expect(result.result.notes[0]!.missingFields).toContain("amount");
+    expect(result.result.notes[0]!.missingFields).toContain('amount');
   });
 
-  it("reports missing required notes", () => {
+  it('reports missing required notes', () => {
     const result = generateNotes(
       [
         {
-          id: "note-1",
-          category: "ACCOUNTING_POLICIES",
-          title: "Policies",
-          templateText: "...",
+          id: 'note-1',
+          category: 'ACCOUNTING_POLICIES',
+          title: 'Policies',
+          templateText: '...',
           requiredFields: [],
           isRequired: true,
         },
       ],
-      [], // no data provided
+      [] // no data provided
     );
-    expect(result.result.missingRequiredNotes).toContain("note-1");
+    expect(result.result.missingRequiredNotes).toContain('note-1');
   });
 
-  it("throws on empty templates", () => {
-    expect(() => generateNotes([], [])).toThrow("At least one note template");
+  it('throws on empty templates', () => {
+    expect(() => generateNotes([], [])).toThrow('At least one note template');
   });
 });
 
 // ── Segment Reporting ────────────────────────────────────────────────────────
 
-describe("computeSegmentReport", () => {
-  it("aggregates segments and eliminates inter-segment revenue", () => {
+describe('computeSegmentReport', () => {
+  it('aggregates segments and eliminates inter-segment revenue', () => {
     const result = computeSegmentReport([
       {
-        segmentId: "retail",
-        segmentName: "Retail",
+        segmentId: 'retail',
+        segmentName: 'Retail',
         externalRevenue: 800000n,
         interSegmentRevenue: 50000n,
         operatingExpenses: 600000n,
@@ -149,11 +147,11 @@ describe("computeSegmentReport", () => {
         totalAssets: 2000000n,
         totalLiabilities: 1000000n,
         capitalExpenditure: 100000n,
-        currencyCode: "USD",
+        currencyCode: 'USD',
       },
       {
-        segmentId: "wholesale",
-        segmentName: "Wholesale",
+        segmentId: 'wholesale',
+        segmentName: 'Wholesale',
         externalRevenue: 500000n,
         interSegmentRevenue: 30000n,
         operatingExpenses: 400000n,
@@ -161,7 +159,7 @@ describe("computeSegmentReport", () => {
         totalAssets: 1500000n,
         totalLiabilities: 800000n,
         capitalExpenditure: 60000n,
-        currencyCode: "USD",
+        currencyCode: 'USD',
       },
     ]);
 
@@ -170,40 +168,40 @@ describe("computeSegmentReport", () => {
     expect(result.result.consolidated.totalRevenue).toBe(1300000n); // external only
     expect(result.result.consolidated.totalAssets).toBe(3500000n);
 
-    const retail = result.result.segments.find((s) => s.segmentId === "retail")!;
+    const retail = result.result.segments.find((s) => s.segmentId === 'retail')!;
     expect(retail.totalRevenue).toBe(850000n); // 800k + 50k
     // result = 850000 - 600000 - 40000 = 210000
     expect(retail.segmentResult).toBe(210000n);
   });
 
-  it("throws on empty segments", () => {
-    expect(() => computeSegmentReport([])).toThrow("At least one segment");
+  it('throws on empty segments', () => {
+    expect(() => computeSegmentReport([])).toThrow('At least one segment');
   });
 });
 
 // ── Related Party ────────────────────────────────────────────────────────────
 
-describe("computeRelatedPartyDisclosures", () => {
-  it("groups transactions by party", () => {
+describe('computeRelatedPartyDisclosures', () => {
+  it('groups transactions by party', () => {
     const result = computeRelatedPartyDisclosures([
       {
-        partyId: "p1",
-        partyName: "Parent Co",
-        partyType: "PARENT",
-        transactionNature: "MANAGEMENT_FEE",
+        partyId: 'p1',
+        partyName: 'Parent Co',
+        partyType: 'PARENT',
+        transactionNature: 'MANAGEMENT_FEE',
         transactionAmount: 100000n,
         outstandingBalance: 20000n,
-        currencyCode: "USD",
+        currencyCode: 'USD',
         isArmsLength: true,
       },
       {
-        partyId: "p1",
-        partyName: "Parent Co",
-        partyType: "PARENT",
-        transactionNature: "LOAN",
+        partyId: 'p1',
+        partyName: 'Parent Co',
+        partyType: 'PARENT',
+        transactionNature: 'LOAN',
         transactionAmount: 500000n,
         outstandingBalance: 500000n,
-        currencyCode: "USD",
+        currencyCode: 'USD',
         isArmsLength: true,
       },
     ]);
@@ -215,16 +213,16 @@ describe("computeRelatedPartyDisclosures", () => {
     expect(d.hasNonArmsLengthTransactions).toBe(false);
   });
 
-  it("flags non-arms-length transactions", () => {
+  it('flags non-arms-length transactions', () => {
     const result = computeRelatedPartyDisclosures([
       {
-        partyId: "km1",
-        partyName: "CEO",
-        partyType: "KEY_MANAGEMENT",
-        transactionNature: "LOAN",
+        partyId: 'km1',
+        partyName: 'CEO',
+        partyType: 'KEY_MANAGEMENT',
+        transactionNature: 'LOAN',
         transactionAmount: 50000n,
         outstandingBalance: 50000n,
-        currencyCode: "USD",
+        currencyCode: 'USD',
         isArmsLength: false,
       },
     ]);
@@ -232,7 +230,7 @@ describe("computeRelatedPartyDisclosures", () => {
     expect(result.result.disclosures[0]!.hasNonArmsLengthTransactions).toBe(true);
   });
 
-  it("handles empty input", () => {
+  it('handles empty input', () => {
     const result = computeRelatedPartyDisclosures([]);
     expect(result.result.disclosures).toHaveLength(0);
     expect(result.result.totalTransactionsAmount).toBe(0n);
@@ -241,83 +239,83 @@ describe("computeRelatedPartyDisclosures", () => {
 
 // ── XBRL Tagger ──────────────────────────────────────────────────────────────
 
-describe("tagWithXbrl", () => {
-  it("tags data points with XBRL elements", () => {
+describe('tagWithXbrl', () => {
+  it('tags data points with XBRL elements', () => {
     const result = tagWithXbrl(
       [
         {
-          accountId: "acc-revenue",
-          label: "Revenue",
+          accountId: 'acc-revenue',
+          label: 'Revenue',
           value: 1000000n,
-          currencyCode: "USD",
-          periodStart: "2025-01-01",
-          periodEnd: "2025-12-31",
+          currencyCode: 'USD',
+          periodStart: '2025-01-01',
+          periodEnd: '2025-12-31',
           isInstant: false,
         },
         {
-          accountId: "acc-assets",
-          label: "Total Assets",
+          accountId: 'acc-assets',
+          label: 'Total Assets',
           value: 5000000n,
-          currencyCode: "USD",
-          periodStart: "2025-01-01",
-          periodEnd: "2025-12-31",
+          currencyCode: 'USD',
+          periodStart: '2025-01-01',
+          periodEnd: '2025-12-31',
           isInstant: true,
         },
       ],
       [
         {
-          accountId: "acc-revenue",
-          xbrlElement: "Revenue",
-          xbrlNamespace: "ifrs-full",
-          periodType: "duration",
-          balanceType: "credit",
+          accountId: 'acc-revenue',
+          xbrlElement: 'Revenue',
+          xbrlNamespace: 'ifrs-full',
+          periodType: 'duration',
+          balanceType: 'credit',
         },
         {
-          accountId: "acc-assets",
-          xbrlElement: "Assets",
-          xbrlNamespace: "ifrs-full",
-          periodType: "instant",
-          balanceType: "debit",
+          accountId: 'acc-assets',
+          xbrlElement: 'Assets',
+          xbrlNamespace: 'ifrs-full',
+          periodType: 'instant',
+          balanceType: 'debit',
         },
       ],
-      "IFRS_FULL",
-      "entity-1",
+      'IFRS_FULL',
+      'entity-1'
     );
 
     expect(result.result.facts).toHaveLength(2);
     expect(result.result.unmappedAccounts).toHaveLength(0);
 
-    const revFact = result.result.facts.find((f) => f.xbrlElement === "Revenue")!;
-    expect(revFact.value).toBe("1000000");
-    expect(revFact.contextRef).toBe("ctx_2025-01-01_2025-12-31");
-    expect(revFact.xmlFragment).toContain("ifrs-full:Revenue");
+    const revFact = result.result.facts.find((f) => f.xbrlElement === 'Revenue')!;
+    expect(revFact.value).toBe('1000000');
+    expect(revFact.contextRef).toBe('ctx_2025-01-01_2025-12-31');
+    expect(revFact.xmlFragment).toContain('ifrs-full:Revenue');
 
-    const assetFact = result.result.facts.find((f) => f.xbrlElement === "Assets")!;
-    expect(assetFact.contextRef).toBe("ctx_2025-12-31");
+    const assetFact = result.result.facts.find((f) => f.xbrlElement === 'Assets')!;
+    expect(assetFact.contextRef).toBe('ctx_2025-12-31');
   });
 
-  it("reports unmapped accounts", () => {
+  it('reports unmapped accounts', () => {
     const result = tagWithXbrl(
       [
         {
-          accountId: "unknown-acc",
-          label: "Mystery",
+          accountId: 'unknown-acc',
+          label: 'Mystery',
           value: 100n,
-          currencyCode: "USD",
-          periodStart: "2025-01-01",
-          periodEnd: "2025-12-31",
+          currencyCode: 'USD',
+          periodStart: '2025-01-01',
+          periodEnd: '2025-12-31',
           isInstant: false,
         },
       ],
       [],
-      "IFRS_FULL",
-      "entity-1",
+      'IFRS_FULL',
+      'entity-1'
     );
     expect(result.result.facts).toHaveLength(0);
-    expect(result.result.unmappedAccounts).toContain("unknown-acc");
+    expect(result.result.unmappedAccounts).toContain('unknown-acc');
   });
 
-  it("throws on empty data points", () => {
-    expect(() => tagWithXbrl([], [], "IFRS_FULL", "e1")).toThrow("At least one data point");
+  it('throws on empty data points', () => {
+    expect(() => tagWithXbrl([], [], 'IFRS_FULL', 'e1')).toThrow('At least one data point');
   });
 });

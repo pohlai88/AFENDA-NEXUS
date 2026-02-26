@@ -1,12 +1,12 @@
-import type { Result } from "@afenda/core";
-import { ok } from "@afenda/core";
-import type { ComparativeBalanceSheet } from "../entities/financial-reports.js";
-import { classifyBalanceSheet } from "../calculators/report-classifier.js";
-import { buildComparativeSection } from "../../reporting/calculators/comparative-report.js";
-import type { ClassifiableRow } from "../../reporting/calculators/report-classifier.js";
-import type { IGlBalanceRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { ILedgerRepo } from "../../../shared/ports/gl-read-ports.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
+import type { Result } from '@afenda/core';
+import { ok } from '@afenda/core';
+import type { ComparativeBalanceSheet } from '../entities/financial-reports.js';
+import { classifyBalanceSheet } from '../calculators/report-classifier.js';
+import { buildComparativeSection } from '../../reporting/calculators/comparative-report.js';
+import type { ClassifiableRow } from '../../reporting/calculators/report-classifier.js';
+import type { IGlBalanceRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
 
 export interface GetComparativeBalanceSheetInput {
   readonly ledgerId: string;
@@ -26,7 +26,7 @@ export async function getComparativeBalanceSheet(
     balanceRepo: IGlBalanceRepo;
     ledgerRepo: ILedgerRepo;
   },
-  _ctx?: FinanceContext,
+  _ctx?: FinanceContext
 ): Promise<Result<ComparativeBalanceSheet>> {
   const ledgerResult = await deps.ledgerRepo.findById(input.ledgerId);
   if (!ledgerResult.ok) return ledgerResult;
@@ -51,9 +51,21 @@ export async function getComparativeBalanceSheet(
   const { result: currentBS } = classifyBalanceSheet(toRows(currentTrialResult.value), currency);
   const { result: priorBS } = classifyBalanceSheet(toRows(priorTrialResult.value), currency);
 
-  const assets = buildComparativeSection({ current: currentBS.assets, prior: priorBS.assets, currency }).result;
-  const liabilities = buildComparativeSection({ current: currentBS.liabilities, prior: priorBS.liabilities, currency }).result;
-  const equity = buildComparativeSection({ current: currentBS.equity, prior: priorBS.equity, currency }).result;
+  const assets = buildComparativeSection({
+    current: currentBS.assets,
+    prior: priorBS.assets,
+    currency,
+  }).result;
+  const liabilities = buildComparativeSection({
+    current: currentBS.liabilities,
+    prior: priorBS.liabilities,
+    currency,
+  }).result;
+  const equity = buildComparativeSection({
+    current: currentBS.equity,
+    prior: priorBS.equity,
+    currency,
+  }).result;
 
   return ok({
     ledgerId: ledgerResult.value.id as never,

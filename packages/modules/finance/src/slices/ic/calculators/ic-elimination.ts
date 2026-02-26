@@ -6,7 +6,7 @@
  * Computes elimination journal entries from intercompany balances.
  * Each IC balance produces a paired debit+credit elimination entry.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface IntercompanyBalance {
   readonly fromCompanyId: string;
@@ -18,7 +18,7 @@ export interface IntercompanyBalance {
 
 export interface EliminationEntry {
   readonly accountId: string;
-  readonly side: "debit" | "credit";
+  readonly side: 'debit' | 'credit';
   readonly amountMinor: bigint;
   readonly currency: string;
   readonly memo: string;
@@ -29,13 +29,13 @@ export interface EliminationEntry {
  * Each balance produces a paired debit+credit entry that nets to zero.
  */
 export function computeEliminations(
-  balances: readonly IntercompanyBalance[],
+  balances: readonly IntercompanyBalance[]
 ): CalculatorResult<EliminationEntry[]> {
   if (balances.length === 0) {
     return {
       result: [],
       inputs: { balanceCount: 0 },
-      explanation: "No IC balances to eliminate",
+      explanation: 'No IC balances to eliminate',
     };
   }
 
@@ -46,26 +46,24 @@ export function computeEliminations(
       throw new Error(`amountMinor must be non-negative, got ${bal.amountMinor}`);
     }
     if (bal.fromCompanyId === bal.toCompanyId) {
-      throw new Error(
-        `Intercompany balance cannot be within same company: ${bal.fromCompanyId}`,
-      );
+      throw new Error(`Intercompany balance cannot be within same company: ${bal.fromCompanyId}`);
     }
 
     entries.push(
       {
         accountId: bal.accountId,
-        side: "debit",
+        side: 'debit',
         amountMinor: bal.amountMinor,
         currency: bal.currency,
         memo: `IC elimination: ${bal.fromCompanyId} → ${bal.toCompanyId}`,
       },
       {
         accountId: bal.accountId,
-        side: "credit",
+        side: 'credit',
         amountMinor: bal.amountMinor,
         currency: bal.currency,
         memo: `IC elimination: ${bal.toCompanyId} → ${bal.fromCompanyId}`,
-      },
+      }
     );
   }
 

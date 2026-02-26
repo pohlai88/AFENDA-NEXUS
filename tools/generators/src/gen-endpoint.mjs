@@ -6,25 +6,22 @@
  *
  * Usage: pnpm gen:endpoint finance POST /journals
  */
-import { mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 const [module_, verb, routePath] = process.argv.slice(2);
 if (!module_ || !verb || !routePath) {
-  console.error("Usage: pnpm gen:endpoint <module> <verb> <path>");
-  console.error("Example: pnpm gen:endpoint finance POST /journals");
+  console.error('Usage: pnpm gen:endpoint <module> <verb> <path>');
+  console.error('Example: pnpm gen:endpoint finance POST /journals');
   process.exit(1);
 }
 
 const root = process.cwd();
 const httpVerb = verb.toUpperCase();
-const routeName = routePath
-  .replace(/^\//, "")
-  .replace(/[/:]/g, "-")
-  .replace(/-+/g, "-");
+const routeName = routePath.replace(/^\//, '').replace(/[/:]/g, '-').replace(/-+/g, '-');
 const handlerName = `${httpVerb.toLowerCase()}-${routeName}`;
 
-const routesDir = join(root, "packages", "modules", module_, "src", "infra", "routes");
+const routesDir = join(root, 'packages', 'modules', module_, 'src', 'infra', 'routes');
 if (!existsSync(routesDir)) {
   mkdirSync(routesDir, { recursive: true });
 }
@@ -53,10 +50,10 @@ export async function register(app: FastifyInstance): Promise<void> {
     // 1. Validate input (Zod schema from @afenda/contracts)
     // 2. Call use-case from app/services/
     // 3. Return response
-    return reply.status(${httpVerb === "POST" ? 201 : 200}).send({ status: "not_implemented" });
+    return reply.status(${httpVerb === 'POST' ? 201 : 200}).send({ status: "not_implemented" });
   });
 }
-`,
+`
 );
 
 console.log(`Created handler: ${handlerFile}`);

@@ -1,9 +1,9 @@
 import Npm from '@mdx/Npm.astro';
 import Npx from '@mdx/Npx.astro';
 import Callout from '@mdx/Callout.astro';
-import Prerequisites from "@mdx/Prerequisites.astro";
-import CodeTabs from "@mdx/CodeTabs.astro";
-import WhatsNextPostgres from "@mdx/WhatsNextPostgres.astro";
+import Prerequisites from '@mdx/Prerequisites.astro';
+import CodeTabs from '@mdx/CodeTabs.astro';
+import WhatsNextPostgres from '@mdx/WhatsNextPostgres.astro';
 import Breadcrumbs from '@mdx/Breadcrumbs.astro';
 import FileStructure from '@mdx/get-started/FileStructure.mdx';
 import InstallPackages from '@mdx/get-started/InstallPackages.mdx';
@@ -19,21 +19,23 @@ import ConnectLibsql from '@mdx/get-started/sqlite/ConnectLibsql.mdx';
 import LibsqlTable from '@mdx/LibsqlTable.mdx';
 import LibsqlTabs from '@mdx/LibsqlTabs.mdx';
 
-<Breadcrumbs/>
+<Breadcrumbs />
 
 # Get Started with Drizzle and Turso Cloud
 
-<Prerequisites>  
-  - **dotenv** - package for managing environment variables - [read here](https://www.npmjs.com/package/dotenv)
-  - **tsx** - package for running TypeScript files - [read here](https://tsx.is/)
-  - **turso** - SQLite for Production - [read here](https://turso.tech/)
-  - **libsql** - a fork of SQLite optimized for low query latency, making it suitable for global applications - [read here](https://docs.turso.tech/libsql)
+<Prerequisites>
+  - **dotenv** - package for managing environment variables - [read
+  here](https://www.npmjs.com/package/dotenv) - **tsx** - package for running TypeScript files -
+  [read here](https://tsx.is/) - **turso** - SQLite for Production - [read
+  here](https://turso.tech/) - **libsql** - a fork of SQLite optimized for low query latency, making
+  it suitable for global applications - [read here](https://docs.turso.tech/libsql)
 </Prerequisites>
 
 <FileStructure />
 
 #### Step 1 - Install required packages
-<InstallPackages lib='@libsql/client'/>
+
+<InstallPackages lib="@libsql/client" />
 
 #### Step 2 - Setup connection variables
 
@@ -44,16 +46,18 @@ TURSO_DATABASE_URL=
 TURSO_AUTH_TOKEN=
 ```
 
-<Callout type='info' title='important'>
-If you don't know your `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` values, you can refer to the LibSQL Driver SDK tutorial. 
-Check it out [here](https://docs.turso.tech/sdk/ts/quickstart), then return with all the values generated and added to the `.env` file
+<Callout type="info" title="important">
+  If you don't know your `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` values, you can refer to the
+  LibSQL Driver SDK tutorial. Check it out [here](https://docs.turso.tech/sdk/ts/quickstart), then
+  return with all the values generated and added to the `.env` file
 </Callout>
 
 #### Step 3 - Connect Drizzle ORM to the database
+
 Drizzle has native support for all @libsql/client driver variations:
 
 <LibsqlTable />
-<br/>
+<br />
 <LibsqlTabs />
 
 Create a `index.ts` file in the `src` directory and initialize the connection:
@@ -63,30 +67,31 @@ import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/libsql';
 
 // You can specify any property from the libsql connection options
-const db = drizzle({ 
-  connection: { 
-    url: process.env.TURSO_DATABASE_URL!, 
-    authToken: process.env.TURSO_AUTH_TOKEN!
-  }
+const db = drizzle({
+  connection: {
+    url: process.env.TURSO_DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN!,
+  },
 });
 ```
 
 If you need to provide your existing driver:
+
 ```typescript copy
 import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
 
-const client = createClient({ 
-  url: process.env.TURSO_DATABASE_URL!, 
-  authToken: process.env.TURSO_AUTH_TOKEN!
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN!,
 });
 const db = drizzle({ client });
 ```
 
 #### Step 4 - Create a table
 
-<CreateTable/>
+<CreateTable />
 
 #### Step 5 - Setup Drizzle config file
 
@@ -115,8 +120,8 @@ export default defineConfig({
 
 #### Step 7 - Seed and Query the database
 
-<QueryTurso/>
+<QueryTurso />
 
 #### Step 8 - Run index.ts file
 
-<RunFile/>
+<RunFile />

@@ -2,7 +2,15 @@
  * Expense claim line entity — individual expense item within a claim.
  */
 
-export type ExpenseCategory = "TRAVEL" | "MEALS" | "ACCOMMODATION" | "TRANSPORT" | "SUPPLIES" | "COMMUNICATION" | "ENTERTAINMENT" | "OTHER";
+export type ExpenseCategory =
+  | 'TRAVEL'
+  | 'MEALS'
+  | 'ACCOMMODATION'
+  | 'TRANSPORT'
+  | 'SUPPLIES'
+  | 'COMMUNICATION'
+  | 'ENTERTAINMENT'
+  | 'OTHER';
 
 export interface ExpenseClaimLine {
   readonly id: string;

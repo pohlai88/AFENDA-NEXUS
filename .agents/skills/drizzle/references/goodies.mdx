@@ -1,4 +1,3 @@
-
 import Tab from '@mdx/Tab.astro';
 import Tabs from '@mdx/Tabs.astro';
 import Callout from '@mdx/Callout.astro';
@@ -6,6 +5,7 @@ import Section from '@mdx/Section.astro';
 import CodeTabs from '@mdx/CodeTabs.astro';
 
 ## Type API
+
 To retrieve a type from your table schema for `select` and `insert` queries, you can make use of our type helpers.
 
 <Tabs items={["PostgreSQL", "MySQL", "SQLite", "SingleStore", "MSSQL", "CockroachDB"]}>
@@ -15,8 +15,8 @@ import { serial, text, pgTable } from 'drizzle-orm/pg-core';
 import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm'
 
 const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  name: text('name').notNull(),
+id: serial('id').primaryKey(),
+name: text('name').notNull(),
 });
 
 type SelectUser = typeof users.$inferSelect;
@@ -27,7 +27,8 @@ type InsertUser = typeof users._.$inferInsert;
 // or
 type SelectUser = InferSelectModel<typeof users>;
 type InsertUser = InferInsertModel<typeof users>;
-```
+
+````
 </Tab>
 <Tab>
 ```ts
@@ -47,7 +48,8 @@ type InsertUser = typeof users._.$inferInsert;
 // or
 type SelectUser = InferSelectModel<typeof users>;
 type InsertUser = InferInsertModel<typeof users>;
-```
+````
+
 </Tab>
 <Tab>
 ```ts
@@ -55,8 +57,8 @@ import { int, text, sqliteTable } from 'drizzle-orm/sqlite-core';
 import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm'
 
 const users = sqliteTable('users', {
-  id: int('id').primaryKey(),
-  name: text('name').notNull(),
+id: int('id').primaryKey(),
+name: text('name').notNull(),
 });
 
 type SelectUser = typeof users.$inferSelect;
@@ -67,7 +69,8 @@ type InsertUser = typeof users._.$inferInsert;
 // or
 type SelectUser = InferSelectModel<typeof users>;
 type InsertUser = InferInsertModel<typeof users>;
-```
+
+````
 </Tab>
 <Tab>
 ```ts
@@ -87,7 +90,8 @@ type InsertUser = typeof users._.$inferInsert;
 // or
 type SelectUser = InferSelectModel<typeof users>;
 type InsertUser = InferInsertModel<typeof users>;
-```
+````
+
 </Tab>
 <Tab>
 ```ts
@@ -95,8 +99,8 @@ import { int, text, mssqlTable } from 'drizzle-orm/mssql-core';
 import { type InferSelectModel, type InferInsertModel } from 'drizzle-orm'
 
 const users = mssqlTable('users', {
-  id: int().primaryKey(),
-  name: text().notNull(),
+id: int().primaryKey(),
+name: text().notNull(),
 });
 
 type SelectUser = typeof users.$inferSelect;
@@ -107,7 +111,8 @@ type InsertUser = typeof users._.$inferInsert;
 // or
 type SelectUser = InferSelectModel<typeof users>;
 type InsertUser = InferInsertModel<typeof users>;
-```
+
+````
 </Tab>
 <Tab>
 ```ts
@@ -127,13 +132,15 @@ type InsertUser = typeof users._.$inferInsert;
 // or
 type SelectUser = InferSelectModel<typeof users>;
 type InsertUser = InferInsertModel<typeof users>;
-```
+````
+
 </Tab>
 </Tabs>
 
-
 ## Logging
+
 To enable default query logging, just pass `{ logger: true }` to the `drizzle` initialization function:
+
 ```typescript copy
 import { drizzle } from 'drizzle-orm/...'; // driver specific
 
@@ -141,6 +148,7 @@ const db = drizzle({ logger: true });
 ```
 
 You can change the logs destination by creating a `DefaultLogger` instance and providing a custom `writer` to it:
+
 ```typescript copy
 import { DefaultLogger, LogWriter } from 'drizzle-orm/logger';
 import { drizzle } from 'drizzle-orm/...'; // driver specific
@@ -156,6 +164,7 @@ const db = drizzle({ logger });
 ```
 
 You can also create a custom logger:
+
 ```typescript copy
 import { Logger } from 'drizzle-orm/logger';
 import { drizzle } from 'drizzle-orm/...'; // driver specific
@@ -169,8 +178,8 @@ class MyLogger implements Logger {
 const db = drizzle({ logger: new MyLogger() });
 ```
 
-
 ## Multi-project schema
+
 **Table creator** API lets you define customize table names.  
 It's very useful when you need to keep schemas of different projects in one database.
 
@@ -181,10 +190,11 @@ import { serial, text, pgTableCreator } from 'drizzle-orm/pg-core';
 const pgTable = pgTableCreator((name) => `project1_${name}`);
 
 const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  name: text('name').notNull(),
+id: serial('id').primaryKey(),
+name: text('name').notNull(),
 });
-```
+
+````
 ```ts {3}
 import { int, text, mysqlTableCreator } from 'drizzle-orm/mysql-core';
 
@@ -194,7 +204,8 @@ const users = mysqlTable('users', {
   id: int('id').primaryKey(),
   name: text('name').notNull(),
 });
-```
+````
+
 ```ts {3}
 import { int, text, sqliteTableCreator } from 'drizzle-orm/sqlite-core';
 
@@ -205,6 +216,7 @@ const users = sqliteTable('users', {
   name: text('name').notNull(),
 });
 ```
+
 ```ts {3}
 import { int, text, singlestoreTableCreator } from 'drizzle-orm/singlestore-core';
 
@@ -215,6 +227,7 @@ const users = singlestoreTable('users', {
   name: text('name').notNull(),
 });
 ```
+
 ```ts {3}
 import { int, text, mssqlTableCreator } from 'drizzle-orm/mssql-core';
 
@@ -225,6 +238,7 @@ const users = mssqlTable('users', {
   name: text().notNull(),
 });
 ```
+
 ```ts {3}
 import { int4, text, cockroachTableCreator } from 'drizzle-orm/cockroach-core';
 
@@ -235,6 +249,7 @@ const users = pgTable('users', {
   name: text().notNull(),
 });
 ```
+
 </CodeTabs>
 ```ts {10}
 import { defineConfig } from "drizzle-kit";
@@ -251,13 +266,15 @@ export default defineConfig({
 ```
 
 You can apply multiple `or` filters:
+
 ```ts
-tablesFilter: ["project1_*", "project2_*"]
+tablesFilter: ['project1_*', 'project2_*'];
 ```
 
-
 ## Printing SQL query
+
 You can print SQL queries with `db` instance or by using **[`standalone query builder`](#standalone-query-builder)**.
+
 ```typescript copy
 const query = db
   .select({ id: users.id, name: users.name })
@@ -272,6 +289,7 @@ const query = db
 ```
 
 ## Raw SQL queries execution
+
 If you have some complex queries to execute and `drizzle-orm` can't handle them yet,
 you can use the `db.execute` method to execute raw `parametrized` queries.
 
@@ -322,12 +340,14 @@ you can use the `db.execute` method to execute raw `parametrized` queries.
     const res = await db.execute(statement)
     ```
     </Tab>
+
 </Tabs>
 
-
 ## Standalone query builder
+
 Drizzle ORM provides a standalone query builder that allows you to build queries
 without creating a database instance and get generated SQL.
+
 <Tabs items={['PostgreSQL', 'MySQL', 'SQLite', "SingleStore", "MSSQL", "CockroachDB"]}>
     <Tab>
         ```typescript copy
@@ -389,9 +409,11 @@ without creating a database instance and get generated SQL.
         const { sql, params } = query.toSQL();
         ```
     </Tab>
+
 </Tabs>
 
 ## Get typed columns
+
 You can get a typed columns map,
 very useful when you need to omit certain columns upon selection.
 
@@ -399,10 +421,10 @@ very useful when you need to omit certain columns upon selection.
 `getColumns` available starting from `drizzle-orm@1.0.0-beta.2`(read more [here](/docs/upgrade-v1))
 
 If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
+
 </Callout>
 
-
-<br/>
+<br />
 
 <Tabs items={['PostgreSQL', 'MySQL', 'SQLite', "SingleStore", "MSSQL", "CockroachDB"]}>
   <Tab>
@@ -427,6 +449,7 @@ If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
         });
         ```
       </CodeTabs>
+
   </Tab>
   <Tab>
       <CodeTabs items={["index.ts", "schema.ts"]}>
@@ -450,6 +473,7 @@ If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
         });
         ```
       </CodeTabs>
+
   </Tab>
   <Tab>
       <CodeTabs items={["index.ts", "schema.ts"]}>
@@ -473,6 +497,7 @@ If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
         });
         ```
       </CodeTabs>
+
   </Tab>
   <Tab>
       <CodeTabs items={["index.ts", "schema.ts"]}>
@@ -496,6 +521,7 @@ If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
         });
         ```
       </CodeTabs>
+
   </Tab>
   <Tab>
       <CodeTabs items={["index.ts", "schema.ts"]}>
@@ -519,6 +545,7 @@ If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
         });
         ```
       </CodeTabs>
+
   </Tab>
   <Tab>
       <CodeTabs items={["index.ts", "schema.ts"]}>
@@ -542,10 +569,12 @@ If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
         });
         ```
       </CodeTabs>
+
   </Tab>
 </Tabs>
 
 ## Get table information
+
 <Tabs items={['PostgreSQL', 'MySQL', 'SQLite', "SingleStore", "MSSQL", "CockroachDB"]}>
   <Tab>
     ```ts copy
@@ -563,72 +592,77 @@ If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
       schema,
     } = getTableConfig(table);
     ```
+
   </Tab>
   <Tab>
   ```ts copy
   import { getTableConfig, mysqlTable } from 'drizzle-orm/mysql-core';
 
-  export const table = mysqlTable(...);
+export const table = mysqlTable(...);
 
-  const {
-    columns,
-    indexes,
-    foreignKeys,
-    checks,
-    primaryKeys,
-    name,
-    schema,
-  } = getTableConfig(table);
-  ```
-  </Tab>
-  <Tab>
-  ```ts copy
-  import { getTableConfig, sqliteTable } from 'drizzle-orm/sqlite-core';
+const {
+columns,
+indexes,
+foreignKeys,
+checks,
+primaryKeys,
+name,
+schema,
+} = getTableConfig(table);
 
-  export const table = sqliteTable(...);
+````
+</Tab>
+<Tab>
+```ts copy
+import { getTableConfig, sqliteTable } from 'drizzle-orm/sqlite-core';
 
-  const {
-    columns,
-    indexes,
-    foreignKeys,
-    checks,
-    primaryKeys,
-    name,
-    schema,
-  } = getTableConfig(table);
-  ```
+export const table = sqliteTable(...);
+
+const {
+  columns,
+  indexes,
+  foreignKeys,
+  checks,
+  primaryKeys,
+  name,
+  schema,
+} = getTableConfig(table);
+````
+
   </Tab>
   <Tab>
   ```ts copy
   import { getTableConfig, mysqlTable } from 'drizzle-orm/singlestore-core';
 
-  export const table = singlestoreTable(...);
+export const table = singlestoreTable(...);
 
-  const {
-    columns,
-    indexes,
-    checks,
-    primaryKeys,
-    name,
-    schema,
-  } = getTableConfig(table);
-  ```
-  </Tab>
-  <Tab>
-  ```ts copy
-  import { getTableConfig, mssqlTable } from 'drizzle-orm/mssql-core';
+const {
+columns,
+indexes,
+checks,
+primaryKeys,
+name,
+schema,
+} = getTableConfig(table);
 
-  export const table = mssqlTable(...);
+````
+</Tab>
+<Tab>
+```ts copy
+import { getTableConfig, mssqlTable } from 'drizzle-orm/mssql-core';
 
-  const {
-    columns,
-    indexes,
-    checks,
-    primaryKeys,
-    name,
-    schema,
-  } = getTableConfig(table);
-  ```
+export const table = mssqlTable(...);
+
+const {
+  columns,
+  indexes,
+  checks,
+  primaryKeys,
+  name,
+  schema,
+} = getTableConfig(table);
+````
+
   </Tab>
   <Tab>
     ```ts copy
@@ -646,12 +680,13 @@ If you are on pre-1 version(like `0.45.1`) then use `getTableColumns`
       schema,
     } = getTableConfig(table);
     ```
+
   </Tab>
 </Tabs>
 
 ## Compare objects types (instanceof alternative)
 
-You can check if an object is of a specific Drizzle type using the `is()` function. 
+You can check if an object is of a specific Drizzle type using the `is()` function.
 You can use it with any available type in Drizzle.
 
 <Callout type="warning" emoji="⭐️">
@@ -659,6 +694,7 @@ You can use it with any available type in Drizzle.
 </Callout>
 
 **Few examples**
+
 ```ts
 import { Column, is } from 'drizzle-orm';
 
@@ -668,19 +704,22 @@ if (is(value, Column)) {
 ```
 
 ### Mock Driver
-This API is a successor to an undefined `drizzle({} as any)` API which we've used internally in Drizzle tests and rarely recommended to external developers. 
+
+This API is a successor to an undefined `drizzle({} as any)` API which we've used internally in Drizzle tests and rarely recommended to external developers.
 
 We decided to build and expose a proper API, every `drizzle` driver now has `drizzle.mock()`:
+
 ```ts
-import { drizzle } from "drizzle-orm/...";
+import { drizzle } from 'drizzle-orm/...';
 
 const db = drizzle.mock();
 ```
 
 you can provide schema if necessary for types
+
 ```ts
-import { drizzle } from "drizzle-orm/...";
-import * as schema from "./schema"
+import { drizzle } from 'drizzle-orm/...';
+import * as schema from './schema';
 
 const db = drizzle.mock({ schema });
 ```

@@ -1,6 +1,6 @@
-import type { Money } from "@afenda/core";
+import type { Money } from '@afenda/core';
 
-export type AllocationMethod = "FIFO" | "SPECIFIC";
+export type AllocationMethod = 'FIFO' | 'SPECIFIC';
 
 export interface ArPaymentAllocation {
   readonly id: string;

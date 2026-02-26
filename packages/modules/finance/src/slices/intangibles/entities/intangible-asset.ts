@@ -3,22 +3,27 @@
  * Mirrors fixed-asset structure with intangible-specific fields.
  */
 
-export type IntangibleAssetStatus = "ACTIVE" | "DISPOSED" | "FULLY_AMORTIZED" | "IMPAIRED" | "IN_DEVELOPMENT";
+export type IntangibleAssetStatus =
+  | 'ACTIVE'
+  | 'DISPOSED'
+  | 'FULLY_AMORTIZED'
+  | 'IMPAIRED'
+  | 'IN_DEVELOPMENT';
 
-export type AmortizationMethod = "STRAIGHT_LINE" | "DECLINING_BALANCE" | "UNITS_OF_PRODUCTION";
+export type AmortizationMethod = 'STRAIGHT_LINE' | 'DECLINING_BALANCE' | 'UNITS_OF_PRODUCTION';
 
 export type IntangibleCategory =
-  | "SOFTWARE"
-  | "PATENT"
-  | "TRADEMARK"
-  | "COPYRIGHT"
-  | "LICENCE"
-  | "CUSTOMER_RELATIONSHIP"
-  | "GOODWILL_RELATED"
-  | "DEVELOPMENT_COST"
-  | "OTHER";
+  | 'SOFTWARE'
+  | 'PATENT'
+  | 'TRADEMARK'
+  | 'COPYRIGHT'
+  | 'LICENCE'
+  | 'CUSTOMER_RELATIONSHIP'
+  | 'GOODWILL_RELATED'
+  | 'DEVELOPMENT_COST'
+  | 'OTHER';
 
-export type UsefulLifeType = "FINITE" | "INDEFINITE";
+export type UsefulLifeType = 'FINITE' | 'INDEFINITE';
 
 export interface IntangibleAsset {
   readonly id: string;
@@ -42,7 +47,7 @@ export interface IntangibleAsset {
   readonly accumulatedAmortizationAccountId: string;
   readonly status: IntangibleAssetStatus;
   readonly isInternallyGenerated: boolean;
-  readonly developmentPhase: "RESEARCH" | "DEVELOPMENT" | "COMPLETED" | null;
+  readonly developmentPhase: 'RESEARCH' | 'DEVELOPMENT' | 'COMPLETED' | null;
   readonly disposedAt: Date | null;
   readonly disposalProceeds: bigint | null;
   readonly createdAt: Date;

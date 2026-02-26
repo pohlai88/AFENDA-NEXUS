@@ -1,8 +1,8 @@
-import type { HedgeRelationship, HedgeStatus } from "../entities/hedge-relationship.js";
+import type { HedgeRelationship, HedgeStatus } from '../entities/hedge-relationship.js';
 
 export interface CreateHedgeRelationshipInput {
   readonly companyId: string;
-  readonly hedgeType: HedgeRelationship["hedgeType"];
+  readonly hedgeType: HedgeRelationship['hedgeType'];
   readonly hedgingInstrumentId: string;
   readonly hedgedItemId: string;
   readonly hedgedRisk: string;

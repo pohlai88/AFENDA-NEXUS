@@ -2,9 +2,9 @@
  * Fixed asset entity — represents a capitalized asset in the register.
  */
 
-export type AssetStatus = "ACTIVE" | "DISPOSED" | "FULLY_DEPRECIATED" | "IMPAIRED" | "CWIP";
+export type AssetStatus = 'ACTIVE' | 'DISPOSED' | 'FULLY_DEPRECIATED' | 'IMPAIRED' | 'CWIP';
 
-export type DepreciationMethod = "STRAIGHT_LINE" | "DECLINING_BALANCE" | "UNITS_OF_PRODUCTION";
+export type DepreciationMethod = 'STRAIGHT_LINE' | 'DECLINING_BALANCE' | 'UNITS_OF_PRODUCTION';
 
 export interface Asset {
   readonly id: string;

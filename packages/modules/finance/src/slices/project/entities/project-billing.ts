@@ -2,7 +2,7 @@
  * Project billing entity — billing events against a project.
  */
 
-export type BillingStatus = "DRAFT" | "INVOICED" | "PAID";
+export type BillingStatus = 'DRAFT' | 'INVOICED' | 'PAID';
 
 export interface ProjectBilling {
   readonly id: string;

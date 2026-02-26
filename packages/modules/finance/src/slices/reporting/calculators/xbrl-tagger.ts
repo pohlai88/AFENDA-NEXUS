@@ -3,16 +3,16 @@
  * Pure calculator — maps financial data to XBRL taxonomy elements
  * and produces tagged XML fragments for iXBRL filing.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type XbrlTaxonomy = "IFRS_FULL" | "IFRS_SME" | "US_GAAP";
+export type XbrlTaxonomy = 'IFRS_FULL' | 'IFRS_SME' | 'US_GAAP';
 
 export interface XbrlTagMapping {
   readonly accountId: string;
   readonly xbrlElement: string;
   readonly xbrlNamespace: string;
-  readonly periodType: "instant" | "duration";
-  readonly balanceType: "debit" | "credit" | "none";
+  readonly periodType: 'instant' | 'duration';
+  readonly balanceType: 'debit' | 'credit' | 'none';
 }
 
 export interface FinancialDataPoint {
@@ -50,10 +50,10 @@ export function tagWithXbrl(
   dataPoints: readonly FinancialDataPoint[],
   mappings: readonly XbrlTagMapping[],
   taxonomy: XbrlTaxonomy,
-  entityId: string,
+  entityId: string
 ): CalculatorResult<XbrlResult> {
   if (dataPoints.length === 0) {
-    throw new Error("At least one data point required");
+    throw new Error('At least one data point required');
   }
 
   const mappingMap = new Map(mappings.map((m) => [m.accountId, m]));
@@ -83,7 +83,7 @@ export function tagWithXbrl(
       contextRef,
       unitRef,
       value: valueStr,
-      decimals: "0",
+      decimals: '0',
       label: dp.label,
       xmlFragment,
     });

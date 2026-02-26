@@ -1,4 +1,4 @@
-import type { TenantId, CompanyId } from "@afenda/core";
+import type { TenantId, CompanyId } from '@afenda/core';
 
 /**
  * @see AH-04 — Revenue recognition schedules
@@ -9,8 +9,8 @@ import type { TenantId, CompanyId } from "@afenda/core";
  * from deferred revenue to earned revenue.
  */
 
-export type RecognitionMethod = "STRAIGHT_LINE" | "MILESTONE" | "PERCENTAGE_OF_COMPLETION";
-export type ContractStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
+export type RecognitionMethod = 'STRAIGHT_LINE' | 'MILESTONE' | 'PERCENTAGE_OF_COMPLETION';
+export type ContractStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 
 export interface RevenueContract {
   readonly id: string;

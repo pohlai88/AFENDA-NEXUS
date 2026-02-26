@@ -1,12 +1,12 @@
 import Tab from '@mdx/Tab.astro';
 import Tabs from '@mdx/Tabs.astro';
-import Npm from "@mdx/Npm.astro";
+import Npm from '@mdx/Npm.astro';
 import Callout from '@mdx/Callout.astro';
 import Steps from '@mdx/Steps.astro';
 import AnchorCards from '@mdx/AnchorCards.astro';
 import Breadcrumbs from '@mdx/Breadcrumbs.astro';
-import CodeTabs from "@mdx/CodeTabs.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import CodeTabs from '@mdx/CodeTabs.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 import IntrospectSQLite from '@mdx/get-started/sqlite/IntrospectSqlite.mdx';
 import FileStructure from '@mdx/get-started/FileStructure.mdx';
 import InstallPackages from '@mdx/get-started/InstallPackages.mdx';
@@ -20,25 +20,30 @@ import QueryDatabase from '@mdx/get-started/QueryDatabase.mdx';
 import QueryDatabaseUpdated from '@mdx/get-started/QueryDatabaseUpdated.mdx';
 import UpdateSchema from '@mdx/get-started/sqlite/UpdateSchema.mdx';
 
-<Breadcrumbs/>
+<Breadcrumbs />
 
 # Get Started with Drizzle and SQLite Durable Objects in existing project
 
 <Prerequisites>
-  - **dotenv** - package for managing environment variables - [read here](https://www.npmjs.com/package/dotenv)
-  - **tsx** - package for running TypeScript files - [read here](https://tsx.is/)
-  - **Cloudflare SQLite Durable Objects** - SQLite database embedded within a Durable Object - [read here](https://developers.cloudflare.com/durable-objects/api/sql-storage/)
-  - **wrangler** - Cloudflare Developer Platform command-line interface - [read here](https://developers.cloudflare.com/workers/wrangler)
+  - **dotenv** - package for managing environment variables - [read
+  here](https://www.npmjs.com/package/dotenv) - **tsx** - package for running TypeScript files -
+  [read here](https://tsx.is/) - **Cloudflare SQLite Durable Objects** - SQLite database embedded
+  within a Durable Object - [read
+  here](https://developers.cloudflare.com/durable-objects/api/sql-storage/) - **wrangler** -
+  Cloudflare Developer Platform command-line interface - [read
+  here](https://developers.cloudflare.com/workers/wrangler)
 </Prerequisites>
 
-<FileStructure/>
+<FileStructure />
 
 #### Step 1 - Install required package
-<InstallPackages lib=''/>
+
+<InstallPackages lib="" />
 
 #### Step 2 - Setup wrangler.toml
 
 You would need to have a `wrangler.toml` file for D1 database and will look something like this:
+
 ```toml
 #:schema node_modules/wrangler/config-schema.json
 name = "sqlite-durable-objects"
@@ -60,7 +65,7 @@ tag = "v1"
 new_sqlite_classes = ["MyDurableObject"]
 
 # We need rules so we can import migrations in the next steps
-[[rules]] 
+[[rules]]
 type = "Text"
 globs = ["**/*.sql"]
 fallthrough = true
@@ -83,33 +88,35 @@ export default defineConfig({
   driver: 'durable-sqlite',
 });
 ```
-<Callout title='tips'>
-You can check [our tutorial](/docs/guides/d1-http-with-drizzle-kit) on how to get env variables from CloudFlare
+
+<Callout title="tips">
+  You can check [our tutorial](/docs/guides/d1-http-with-drizzle-kit) on how to get env variables
+  from CloudFlare
 </Callout>
 
 #### Step 4 - Introspect your database
 
-<IntrospectSQLite/>
+<IntrospectSQLite />
 
 #### Step 5 - Transfer code to your actual schema file
 
-<TransferCode/>
+<TransferCode />
 
 #### Step 6 - Connect Drizzle ORM to the database
 
 ```typescript copy
 import { drizzle, type DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
-import { DurableObject } from 'cloudflare:workers'
+import { DurableObject } from 'cloudflare:workers';
 
 export class MyDurableObject extends DurableObject {
-	storage: DurableObjectStorage;
-	db: DrizzleSqliteDODatabase;
+  storage: DurableObjectStorage;
+  db: DrizzleSqliteDODatabase;
 
-	constructor(ctx: DurableObjectState, env: Env) {
-		super(ctx, env);
-		this.storage = ctx.storage;
-		this.db = drizzle(this.storage, { logger: false });
-	}
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    this.storage = ctx.storage;
+    this.db = drizzle(this.storage, { logger: false });
+  }
 }
 ```
 
@@ -117,7 +124,7 @@ export class MyDurableObject extends DurableObject {
 
 ```typescript copy
 import { drizzle, DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
-import { DurableObject } from 'cloudflare:workers'
+import { DurableObject } from 'cloudflare:workers';
 import { migrate } from 'drizzle-orm/durable-sqlite/migrator';
 import migrations from '../drizzle/migrations';
 import { usersTable } from './db/schema';
@@ -212,17 +219,17 @@ export default {
     */
 
     return Response.json(users);
-  }
-}
+  },
+};
 ```
 
 #### Step 8 - Run index.ts file
 
-<RunFile/>
+<RunFile />
 
 #### Step 9 - Update your table schema (optional)
 
-<UpdateSchema/>
+<UpdateSchema />
 
 #### Step 10 - Applying changes to the database (optional)
 
@@ -232,7 +239,7 @@ export default {
 
 ```typescript copy filename="src/index.ts"
 import { drizzle, DrizzleSqliteDODatabase } from 'drizzle-orm/durable-sqlite';
-import { DurableObject } from 'cloudflare:workers'
+import { DurableObject } from 'cloudflare:workers';
 import { migrate } from 'drizzle-orm/durable-sqlite/migrator';
 import migrations from '../drizzle/migrations';
 import { usersTable } from './db/schema';
@@ -329,6 +336,6 @@ export default {
     */
 
     return Response.json(users);
-  }
-}
+  },
+};
 ```

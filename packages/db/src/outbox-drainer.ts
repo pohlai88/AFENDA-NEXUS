@@ -4,10 +4,10 @@
  * Used by the worker process to drain the transactional outbox.
  * Selects oldest unprocessed rows with FOR UPDATE SKIP LOCKED for safe concurrency.
  */
-import { sql, eq } from "drizzle-orm";
-import type { DbClient } from "./client.js";
-import { outbox } from "./schema/index.js";
-import type { OutboxRow, OutboxDrainer } from "./schema/outbox.js";
+import { sql, eq } from 'drizzle-orm';
+import type { DbClient } from './client.js';
+import { outbox } from './schema/index.js';
+import type { OutboxRow, OutboxDrainer } from './schema/outbox.js';
 
 interface OutboxDbRow {
   id: string;
@@ -29,10 +29,12 @@ export function createOutboxDrainer(db: DbClient): OutboxDrainer {
             WHERE processed_at IS NULL
             ORDER BY created_at ASC
             LIMIT ${batchSize}
-            FOR UPDATE SKIP LOCKED`,
+            FOR UPDATE SKIP LOCKED`
       );
 
-      const rows = (Array.isArray(result) ? result : (result as unknown as { rows: OutboxDbRow[] }).rows ?? []) as unknown as OutboxDbRow[];
+      const rows = (Array.isArray(result)
+        ? result
+        : ((result as unknown as { rows: OutboxDbRow[] }).rows ?? [])) as unknown as OutboxDbRow[];
 
       return rows.map((r) => ({
         id: r.id,

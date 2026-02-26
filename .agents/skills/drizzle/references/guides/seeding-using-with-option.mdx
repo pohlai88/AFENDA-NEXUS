@@ -3,25 +3,26 @@ title: Seeding using 'with' option
 slug: seeding-using-with-option
 ---
 
-import IsSupportedChipGroup from "@mdx/IsSupportedChipGroup.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import IsSupportedChipGroup from '@mdx/IsSupportedChipGroup.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 import CodeTabs from '@mdx/CodeTabs.astro';
 import CodeTab from '@mdx/CodeTab.astro';
 import Callout from '@mdx/Callout.astro';
-import Section from "@mdx/Section.astro";
+import Section from '@mdx/Section.astro';
 
-<IsSupportedChipGroup chips={{PostgreSQL: true, MySQL: true, SQLite: true}}/>
+<IsSupportedChipGroup chips={{ PostgreSQL: true, MySQL: true, SQLite: true }} />
 
 <Prerequisites>
-- Get started with [PostgreSQL](/docs/get-started-postgresql), [MySQL](/docs/get-started-mysql) or [SQLite](/docs/get-started-sqlite)
-- Get familiar with [One-to-many Relation](/docs/relations#one-to-many)
-- Get familiar with [Drizzle Seed](/docs/seed-overview)
+  - Get started with [PostgreSQL](/docs/get-started-postgresql), [MySQL](/docs/get-started-mysql) or
+  [SQLite](/docs/get-started-sqlite) - Get familiar with [One-to-many
+  Relation](/docs/relations#one-to-many) - Get familiar with [Drizzle Seed](/docs/seed-overview)
 </Prerequisites>
 
 <Callout title='Warning'>
 Using `with` implies tables to have a one-to-many relationship.
 
 Therefore, if `one` user has `many` posts, you can use `with` as follows:
+
 ```ts
 users: {
     count: 2,
@@ -30,28 +31,30 @@ users: {
     },
 },
 ```
+
 </Callout>
 
 ## Example 1
+
 <CodeTabs items={["index.ts", "schema.ts"]}>
 <CodeTab>
 ```ts
 import { users, posts } from './schema.ts';
 
 async function main() {
-    const db = drizzle(...);
-    await seed(db, { users, posts }).refine(() => ({
-        users: {
-            count: 2,
-            with: {
-                posts: 3,
-            },
-        },
-    }));
+const db = drizzle(...);
+await seed(db, { users, posts }).refine(() => ({
+users: {
+count: 2,
+with: {
+posts: 3,
+},
+},
+}));
 }
 main();
 
-```
+````
 </CodeTab>
 
 <CodeTab>
@@ -68,7 +71,8 @@ export const posts = pgTable('posts', {
 	content: text('content'),
 	authorId: integer('author_id').notNull(),
 });
-```
+````
+
 </CodeTab>
 </CodeTabs>
 
@@ -81,10 +85,12 @@ You can't specify "posts" as parameter in users.with object.
 ```
 
 You will have several options to resolve an error:
+
 - You can add reference to the `authorId` column in `posts` table in your schema
-<CodeTabs items={["index.ts", "schema.ts"]}>
-<CodeTab>
+  <CodeTabs items={["index.ts", "schema.ts"]}>
+  <CodeTab>
 <Section>
+
 ```ts
 import { users, posts } from './schema.ts';
 
@@ -107,22 +113,23 @@ main();
 ```mdx
 `users`
 
-| id |   name   |   
-| -- | -------- |
-|  1 | 'Melanny' | 
-|  2 | 'Elvera' |
+| id  | name      |
+| --- | --------- |
+| 1   | 'Melanny' |
+| 2   | 'Elvera'  |
 
 `posts`
 
-| id |        content        | author_id |   
-| -- | --------------------- | --------- |
-|  1 | 'tf02gUXb0LZIdEg6SL'  |     2     |
-|  2 | 'j15YdT7Sma'          |     2     |
-|  3 | 'LwwvWtLLAZzIpk'      |     1     |
-|  4 | 'mgyUnBKSrQw'         |     1     |
-|  5 | 'CjAJByKIqilHcPjkvEw' |     2     |
-|  6 | 'S5g0NzXs'            |     1     |
+| id  | content               | author_id |
+| --- | --------------------- | --------- |
+| 1   | 'tf02gUXb0LZIdEg6SL'  | 2         |
+| 2   | 'j15YdT7Sma'          | 2         |
+| 3   | 'LwwvWtLLAZzIpk'      | 1         |
+| 4   | 'mgyUnBKSrQw'         | 1         |
+| 5   | 'CjAJByKIqilHcPjkvEw' | 2         |
+| 6   | 'S5g0NzXs'            | 1         |
 ```
+
 </Section>
 </CodeTab>
 <CodeTab>
@@ -130,8 +137,8 @@ main();
 import { serial, pgTable, integer, text } from "drizzle-orm/pg-core";
 
 export const users = pgTable('users', {
-	id: serial('id').primaryKey(),
-	name: text('name'),
+  id: serial('id').primaryKey(),
+  name: text('name'),
 });
 
 export const posts = pgTable('posts', {
@@ -144,9 +151,10 @@ export const posts = pgTable('posts', {
 </CodeTabs>
 
 - You can add one-to-many relation to your schema and include it in the seed function schema
-<CodeTabs items={["index.ts", "schema.ts"]}>
-<CodeTab>
+  <CodeTabs items={["index.ts", "schema.ts"]}>
+  <CodeTab>
 <Section>
+
 ```ts copy{1,5}
 import { users, posts, postsRelations } from './schema.ts';
 
@@ -169,22 +177,23 @@ main();
 ```mdx
 `users`
 
-| id |   name   |   
-| -- | -------- |
-|  1 | 'Melanny' | 
-|  2 | 'Elvera' |
+| id  | name      |
+| --- | --------- |
+| 1   | 'Melanny' |
+| 2   | 'Elvera'  |
 
 `posts`
 
-| id |        content        | author_id |   
-| -- | --------------------- | --------- |
-|  1 | 'tf02gUXb0LZIdEg6SL'  |     2     |
-|  2 | 'j15YdT7Sma'          |     2     |
-|  3 | 'LwwvWtLLAZzIpk'      |     1     |
-|  4 | 'mgyUnBKSrQw'         |     1     |
-|  5 | 'CjAJByKIqilHcPjkvEw' |     2     |
-|  6 | 'S5g0NzXs'            |     1     |
+| id  | content               | author_id |
+| --- | --------------------- | --------- |
+| 1   | 'tf02gUXb0LZIdEg6SL'  | 2         |
+| 2   | 'j15YdT7Sma'          | 2         |
+| 3   | 'LwwvWtLLAZzIpk'      | 1         |
+| 4   | 'mgyUnBKSrQw'         | 1         |
+| 5   | 'CjAJByKIqilHcPjkvEw' | 2         |
+| 6   | 'S5g0NzXs'            | 1         |
 ```
+
 </Section>
 </CodeTab>
 
@@ -194,14 +203,14 @@ import { serial, pgTable, integer, text } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 export const users = pgTable('users', {
-	id: serial('id').primaryKey(),
-	name: text('name'),
+  id: serial('id').primaryKey(),
+  name: text('name'),
 });
 
 export const posts = pgTable('posts', {
-	id: serial('id').primaryKey(),
-	content: text('content'),
-	authorId: integer('author_id').notNull(),
+  id: serial('id').primaryKey(),
+  content: text('content'),
+  authorId: integer('author_id').notNull(),
 });
 
 export const postsRelations = relations(posts, ({ one }) => ({
@@ -214,27 +223,27 @@ export const postsRelations = relations(posts, ({ one }) => ({
 </CodeTab>
 </CodeTabs>
 
-
 ## Example 2
+
 <CodeTabs items={["index.ts", "schema.ts"]}>
 <CodeTab>
 ```ts
 import { users, posts } from './schema.ts';
 
 async function main() {
-    const db = drizzle(...);
-    await seed(db, { users, posts }).refine(() => ({
-        posts: {
-            count: 2,
-            with: {
-                users: 3,
-            },
-        },
-    }));
+const db = drizzle(...);
+await seed(db, { users, posts }).refine(() => ({
+posts: {
+count: 2,
+with: {
+users: 3,
+},
+},
+}));
 }
 main();
 
-```
+````
 </CodeTab>
 
 <CodeTab>
@@ -251,7 +260,8 @@ export const posts = pgTable('posts', {
 	content: text('content'),
 	authorId: integer('author_id').notNull().references(() => users.id),
 });
-```
+````
+
 </CodeTab>
 </CodeTabs>
 
@@ -278,6 +288,7 @@ export const posts = pgTable('posts', {
 or in other words, you have one-to-many relation where `one` user can have `many` posts.
 
 However, in your seeding script, you're attempting to generate 3 (`many`) users for `one` post.
+
 ```ts
 posts: {
     count: 2,
@@ -286,40 +297,43 @@ posts: {
     },
 },
 ```
+
 </Callout>
 
 To resolve the error, you can modify your seeding script as follows:
+
 <Section>
 ```ts copy{6-9}
 import { users, posts, postsRelations } from './schema.ts';
 
 async function main() {
-    const db = drizzle(...);
-    await seed(db, { users, posts, postsRelations }).refine(() => ({
-        users: {
-            count: 2,
-            with: {
-                posts: 3,
-            },
-        },
-    }));
+const db = drizzle(...);
+await seed(db, { users, posts, postsRelations }).refine(() => ({
+users: {
+count: 2,
+with: {
+posts: 3,
+},
+},
+}));
 }
 main();
 
 // Running the seeding script above will fill you database with values shown below
-```
+
+````
 
 ```mdx
 `users`
 
-| id |   name   |   
+| id |   name   |
 | -- | -------- |
-|  1 | 'Melanny' | 
+|  1 | 'Melanny' |
 |  2 | 'Elvera' |
 
 `posts`
 
-| id |        content        | author_id |   
+| id |        content        | author_id |
 | -- | --------------------- | --------- |
 |  1 | 'tf02gUXb0LZIdEg6SL'  |     2     |
 |  2 | 'j15YdT7Sma'          |     2     |
@@ -327,7 +341,8 @@ main();
 |  4 | 'mgyUnBKSrQw'         |     1     |
 |  5 | 'CjAJByKIqilHcPjkvEw' |     2     |
 |  6 | 'S5g0NzXs'            |     1     |
-```
+````
+
 </Section>
 
 ## Example 3
@@ -338,19 +353,19 @@ main();
 import { users } from './schema.ts';
 
 async function main() {
-    const db = drizzle(...);
-    await seed(db, { users }).refine(() => ({
-        users: {
-            count: 2,
-            with: {
-                users: 3,
-            },
-        },
-    }));
+const db = drizzle(...);
+await seed(db, { users }).refine(() => ({
+users: {
+count: 2,
+with: {
+users: 3,
+},
+},
+}));
 }
 main();
 
-```
+````
 </CodeTab>
 
 <CodeTab>
@@ -363,7 +378,8 @@ export const users = pgTable('users', {
 	name: text('name'),
     reportsTo: integer('reports_to').references((): AnyPgColumn => users.id),
 });
-```
+````
+
 </CodeTab>
 </CodeTabs>
 
@@ -389,6 +405,7 @@ export const users = pgTable('users', {
 or in other words, you have one-to-one relation where `one` user can have only `one` user.
 
 However, in your seeding script, you're attempting to generate 3 (`many`) users for `one` user, which is impossible.
+
 ```ts
 users: {
     count: 2,
@@ -397,4 +414,5 @@ users: {
     },
 },
 ```
+
 </Callout>

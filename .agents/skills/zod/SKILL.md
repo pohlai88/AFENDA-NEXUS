@@ -1,11 +1,17 @@
 ---
 name: zod
-description: Complete Zod validation library documentation. Use when working with Zod schema validation, TypeScript type inference, form validation, API validation, error handling, or data parsing. Covers schema definition, refinements, transforms, error customization, and ecosystem integrations.
+description:
+  Complete Zod validation library documentation. Use when working with Zod
+  schema validation, TypeScript type inference, form validation, API validation,
+  error handling, or data parsing. Covers schema definition, refinements,
+  transforms, error customization, and ecosystem integrations.
 ---
 
 # Zod Documentation
 
-Complete Zod validation library documentation embedded in markdown. Read from `references/` to answer questions about schema validation, type inference, and error handling.
+Complete Zod validation library documentation embedded in markdown. Read from
+`references/` to answer questions about schema validation, type inference, and
+error handling.
 
 ## Documentation Structure
 
@@ -126,8 +132,10 @@ z.coerce.number();
 1. **Start with `index.mdx`** for introduction
 2. **For basic usage:** Read `basics.mdx`
 3. **For API details:** Check `api.mdx` (comprehensive reference)
-4. **For error handling:** See `error-formatting.mdx` and `error-customization.mdx`
-5. **For advanced features:** Browse `codecs.mdx`, `json-schema.mdx`, `metadata.mdx`
+4. **For error handling:** See `error-formatting.mdx` and
+   `error-customization.mdx`
+5. **For advanced features:** Browse `codecs.mdx`, `json-schema.mdx`,
+   `metadata.mdx`
 6. **For integrations:** Check `ecosystem.mdx`
 7. **For v4 features:** See `v4/` directory
 

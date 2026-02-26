@@ -1,3 +1,6 @@
+-- pg_uuidv7 required for uuid_generate_v7() on all PKs (Neon PG17)
+CREATE EXTENSION IF NOT EXISTS pg_uuidv7;
+--> statement-breakpoint
 CREATE SCHEMA "audit";
 --> statement-breakpoint
 CREATE SCHEMA "erp";

@@ -2,7 +2,7 @@
  * Cash forecast entity — projected cash inflow/outflow.
  */
 
-export type ForecastType = "RECEIPTS" | "PAYMENTS" | "FINANCING" | "INVESTING";
+export type ForecastType = 'RECEIPTS' | 'PAYMENTS' | 'FINANCING' | 'INVESTING';
 
 export interface CashForecast {
   readonly id: string;

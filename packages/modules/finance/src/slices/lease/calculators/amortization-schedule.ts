@@ -34,7 +34,9 @@ export interface AmortizationScheduleResult {
   readonly currencyCode: string;
 }
 
-export function computeAmortizationSchedule(input: AmortizationScheduleInput): AmortizationScheduleResult {
+export function computeAmortizationSchedule(
+  input: AmortizationScheduleInput
+): AmortizationScheduleResult {
   const annualRate = input.annualDiscountRateBps / 10000;
   const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
   const escalationRate = input.annualEscalationBps / 10000;
@@ -78,5 +80,11 @@ export function computeAmortizationSchedule(input: AmortizationScheduleInput): A
     openingLiability = Math.max(0, closingLiability);
   }
 
-  return { lines, totalInterest, totalPrincipal, totalDepreciation, currencyCode: input.currencyCode };
+  return {
+    lines,
+    totalInterest,
+    totalPrincipal,
+    totalDepreciation,
+    currencyCode: input.currencyCode,
+  };
 }

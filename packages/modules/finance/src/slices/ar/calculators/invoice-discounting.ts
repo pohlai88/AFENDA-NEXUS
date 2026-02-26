@@ -42,21 +42,21 @@ export interface FactoringResult {
 export function computeInvoiceDiscounting(input: FactoringInput): FactoringResult {
   const daysToMaturity = Math.max(
     0,
-    Math.ceil((input.dueDate.getTime() - input.factoringDate.getTime()) / (1000 * 60 * 60 * 24)),
+    Math.ceil((input.dueDate.getTime() - input.factoringDate.getTime()) / (1000 * 60 * 60 * 24))
   );
 
-  const discountCharge = (input.faceValue * BigInt(input.discountRateBps) * BigInt(daysToMaturity))
-    / (365n * 10000n);
+  const discountCharge =
+    (input.faceValue * BigInt(input.discountRateBps) * BigInt(daysToMaturity)) / (365n * 10000n);
 
-  const holdbackAmount = (input.faceValue * BigInt(input.holdbackBps))
-    / 10000n;
+  const holdbackAmount = (input.faceValue * BigInt(input.holdbackBps)) / 10000n;
 
   const netProceeds = input.faceValue - discountCharge - holdbackAmount;
 
   // Effective annual rate in bps: (discountCharge / faceValue) * (365 / days) * 10000
-  const effectiveAnnualRateBps = daysToMaturity > 0
-    ? Number(discountCharge * 3650000n / (input.faceValue * BigInt(daysToMaturity)))
-    : 0;
+  const effectiveAnnualRateBps =
+    daysToMaturity > 0
+      ? Number((discountCharge * 3650000n) / (input.faceValue * BigInt(daysToMaturity)))
+      : 0;
 
   return {
     invoiceId: input.invoiceId,
@@ -72,6 +72,8 @@ export function computeInvoiceDiscounting(input: FactoringInput): FactoringResul
 /**
  * Batch compute factoring for multiple invoices.
  */
-export function computeBatchDiscounting(inputs: readonly FactoringInput[]): readonly FactoringResult[] {
+export function computeBatchDiscounting(
+  inputs: readonly FactoringInput[]
+): readonly FactoringResult[] {
   return inputs.map(computeInvoiceDiscounting);
 }

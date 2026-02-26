@@ -3,9 +3,9 @@
  * Pure calculator — computes effective ownership % through chains and
  * determines consolidation method per entity.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type ConsolidationMethod = "FULL" | "EQUITY" | "PROPORTIONATE" | "NONE";
+export type ConsolidationMethod = 'FULL' | 'EQUITY' | 'PROPORTIONATE' | 'NONE';
 
 export interface OwnershipLink {
   readonly parentEntityId: string;
@@ -28,9 +28,9 @@ export interface EffectiveOwnership {
  * < 2000         → NONE (not consolidated, or fair-value investment)
  */
 function methodFromPct(effectivePctBps: number): ConsolidationMethod {
-  if (effectivePctBps >= 5000) return "FULL";
-  if (effectivePctBps >= 2000) return "EQUITY";
-  return "NONE";
+  if (effectivePctBps >= 5000) return 'FULL';
+  if (effectivePctBps >= 2000) return 'EQUITY';
+  return 'NONE';
 }
 
 /**
@@ -39,13 +39,13 @@ function methodFromPct(effectivePctBps: number): ConsolidationMethod {
  */
 export function computeGroupOwnership(
   rootEntityId: string,
-  links: readonly OwnershipLink[],
+  links: readonly OwnershipLink[]
 ): CalculatorResult<readonly EffectiveOwnership[]> {
   if (links.length === 0) {
     return {
       result: [],
       inputs: { rootEntityId, linkCount: 0 },
-      explanation: "No ownership links provided",
+      explanation: 'No ownership links provided',
     };
   }
 
@@ -65,9 +65,7 @@ export function computeGroupOwnership(
       if (visited.has(child.childEntityId)) continue;
       visited.add(child.childEntityId);
 
-      const childEffective = Math.round(
-        (effectiveBps * child.directPctBps) / 10000,
-      );
+      const childEffective = Math.round((effectiveBps * child.directPctBps) / 10000);
       const childPath = [...path, child.childEntityId];
 
       results.push({

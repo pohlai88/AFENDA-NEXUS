@@ -2,7 +2,7 @@
  * Bank reconciliation entity — tracks the reconciliation status for a bank account period.
  */
 
-export type ReconciliationStatus = "IN_PROGRESS" | "COMPLETED" | "SIGNED_OFF";
+export type ReconciliationStatus = 'IN_PROGRESS' | 'COMPLETED' | 'SIGNED_OFF';
 
 export interface BankReconciliation {
   readonly id: string;

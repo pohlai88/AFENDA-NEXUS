@@ -23,7 +23,9 @@ export interface LeaseModificationCalcResult {
   readonly currencyCode: string;
 }
 
-export function computeLeaseModification(input: LeaseModificationCalcInput): LeaseModificationCalcResult {
+export function computeLeaseModification(
+  input: LeaseModificationCalcInput
+): LeaseModificationCalcResult {
   const annualRate = input.newDiscountRateBps / 10000;
   const monthlyRate = Math.pow(1 + annualRate, 1 / 12) - 1;
 
@@ -39,16 +41,21 @@ export function computeLeaseModification(input: LeaseModificationCalcInput): Lea
   const liabilityAdjustment = revisedLiability - input.currentLiability;
 
   // If scope decreased → gain/loss; if scope same/increased → adjust ROU asset
-  const isScopeDecrease = input.newTermMonths < input.remainingTermMonths &&
+  const isScopeDecrease =
+    input.newTermMonths < input.remainingTermMonths &&
     input.newMonthlyPayment <= input.currentMonthlyPayment;
 
   let gainLossOnModification = 0n;
   let rouAssetAdjustment: bigint;
 
   if (isScopeDecrease) {
-    const proportionReduced = 1 - (input.newTermMonths / input.remainingTermMonths);
-    // eslint-disable-next-line no-restricted-syntax -- CIG-02 bridge: PV discount requires float arithmetic, result rounded to BigInt
-    const proportionalLiability = BigInt(Math.round(Number(input.currentLiability) * proportionReduced));
+    const proportionReduced = 1 - input.newTermMonths / input.remainingTermMonths;
+    // CIG-02 bridge: PV discount requires float arithmetic, result rounded to BigInt
+    /* eslint-disable no-restricted-syntax */
+    const proportionalLiability = BigInt(
+      Math.round(Number(input.currentLiability) * proportionReduced)
+    );
+    /* eslint-enable no-restricted-syntax */
     gainLossOnModification = proportionalLiability - proportionalLiability;
     rouAssetAdjustment = liabilityAdjustment - gainLossOnModification;
   } else {

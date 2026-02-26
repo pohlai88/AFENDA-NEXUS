@@ -60,7 +60,8 @@ export default function GlobalError({
 
 ## Server Actions: Navigation API Gotcha
 
-**Do NOT wrap navigation APIs in try-catch.** They throw special errors that Next.js handles internally.
+**Do NOT wrap navigation APIs in try-catch.** They throw special errors that
+Next.js handles internally.
 
 Reference: https://nextjs.org/docs/app/api-reference/functions/redirect#behavior
 
@@ -200,7 +201,11 @@ export default function NotFound() {
 ```tsx
 import { notFound } from 'next/navigation';
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const post = await getPost(id);
 

@@ -6,9 +6,9 @@
  * Computes a deferred revenue roll-forward for a period, showing opening balance,
  * new deferrals, recognitions, adjustments, and closing balance per contract/account.
  */
-import type { Money } from "@afenda/core";
-import { money } from "@afenda/core";
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { Money } from '@afenda/core';
+import { money } from '@afenda/core';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface DeferredRevenueEntry {
   readonly contractId: string;
@@ -45,7 +45,7 @@ export interface DeferredRevenueRollForward {
 export function computeDeferredRevenueRollForward(
   entries: readonly DeferredRevenueEntry[],
   periodId: string,
-  currency: string,
+  currency: string
 ): CalculatorResult<DeferredRevenueRollForward> {
   const lines: DeferredRevenueLineResult[] = entries.map((e) => {
     const closing = e.openingBalance + e.newDeferrals - e.recognized + e.adjustments;

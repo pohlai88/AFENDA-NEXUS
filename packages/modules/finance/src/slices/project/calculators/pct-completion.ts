@@ -24,13 +24,15 @@ export interface PctCompletionResult {
 }
 
 export function computePctCompletion(input: PctCompletionInput): PctCompletionResult {
-  const completionPct = input.totalEstimatedCost > 0n
-    ? Number((input.actualCostToDate * 100n) / input.totalEstimatedCost)
-    : 0;
+  const completionPct =
+    input.totalEstimatedCost > 0n
+      ? Number((input.actualCostToDate * 100n) / input.totalEstimatedCost)
+      : 0;
 
-  const totalRevenueToDate = input.totalEstimatedCost > 0n
-    ? (input.contractValue * input.actualCostToDate) / input.totalEstimatedCost
-    : 0n;
+  const totalRevenueToDate =
+    input.totalEstimatedCost > 0n
+      ? (input.contractValue * input.actualCostToDate) / input.totalEstimatedCost
+      : 0n;
 
   const revenueToRecognize = totalRevenueToDate - input.previouslyRecognizedRevenue;
   const grossProfitToDate = totalRevenueToDate - input.actualCostToDate;

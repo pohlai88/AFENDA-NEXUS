@@ -6,7 +6,8 @@
 
 ## Test Overview
 
-Manual end-to-end test of the security audit suppression mechanism using mock audit data that simulates real openclaw security audit output.
+Manual end-to-end test of the security audit suppression mechanism using mock
+audit data that simulates real openclaw security audit output.
 
 ## Test Setup
 
@@ -67,10 +68,12 @@ node render_report.mjs --audit mock-audit.json --deep mock-deep.json \
 **Verification Points:**
 
 1. ✅ INFO-SUPPRESSED section present
-2. ✅ Suppression reason displayed: "First-party security tooling, reviewed 2026-02-16"
+2. ✅ Suppression reason displayed: "First-party security tooling, reviewed
+   2026-02-16"
 3. ✅ Suppression date displayed: "2026-02-16"
 4. ✅ clawsec-suite finding suppressed and shown with [clawsec-suite] label
-5. ✅ openclaw-audit-watchdog finding suppressed and shown with [openclaw-audit-watchdog] label
+5. ✅ openclaw-audit-watchdog finding suppressed and shown with
+   [openclaw-audit-watchdog] label
 6. ✅ Non-suppressed findings still present: [example-skill] permission warning
 7. ✅ Critical count reduced to 0 (was 1, now suppressed)
 8. ✅ Warning count remains 1 (non-suppressed finding)
@@ -116,10 +119,13 @@ INFO-SUPPRESSED:
 1. **Config Loading**: Suppression config loaded successfully from custom path
 2. **Matching Logic**: Findings correctly matched by BOTH checkId AND skill name
 3. **Filtering**: Suppressed findings excluded from critical/warning counts
-4. **Transparency**: Suppressed findings remain visible in INFO-SUPPRESSED section
+4. **Transparency**: Suppressed findings remain visible in INFO-SUPPRESSED
+   section
 5. **Audit Trail**: Reason and date displayed for each suppression
-6. **Backward Compatibility**: Running without config works identically to before
-7. **Skill Name Display**: Skill names now displayed in both active and suppressed sections
+6. **Backward Compatibility**: Running without config works identically to
+   before
+7. **Skill Name Display**: Skill names now displayed in both active and
+   suppressed sections
 
 ### 🔧 Improvements Made During Testing
 
@@ -134,7 +140,8 @@ INFO-SUPPRESSED:
 
 ## Test Automation
 
-Created `run-e2e-test.mjs` script for automated E2E validation with 8 verification points:
+Created `run-e2e-test.mjs` script for automated E2E validation with 8
+verification points:
 
 - Baseline report correctness
 - INFO-SUPPRESSED section presence

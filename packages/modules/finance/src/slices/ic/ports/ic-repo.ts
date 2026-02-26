@@ -1,13 +1,15 @@
-import type { Result, PaginationParams, PaginatedResult } from "@afenda/core";
-import type { IntercompanyRelationship, IntercompanyDocument } from "../entities/intercompany.js";
+import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
+import type { IntercompanyRelationship, IntercompanyDocument } from '../entities/intercompany.js';
 
 export interface IIcAgreementRepo {
   findById(id: string): Promise<Result<IntercompanyRelationship>>;
   findByCompanyPair(
     sellerCompanyId: string,
-    buyerCompanyId: string,
+    buyerCompanyId: string
   ): Promise<Result<IntercompanyRelationship>>;
-  findAll(pagination?: PaginationParams): Promise<Result<PaginatedResult<IntercompanyRelationship>>>;
+  findAll(
+    pagination?: PaginationParams
+  ): Promise<Result<PaginatedResult<IntercompanyRelationship>>>;
 }
 
 export interface CreateIcDocumentInput {

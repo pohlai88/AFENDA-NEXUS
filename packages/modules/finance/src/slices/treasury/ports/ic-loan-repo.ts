@@ -1,4 +1,4 @@
-import type { IcLoan } from "../entities/ic-loan.js";
+import type { IcLoan } from '../entities/ic-loan.js';
 
 export interface CreateIcLoanInput {
   readonly lenderCompanyId: string;
@@ -21,5 +21,5 @@ export interface IIcLoanRepo {
   findAll(): Promise<readonly IcLoan[]>;
   create(tenantId: string, input: CreateIcLoanInput): Promise<IcLoan>;
   updateBalance(id: string, outstandingBalance: bigint): Promise<IcLoan>;
-  updateStatus(id: string, status: IcLoan["status"]): Promise<IcLoan>;
+  updateStatus(id: string, status: IcLoan['status']): Promise<IcLoan>;
 }

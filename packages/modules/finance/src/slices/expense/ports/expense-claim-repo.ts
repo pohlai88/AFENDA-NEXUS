@@ -1,5 +1,5 @@
-import type { ExpenseClaim } from "../entities/expense-claim.js";
-import type { ExpenseClaimLine } from "../entities/expense-claim-line.js";
+import type { ExpenseClaim } from '../entities/expense-claim.js';
+import type { ExpenseClaimLine } from '../entities/expense-claim-line.js';
 
 export interface CreateExpenseClaimInput {
   readonly companyId: string;
@@ -17,7 +17,7 @@ export interface CreateExpenseClaimLineInput {
   readonly claimId: string;
   readonly lineNumber: number;
   readonly expenseDate: Date;
-  readonly category: ExpenseClaimLine["category"];
+  readonly category: ExpenseClaimLine['category'];
   readonly description: string;
   readonly amount: bigint;
   readonly currencyCode: string;

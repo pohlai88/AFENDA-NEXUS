@@ -1,4 +1,4 @@
-import type { PaymentTerms } from "../entities/payment-terms.js";
+import type { PaymentTerms } from '../entities/payment-terms.js';
 
 /**
  * AP-04: Early payment discount calculator.
@@ -20,7 +20,7 @@ export function computeEarlyPaymentDiscount(
   invoiceAmount: bigint,
   invoiceDate: Date,
   paymentDate: Date,
-  terms: PaymentTerms,
+  terms: PaymentTerms
 ): DiscountResult {
   if (terms.discountDays <= 0 || terms.discountPercent <= 0) {
     return {

@@ -8,7 +8,7 @@
  * Uses raw bigint for amounts (minor units).
  */
 
-export type TemporaryDifferenceType = "TAXABLE" | "DEDUCTIBLE";
+export type TemporaryDifferenceType = 'TAXABLE' | 'DEDUCTIBLE';
 
 export interface TemporaryDifference {
   readonly itemId: string;
@@ -43,7 +43,7 @@ export interface DeferredTaxItem {
  */
 export function computeDeferredTax(
   differences: readonly TemporaryDifference[],
-  taxRateBps: number,
+  taxRateBps: number
 ): DeferredTaxResult {
   const items: DeferredTaxItem[] = [];
   let totalDta = 0n;
@@ -54,7 +54,7 @@ export function computeDeferredTax(
     const absDiff = tempDiff < 0n ? -tempDiff : tempDiff;
     const deferredTaxAmount = (absDiff * BigInt(taxRateBps)) / 10000n;
 
-    const type: TemporaryDifferenceType = tempDiff > 0n ? "TAXABLE" : "DEDUCTIBLE";
+    const type: TemporaryDifferenceType = tempDiff > 0n ? 'TAXABLE' : 'DEDUCTIBLE';
 
     items.push({
       itemId: diff.itemId,
@@ -64,7 +64,7 @@ export function computeDeferredTax(
       deferredTaxAmount,
     });
 
-    if (type === "TAXABLE") {
+    if (type === 'TAXABLE') {
       totalDtl += deferredTaxAmount;
     } else {
       totalDta += deferredTaxAmount;

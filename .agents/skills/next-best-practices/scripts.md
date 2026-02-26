@@ -4,7 +4,8 @@ Loading third-party scripts in Next.js.
 
 ## Use next/script
 
-Always use `next/script` instead of native `<script>` tags for better performance.
+Always use `next/script` instead of native `<script>` tags for better
+performance.
 
 ```tsx
 // Bad: Native script tag
@@ -35,7 +36,8 @@ Inline scripts require an `id` attribute for Next.js to track them.
 
 ## Don't Put Script in Head
 
-`next/script` should not be placed inside `next/head`. It handles its own positioning.
+`next/script` should not be placed inside `next/head`. It handles its own
+positioning.
 
 ```tsx
 // Bad: Script inside Head
@@ -123,7 +125,11 @@ import { YouTubeEmbed } from '@next/third-parties/google';
 // Google Maps
 import { GoogleMapsEmbed } from '@next/third-parties/google';
 
-<GoogleMapsEmbed apiKey="YOUR_API_KEY" mode="place" q="Brooklyn+Bridge,New+York,NY" />;
+<GoogleMapsEmbed
+  apiKey="YOUR_API_KEY"
+  mode="place"
+  q="Brooklyn+Bridge,New+York,NY"
+/>;
 ```
 
 ## Quick Reference

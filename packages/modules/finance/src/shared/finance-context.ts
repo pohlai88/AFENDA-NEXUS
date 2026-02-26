@@ -13,7 +13,7 @@
  * - Audit trail (actor)
  * - Point-in-time queries (asOf)
  */
-import type { CompanyId } from "@afenda/core";
+import type { CompanyId } from '@afenda/core';
 
 export interface FinanceActor {
   readonly userId: string;
@@ -43,7 +43,7 @@ export function createFinanceContext(input: {
   return {
     tenantId: input.tenantId,
     companyId: input.companyId as CompanyId,
-    currency: input.currency ?? "USD",
+    currency: input.currency ?? 'USD',
     actor: {
       userId: input.userId,
       roles: input.roles ?? [],

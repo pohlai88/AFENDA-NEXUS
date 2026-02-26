@@ -47,8 +47,8 @@ export interface AbcResult {
  * Compute activity-based costing allocation.
  */
 export function computeActivityBasedCosting(input: AbcInput): AbcResult {
-  if (input.activities.length === 0) throw new Error("At least one activity is required");
-  if (input.costObjects.length === 0) throw new Error("At least one cost object is required");
+  if (input.activities.length === 0) throw new Error('At least one activity is required');
+  if (input.costObjects.length === 0) throw new Error('At least one cost object is required');
 
   // Compute activity rates (cost per driver unit, in minor units × 10000 for precision)
   const activityRates = new Map<string, bigint>();
@@ -58,7 +58,7 @@ export function computeActivityBasedCosting(input: AbcInput): AbcResult {
     } else {
       activityRates.set(
         activity.activityId,
-        (activity.totalCost * 10000n) / activity.totalDriverQuantity,
+        (activity.totalCost * 10000n) / activity.totalDriverQuantity
       );
     }
   }

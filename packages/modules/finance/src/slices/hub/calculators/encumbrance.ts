@@ -5,11 +5,11 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface EncumbranceItem {
   readonly documentId: string;
-  readonly documentType: "PURCHASE_ORDER" | "CONTRACT" | "REQUISITION";
+  readonly documentType: 'PURCHASE_ORDER' | 'CONTRACT' | 'REQUISITION';
   readonly accountCode: string;
   readonly encumberedAmount: bigint;
   readonly liquidatedAmount: bigint;
@@ -51,10 +51,8 @@ export interface EncumbranceResult {
 /**
  * Compute encumbrance status for each budget account.
  */
-export function computeEncumbrance(
-  input: EncumbranceInput,
-): CalculatorResult<EncumbranceResult> {
-  if (input.budgetLines.length === 0) throw new Error("At least one budget line is required");
+export function computeEncumbrance(input: EncumbranceInput): CalculatorResult<EncumbranceResult> {
+  if (input.budgetLines.length === 0) throw new Error('At least one budget line is required');
 
   // Aggregate encumbrances by account
   const encByAccount = new Map<string, { encumbered: bigint; liquidated: bigint }>();
@@ -106,7 +104,10 @@ export function computeEncumbrance(
       overCommittedCount,
       currencyCode: input.currencyCode,
     },
-    inputs: { budgetLineCount: input.budgetLines.length, encumbranceCount: input.encumbrances.length },
+    inputs: {
+      budgetLineCount: input.budgetLines.length,
+      encumbranceCount: input.encumbrances.length,
+    },
     explanation: `Encumbrance: ${accounts.length} accounts, ${overCommittedCount} over-committed, available=${totalAvailable}`,
   };
 }

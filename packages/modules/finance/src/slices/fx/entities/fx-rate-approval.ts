@@ -6,8 +6,8 @@
  * it must go through an approval workflow before it can be used for posting.
  */
 
-export type RateSource = "FEED" | "MANUAL" | "TRIANGULATED";
-export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type RateSource = 'FEED' | 'MANUAL' | 'TRIANGULATED';
+export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface FxRateApproval {
   readonly rateId: string;
@@ -36,11 +36,11 @@ export const DEFAULT_RATE_APPROVAL_POLICY: RateApprovalPolicy = {
  */
 export function requiresApproval(
   source: RateSource,
-  policy: RateApprovalPolicy = DEFAULT_RATE_APPROVAL_POLICY,
+  policy: RateApprovalPolicy = DEFAULT_RATE_APPROVAL_POLICY
 ): boolean {
-  if (source === "FEED") return false;
-  if (source === "MANUAL") return policy.requireApprovalForManual;
-  if (source === "TRIANGULATED") return policy.requireApprovalForTriangulated;
+  if (source === 'FEED') return false;
+  if (source === 'MANUAL') return policy.requireApprovalForManual;
+  if (source === 'TRIANGULATED') return policy.requireApprovalForTriangulated;
   return false;
 }
 
@@ -50,12 +50,12 @@ export function requiresApproval(
  */
 export function validateRateForPosting(
   approval: FxRateApproval,
-  policy: RateApprovalPolicy = DEFAULT_RATE_APPROVAL_POLICY,
+  policy: RateApprovalPolicy = DEFAULT_RATE_APPROVAL_POLICY
 ): string | null {
   if (!requiresApproval(approval.source, policy)) return null;
-  if (approval.status === "APPROVED") return null;
-  if (approval.status === "REJECTED") {
-    return `Rate ${approval.rateId} was rejected: ${approval.rejectionReason ?? "no reason given"}`;
+  if (approval.status === 'APPROVED') return null;
+  if (approval.status === 'REJECTED') {
+    return `Rate ${approval.rateId} was rejected: ${approval.rejectionReason ?? 'no reason given'}`;
   }
   return `Rate ${approval.rateId} is pending approval and cannot be used for posting`;
 }
@@ -67,7 +67,7 @@ export function validateRateForPosting(
 export function validateRateSpread(
   manualRate: number,
   referenceRate: number,
-  policy: RateApprovalPolicy,
+  policy: RateApprovalPolicy
 ): string | null {
   if (!policy.maxSpreadPercent || referenceRate === 0) return null;
   const spread = Math.abs((manualRate - referenceRate) / referenceRate) * 100;

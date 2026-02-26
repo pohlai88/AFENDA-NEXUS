@@ -1,9 +1,9 @@
-import type { ProvisionMovement } from "../entities/provision-movement.js";
+import type { ProvisionMovement } from '../entities/provision-movement.js';
 
 export interface CreateProvisionMovementInput {
   readonly provisionId: string;
   readonly movementDate: Date;
-  readonly movementType: ProvisionMovement["movementType"];
+  readonly movementType: ProvisionMovement['movementType'];
   readonly amount: bigint;
   readonly balanceAfter: bigint;
   readonly description: string;

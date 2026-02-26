@@ -5,7 +5,7 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface UsageTier {
   readonly fromUnits: bigint;
@@ -45,15 +45,14 @@ export interface UsageMeterResult {
 /**
  * Compute usage-based charges with tiered pricing.
  */
-export function computeUsageCharge(
-  input: UsageMeterInput,
-): CalculatorResult<UsageMeterResult> {
-  if (input.tiers.length === 0) throw new Error("At least one pricing tier is required");
-  if (input.usageQuantity < 0n) throw new Error("Usage quantity cannot be negative");
+export function computeUsageCharge(input: UsageMeterInput): CalculatorResult<UsageMeterResult> {
+  if (input.tiers.length === 0) throw new Error('At least one pricing tier is required');
+  if (input.usageQuantity < 0n) throw new Error('Usage quantity cannot be negative');
 
-  const billableUsage = input.usageQuantity > input.includedAllowance
-    ? input.usageQuantity - input.includedAllowance
-    : 0n;
+  const billableUsage =
+    input.usageQuantity > input.includedAllowance
+      ? input.usageQuantity - input.includedAllowance
+      : 0n;
 
   const tierBreakdown: UsageTierBreakdown[] = [];
   let totalCharge = 0n;
@@ -61,9 +60,7 @@ export function computeUsageCharge(
 
   for (let i = 0; i < input.tiers.length && remainingUnits > 0n; i++) {
     const tier = input.tiers[i]!;
-    const tierCapacity = tier.toUnits !== null
-      ? tier.toUnits - tier.fromUnits
-      : remainingUnits;
+    const tierCapacity = tier.toUnits !== null ? tier.toUnits - tier.fromUnits : remainingUnits;
 
     const unitsInTier = remainingUnits < tierCapacity ? remainingUnits : tierCapacity;
     const tierCharge = unitsInTier * tier.pricePerUnit;

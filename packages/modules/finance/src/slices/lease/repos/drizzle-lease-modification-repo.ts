@@ -1,8 +1,11 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { leaseModifications } from "@afenda/db";
-import type { LeaseModification } from "../entities/lease-modification.js";
-import type { ILeaseModificationRepo, CreateLeaseModificationInput } from "../ports/lease-modification-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { leaseModifications } from '@afenda/db';
+import type { LeaseModification } from '../entities/lease-modification.js';
+import type {
+  ILeaseModificationRepo,
+  CreateLeaseModificationInput,
+} from '../ports/lease-modification-repo.js';
 
 type Row = typeof leaseModifications.$inferSelect;
 
@@ -12,7 +15,7 @@ function mapToDomain(row: Row): LeaseModification {
     tenantId: row.tenantId,
     leaseContractId: row.leaseContractId,
     modificationDate: row.modificationDate,
-    modificationType: row.modificationType as LeaseModification["modificationType"],
+    modificationType: row.modificationType as LeaseModification['modificationType'],
     description: row.description,
     previousLeaseTermMonths: row.previousLeaseTermMonths,
     newLeaseTermMonths: row.newLeaseTermMonths,
@@ -33,15 +36,21 @@ export class DrizzleLeaseModificationRepo implements ILeaseModificationRepo {
   constructor(private readonly db: TenantTx) {}
 
   async findByLease(leaseContractId: string): Promise<readonly LeaseModification[]> {
-    const rows = await this.db.select().from(leaseModifications).where(eq(leaseModifications.leaseContractId, leaseContractId));
+    const rows = await this.db
+      .select()
+      .from(leaseModifications)
+      .where(eq(leaseModifications.leaseContractId, leaseContractId));
     return rows.map(mapToDomain);
   }
 
   async create(tenantId: string, input: CreateLeaseModificationInput): Promise<LeaseModification> {
-    const [row] = await this.db.insert(leaseModifications).values({
-      tenantId,
-      ...input,
-    }).returning();
+    const [row] = await this.db
+      .insert(leaseModifications)
+      .values({
+        tenantId,
+        ...input,
+      })
+      .returning();
     return mapToDomain(row!);
   }
 }

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
-import type { TenantContext, CompanyContext, PeriodContext } from "@/lib/types";
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import type { TenantContext, CompanyContext, PeriodContext } from '@/lib/types';
 
 interface TenantContextValue {
   tenant: TenantContext | null;
@@ -23,8 +23,7 @@ export function TenantProvider({
 }) {
   const [tenant, setTenantState] = useState<TenantContext | null>(initialTenant ?? null);
 
-  const activeCompany =
-    tenant?.companies.find((c) => c.id === tenant.activeCompanyId) ?? null;
+  const activeCompany = tenant?.companies.find((c) => c.id === tenant.activeCompanyId) ?? null;
 
   const activePeriod = tenant?.activePeriod ?? null;
 
@@ -51,6 +50,6 @@ export function TenantProvider({
 
 export function useTenantContext(): TenantContextValue {
   const ctx = useContext(TenantCtx);
-  if (!ctx) throw new Error("useTenantContext must be used within <TenantProvider>");
+  if (!ctx) throw new Error('useTenantContext must be used within <TenantProvider>');
   return ctx;
 }

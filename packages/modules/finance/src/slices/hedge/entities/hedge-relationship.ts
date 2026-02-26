@@ -2,8 +2,8 @@
  * HA-01: Hedge relationship entity — IFRS 9 §6.
  */
 
-export type HedgeType = "FAIR_VALUE" | "CASH_FLOW" | "NET_INVESTMENT";
-export type HedgeStatus = "DESIGNATED" | "ACTIVE" | "DISCONTINUED" | "REBALANCED";
+export type HedgeType = 'FAIR_VALUE' | 'CASH_FLOW' | 'NET_INVESTMENT';
+export type HedgeStatus = 'DESIGNATED' | 'ACTIVE' | 'DISCONTINUED' | 'REBALANCED';
 
 export interface HedgeRelationship {
   readonly id: string;

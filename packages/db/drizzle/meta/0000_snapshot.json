@@ -1129,13 +1129,7 @@
       "compositePrimaryKeys": {
         "gl_balance_tenant_id_ledger_id_account_id_fiscal_year_fiscal_period_pk": {
           "name": "gl_balance_tenant_id_ledger_id_account_id_fiscal_year_fiscal_period_pk",
-          "columns": [
-            "tenant_id",
-            "ledger_id",
-            "account_id",
-            "fiscal_year",
-            "fiscal_period"
-          ]
+          "columns": ["tenant_id", "ledger_id", "account_id", "fiscal_year", "fiscal_period"]
         }
       },
       "uniqueConstraints": {},
@@ -3004,143 +2998,77 @@
     "public.account_type": {
       "name": "account_type",
       "schema": "public",
-      "values": [
-        "ASSET",
-        "LIABILITY",
-        "EQUITY",
-        "REVENUE",
-        "EXPENSE"
-      ]
+      "values": ["ASSET", "LIABILITY", "EQUITY", "REVENUE", "EXPENSE"]
     },
     "public.contract_status": {
       "name": "contract_status",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "COMPLETED",
-        "CANCELLED"
-      ]
+      "values": ["ACTIVE", "COMPLETED", "CANCELLED"]
     },
     "public.counterparty_type": {
       "name": "counterparty_type",
       "schema": "public",
-      "values": [
-        "CUSTOMER",
-        "VENDOR",
-        "BOTH"
-      ]
+      "values": ["CUSTOMER", "VENDOR", "BOTH"]
     },
     "public.document_type": {
       "name": "document_type",
       "schema": "public",
-      "values": [
-        "JOURNAL",
-        "INVOICE",
-        "PAYMENT",
-        "CREDIT_NOTE",
-        "DEBIT_NOTE",
-        "TRANSFER"
-      ]
+      "values": ["JOURNAL", "INVOICE", "PAYMENT", "CREDIT_NOTE", "DEBIT_NOTE", "TRANSFER"]
     },
     "public.ic_leg_side": {
       "name": "ic_leg_side",
       "schema": "public",
-      "values": [
-        "SELLER",
-        "BUYER"
-      ]
+      "values": ["SELLER", "BUYER"]
     },
     "public.ic_pricing": {
       "name": "ic_pricing",
       "schema": "public",
-      "values": [
-        "COST",
-        "MARKET",
-        "TRANSFER_PRICE",
-        "AGREED"
-      ]
+      "values": ["COST", "MARKET", "TRANSFER_PRICE", "AGREED"]
     },
     "public.ic_settlement_status": {
       "name": "ic_settlement_status",
       "schema": "public",
-      "values": [
-        "PENDING",
-        "SETTLED",
-        "CANCELLED"
-      ]
+      "values": ["PENDING", "SETTLED", "CANCELLED"]
     },
     "public.journal_status": {
       "name": "journal_status",
       "schema": "public",
-      "values": [
-        "DRAFT",
-        "POSTED",
-        "REVERSED",
-        "VOIDED"
-      ]
+      "values": ["DRAFT", "POSTED", "REVERSED", "VOIDED"]
     },
     "public.period_status": {
       "name": "period_status",
       "schema": "public",
-      "values": [
-        "OPEN",
-        "CLOSED",
-        "LOCKED"
-      ]
+      "values": ["OPEN", "CLOSED", "LOCKED"]
     },
     "public.recognition_method": {
       "name": "recognition_method",
       "schema": "public",
-      "values": [
-        "STRAIGHT_LINE",
-        "MILESTONE",
-        "PERCENTAGE_OF_COMPLETION"
-      ]
+      "values": ["STRAIGHT_LINE", "MILESTONE", "PERCENTAGE_OF_COMPLETION"]
     },
     "public.recurring_frequency": {
       "name": "recurring_frequency",
       "schema": "public",
-      "values": [
-        "MONTHLY",
-        "QUARTERLY",
-        "YEARLY"
-      ]
+      "values": ["MONTHLY", "QUARTERLY", "YEARLY"]
     },
     "public.reporting_standard": {
       "name": "reporting_standard",
       "schema": "public",
-      "values": [
-        "IFRS",
-        "US_GAAP",
-        "LOCAL"
-      ]
+      "values": ["IFRS", "US_GAAP", "LOCAL"]
     },
     "public.settlement_method": {
       "name": "settlement_method",
       "schema": "public",
-      "values": [
-        "NETTING",
-        "CASH",
-        "JOURNAL"
-      ]
+      "values": ["NETTING", "CASH", "JOURNAL"]
     },
     "public.settlement_status": {
       "name": "settlement_status",
       "schema": "public",
-      "values": [
-        "DRAFT",
-        "CONFIRMED",
-        "CANCELLED"
-      ]
+      "values": ["DRAFT", "CONFIRMED", "CANCELLED"]
     },
     "public.tenant_status": {
       "name": "tenant_status",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "SUSPENDED",
-        "DEACTIVATED"
-      ]
+      "values": ["ACTIVE", "SUSPENDED", "DEACTIVATED"]
     }
   },
   "schemas": {

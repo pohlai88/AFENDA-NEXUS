@@ -1,5 +1,6 @@
-"use client";
+'use client';
 
+import { Suspense } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -10,27 +11,39 @@ import {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { SidebarNav } from "./sidebar-nav";
-import { TenantSwitcher } from "./tenant-switcher";
-import { CompanySwitcher } from "./company-switcher";
-import { PeriodIndicator } from "./period-indicator";
-import { ThemeToggle } from "./theme-toggle";
-import { CommandPalette } from "./command-palette";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
-import { TenantProvider } from "@/providers/tenant-provider";
-import { UserMenu } from "./user-menu";
-import type { TenantContext } from "@/lib/types";
+} from '@/components/ui/sidebar';
+import { Separator } from '@/components/ui/separator';
+import { SidebarNav, SidebarNavSkeleton } from './sidebar-nav';
+import { TenantSwitcher } from './tenant-switcher';
+import { CompanySwitcher } from './company-switcher';
+import { PeriodIndicator } from './period-indicator';
+import { ThemeToggle } from './theme-toggle';
+import { CommandPalette } from './command-palette';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
+import { TenantProvider } from '@/providers/tenant-provider';
+import { UserMenu } from './user-menu';
+import type { TenantContext } from '@/lib/types';
 
 interface AppShellProps {
   children: React.ReactNode;
   initialTenant?: TenantContext;
+  onSwitchCompany?: (companyId: string) => Promise<void>;
+  user?: {
+    name: string;
+    email: string;
+    image?: string | null;
+  };
   logoutAction?: () => Promise<void>;
 }
 
-export function AppShell({ children, initialTenant, logoutAction }: AppShellProps) {
+export function AppShell({
+  children,
+  initialTenant,
+  onSwitchCompany,
+  user,
+  logoutAction,
+}: AppShellProps) {
   return (
     <TenantProvider initialTenant={initialTenant}>
       <SidebarProvider>
@@ -55,13 +68,15 @@ export function AppShell({ children, initialTenant, logoutAction }: AppShellProp
             <SidebarSeparator />
             <div className="space-y-2 group-data-[collapsible=icon]:hidden">
               <TenantSwitcher />
-              <CompanySwitcher />
+              <CompanySwitcher onSwitchCompany={onSwitchCompany} />
               <PeriodIndicator />
             </div>
           </SidebarHeader>
 
           <SidebarContent>
-            <SidebarNav />
+            <Suspense fallback={<SidebarNavSkeleton />}>
+              <SidebarNav />
+            </Suspense>
           </SidebarContent>
 
           <SidebarFooter className="group-data-[collapsible=icon]:hidden">
@@ -86,7 +101,9 @@ export function AppShell({ children, initialTenant, logoutAction }: AppShellProp
                 variant="outline"
                 size="sm"
                 className="hidden h-8 w-64 justify-start text-sm text-muted-foreground md:flex"
-                onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+                onClick={() =>
+                  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))
+                }
               >
                 <Search className="mr-2 h-4 w-4" />
                 <span>Search...</span>
@@ -95,17 +112,13 @@ export function AppShell({ children, initialTenant, logoutAction }: AppShellProp
                 </kbd>
               </Button>
               <ThemeToggle />
-              <UserMenu logoutAction={logoutAction} />
+              <UserMenu user={user} logoutAction={logoutAction} />
             </div>
             <CommandPalette />
           </header>
 
           {/* Page content */}
-          <main
-            id="main-content"
-            className="flex-1 overflow-y-auto p-6"
-            tabIndex={-1}
-          >
+          <main id="main-content" className="flex-1 overflow-y-auto p-6" tabIndex={-1}>
             {children}
           </main>
         </SidebarInset>

@@ -1,13 +1,69 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { StatusBadge } from "@/components/erp/status-badge";
-import { MoneyCell } from "@/components/erp/money-cell";
-import { DateCell } from "@/components/erp/date-cell";
-import { EmptyState } from "@/components/erp/empty-state";
-import { routes } from "@/lib/constants";
-import { FileText } from "lucide-react";
-import type { JournalListItem } from "../queries/journal.queries";
+import Link from 'next/link';
+import { StatusBadge } from '@/components/erp/status-badge';
+import { MoneyCell } from '@/components/erp/money-cell';
+import { DateCell } from '@/components/erp/date-cell';
+import { EmptyState } from '@/components/erp/empty-state';
+import { DataTable, type ColumnDef } from '@/components/erp/data-table';
+import { routes } from '@/lib/constants';
+import { FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { JournalListItem } from '../queries/journal.queries';
+
+const columns: ColumnDef<JournalListItem>[] = [
+  {
+    id: 'documentNumber',
+    header: 'Document',
+    sortable: true,
+    sortFn: (a, b) => a.documentNumber.localeCompare(b.documentNumber),
+    accessorFn: (row) => (
+      <Link
+        href={routes.finance.journalDetail(row.id)}
+        className="font-mono text-sm font-medium text-primary hover:underline"
+      >
+        {row.documentNumber}
+      </Link>
+    ),
+  },
+  {
+    id: 'description',
+    header: 'Description',
+    sortable: true,
+    sortFn: (a, b) => a.description.localeCompare(b.description),
+    accessorFn: (row) => <span className="text-muted-foreground">{row.description}</span>,
+  },
+  {
+    id: 'postingDate',
+    header: 'Date',
+    sortable: true,
+    sortFn: (a, b) => a.postingDate.localeCompare(b.postingDate),
+    accessorFn: (row) => <DateCell date={row.postingDate} format="short" />,
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    sortable: true,
+    sortFn: (a, b) => a.status.localeCompare(b.status),
+    accessorFn: (row) => <StatusBadge status={row.status} />,
+  },
+  {
+    id: 'totalDebit',
+    header: 'Debit',
+    className: 'text-right',
+    sortable: true,
+    sortFn: (a, b) => Number(a.totalDebit) - Number(b.totalDebit),
+    accessorFn: (row) => <MoneyCell amount={row.totalDebit} currency={row.currency} />,
+  },
+  {
+    id: 'totalCredit',
+    header: 'Credit',
+    className: 'text-right',
+    sortable: true,
+    sortFn: (a, b) => Number(a.totalCredit) - Number(b.totalCredit),
+    accessorFn: (row) => <MoneyCell amount={row.totalCredit} currency={row.currency} />,
+  },
+];
 
 interface JournalTableProps {
   data: JournalListItem[];
@@ -22,12 +78,9 @@ export function JournalTable({ data, total }: JournalTableProps) {
         description="Create your first journal entry to get started."
         icon={FileText}
         action={
-          <Link
-            href={routes.finance.journalNew}
-            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            Create Journal
-          </Link>
+          <Button asChild>
+            <Link href={routes.finance.journalNew}>Create Journal</Link>
+          </Button>
         }
       />
     );
@@ -35,51 +88,22 @@ export function JournalTable({ data, total }: JournalTableProps) {
 
   return (
     <div>
-      <div className="rounded-md border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">Document</th>
-              <th className="px-4 py-3 text-left font-medium">Description</th>
-              <th className="px-4 py-3 text-left font-medium">Date</th>
-              <th className="px-4 py-3 text-left font-medium">Status</th>
-              <th className="px-4 py-3 text-right font-medium">Debit</th>
-              <th className="px-4 py-3 text-right font-medium">Credit</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((journal) => (
-              <tr key={journal.id} className="border-b transition-colors hover:bg-muted/50">
-                <td className="px-4 py-3">
-                  <Link
-                    href={routes.finance.journalDetail(journal.id)}
-                    className="font-mono text-sm font-medium text-primary hover:underline"
-                  >
-                    {journal.documentNumber}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {journal.description}
-                </td>
-                <td className="px-4 py-3">
-                  <DateCell date={journal.postingDate} format="short" />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={journal.status} />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <MoneyCell amount={journal.totalDebit} currency={journal.currency} />
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <MoneyCell amount={journal.totalCredit} currency={journal.currency} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        data={data}
+        keyFn={(row) => row.id}
+        searchPlaceholder="Search journals..."
+        searchFn={(row, query) => {
+          const q = query.toLowerCase();
+          return (
+            row.documentNumber.toLowerCase().includes(q) ||
+            row.description.toLowerCase().includes(q)
+          );
+        }}
+        emptyMessage="No journals match your search."
+      />
       <p className="mt-2 text-xs text-muted-foreground">
-        {total} journal{total !== 1 ? "s" : ""} total
+        {total} journal{total !== 1 ? 's' : ''} total
       </p>
     </div>
   );

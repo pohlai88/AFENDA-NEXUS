@@ -12,9 +12,7 @@ export interface ApiError {
   fields?: Record<string, string>;
 }
 
-export type ApiResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; error: ApiError };
+export type ApiResult<T> = { ok: true; value: T } | { ok: false; error: ApiError };
 
 // ─── Command Receipt (returned by every mutation) ───────────────────────────
 
@@ -56,7 +54,7 @@ export interface PeriodContext {
   name: string;
   year: number;
   period: number;
-  status: "OPEN" | "CLOSED" | "LOCKED";
+  status: 'OPEN' | 'CLOSED' | 'LOCKED';
 }
 
 // ─── Audit Entry ────────────────────────────────────────────────────────────

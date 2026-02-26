@@ -3,7 +3,7 @@
  * Pure calculator — determines if a financial asset can be derecognized
  * based on transfer of risks and rewards.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface DerecognitionInput {
   readonly instrumentId: string;
@@ -16,7 +16,10 @@ export interface DerecognitionInput {
   readonly currencyCode: string;
 }
 
-export type DerecognitionOutcome = "FULL_DERECOGNITION" | "NO_DERECOGNITION" | "CONTINUING_INVOLVEMENT";
+export type DerecognitionOutcome =
+  | 'FULL_DERECOGNITION'
+  | 'NO_DERECOGNITION'
+  | 'CONTINUING_INVOLVEMENT';
 
 export interface DerecognitionResult {
   readonly instrumentId: string;
@@ -37,10 +40,10 @@ export interface DerecognitionResult {
  *    b. Retains control → continuing involvement
  */
 export function evaluateDerecognition(
-  inputs: readonly DerecognitionInput[],
+  inputs: readonly DerecognitionInput[]
 ): CalculatorResult<readonly DerecognitionResult[]> {
   if (inputs.length === 0) {
-    throw new Error("At least one instrument required");
+    throw new Error('At least one instrument required');
   }
 
   const results: DerecognitionResult[] = inputs.map((input) => {
@@ -49,12 +52,12 @@ export function evaluateDerecognition(
       const gainOrLoss = input.considerationReceived - input.carryingAmount;
       return {
         instrumentId: input.instrumentId,
-        outcome: "FULL_DERECOGNITION" as DerecognitionOutcome,
+        outcome: 'FULL_DERECOGNITION' as DerecognitionOutcome,
         gainOrLoss,
         isGain: gainOrLoss > 0n,
         derecognizedAmount: input.carryingAmount,
         retainedAmount: 0n,
-        reason: "Transferred substantially all risks and rewards",
+        reason: 'Transferred substantially all risks and rewards',
       };
     }
 
@@ -62,12 +65,12 @@ export function evaluateDerecognition(
     if (input.retainsSubstantiallyAllRisks) {
       return {
         instrumentId: input.instrumentId,
-        outcome: "NO_DERECOGNITION" as DerecognitionOutcome,
+        outcome: 'NO_DERECOGNITION' as DerecognitionOutcome,
         gainOrLoss: 0n,
         isGain: false,
         derecognizedAmount: 0n,
         retainedAmount: input.carryingAmount,
-        reason: "Retains substantially all risks and rewards — no derecognition",
+        reason: 'Retains substantially all risks and rewards — no derecognition',
       };
     }
 
@@ -76,12 +79,12 @@ export function evaluateDerecognition(
       const gainOrLoss = input.considerationReceived - input.carryingAmount;
       return {
         instrumentId: input.instrumentId,
-        outcome: "FULL_DERECOGNITION" as DerecognitionOutcome,
+        outcome: 'FULL_DERECOGNITION' as DerecognitionOutcome,
         gainOrLoss,
         isGain: gainOrLoss > 0n,
         derecognizedAmount: input.carryingAmount,
         retainedAmount: 0n,
-        reason: "Lost control — full derecognition",
+        reason: 'Lost control — full derecognition',
       };
     }
 
@@ -92,18 +95,18 @@ export function evaluateDerecognition(
 
     return {
       instrumentId: input.instrumentId,
-      outcome: "CONTINUING_INVOLVEMENT" as DerecognitionOutcome,
+      outcome: 'CONTINUING_INVOLVEMENT' as DerecognitionOutcome,
       gainOrLoss,
       isGain: gainOrLoss > 0n,
       derecognizedAmount,
       retainedAmount,
-      reason: "Retains control with continuing involvement",
+      reason: 'Retains control with continuing involvement',
     };
   });
 
   return {
     result: results,
     inputs: { count: inputs.length },
-    explanation: `Derecognition: ${results.filter((r) => r.outcome === "FULL_DERECOGNITION").length} full, ${results.filter((r) => r.outcome === "NO_DERECOGNITION").length} no, ${results.filter((r) => r.outcome === "CONTINUING_INVOLVEMENT").length} continuing`,
+    explanation: `Derecognition: ${results.filter((r) => r.outcome === 'FULL_DERECOGNITION').length} full, ${results.filter((r) => r.outcome === 'NO_DERECOGNITION').length} no, ${results.filter((r) => r.outcome === 'CONTINUING_INVOLVEMENT').length} continuing`,
   };
 }

@@ -6,11 +6,7 @@ By default, as all the query builders in Drizzle try to conform to SQL as much a
 For example, in a `SELECT` statement there might only be one `WHERE` clause, so you can only invoke `.where()` once:
 
 ```ts
-const query = db
-	.select()
-	.from(users)
-	.where(eq(users.id, 1))
-	.where(eq(users.name, 'John')); // ❌ Type error - where() can only be invoked once
+const query = db.select().from(users).where(eq(users.id, 1)).where(eq(users.name, 'John')); // ❌ Type error - where() can only be invoked once
 ```
 
 In the previous ORM versions, when such restrictions weren't implemented, this example in particular was a source of confusion for many users, as they expected the query builder to "merge" multiple `.where()` calls into a single condition.
@@ -23,12 +19,8 @@ To enable it, you need to call `.$dynamic()` on a query builder.
 Let's see how it works by implementing a simple `withPagination` function that adds `LIMIT` and `OFFSET` clauses to a query based on the provided page number and an optional page size:
 
 ```ts
-function withPagination<T extends PgSelect>(
-	qb: T,
-	page: number = 1,
-	pageSize: number = 10,
-) {
-	return qb.limit(pageSize).offset((page - 1) * pageSize);
+function withPagination<T extends PgSelect>(qb: T, page: number = 1, pageSize: number = 10) {
+  return qb.limit(pageSize).offset((page - 1) * pageSize);
 }
 
 const query = db.select().from(users).where(eq(users.id, 1));
@@ -42,7 +34,7 @@ Note that the `withPagination` function is generic, which allows you to modify t
 
 ```ts
 function withFriends<T extends PgSelect>(qb: T) {
-	return qb.leftJoin(friends, eq(friends.userId, users.id));
+  return qb.leftJoin(friends, eq(friends.userId, users.id));
 }
 
 let query = db.select().from(users).where(eq(users.id, 1)).$dynamic();
@@ -56,95 +48,95 @@ Here is the list of all types that can be used as generic parameters in dynamic 
 {
 
 <table>
-	<thead align='center'>
-		<tr>
-			<td>
-				<b>Dialect</b>
-			</td>
-			<td colspan='4'>
-				<b>Type</b>
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<b>Query</b>
-			</td>
-			<td>
-				<b>Select</b>
-			</td>
-			<td>
-				<b>Insert</b>
-			</td>
-			<td>
-				<b>Update</b>
-			</td>
-			<td>
-				<b>Delete</b>
-			</td>
-		</tr>
-	</thead>
-	<tbody>
-		<tr align='center'>
-			<td rowspan='2'>Postgres</td>
-			<td>
-				<code>PgSelect</code>
-			</td>
-			<td rowspan='2'>
-				<code>PgInsert</code>
-			</td>
-			<td rowspan='2'>
-				<code>PgUpdate</code>
-			</td>
-			<td rowspan='2'>
-				<code>PgDelete</code>
-			</td>
-		</tr>
-		<tr align='center'>
-			<td>
-				<code>PgSelectQueryBuilder</code>
-			</td>
-		</tr>
-		<tr align='center'>
-			<td rowspan='2'>MySQL</td>
-			<td>
-				<code>MySqlSelect</code>
-			</td>
-			<td rowspan='2'>
-				<code>MySqlInsert</code>
-			</td>
-			<td rowspan='2'>
-				<code>MySqlUpdate</code>
-			</td>
-			<td rowspan='2'>
-				<code>MySqlDelete</code>
-			</td>
-		</tr>
-		<tr align='center'>
-			<td>
-				<code>MySqlSelectQueryBuilder</code>
-			</td>
-		</tr>
-		<tr align='center'>
-			<td rowspan='2'>SQLite</td>
-			<td>
-				<code>SQLiteSelect</code>
-			</td>
-			<td rowspan='2'>
-				<code>SQLiteInsert</code>
-			</td>
-			<td rowspan='2'>
-				<code>SQLiteUpdate</code>
-			</td>
-			<td rowspan='2'>
-				<code>SQLiteDelete</code>
-			</td>
-		</tr>
-		<tr align='center'>
-			<td>
-				<code>SQLiteSelectQueryBuilder</code>
-			</td>
-		</tr>
-	</tbody>
+  <thead align="center">
+    <tr>
+      <td>
+        <b>Dialect</b>
+      </td>
+      <td colspan="4">
+        <b>Type</b>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <b>Query</b>
+      </td>
+      <td>
+        <b>Select</b>
+      </td>
+      <td>
+        <b>Insert</b>
+      </td>
+      <td>
+        <b>Update</b>
+      </td>
+      <td>
+        <b>Delete</b>
+      </td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr align="center">
+      <td rowspan="2">Postgres</td>
+      <td>
+        <code>PgSelect</code>
+      </td>
+      <td rowspan="2">
+        <code>PgInsert</code>
+      </td>
+      <td rowspan="2">
+        <code>PgUpdate</code>
+      </td>
+      <td rowspan="2">
+        <code>PgDelete</code>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <code>PgSelectQueryBuilder</code>
+      </td>
+    </tr>
+    <tr align="center">
+      <td rowspan="2">MySQL</td>
+      <td>
+        <code>MySqlSelect</code>
+      </td>
+      <td rowspan="2">
+        <code>MySqlInsert</code>
+      </td>
+      <td rowspan="2">
+        <code>MySqlUpdate</code>
+      </td>
+      <td rowspan="2">
+        <code>MySqlDelete</code>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <code>MySqlSelectQueryBuilder</code>
+      </td>
+    </tr>
+    <tr align="center">
+      <td rowspan="2">SQLite</td>
+      <td>
+        <code>SQLiteSelect</code>
+      </td>
+      <td rowspan="2">
+        <code>SQLiteInsert</code>
+      </td>
+      <td rowspan="2">
+        <code>SQLiteUpdate</code>
+      </td>
+      <td rowspan="2">
+        <code>SQLiteDelete</code>
+      </td>
+    </tr>
+    <tr align="center">
+      <td>
+        <code>SQLiteSelectQueryBuilder</code>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 }

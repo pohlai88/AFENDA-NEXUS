@@ -8,6 +8,11 @@ build/
 .next/
 .turbo/
 
+# Test/coverage outputs (generated)
+**/coverage/
+**/playwright-report/
+**/test-results/
+
 # Generated files
 *.generated.ts
 *.generated.js
@@ -24,8 +29,17 @@ CHANGELOG.md
 **/__fixtures__/
 **/*.snap
 
-# Database migrations (preserve formatting)
-packages/db/drizzle/migrations/
+# Agent skills (third-party, not our code)
+.agents/skills/
+
+# Next.js auto-generated
+apps/web/next-env.d.ts
+
+# ARCHITECTURE frontmatter (YAML parsed by arch-guard, prettier breaks quoting)
+**/ARCHITECTURE.*.md
+
+# Database migrations and Drizzle meta (preserve formatting)
+packages/db/drizzle/
 
 # Git files
 .git/

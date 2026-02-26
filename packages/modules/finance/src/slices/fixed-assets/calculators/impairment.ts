@@ -27,13 +27,13 @@ export interface ImpairmentResult {
  * Impairment loss = carrying amount - recoverable amount (if positive)
  */
 export function computeImpairment(input: ImpairmentInput): ImpairmentResult {
-  const recoverableAmount = input.fairValueLessCostsOfDisposal > input.valueInUse
-    ? input.fairValueLessCostsOfDisposal
-    : input.valueInUse;
+  const recoverableAmount =
+    input.fairValueLessCostsOfDisposal > input.valueInUse
+      ? input.fairValueLessCostsOfDisposal
+      : input.valueInUse;
 
-  const impairmentLoss = input.carryingAmount > recoverableAmount
-    ? input.carryingAmount - recoverableAmount
-    : 0n;
+  const impairmentLoss =
+    input.carryingAmount > recoverableAmount ? input.carryingAmount - recoverableAmount : 0n;
 
   return {
     assetId: input.assetId,

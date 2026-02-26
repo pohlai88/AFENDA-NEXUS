@@ -8,11 +8,11 @@
  */
 
 export type TransferPricingMethod =
-  | "CUP"   // Comparable Uncontrolled Price
-  | "RPM"   // Resale Price Method
-  | "CPM"   // Cost Plus Method
-  | "TNMM"  // Transactional Net Margin Method
-  | "PSM";  // Profit Split Method
+  | 'CUP' // Comparable Uncontrolled Price
+  | 'RPM' // Resale Price Method
+  | 'CPM' // Cost Plus Method
+  | 'TNMM' // Transactional Net Margin Method
+  | 'PSM'; // Profit Split Method
 
 export interface TransferPricingInput {
   readonly transactionId: string;
@@ -27,7 +27,7 @@ export interface TransferPricingInput {
   readonly toleranceBps: number;
 }
 
-export type TransferPricingStatus = "WITHIN_RANGE" | "BELOW_RANGE" | "ABOVE_RANGE";
+export type TransferPricingStatus = 'WITHIN_RANGE' | 'BELOW_RANGE' | 'ABOVE_RANGE';
 
 export interface TransferPricingResult {
   readonly transactionId: string;
@@ -49,21 +49,22 @@ export function validateTransferPrice(input: TransferPricingInput): TransferPric
   const absVariance = varianceAmount < 0n ? -varianceAmount : varianceAmount;
 
   // Variance in bps: (absVariance / benchmark) * 10000
-  const varianceBps = input.benchmarkAmount !== 0n
-    ? Number((absVariance * 10000n) / input.benchmarkAmount)
-    : 0;
+  const varianceBps =
+    input.benchmarkAmount !== 0n ? Number((absVariance * 10000n) / input.benchmarkAmount) : 0;
 
   let status: TransferPricingStatus;
   let adjustmentRequired = 0n;
 
   if (varianceBps <= input.toleranceBps) {
-    status = "WITHIN_RANGE";
+    status = 'WITHIN_RANGE';
   } else if (varianceAmount > 0n) {
-    status = "ABOVE_RANGE";
-    adjustmentRequired = varianceAmount - (input.benchmarkAmount * BigInt(input.toleranceBps)) / 10000n;
+    status = 'ABOVE_RANGE';
+    adjustmentRequired =
+      varianceAmount - (input.benchmarkAmount * BigInt(input.toleranceBps)) / 10000n;
   } else {
-    status = "BELOW_RANGE";
-    adjustmentRequired = -varianceAmount - (input.benchmarkAmount * BigInt(input.toleranceBps)) / 10000n;
+    status = 'BELOW_RANGE';
+    adjustmentRequired =
+      -varianceAmount - (input.benchmarkAmount * BigInt(input.toleranceBps)) / 10000n;
   }
 
   return {
@@ -82,7 +83,7 @@ export function validateTransferPrice(input: TransferPricingInput): TransferPric
  * Batch validate transfer prices.
  */
 export function validateBatchTransferPrices(
-  inputs: readonly TransferPricingInput[],
+  inputs: readonly TransferPricingInput[]
 ): readonly TransferPricingResult[] {
   return inputs.map(validateTransferPrice);
 }

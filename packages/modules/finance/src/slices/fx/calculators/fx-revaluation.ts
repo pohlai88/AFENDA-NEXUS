@@ -7,8 +7,8 @@
  * Computes unrealized FX gain/loss for monetary accounts denominated
  * in foreign currencies, revalued at the current closing rate.
  */
-import type { AccountType } from "../../../shared/types.js";
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { AccountType } from '../../../shared/types.js';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 const PRECISION_SCALE = 10_000_000_000n;
 
@@ -60,7 +60,7 @@ function applyRate(amount: bigint, rate: number): bigint {
 export function computeRevaluation(
   balances: readonly MonetaryBalance[],
   closingRate: number,
-  rateDate: string,
+  rateDate: string
 ): CalculatorResult<RevaluationResult> {
   if (closingRate <= 0 || !Number.isFinite(closingRate)) {
     throw new Error(`Closing rate must be finite and > 0, got ${closingRate}`);
@@ -69,11 +69,11 @@ export function computeRevaluation(
   const lines: RevaluationLine[] = [];
   let totalGain = 0n;
   let totalLoss = 0n;
-  let currency = "";
+  let currency = '';
 
   for (const bal of balances) {
     // Only revalue monetary items (assets/liabilities)
-    if (bal.accountType !== "ASSET" && bal.accountType !== "LIABILITY") continue;
+    if (bal.accountType !== 'ASSET' && bal.accountType !== 'LIABILITY') continue;
     // Only revalue foreign currency balances
     if (bal.originalCurrency === bal.bookCurrency) continue;
 
@@ -108,7 +108,7 @@ export function computeRevaluation(
       totalUnrealizedGain: totalGain,
       totalUnrealizedLoss: totalLoss,
       netUnrealized,
-      currency: currency || balances[0]?.bookCurrency || "USD",
+      currency: currency || balances[0]?.bookCurrency || 'USD',
       rateDate,
     },
     inputs: { balanceCount: balances.length, closingRate, rateDate },

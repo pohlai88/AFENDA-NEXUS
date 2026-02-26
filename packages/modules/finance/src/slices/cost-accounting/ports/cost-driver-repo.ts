@@ -1,10 +1,10 @@
-import type { CostDriver, CostDriverValue } from "../entities/cost-driver.js";
+import type { CostDriver, CostDriverValue } from '../entities/cost-driver.js';
 
 export interface CreateCostDriverInput {
   readonly companyId: string;
   readonly code: string;
   readonly name: string;
-  readonly driverType: CostDriver["driverType"];
+  readonly driverType: CostDriver['driverType'];
   readonly unitOfMeasure: string;
 }
 
@@ -20,7 +20,10 @@ export interface ICostDriverRepo {
   findByCompany(companyId: string): Promise<readonly CostDriver[]>;
   findAll(): Promise<readonly CostDriver[]>;
   create(tenantId: string, input: CreateCostDriverInput): Promise<CostDriver>;
-  update(id: string, input: Partial<CreateCostDriverInput & { isActive: boolean }>): Promise<CostDriver>;
+  update(
+    id: string,
+    input: Partial<CreateCostDriverInput & { isActive: boolean }>
+  ): Promise<CostDriver>;
   getDriverValues(driverId: string, periodId: string): Promise<readonly CostDriverValue[]>;
   upsertDriverValue(tenantId: string, input: UpsertDriverValueInput): Promise<CostDriverValue>;
 }

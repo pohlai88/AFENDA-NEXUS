@@ -3,14 +3,15 @@ title: How to setup PostgreSQL locally
 slug: postgresql-local-setup
 ---
 
-import Section from "@mdx/Section.astro";
-import Prerequisites from "@mdx/Prerequisites.astro";
+import Section from '@mdx/Section.astro';
+import Prerequisites from '@mdx/Prerequisites.astro';
 import CodeTabs from '@mdx/CodeTabs.astro';
 import CodeTab from '@mdx/CodeTab.astro';
 import Steps from '@mdx/Steps.astro';
 
 <Prerequisites>
-- Install latest [Docker Desktop](https://www.docker.com/products/docker-desktop/). Follow the instructions for your operating system.
+  - Install latest [Docker Desktop](https://www.docker.com/products/docker-desktop/). Follow the
+  instructions for your operating system.
 </Prerequisites>
 
 <Steps>
@@ -40,6 +41,7 @@ docker images
 REPOSITORY   TAG       IMAGE ID       CREATED         SIZE
 postgres     latest    75282fa229a1   6 weeks ago     453MB
 ```
+
 </Section>
 
 #### Start a Postgres instance
@@ -83,4 +85,5 @@ postgres://postgres:mypassword@localhost:5432/postgres
 ```
 
 Now you can connect to the database using the URL in your application.
+
 </Steps>

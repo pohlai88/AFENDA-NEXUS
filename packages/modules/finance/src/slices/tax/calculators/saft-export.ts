@@ -71,7 +71,7 @@ export function buildSaftFile(
   header: SaftHeader,
   accounts: readonly SaftAccount[],
   transactions: readonly SaftTransaction[],
-  taxEntries: readonly SaftTaxEntry[],
+  taxEntries: readonly SaftTaxEntry[]
 ): SaftFile {
   let totalDebit = 0n;
   let totalCredit = 0n;
@@ -110,15 +110,15 @@ export function validateSaftFile(file: SaftFile): SaftValidationResult {
   }
 
   if (file.transactionCount === 0) {
-    errors.push("No transactions in SAF-T file");
+    errors.push('No transactions in SAF-T file');
   }
 
   if (!file.header.taxRegistrationNumber) {
-    errors.push("Missing tax registration number");
+    errors.push('Missing tax registration number');
   }
 
   if (file.header.startDate > file.header.endDate) {
-    errors.push("Start date is after end date");
+    errors.push('Start date is after end date');
   }
 
   for (const acct of file.accounts) {

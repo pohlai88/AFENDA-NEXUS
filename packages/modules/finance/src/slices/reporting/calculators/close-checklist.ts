@@ -7,9 +7,9 @@
  * Manages financial close checklist: task dependencies, sequencing,
  * and readiness validation.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type CloseTaskStatus = "pending" | "in_progress" | "completed" | "blocked" | "skipped";
+export type CloseTaskStatus = 'pending' | 'in_progress' | 'completed' | 'blocked' | 'skipped';
 
 export interface CloseTask {
   readonly id: string;
@@ -26,7 +26,11 @@ export interface CloseReadinessResult {
   readonly completedCount: number;
   readonly pendingCount: number;
   readonly blockedCount: number;
-  readonly blockedTasks: readonly { taskId: string; taskName: string; blockedBy: readonly string[] }[];
+  readonly blockedTasks: readonly {
+    taskId: string;
+    taskName: string;
+    blockedBy: readonly string[];
+  }[];
   readonly nextTasks: readonly CloseTask[];
 }
 
@@ -36,17 +40,17 @@ export interface CloseReadinessResult {
  * A task is "blocked" when any dependency is not yet completed.
  */
 export function resolveCloseReadiness(
-  tasks: readonly CloseTask[],
+  tasks: readonly CloseTask[]
 ): CalculatorResult<CloseReadinessResult> {
   const completedOrSkipped = new Set(
-    tasks.filter((t) => t.status === "completed" || t.status === "skipped").map((t) => t.id),
+    tasks.filter((t) => t.status === 'completed' || t.status === 'skipped').map((t) => t.id)
   );
 
   const blockedTasks: { taskId: string; taskName: string; blockedBy: string[] }[] = [];
   const nextTasks: CloseTask[] = [];
 
   for (const task of tasks) {
-    if (task.status === "completed" || task.status === "skipped") continue;
+    if (task.status === 'completed' || task.status === 'skipped') continue;
 
     const unmetDeps = task.dependsOn.filter((depId) => !completedOrSkipped.has(depId));
 
@@ -56,13 +60,13 @@ export function resolveCloseReadiness(
         taskName: task.name,
         blockedBy: unmetDeps,
       });
-    } else if (task.status === "pending") {
+    } else if (task.status === 'pending') {
       nextTasks.push(task);
     }
   }
 
-  const completedCount = tasks.filter((t) => t.status === "completed").length;
-  const pendingCount = tasks.filter((t) => t.status === "pending").length;
+  const completedCount = tasks.filter((t) => t.status === 'completed').length;
+  const pendingCount = tasks.filter((t) => t.status === 'pending').length;
   const ready = pendingCount === 0 && blockedTasks.length === 0;
 
   return {
@@ -93,7 +97,7 @@ export interface MultiCompanyCloseOrder {
  * Subsidiaries close before parent; parent consolidates after all subs are done.
  */
 export function sequenceMultiCompanyClose(
-  companies: readonly MultiCompanyCloseOrder[],
+  companies: readonly MultiCompanyCloseOrder[]
 ): CalculatorResult<string[]> {
   const byId = new Map(companies.map((c) => [c.companyId, c]));
   const inDegree = new Map<string, number>();
@@ -129,13 +133,13 @@ export function sequenceMultiCompanyClose(
 
   if (sorted.length !== companies.length) {
     throw new Error(
-      `Circular dependency detected in multi-company close order. Resolved ${sorted.length}/${companies.length} companies.`,
+      `Circular dependency detected in multi-company close order. Resolved ${sorted.length}/${companies.length} companies.`
     );
   }
 
   return {
     result: sorted,
     inputs: { companyCount: companies.length },
-    explanation: `Close order: ${sorted.map((id) => byId.get(id)?.companyName ?? id).join(" → ")}`,
+    explanation: `Close order: ${sorted.map((id) => byId.get(id)?.companyName ?? id).join(' → ')}`,
   };
 }

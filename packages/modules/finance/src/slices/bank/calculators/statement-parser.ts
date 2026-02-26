@@ -4,8 +4,8 @@
  * No DB, no side effects.
  */
 
-import type { StatementFormat } from "../entities/bank-statement.js";
-import type { TransactionType } from "../entities/bank-statement-line.js";
+import type { StatementFormat } from '../entities/bank-statement.js';
+import type { TransactionType } from '../entities/bank-statement-line.js';
 
 export interface ParsedStatementLine {
   readonly lineNumber: number;
@@ -51,11 +51,12 @@ export function parseOfx(raw: string): ParseResult {
   const currencyMatch = raw.match(/<CURDEF>([A-Z]{3})/);
   const balStartMatch = raw.match(/<BALAMT>([+-]?\d+)/);
 
-  if (!accountMatch) errors.push("Missing ACCTID");
-  if (!currencyMatch) errors.push("Missing CURDEF");
+  if (!accountMatch) errors.push('Missing ACCTID');
+  if (!currencyMatch) errors.push('Missing CURDEF');
 
   // Extract transactions
-  const txRegex = /<STMTTRN>[\s\S]*?<TRNTYPE>(\w+)[\s\S]*?<DTPOSTED>(\d{8})[\s\S]*?<TRNAMT>([+-]?\d+)[\s\S]*?<NAME>([^<\n]*)[\s\S]*?<\/STMTTRN>/g;
+  const txRegex =
+    /<STMTTRN>[\s\S]*?<TRNTYPE>(\w+)[\s\S]*?<DTPOSTED>(\d{8})[\s\S]*?<TRNAMT>([+-]?\d+)[\s\S]*?<NAME>([^<\n]*)[\s\S]*?<\/STMTTRN>/g;
   let match: RegExpExecArray | null;
   let lineNum = 1;
 
@@ -65,7 +66,7 @@ export function parseOfx(raw: string): ParseResult {
       lineNumber: lineNum++,
       transactionDate: parseOfxDate(match[2]!),
       valueDate: null,
-      transactionType: amt < 0n ? "DEBIT" : "CREDIT",
+      transactionType: amt < 0n ? 'DEBIT' : 'CREDIT',
       amount: amt < 0n ? -amt : amt,
       reference: null,
       description: match[4]!.trim(),
@@ -79,7 +80,7 @@ export function parseOfx(raw: string): ParseResult {
   return {
     isValid: true,
     statement: {
-      format: "OFX",
+      format: 'OFX',
       bankAccountId: accountMatch![1]!.trim(),
       bankAccountName: accountMatch![1]!.trim(),
       statementDate: new Date(),
@@ -101,15 +102,15 @@ export function parseOfx(raw: string): ParseResult {
 export function parseCsv(raw: string, currencyCode: string, bankAccountId: string): ParseResult {
   const errors: string[] = [];
   const lines: ParsedStatementLine[] = [];
-  const rows = raw.trim().split("\n");
+  const rows = raw.trim().split('\n');
 
   if (rows.length < 2) {
-    errors.push("CSV must have header + at least one data row");
+    errors.push('CSV must have header + at least one data row');
     return { isValid: false, statement: null, errors };
   }
 
   for (let i = 1; i < rows.length; i++) {
-    const cols = rows[i]!.split(",").map((c) => c.trim());
+    const cols = rows[i]!.split(',').map((c) => c.trim());
     if (cols.length < 5) {
       errors.push(`Row ${i}: expected 5 columns, got ${cols.length}`);
       continue;
@@ -133,7 +134,7 @@ export function parseCsv(raw: string, currencyCode: string, bankAccountId: strin
   return {
     isValid: true,
     statement: {
-      format: "CSV",
+      format: 'CSV',
       bankAccountId,
       bankAccountName: bankAccountId,
       statementDate: new Date(),

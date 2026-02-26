@@ -1,4 +1,4 @@
-import type { CostCenter } from "../entities/cost-center.js";
+import type { CostCenter } from '../entities/cost-center.js';
 
 export interface CreateCostCenterInput {
   readonly companyId: string;
@@ -19,5 +19,8 @@ export interface ICostCenterRepo {
   findChildren(parentId: string): Promise<readonly CostCenter[]>;
   findAll(): Promise<readonly CostCenter[]>;
   create(tenantId: string, input: CreateCostCenterInput): Promise<CostCenter>;
-  update(id: string, input: Partial<CreateCostCenterInput & { status: CostCenter["status"] }>): Promise<CostCenter>;
+  update(
+    id: string,
+    input: Partial<CreateCostCenterInput & { status: CostCenter['status'] }>
+  ): Promise<CostCenter>;
 }

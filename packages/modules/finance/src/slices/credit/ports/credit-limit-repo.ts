@@ -1,4 +1,4 @@
-import type { CreditLimit } from "../entities/credit-limit.js";
+import type { CreditLimit } from '../entities/credit-limit.js';
 
 export interface CreateCreditLimitInput {
   readonly customerId: string;
@@ -17,5 +17,16 @@ export interface ICreditLimitRepo {
   findByCompany(companyId: string): Promise<readonly CreditLimit[]>;
   findAll(): Promise<readonly CreditLimit[]>;
   create(tenantId: string, input: CreateCreditLimitInput): Promise<CreditLimit>;
-  update(id: string, input: Partial<CreateCreditLimitInput & { currentExposure: bigint; availableCredit: bigint; status: CreditLimit["status"]; lastReviewDate: Date; nextReviewDate: Date }>): Promise<CreditLimit>;
+  update(
+    id: string,
+    input: Partial<
+      CreateCreditLimitInput & {
+        currentExposure: bigint;
+        availableCredit: bigint;
+        status: CreditLimit['status'];
+        lastReviewDate: Date;
+        nextReviewDate: Date;
+      }
+    >
+  ): Promise<CreditLimit>;
 }

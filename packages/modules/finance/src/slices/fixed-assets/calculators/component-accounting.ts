@@ -5,7 +5,7 @@
  * Uses raw bigint for amounts (minor units).
  */
 
-import type { DepreciationMethod } from "../entities/asset.js";
+import type { DepreciationMethod } from '../entities/asset.js';
 
 export interface ComponentSplit {
   readonly name: string;

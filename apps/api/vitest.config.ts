@@ -1,18 +1,21 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   ssr: {
     resolve: {
-      conditions: ["source", "import", "default"],
+      conditions: ['source', 'import', 'default'],
     },
   },
   test: {
     globals: true,
-    environment: "node",
-    include: ["src/**/*.test.ts"],
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
     reporters: process.env.CI
-      ? [["default", { summary: false }], ["junit", { outputFile: "test-results.xml" }]]
-      : [["default", { summary: false }]],
+      ? [
+          ['default', { summary: false }],
+          ['junit', { outputFile: 'test-results.xml' }],
+        ]
+      : [['default', { summary: false }]],
     clearMocks: true,
     restoreMocks: true,
     testTimeout: 30_000,

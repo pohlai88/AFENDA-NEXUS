@@ -5,10 +5,10 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
-export type ProrationMethod = "DAILY" | "CALENDAR_MONTH" | "NONE";
-export type ChangeType = "UPGRADE" | "DOWNGRADE" | "CANCELLATION" | "NEW";
+export type ProrationMethod = 'DAILY' | 'CALENDAR_MONTH' | 'NONE';
+export type ChangeType = 'UPGRADE' | 'DOWNGRADE' | 'CANCELLATION' | 'NEW';
 
 export interface SubscriptionChange {
   readonly subscriptionId: string;
@@ -51,9 +51,9 @@ function daysBetween(start: string, end: string): number {
  */
 export function computeSubscriptionProration(
   changes: readonly SubscriptionChange[],
-  method: ProrationMethod = "DAILY",
+  method: ProrationMethod = 'DAILY'
 ): CalculatorResult<ProrationResult> {
-  if (changes.length === 0) throw new Error("At least one subscription change is required");
+  if (changes.length === 0) throw new Error('At least one subscription change is required');
 
   const lines: ProrationLine[] = [];
   let totalCredits = 0n;
@@ -67,7 +67,7 @@ export function computeSubscriptionProration(
     let creditAmount: bigint;
     let chargeAmount: bigint;
 
-    if (method === "NONE") {
+    if (method === 'NONE') {
       creditAmount = 0n;
       chargeAmount = change.newPlanAmount;
     } else {
@@ -78,9 +78,8 @@ export function computeSubscriptionProration(
       // Credit for unused days on old plan
       creditAmount = dailyOld * BigInt(daysRemainingNewPlan);
       // Charge for remaining days on new plan
-      chargeAmount = change.changeType === "CANCELLATION"
-        ? 0n
-        : dailyNew * BigInt(daysRemainingNewPlan);
+      chargeAmount =
+        change.changeType === 'CANCELLATION' ? 0n : dailyNew * BigInt(daysRemainingNewPlan);
     }
 
     const netAmount = chargeAmount - creditAmount;

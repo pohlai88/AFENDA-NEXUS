@@ -1,4 +1,4 @@
-import type { DeferredTaxItem } from "../entities/deferred-tax-item.js";
+import type { DeferredTaxItem } from '../entities/deferred-tax-item.js';
 
 export interface CreateDeferredTaxItemInput {
   readonly companyId: string;

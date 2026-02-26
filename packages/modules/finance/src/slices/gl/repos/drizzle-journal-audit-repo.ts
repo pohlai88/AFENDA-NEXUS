@@ -1,20 +1,23 @@
-import { eq } from "drizzle-orm";
-import { ok } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { TenantTx } from "@afenda/db";
-import { auditLogs } from "@afenda/db";
-import type { JournalAuditEntry } from "../entities/journal-audit.js";
-import type { IJournalAuditRepo, AuditLogInput } from "../../../slices/gl/ports/journal-audit-repo.js";
+import { eq } from 'drizzle-orm';
+import { ok } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { TenantTx } from '@afenda/db';
+import { auditLogs } from '@afenda/db';
+import type { JournalAuditEntry } from '../entities/journal-audit.js';
+import type {
+  IJournalAuditRepo,
+  AuditLogInput,
+} from '../../../slices/gl/ports/journal-audit-repo.js';
 
 export class DrizzleJournalAuditRepo implements IJournalAuditRepo {
-  constructor(private readonly tx: TenantTx) { }
+  constructor(private readonly tx: TenantTx) {}
 
   async log(input: AuditLogInput): Promise<void> {
     await this.tx.insert(auditLogs).values({
       tenantId: input.tenantId,
       userId: input.userId,
       action: `JOURNAL_${input.toStatus}`,
-      tableName: "erp.gl_journal",
+      tableName: 'erp.gl_journal',
       recordId: input.journalId,
       oldData: input.fromStatus ? { status: input.fromStatus } : null,
       newData: {
@@ -38,14 +41,16 @@ export class DrizzleJournalAuditRepo implements IJournalAuditRepo {
           id: r.id,
           journalId: r.recordId!,
           tenantId: r.tenantId,
-          fromStatus: (r.oldData as { status: string } | null)?.status as JournalAuditEntry["fromStatus"] ?? null,
-          toStatus: (newData?.status as JournalAuditEntry["toStatus"]) ?? "DRAFT",
+          fromStatus:
+            ((r.oldData as { status: string } | null)?.status as JournalAuditEntry['fromStatus']) ??
+            null,
+          toStatus: (newData?.status as JournalAuditEntry['toStatus']) ?? 'DRAFT',
           userId: r.userId!,
           reason: newData?.reason as string | undefined,
           correlationId: newData?.correlationId as string | undefined,
           occurredAt: r.occurredAt,
         };
-      }),
+      })
     );
   }
 }

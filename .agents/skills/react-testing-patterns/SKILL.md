@@ -1,12 +1,12 @@
 ---
 name: react-testing-patterns
 description: >-
-  React component and hook testing patterns with Testing Library and Vitest. Use when
-  writing tests for React components, custom hooks, or data fetching logic. Covers
-  component rendering tests, user interaction simulation, async state testing, MSW for
-  API mocking, hook testing with renderHook, accessibility assertions, and snapshot
-  testing guidelines. Does NOT cover E2E tests (use e2e-testing) or TDD workflow
-  enforcement (use tdd-workflow).
+  React component and hook testing patterns with Testing Library and Vitest. Use
+  when writing tests for React components, custom hooks, or data fetching logic.
+  Covers component rendering tests, user interaction simulation, async state
+  testing, MSW for API mocking, hook testing with renderHook, accessibility
+  assertions, and snapshot testing guidelines. Does NOT cover E2E tests (use
+  e2e-testing) or TDD workflow enforcement (use tdd-workflow).
 license: MIT
 compatibility: 'React 18+, Testing Library 14+, MSW 2+, jest-axe, Vitest/Jest'
 metadata:
@@ -22,6 +22,7 @@ context: fork
 ## When to Use
 
 Activate this skill when:
+
 - Writing tests for React components (rendering, interaction, accessibility)
 - Testing custom hooks with `renderHook`
 - Mocking API calls with MSW (Mock Service Worker)
@@ -30,6 +31,7 @@ Activate this skill when:
 - Setting up test infrastructure (providers, test utilities)
 
 Do NOT use this skill for:
+
 - E2E browser tests with Playwright (use `e2e-testing`)
 - Backend Python tests (use `pytest-patterns`)
 - TDD workflow enforcement (use `tdd-workflow`)
@@ -42,6 +44,7 @@ Do NOT use this skill for:
 **Core principle:** Test behavior, not implementation.
 
 **Query priority** (prefer higher in the list):
+
 1. `getByRole` — accessible role (button, heading, textbox)
 2. `getByLabelText` — form elements with labels
 3. `getByPlaceholderText` — input placeholders
@@ -51,19 +54,21 @@ Do NOT use this skill for:
 7. `getByTestId` — last resort (data-testid attribute)
 
 **Interaction:** Always use `userEvent` over `fireEvent`:
+
 ```tsx
-import userEvent from "@testing-library/user-event";
+import userEvent from '@testing-library/user-event';
 
 // Good — simulates real user behavior
 const user = userEvent.setup();
 await user.click(button);
-await user.type(input, "hello");
+await user.type(input, 'hello');
 
 // Bad — low-level event dispatch
 fireEvent.click(button);
 ```
 
 **What NOT to test:**
+
 - Internal component state (don't test `useState` values directly)
 - CSS classes or styles
 - Component instance methods
@@ -76,35 +81,35 @@ fireEvent.click(button);
 Every component test follows Arrange → Act → Assert:
 
 ```tsx
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { axe } from "jest-axe";
-import { UserCard } from "./UserCard";
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { axe } from 'jest-axe';
+import { UserCard } from './UserCard';
 
-describe("UserCard", () => {
+describe('UserCard', () => {
   const defaultProps = {
-    user: { id: 1, displayName: "Alice", email: "alice@example.com" },
+    user: { id: 1, displayName: 'Alice', email: 'alice@example.com' },
     onEdit: vi.fn(),
   };
 
-  it("renders user name", () => {
+  it('renders user name', () => {
     // Arrange
     render(<UserCard {...defaultProps} />);
     // Assert
-    expect(screen.getByText("Alice")).toBeInTheDocument();
+    expect(screen.getByText('Alice')).toBeInTheDocument();
   });
 
-  it("calls onEdit when edit button is clicked", async () => {
+  it('calls onEdit when edit button is clicked', async () => {
     // Arrange
     const user = userEvent.setup();
     render(<UserCard {...defaultProps} />);
     // Act
-    await user.click(screen.getByRole("button", { name: /edit/i }));
+    await user.click(screen.getByRole('button', { name: /edit/i }));
     // Assert
     expect(defaultProps.onEdit).toHaveBeenCalledWith(1);
   });
 
-  it("has no accessibility violations", async () => {
+  it('has no accessibility violations', async () => {
     const { container } = render(<UserCard {...defaultProps} />);
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -116,7 +121,7 @@ describe("UserCard", () => {
 #### waitFor (wait for state update)
 
 ```tsx
-it("shows user data after loading", async () => {
+it('shows user data after loading', async () => {
   render(<UserProfile userId={1} />);
 
   // Loading state
@@ -124,7 +129,7 @@ it("shows user data after loading", async () => {
 
   // Wait for data to appear
   await waitFor(() => {
-    expect(screen.getByText("Alice")).toBeInTheDocument();
+    expect(screen.getByText('Alice')).toBeInTheDocument();
   });
 
   // Loading state gone
@@ -135,34 +140,32 @@ it("shows user data after loading", async () => {
 #### findBy (built-in waitFor)
 
 ```tsx
-it("shows user data after loading", async () => {
+it('shows user data after loading', async () => {
   render(<UserProfile userId={1} />);
 
   // findBy = getBy + waitFor — preferred for async appearance
-  const heading = await screen.findByRole("heading", { name: "Alice" });
+  const heading = await screen.findByRole('heading', { name: 'Alice' });
   expect(heading).toBeInTheDocument();
 });
 ```
 
-**Prefer `findBy*` over `waitFor` + `getBy*`** for elements that appear asynchronously.
+**Prefer `findBy*` over `waitFor` + `getBy*`** for elements that appear
+asynchronously.
 
 #### Testing Error States
 
 ```tsx
-it("shows error message on API failure", async () => {
+it('shows error message on API failure', async () => {
   // Override MSW handler for this test
   server.use(
-    http.get("/api/users/:id", () => {
-      return HttpResponse.json(
-        { detail: "User not found" },
-        { status: 404 },
-      );
-    }),
+    http.get('/api/users/:id', () => {
+      return HttpResponse.json({ detail: 'User not found' }, { status: 404 });
+    })
   );
 
   render(<UserProfile userId={999} />);
 
-  const error = await screen.findByRole("alert");
+  const error = await screen.findByRole('alert');
   expect(error).toHaveTextContent(/not found/i);
 });
 ```
@@ -173,33 +176,33 @@ Setup a mock server for all API tests:
 
 ```tsx
 // test/mocks/handlers.ts
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse } from 'msw';
 
 export const handlers = [
-  http.get("/api/users", () => {
+  http.get('/api/users', () => {
     return HttpResponse.json({
       items: [
-        { id: 1, displayName: "Alice", email: "alice@example.com" },
-        { id: 2, displayName: "Bob", email: "bob@example.com" },
+        { id: 1, displayName: 'Alice', email: 'alice@example.com' },
+        { id: 2, displayName: 'Bob', email: 'bob@example.com' },
       ],
       next_cursor: null,
       has_more: false,
     });
   }),
 
-  http.get("/api/users/:id", ({ params }) => {
+  http.get('/api/users/:id', ({ params }) => {
     return HttpResponse.json({
       id: Number(params.id),
-      displayName: "Alice",
-      email: "alice@example.com",
+      displayName: 'Alice',
+      email: 'alice@example.com',
     });
   }),
 
-  http.post("/api/users", async ({ request }) => {
+  http.post('/api/users', async ({ request }) => {
     const body = await request.json();
     return HttpResponse.json(
       { id: 3, ...body, created_at: new Date().toISOString() },
-      { status: 201 },
+      { status: 201 }
     );
   }),
 ];
@@ -207,63 +210,71 @@ export const handlers = [
 
 ```tsx
 // test/mocks/server.ts
-import { setupServer } from "msw/node";
-import { handlers } from "./handlers";
+import { setupServer } from 'msw/node';
+import { handlers } from './handlers';
 
 export const server = setupServer(...handlers);
 ```
 
 ```tsx
 // test/setup.ts (Vitest setup file)
-import { server } from "./mocks/server";
+import { server } from './mocks/server';
 
-beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 ```
 
 **Per-test handler override:**
+
 ```tsx
 server.use(
-  http.get("/api/users", () => {
+  http.get('/api/users', () => {
     return HttpResponse.json({ items: [], next_cursor: null, has_more: false });
-  }),
+  })
 );
 ```
 
 ### Hook Testing
 
 ```tsx
-import { renderHook, act } from "@testing-library/react";
-import { useDebounce } from "./useDebounce";
+import { renderHook, act } from '@testing-library/react';
+import { useDebounce } from './useDebounce';
 
-describe("useDebounce", () => {
-  beforeEach(() => { vi.useFakeTimers(); });
-  afterEach(() => { vi.useRealTimers(); });
-
-  it("returns initial value immediately", () => {
-    const { result } = renderHook(() => useDebounce("hello", 300));
-    expect(result.current).toBe("hello");
+describe('useDebounce', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  it("debounces value changes", () => {
+  it('returns initial value immediately', () => {
+    const { result } = renderHook(() => useDebounce('hello', 300));
+    expect(result.current).toBe('hello');
+  });
+
+  it('debounces value changes', () => {
     const { result, rerender } = renderHook(
       ({ value }) => useDebounce(value, 300),
-      { initialProps: { value: "hello" } },
+      { initialProps: { value: 'hello' } }
     );
 
-    rerender({ value: "world" });
-    expect(result.current).toBe("hello"); // Still old value
+    rerender({ value: 'world' });
+    expect(result.current).toBe('hello'); // Still old value
 
-    act(() => { vi.advanceTimersByTime(300); });
-    expect(result.current).toBe("world"); // Now updated
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(result.current).toBe('world'); // Now updated
   });
 });
 ```
 
 **Testing hooks with TanStack Query:**
+
 ```tsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -274,7 +285,7 @@ function createWrapper() {
   );
 }
 
-it("fetches users", async () => {
+it('fetches users', async () => {
   const { result } = renderHook(() => useUsers(), { wrapper: createWrapper() });
   await waitFor(() => expect(result.current.isSuccess).toBe(true));
   expect(result.current.data).toHaveLength(2);
@@ -286,11 +297,11 @@ it("fetches users", async () => {
 Add to every component test file:
 
 ```tsx
-import { axe, toHaveNoViolations } from "jest-axe";
+import { axe, toHaveNoViolations } from 'jest-axe';
 
 expect.extend(toHaveNoViolations);
 
-it("has no accessibility violations", async () => {
+it('has no accessibility violations', async () => {
   const { container } = render(<UserCard {...defaultProps} />);
   const results = await axe(container);
   expect(results).toHaveNoViolations();
@@ -303,10 +314,10 @@ Create a custom render that wraps components with required providers:
 
 ```tsx
 // test/utils.tsx
-import { render, RenderOptions } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MemoryRouter } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { render, RenderOptions } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 function AllProviders({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient({
@@ -321,7 +332,10 @@ function AllProviders({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function renderWithProviders(ui: React.ReactElement, options?: RenderOptions) {
+export function renderWithProviders(
+  ui: React.ReactElement,
+  options?: RenderOptions
+) {
   return render(ui, { wrapper: AllProviders, ...options });
 }
 ```
@@ -331,27 +345,27 @@ export function renderWithProviders(ui: React.ReactElement, options?: RenderOpti
 ### Testing a Form Component
 
 ```tsx
-describe("CreateUserForm", () => {
-  it("submits valid data", async () => {
+describe('CreateUserForm', () => {
+  it('submits valid data', async () => {
     const onSubmit = vi.fn();
     const user = userEvent.setup();
     render(<CreateUserForm onSubmit={onSubmit} />);
 
-    await user.type(screen.getByLabelText(/email/i), "test@example.com");
-    await user.type(screen.getByLabelText(/name/i), "Test User");
-    await user.click(screen.getByRole("button", { name: /create/i }));
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/name/i), 'Test User');
+    await user.click(screen.getByRole('button', { name: /create/i }));
 
     expect(onSubmit).toHaveBeenCalledWith({
-      email: "test@example.com",
-      displayName: "Test User",
-      role: "member",
+      email: 'test@example.com',
+      displayName: 'Test User',
+      role: 'member',
     });
   });
 
-  it("shows validation errors for empty required fields", async () => {
+  it('shows validation errors for empty required fields', async () => {
     const user = userEvent.setup();
     render(<CreateUserForm onSubmit={vi.fn()} />);
-    await user.click(screen.getByRole("button", { name: /create/i }));
+    await user.click(screen.getByRole('button', { name: /create/i }));
 
     expect(await screen.findByText(/required/i)).toBeInTheDocument();
   });
@@ -360,16 +374,22 @@ describe("CreateUserForm", () => {
 
 ## Edge Cases
 
-- **Components with providers:** Always use a custom render function that wraps components with `QueryClientProvider`, `MemoryRouter`, and any context providers needed.
+- **Components with providers:** Always use a custom render function that wraps
+  components with `QueryClientProvider`, `MemoryRouter`, and any context
+  providers needed.
 
-- **Components with router:** Use `<MemoryRouter initialEntries={["/users/1"]}>` for components that use `useParams` or `useNavigate`.
+- **Components with router:** Use `<MemoryRouter initialEntries={["/users/1"]}>`
+  for components that use `useParams` or `useNavigate`.
 
-- **Flaky async tests:** Prefer `findBy*` over `waitFor` + `getBy*`. If using `waitFor`, increase timeout for CI: `waitFor(() => ..., { timeout: 5000 })`.
+- **Flaky async tests:** Prefer `findBy*` over `waitFor` + `getBy*`. If using
+  `waitFor`, increase timeout for CI: `waitFor(() => ..., { timeout: 5000 })`.
 
-- **Testing modals/portals:** Use `screen` queries (they search the entire document), not `container` queries.
+- **Testing modals/portals:** Use `screen` queries (they search the entire
+  document), not `container` queries.
 
-- **Cleanup:** Testing Library auto-cleans after each test. Don't call `cleanup()` manually unless using a custom setup.
+- **Cleanup:** Testing Library auto-cleans after each test. Don't call
+  `cleanup()` manually unless using a custom setup.
 
-See `references/component-test-template.tsx` for an annotated test file template.
-See `references/msw-handler-examples.ts` for MSW handler patterns.
-See `references/hook-test-template.tsx` for hook testing patterns.
+See `references/component-test-template.tsx` for an annotated test file
+template. See `references/msw-handler-examples.ts` for MSW handler patterns. See
+`references/hook-test-template.tsx` for hook testing patterns.

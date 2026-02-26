@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { creditLimits } from "@afenda/db";
-import type { CreditLimit } from "../entities/credit-limit.js";
-import type { ICreditLimitRepo, CreateCreditLimitInput } from "../ports/credit-limit-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { creditLimits } from '@afenda/db';
+import type { CreditLimit } from '../entities/credit-limit.js';
+import type { ICreditLimitRepo, CreateCreditLimitInput } from '../ports/credit-limit-repo.js';
 
 type Row = typeof creditLimits.$inferSelect;
 
@@ -16,7 +16,7 @@ function mapToDomain(row: Row): CreditLimit {
     currencyCode: row.currencyCode,
     currentExposure: row.currentExposure,
     availableCredit: row.availableCredit,
-    status: row.status as CreditLimit["status"],
+    status: row.status as CreditLimit['status'],
     approvedBy: row.approvedBy,
     approvedAt: row.approvedAt,
     effectiveFrom: row.effectiveFrom,
@@ -38,12 +38,19 @@ export class DrizzleCreditLimitRepo implements ICreditLimitRepo {
   }
 
   async findByCustomer(customerId: string): Promise<CreditLimit | null> {
-    const rows = await this.db.select().from(creditLimits).where(eq(creditLimits.customerId, customerId)).limit(1);
+    const rows = await this.db
+      .select()
+      .from(creditLimits)
+      .where(eq(creditLimits.customerId, customerId))
+      .limit(1);
     return rows[0] ? mapToDomain(rows[0]) : null;
   }
 
   async findByCompany(companyId: string): Promise<readonly CreditLimit[]> {
-    const rows = await this.db.select().from(creditLimits).where(eq(creditLimits.companyId, companyId));
+    const rows = await this.db
+      .select()
+      .from(creditLimits)
+      .where(eq(creditLimits.companyId, companyId));
     return rows.map(mapToDomain);
   }
 
@@ -54,24 +61,31 @@ export class DrizzleCreditLimitRepo implements ICreditLimitRepo {
 
   async create(tenantId: string, input: CreateCreditLimitInput): Promise<CreditLimit> {
     const availableCredit = input.creditLimit;
-    const [row] = await this.db.insert(creditLimits).values({
-      tenantId,
-      customerId: input.customerId,
-      companyId: input.companyId,
-      creditLimit: input.creditLimit,
-      currencyCode: input.currencyCode,
-      availableCredit,
-      effectiveFrom: input.effectiveFrom,
-      effectiveTo: input.effectiveTo,
-      riskRating: input.riskRating,
-      approvedBy: input.approvedBy,
-      approvedAt: input.approvedBy ? new Date() : null,
-    }).returning();
+    const [row] = await this.db
+      .insert(creditLimits)
+      .values({
+        tenantId,
+        customerId: input.customerId,
+        companyId: input.companyId,
+        creditLimit: input.creditLimit,
+        currencyCode: input.currencyCode,
+        availableCredit,
+        effectiveFrom: input.effectiveFrom,
+        effectiveTo: input.effectiveTo,
+        riskRating: input.riskRating,
+        approvedBy: input.approvedBy,
+        approvedAt: input.approvedBy ? new Date() : null,
+      })
+      .returning();
     return mapToDomain(row!);
   }
 
   async update(id: string, input: Partial<Record<string, unknown>>): Promise<CreditLimit> {
-    const [row] = await this.db.update(creditLimits).set(input).where(eq(creditLimits.id, id)).returning();
+    const [row] = await this.db
+      .update(creditLimits)
+      .set(input)
+      .where(eq(creditLimits.id, id))
+      .returning();
     return mapToDomain(row!);
   }
 }

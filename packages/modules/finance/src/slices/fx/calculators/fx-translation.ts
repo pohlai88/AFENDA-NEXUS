@@ -10,8 +10,8 @@
  *   - Revenue/Expenses → average rate
  *   - Equity → historical rate
  */
-import type { AccountType } from "../../../shared/types.js";
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { AccountType } from '../../../shared/types.js';
+import type { CalculatorResult } from '../../../shared/types.js';
 
 const PRECISION_SCALE = 10_000_000_000n;
 
@@ -35,7 +35,7 @@ export interface TranslatedEntry {
   readonly sourceCurrency: string;
   readonly targetCurrency: string;
   readonly rateUsed: number;
-  readonly rateType: "closing" | "average" | "historical" | "none";
+  readonly rateType: 'closing' | 'average' | 'historical' | 'none';
 }
 
 export interface TranslationResult {
@@ -46,17 +46,17 @@ export interface TranslationResult {
 
 function selectRate(
   accountType: AccountType,
-  rates: TranslationRates,
-): { rate: number; rateType: TranslatedEntry["rateType"] } {
+  rates: TranslationRates
+): { rate: number; rateType: TranslatedEntry['rateType'] } {
   switch (accountType) {
-    case "ASSET":
-    case "LIABILITY":
-      return { rate: rates.closingRate, rateType: "closing" };
-    case "REVENUE":
-    case "EXPENSE":
-      return { rate: rates.averageRate, rateType: "average" };
-    case "EQUITY":
-      return { rate: rates.historicalRate, rateType: "historical" };
+    case 'ASSET':
+    case 'LIABILITY':
+      return { rate: rates.closingRate, rateType: 'closing' };
+    case 'REVENUE':
+    case 'EXPENSE':
+      return { rate: rates.averageRate, rateType: 'average' };
+    case 'EQUITY':
+      return { rate: rates.historicalRate, rateType: 'historical' };
   }
 }
 
@@ -74,10 +74,10 @@ function applyRate(amount: bigint, rate: number): bigint {
 export function translateTrialBalance(
   entries: readonly TrialBalanceEntry[],
   rates: TranslationRates,
-  targetCurrency: string,
+  targetCurrency: string
 ): CalculatorResult<TranslationResult> {
   if (rates.closingRate <= 0 || rates.averageRate <= 0 || rates.historicalRate <= 0) {
-    throw new Error("All translation rates must be positive");
+    throw new Error('All translation rates must be positive');
   }
 
   const translated: TranslatedEntry[] = entries.map((entry) => {
@@ -89,7 +89,7 @@ export function translateTrialBalance(
         sourceCurrency: entry.sourceCurrency,
         targetCurrency,
         rateUsed: 1,
-        rateType: "none" as const,
+        rateType: 'none' as const,
       };
     }
 
@@ -109,7 +109,7 @@ export function translateTrialBalance(
 
   const ctaAmountMinor = translated.reduce(
     (sum, e) => sum + (e.translatedMinor - e.originalMinor),
-    0n,
+    0n
   );
 
   return {

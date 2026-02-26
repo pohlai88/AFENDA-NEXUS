@@ -5,7 +5,7 @@
  * Pure calculator — no DB, no side effects.
  */
 
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface BudgetSourceLine {
   readonly sourceId: string;
@@ -50,16 +50,19 @@ export interface BudgetConsolidationResult {
  * Consolidate budgets from multiple sources.
  */
 export function computeBudgetConsolidation(
-  input: BudgetConsolidationInput,
+  input: BudgetConsolidationInput
 ): CalculatorResult<BudgetConsolidationResult> {
-  if (input.sources.length === 0) throw new Error("At least one budget source is required");
+  if (input.sources.length === 0) throw new Error('At least one budget source is required');
 
   // Aggregate by account
-  const byAccount = new Map<string, {
-    accountName: string;
-    grossAmount: bigint;
-    sourceIds: Set<string>;
-  }>();
+  const byAccount = new Map<
+    string,
+    {
+      accountName: string;
+      grossAmount: bigint;
+      sourceIds: Set<string>;
+    }
+  >();
 
   for (const src of input.sources) {
     const existing = byAccount.get(src.accountCode) ?? {
@@ -77,10 +80,10 @@ export function computeBudgetConsolidation(
   for (const rule of input.eliminations) {
     // Find matching source lines for the elimination pair
     const sourceLines = input.sources.filter(
-      (s) => s.accountCode === rule.accountCode && s.sourceId === rule.sourceId,
+      (s) => s.accountCode === rule.accountCode && s.sourceId === rule.sourceId
     );
     const counterLines = input.sources.filter(
-      (s) => s.accountCode === rule.accountCode && s.sourceId === rule.counterpartSourceId,
+      (s) => s.accountCode === rule.accountCode && s.sourceId === rule.counterpartSourceId
     );
 
     if (sourceLines.length > 0 && counterLines.length > 0) {

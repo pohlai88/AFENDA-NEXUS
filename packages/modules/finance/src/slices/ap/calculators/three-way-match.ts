@@ -1,4 +1,4 @@
-import type { Money } from "@afenda/core";
+import type { Money } from '@afenda/core';
 
 /**
  * AP-01: 3-way match engine.
@@ -14,11 +14,27 @@ export interface MatchInput {
 }
 
 export type MatchResult =
-  | { readonly status: "MATCHED" }
-  | { readonly status: "QUANTITY_MISMATCH"; readonly poAmount: Money; readonly receiptAmount: Money }
-  | { readonly status: "PRICE_MISMATCH"; readonly receiptAmount: Money; readonly invoiceAmount: Money }
-  | { readonly status: "WITHIN_TOLERANCE"; readonly variance: bigint; readonly variancePercent: number }
-  | { readonly status: "OVER_TOLERANCE"; readonly variance: bigint; readonly variancePercent: number };
+  | { readonly status: 'MATCHED' }
+  | {
+      readonly status: 'QUANTITY_MISMATCH';
+      readonly poAmount: Money;
+      readonly receiptAmount: Money;
+    }
+  | {
+      readonly status: 'PRICE_MISMATCH';
+      readonly receiptAmount: Money;
+      readonly invoiceAmount: Money;
+    }
+  | {
+      readonly status: 'WITHIN_TOLERANCE';
+      readonly variance: bigint;
+      readonly variancePercent: number;
+    }
+  | {
+      readonly status: 'OVER_TOLERANCE';
+      readonly variance: bigint;
+      readonly variancePercent: number;
+    };
 
 export function threeWayMatch(input: MatchInput): MatchResult {
   const { poAmount, receiptAmount, invoiceAmount, tolerancePercent } = input;
@@ -28,12 +44,12 @@ export function threeWayMatch(input: MatchInput): MatchResult {
 
   // Step 1: PO vs receipt (quantity check)
   if (po !== receipt) {
-    return { status: "QUANTITY_MISMATCH", poAmount, receiptAmount };
+    return { status: 'QUANTITY_MISMATCH', poAmount, receiptAmount };
   }
 
   // Step 2: Receipt vs invoice (price check)
   if (receipt === invoice) {
-    return { status: "MATCHED" };
+    return { status: 'MATCHED' };
   }
 
   // Step 3: Tolerance check
@@ -42,7 +58,7 @@ export function threeWayMatch(input: MatchInput): MatchResult {
   const baseAmount = receipt < 0n ? -receipt : receipt;
 
   if (baseAmount === 0n) {
-    return { status: "PRICE_MISMATCH", receiptAmount, invoiceAmount };
+    return { status: 'PRICE_MISMATCH', receiptAmount, invoiceAmount };
   }
 
   // variancePercent = (absVariance * 10000) / baseAmount gives basis points
@@ -50,8 +66,8 @@ export function threeWayMatch(input: MatchInput): MatchResult {
   const toleranceBps = tolerancePercent * 100;
 
   if (varianceBps <= toleranceBps) {
-    return { status: "WITHIN_TOLERANCE", variance, variancePercent: varianceBps / 100 };
+    return { status: 'WITHIN_TOLERANCE', variance, variancePercent: varianceBps / 100 };
   }
 
-  return { status: "OVER_TOLERANCE", variance, variancePercent: varianceBps / 100 };
+  return { status: 'OVER_TOLERANCE', variance, variancePercent: varianceBps / 100 };
 }

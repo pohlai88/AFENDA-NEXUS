@@ -4,9 +4,9 @@
  * Polls erp.outbox for unprocessed rows, dispatches to event handlers,
  * and marks processed. Uses FOR UPDATE SKIP LOCKED for safe concurrency.
  */
-import type { OutboxDrainer } from "@afenda/db";
-import type { Logger } from "@afenda/platform";
-import type { EventHandlerRegistry } from "../event-handlers.js";
+import type { OutboxDrainer } from '@afenda/db';
+import type { Logger } from '@afenda/platform';
+import type { EventHandlerRegistry } from '../event-handlers.js';
 
 const BATCH_SIZE = 50;
 
@@ -30,7 +30,7 @@ export function createDrainOutboxTask(deps: DrainOutboxDeps) {
         await registry.dispatch(row);
         await drainer.markProcessed(row.id);
       } catch (err) {
-        logger.error("Failed to process outbox event", {
+        logger.error('Failed to process outbox event', {
           outboxId: row.id,
           eventType: row.eventType,
           error: String(err),

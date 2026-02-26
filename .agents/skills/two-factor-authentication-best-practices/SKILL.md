@@ -1,41 +1,46 @@
 ---
 name: two-factor-authentication-best-practices
-description: This skill provides guidance and enforcement rules for implementing secure two-factor authentication (2FA) using Better Auth's twoFactor plugin.
+description:
+  This skill provides guidance and enforcement rules for implementing secure
+  two-factor authentication (2FA) using Better Auth's twoFactor plugin.
 ---
 
 ## Setting Up Two-Factor Authentication
 
-When adding 2FA to your application, configure the `twoFactor` plugin with your app name as the issuer. This name appears in authenticator apps when users scan the QR code.
+When adding 2FA to your application, configure the `twoFactor` plugin with your
+app name as the issuer. This name appears in authenticator apps when users scan
+the QR code.
 
 ```ts
-import { betterAuth } from "better-auth";
-import { twoFactor } from "better-auth/plugins";
+import { betterAuth } from 'better-auth';
+import { twoFactor } from 'better-auth/plugins';
 
 export const auth = betterAuth({
-  appName: "My App", // Used as the default issuer for TOTP
+  appName: 'My App', // Used as the default issuer for TOTP
   plugins: [
     twoFactor({
-      issuer: "My App", // Optional: override the app name for 2FA specifically
+      issuer: 'My App', // Optional: override the app name for 2FA specifically
     }),
   ],
 });
 ```
 
-**Note**: After adding the plugin, run `npx @better-auth/cli migrate` to add the required database fields and tables.
+**Note**: After adding the plugin, run `npx @better-auth/cli migrate` to add the
+required database fields and tables.
 
 ### Client-Side Setup
 
 Add the client plugin and configure the redirect behavior for 2FA verification:
 
 ```ts
-import { createAuthClient } from "better-auth/client";
-import { twoFactorClient } from "better-auth/client/plugins";
+import { createAuthClient } from 'better-auth/client';
+import { twoFactorClient } from 'better-auth/client/plugins';
 
 export const authClient = createAuthClient({
   plugins: [
     twoFactorClient({
       onTwoFactorRedirect() {
-        window.location.href = "/2fa"; // Redirect to your 2FA verification page
+        window.location.href = '/2fa'; // Redirect to your 2FA verification page
       },
     }),
   ],
@@ -44,7 +49,9 @@ export const authClient = createAuthClient({
 
 ## Enabling 2FA for Users
 
-When a user enables 2FA, require their password for verification. The enable endpoint returns a TOTP URI for QR code generation and backup codes for account recovery.
+When a user enables 2FA, require their password for verification. The enable
+endpoint returns a TOTP URI for QR code generation and backup codes for account
+recovery.
 
 ```ts
 const enable2FA = async (password: string) => {
@@ -59,11 +66,14 @@ const enable2FA = async (password: string) => {
 };
 ```
 
-**Important**: The `twoFactorEnabled` flag on the user is not set to `true` until the user successfully verifies their first TOTP code. This ensures users have properly configured their authenticator app before 2FA is fully active.
+**Important**: The `twoFactorEnabled` flag on the user is not set to `true`
+until the user successfully verifies their first TOTP code. This ensures users
+have properly configured their authenticator app before 2FA is fully active.
 
 ### Skipping Initial Verification
 
-If you want to enable 2FA immediately without requiring verification, set `skipVerificationOnEnable`:
+If you want to enable 2FA immediately without requiring verification, set
+`skipVerificationOnEnable`:
 
 ```ts
 twoFactor({
@@ -71,18 +81,20 @@ twoFactor({
 });
 ```
 
-**Note**: This is generally not recommended as it doesn't confirm the user has successfully set up their authenticator app.
+**Note**: This is generally not recommended as it doesn't confirm the user has
+successfully set up their authenticator app.
 
 ## TOTP (Authenticator App)
 
-TOTP generates time-based codes using an authenticator app (Google Authenticator, Authy, etc.). Codes are valid for 30 seconds by default.
+TOTP generates time-based codes using an authenticator app (Google
+Authenticator, Authy, etc.). Codes are valid for 30 seconds by default.
 
 ### Displaying the QR Code
 
 Use the TOTP URI to generate a QR code for users to scan:
 
 ```tsx
-import QRCode from "react-qr-code";
+import QRCode from 'react-qr-code';
 
 const TotpSetup = ({ totpURI }: { totpURI: string }) => {
   return <QRCode value={totpURI} />;
@@ -91,7 +103,8 @@ const TotpSetup = ({ totpURI }: { totpURI: string }) => {
 
 ### Verifying TOTP Codes
 
-Better Auth accepts codes from one period before and one after the current time, accommodating minor clock differences between devices:
+Better Auth accepts codes from one period before and one after the current time,
+accommodating minor clock differences between devices:
 
 ```ts
 const verifyTotp = async (code: string) => {
@@ -115,14 +128,15 @@ twoFactor({
 
 ## OTP (Email/SMS)
 
-OTP sends a one-time code to the user's email or phone. You must implement the `sendOTP` function to deliver codes.
+OTP sends a one-time code to the user's email or phone. You must implement the
+`sendOTP` function to deliver codes.
 
 ### Configuring OTP Delivery
 
 ```ts
-import { betterAuth } from "better-auth";
-import { twoFactor } from "better-auth/plugins";
-import { sendEmail } from "./email";
+import { betterAuth } from 'better-auth';
+import { twoFactor } from 'better-auth/plugins';
+import { sendEmail } from './email';
 
 export const auth = betterAuth({
   plugins: [
@@ -131,7 +145,7 @@ export const auth = betterAuth({
         sendOTP: async ({ user, otp }, ctx) => {
           await sendEmail({
             to: user.email,
-            subject: "Your verification code",
+            subject: 'Your verification code',
             text: `Your code is: ${otp}`,
           });
         },
@@ -168,7 +182,7 @@ Configure how OTP codes are stored in the database:
 ```ts
 twoFactor({
   otpOptions: {
-    storeOTP: "encrypted", // Options: "plain", "encrypted", "hashed"
+    storeOTP: 'encrypted', // Options: "plain", "encrypted", "hashed"
   },
 });
 ```
@@ -188,7 +202,9 @@ twoFactor({
 
 ## Backup Codes
 
-Backup codes provide account recovery when users lose access to their authenticator app or phone. They are generated automatically when 2FA is enabled.
+Backup codes provide account recovery when users lose access to their
+authenticator app or phone. They are generated automatically when 2FA is
+enabled.
 
 ### Displaying Backup Codes
 
@@ -211,7 +227,8 @@ const BackupCodes = ({ codes }: { codes: string[] }) => {
 
 ### Regenerating Backup Codes
 
-When users need new codes, regenerate them (this invalidates all previous codes):
+When users need new codes, regenerate them (this invalidates all previous
+codes):
 
 ```ts
 const regenerateBackupCodes = async (password: string) => {
@@ -233,7 +250,8 @@ const verifyBackupCode = async (code: string) => {
 };
 ```
 
-**Note**: Each backup code can only be used once and is removed from the database after successful verification.
+**Note**: Each backup code can only be used once and is removed from the
+database after successful verification.
 
 ### Backup Code Configuration
 
@@ -242,14 +260,15 @@ twoFactor({
   backupCodeOptions: {
     amount: 10, // Number of codes to generate (default: 10)
     length: 10, // Length of each code (default: 10)
-    storeBackupCodes: "encrypted", // Options: "plain", "encrypted"
+    storeBackupCodes: 'encrypted', // Options: "plain", "encrypted"
   },
 });
 ```
 
 ## Handling 2FA During Sign-In
 
-When a user with 2FA enabled signs in, the response includes `twoFactorRedirect: true`:
+When a user with 2FA enabled signs in, the response includes
+`twoFactorRedirect: true`:
 
 ```ts
 const signIn = async (email: string, password: string) => {
@@ -262,7 +281,7 @@ const signIn = async (email: string, password: string) => {
       onSuccess(context) {
         if (context.data.twoFactorRedirect) {
           // Redirect to 2FA verification page
-          window.location.href = "/2fa";
+          window.location.href = '/2fa';
         }
       },
     }
@@ -277,19 +296,20 @@ When using `auth.api.signInEmail` on the server, check for 2FA redirect:
 ```ts
 const response = await auth.api.signInEmail({
   body: {
-    email: "user@example.com",
-    password: "password",
+    email: 'user@example.com',
+    password: 'password',
   },
 });
 
-if ("twoFactorRedirect" in response) {
+if ('twoFactorRedirect' in response) {
   // Handle 2FA verification
 }
 ```
 
 ## Trusted Devices
 
-Trusted devices allow users to skip 2FA verification on subsequent sign-ins for a configurable period.
+Trusted devices allow users to skip 2FA verification on subsequent sign-ins for
+a configurable period.
 
 ### Enabling Trust on Verification
 
@@ -297,7 +317,7 @@ Pass `trustDevice: true` when verifying 2FA:
 
 ```ts
 await authClient.twoFactor.verifyTotp({
-  code: "123456",
+  code: '123456',
   trustDevice: true,
 });
 ```
@@ -310,7 +330,8 @@ twoFactor({
 });
 ```
 
-**Note**: The trust period refreshes on each successful sign-in within the trust window.
+**Note**: The trust period refreshes on each successful sign-in within the trust
+window.
 
 ## Security Considerations
 
@@ -334,7 +355,8 @@ twoFactor({
 
 ### Rate Limiting
 
-Better Auth applies built-in rate limiting to all 2FA endpoints (3 requests per 10 seconds). For OTP verification, additional attempt limiting is applied:
+Better Auth applies built-in rate limiting to all 2FA endpoints (3 requests per
+10 seconds). For OTP verification, additional attempt limiting is applied:
 
 ```ts
 twoFactor({
@@ -352,11 +374,13 @@ twoFactor({
 
 ### Constant-Time Comparison
 
-Better Auth uses constant-time comparison for OTP verification to prevent timing attacks.
+Better Auth uses constant-time comparison for OTP verification to prevent timing
+attacks.
 
 ### Credential Account Requirement
 
-Two-factor authentication can only be enabled for credential (email/password) accounts. For social accounts, it's assumed the provider already handles 2FA.
+Two-factor authentication can only be enabled for credential (email/password)
+accounts. For social accounts, it's assumed the provider already handles 2FA.
 
 ## Disabling 2FA
 
@@ -375,16 +399,16 @@ const disable2FA = async (password: string) => {
 ## Complete Configuration Example
 
 ```ts
-import { betterAuth } from "better-auth";
-import { twoFactor } from "better-auth/plugins";
-import { sendEmail } from "./email";
+import { betterAuth } from 'better-auth';
+import { twoFactor } from 'better-auth/plugins';
+import { sendEmail } from './email';
 
 export const auth = betterAuth({
-  appName: "My App",
+  appName: 'My App',
   plugins: [
     twoFactor({
       // TOTP settings
-      issuer: "My App",
+      issuer: 'My App',
       totpOptions: {
         digits: 6,
         period: 30,
@@ -394,19 +418,19 @@ export const auth = betterAuth({
         sendOTP: async ({ user, otp }) => {
           await sendEmail({
             to: user.email,
-            subject: "Your verification code",
+            subject: 'Your verification code',
             text: `Your code is: ${otp}`,
           });
         },
         period: 5,
         allowedAttempts: 5,
-        storeOTP: "encrypted",
+        storeOTP: 'encrypted',
       },
       // Backup code settings
       backupCodeOptions: {
         amount: 10,
         length: 10,
-        storeBackupCodes: "encrypted",
+        storeBackupCodes: 'encrypted',
       },
       // Session settings
       twoFactorCookieMaxAge: 600, // 10 minutes

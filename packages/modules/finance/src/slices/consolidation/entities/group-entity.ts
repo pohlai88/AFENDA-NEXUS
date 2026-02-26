@@ -2,7 +2,7 @@
  * Group entity — represents a legal entity within a consolidation group.
  */
 
-export type GroupEntityType = "PARENT" | "SUBSIDIARY" | "ASSOCIATE" | "JOINT_VENTURE";
+export type GroupEntityType = 'PARENT' | 'SUBSIDIARY' | 'ASSOCIATE' | 'JOINT_VENTURE';
 
 export interface GroupEntity {
   readonly id: string;

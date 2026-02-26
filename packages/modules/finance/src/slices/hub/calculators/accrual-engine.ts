@@ -10,15 +10,15 @@
  * - Accrued expenses (recognize incurred but unpaid)
  * - Deferred revenue (release over delivery period)
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export type AccrualType =
-  | "prepaid_expense"
-  | "accrued_revenue"
-  | "accrued_expense"
-  | "deferred_revenue";
+  | 'prepaid_expense'
+  | 'accrued_revenue'
+  | 'accrued_expense'
+  | 'deferred_revenue';
 
-export type AccrualMethod = "straight_line" | "usage_based" | "milestone";
+export type AccrualMethod = 'straight_line' | 'usage_based' | 'milestone';
 
 export interface AccrualSchedule {
   readonly id: string;
@@ -76,7 +76,7 @@ function daysBetween(start: string, end: string): number {
 export function computeAccruals(
   schedules: readonly AccrualSchedule[],
   periodStart: string,
-  periodEnd: string,
+  periodEnd: string
 ): CalculatorResult<AccrualResult> {
   const entries: AccrualEntry[] = [];
   let totalAccrued = 0n;
@@ -102,7 +102,7 @@ export function computeAccruals(
     let amount: bigint;
 
     switch (sched.method) {
-      case "straight_line": {
+      case 'straight_line': {
         const totalDays = daysBetween(sched.startDate, sched.endDate);
         // Clamp period to schedule bounds
         const effectiveStart = periodStart > sched.startDate ? periodStart : sched.startDate;
@@ -114,7 +114,7 @@ export function computeAccruals(
         amount = raw > remaining ? remaining : raw;
         break;
       }
-      case "milestone": {
+      case 'milestone': {
         const pct = sched.milestonePercent ?? 0;
         if (pct <= 0 || pct > 100) {
           skipped++;
@@ -125,7 +125,7 @@ export function computeAccruals(
         amount = milestoneAmount > remaining ? remaining : milestoneAmount;
         break;
       }
-      case "usage_based": {
+      case 'usage_based': {
         const usagePct = sched.milestonePercent ?? 0;
         if (usagePct <= 0) {
           skipped++;
@@ -134,7 +134,8 @@ export function computeAccruals(
         // eslint-disable-next-line no-restricted-syntax -- percentage-to-BigInt, not FX
         const usageAmount = (sched.totalAmountMinor * BigInt(Math.round(usagePct * 100))) / 10000n;
         const alreadyRecognized = sched.recognizedToDateMinor;
-        const shouldRecognize = usageAmount > sched.totalAmountMinor ? sched.totalAmountMinor : usageAmount;
+        const shouldRecognize =
+          usageAmount > sched.totalAmountMinor ? sched.totalAmountMinor : usageAmount;
         amount = shouldRecognize - alreadyRecognized;
         if (amount <= 0n) {
           skipped++;
@@ -156,19 +157,19 @@ export function computeAccruals(
     let creditAccountId: string;
 
     switch (sched.type) {
-      case "prepaid_expense":
+      case 'prepaid_expense':
         debitAccountId = sched.targetAccountId; // Expense
         creditAccountId = sched.sourceAccountId; // Prepaid Asset
         break;
-      case "accrued_revenue":
+      case 'accrued_revenue':
         debitAccountId = sched.sourceAccountId; // Receivable
         creditAccountId = sched.targetAccountId; // Revenue
         break;
-      case "accrued_expense":
+      case 'accrued_expense':
         debitAccountId = sched.targetAccountId; // Expense
         creditAccountId = sched.sourceAccountId; // Accrued Liability
         break;
-      case "deferred_revenue":
+      case 'deferred_revenue':
         debitAccountId = sched.sourceAccountId; // Deferred Revenue
         creditAccountId = sched.targetAccountId; // Revenue
         break;

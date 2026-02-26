@@ -2,14 +2,14 @@
  * WHT certificate entity — withholding tax certificate issued to payees.
  */
 
-export type WhtCertificateStatus = "DRAFT" | "ISSUED" | "CANCELLED";
+export type WhtCertificateStatus = 'DRAFT' | 'ISSUED' | 'CANCELLED';
 
 export interface WhtCertificate {
   readonly id: string;
   readonly tenantId: string;
   readonly payeeId: string;
   readonly payeeName: string;
-  readonly payeeType: "RESIDENT" | "NON_RESIDENT";
+  readonly payeeType: 'RESIDENT' | 'NON_RESIDENT';
   readonly countryCode: string;
   readonly incomeType: string;
   readonly grossAmount: bigint;

@@ -4,7 +4,8 @@ Fix common bundling issues with third-party packages.
 
 ## Server-Incompatible Packages
 
-Some packages use browser APIs (`window`, `document`, `localStorage`) and fail in Server Components.
+Some packages use browser APIs (`window`, `document`, `localStorage`) and fail
+in Server Components.
 
 ### Error Signs
 
@@ -80,7 +81,8 @@ export default function Page() {
 
 ## CSS Imports
 
-Import CSS files instead of using `<link>` tags. Next.js handles bundling and optimization.
+Import CSS files instead of using `<link>` tags. Next.js handles bundling and
+optimization.
 
 ```tsx
 // Bad: Manual link tag
@@ -95,9 +97,11 @@ import styles from './Button.module.css';
 
 ## Polyfills
 
-Next.js includes common polyfills automatically. Don't load redundant ones from polyfill.io or similar CDNs.
+Next.js includes common polyfills automatically. Don't load redundant ones from
+polyfill.io or similar CDNs.
 
-Already included: `Array.from`, `Object.assign`, `Promise`, `fetch`, `Map`, `Set`, `Symbol`, `URLSearchParams`, and 50+ others.
+Already included: `Array.from`, `Object.assign`, `Promise`, `fetch`, `Map`,
+`Set`, `Symbol`, `URLSearchParams`, and 50+ others.
 
 ```tsx
 // Bad: Redundant polyfills
@@ -163,7 +167,8 @@ Reference: https://nextjs.org/docs/app/guides/package-bundling
 
 ## Migrating from Webpack to Turbopack
 
-Turbopack is the default bundler in Next.js 15+. If you have custom webpack config, migrate to Turbopack-compatible alternatives:
+Turbopack is the default bundler in Next.js 15+. If you have custom webpack
+config, migrate to Turbopack-compatible alternatives:
 
 ```js
 // next.config.js
@@ -179,4 +184,5 @@ module.exports = {
 };
 ```
 
-Reference: https://nextjs.org/docs/app/building-your-application/upgrading/from-webpack-to-turbopack
+Reference:
+https://nextjs.org/docs/app/building-your-application/upgrading/from-webpack-to-turbopack

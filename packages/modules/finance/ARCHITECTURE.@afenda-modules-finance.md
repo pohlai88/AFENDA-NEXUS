@@ -11,7 +11,7 @@ exports_map:
   ".": { source: "./src/public.ts", import: "./dist/public.js", types: "./dist/public.d.ts", default: "./src/public.ts" }
   "./infra": { source: "./src/infra.ts", import: "./dist/infra.js", types: "./dist/infra.d.ts", default: "./src/infra.ts" }
 dependency_kinds:
-  allowed_runtime: ["@afenda/core", "@afenda/contracts", "@afenda/authz", "@afenda/db", "@afenda/platform", "drizzle-orm", "fastify"]
+  allowed_runtime: ["@afenda/core", "@afenda/contracts", "@afenda/authz", "@afenda/db", "@afenda/platform", "drizzle-orm", "fastify", "zod"]
   allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "tsup", "typescript", "vitest", "fast-check"]
   allowed_peer: []
 enforced_structure:
@@ -65,7 +65,13 @@ General Ledger module (P0). Double-entry journal posting, chart of accounts, fis
 - `IDocumentNumberGenerator` — audit-grade document numbering port (GAP-02)
 - `requirePermission()`, `requireSoD()` — authorization preHandler guards (GAP-06)
 - `registerRateLimitGuard()` — per-tenant rate limiting preHandler (GAP-15)
-- `DefaultAuthorizationPolicy` — permissive default authorization implementation
+- `RbacAuthorizationPolicy` — production RBAC policy using `@afenda/authz` `can()` evaluator (GAP-A1)
+- `DefaultAuthorizationPolicy` — permissive stub for unit test mocks only (NOT used in runtime)
+- `IRoleResolver`, `ISoDActionLogRepo` — authorization infrastructure ports
+- `DrizzleRoleResolver`, `DrizzleSoDActionLogRepo` — Drizzle implementations
+- `PERMISSION_MAP` — locked FinancePermission → authz resource×action mapping (16 entries)
+- `FINANCE_SOD_RULES` — 4 SoD conflict rules (journal create↔post, post↔reverse, period close↔reopen, budget write↔journal post)
+- `createAuthorizationPolicy()` — top-level factory for route-level RBAC enforcement
 
 ## Pure Calculators (`src/domain/calculators/`)
 All calculators are side-effect-free functions returning `CalculatorResult<T>` with audit trail.
@@ -102,9 +108,18 @@ When provided: `ctx.tenantId` overrides `input.tenantId`, `ctx.actor.userId` ove
 - **CIG-02**: ESLint `no-restricted-syntax` rule bans `Number()*rate`, `parseFloat()*rate`, `Math.round(x*rate)` in finance code. Float-to-BigInt bridge points have explicit `eslint-disable` with justification.
 - **CIG-03**: ESLint `no-restricted-syntax` rule bans `req.query as Record<...>`, `req.query as {...}`, `req.params as {...}` type casts in route handlers. All input must go through Zod `.parse()`.
 - **CIG-04**: ESLint `no-restricted-imports` in `@afenda/eslint-config` bans direct `@afenda/db`, `drizzle-orm`, `drizzle-kit` imports from route/handler/page files. DB access must go through composition roots (e.g. `createFinanceRuntime`).
+- **CIG-05**: `rbac-guard-gate.test.ts` — scans all 42 route files: (a) every write route has `requirePermission`, (b) every route file accepts `IAuthorizationPolicy`, (c) SoD-relevant routes (journal post/reverse, period close/reopen) have `requireSoD`.
 - **E13**: Circular dependency detection (global DFS across `@afenda/*` deps).
 - **E14**: Public API surface stability — verifies `public.ts` has exports.
 - **E15**: Port-implementation parity — every `I*Repo`/`I*Store`/`I*Writer`/`I*Generator`/`I*Policy` port has a Drizzle implementation in `infra/`.
+
+## GAP-A1: Authorization & SoD (CLOSED)
+- **RBAC**: All 42 route files enforce `requirePermission(policy, '<perm>')` via Fastify preHandler. No dev fallback.
+- **SoD**: 4 SoD-relevant routes also enforce `requireSoD(policy, '<perm>', '<entityType>')`. Evidence logged transactionally in 10 services.
+- **Single evaluator**: `@afenda/authz` `can()` is the sole RBAC decision point. `PERMISSION_MAP` is the sole FinancePermission→authz translation.
+- **DB**: `erp.sod_action_log` table with RLS, indexed by `(tenant_id, entity_type, entity_id)`.
+- **Wiring**: `apps/api/src/index.ts` creates `createAuthorizationPolicy(session)` and passes it to all 42 registrars.
+- **admin:all**: Maps to `settings:update` (only owner/admin roles have this permission). No wildcard `*` resource.
 
 ## AIS Benchmark
 See `AIS-BENCHMARK.md` — 48 capabilities tracked, 46/48 (96%) implemented.

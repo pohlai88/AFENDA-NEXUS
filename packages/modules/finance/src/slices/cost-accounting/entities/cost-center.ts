@@ -2,7 +2,7 @@
  * Cost center entity — node in the cost center hierarchy.
  */
 
-export type CostCenterStatus = "ACTIVE" | "INACTIVE" | "CLOSED";
+export type CostCenterStatus = 'ACTIVE' | 'INACTIVE' | 'CLOSED';
 
 export interface CostCenter {
   readonly id: string;

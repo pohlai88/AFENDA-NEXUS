@@ -3,13 +3,13 @@
  * Allows user to manually match a bank statement line to a journal / source document.
  */
 
-import { err, ValidationError } from "@afenda/core";
-import type { Result } from "@afenda/core";
-import type { IBankMatchRepo } from "../ports/bank-match-repo.js";
-import type { IBankStatementRepo } from "../ports/bank-statement-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { BankMatch } from "../entities/bank-match.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import { err, ValidationError } from '@afenda/core';
+import type { Result } from '@afenda/core';
+import type { IBankMatchRepo } from '../ports/bank-match-repo.js';
+import type { IBankStatementRepo } from '../ports/bank-statement-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { BankMatch } from '../entities/bank-match.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface ManualMatchInput {
   readonly tenantId: string;
@@ -25,25 +25,33 @@ export interface ManualMatchInput {
 
 export async function confirmManualMatch(
   input: ManualMatchInput,
-  deps: { bankMatchRepo: IBankMatchRepo; bankStatementRepo: IBankStatementRepo; outboxWriter: IOutboxWriter },
+  deps: {
+    bankMatchRepo: IBankMatchRepo;
+    bankStatementRepo: IBankStatementRepo;
+    outboxWriter: IOutboxWriter;
+  }
 ): Promise<Result<BankMatch>> {
   const existing = await deps.bankMatchRepo.findByStatementLine(input.statementLineId);
-  if (existing) return err(new ValidationError("Statement line already matched"));
+  if (existing) return err(new ValidationError('Statement line already matched'));
 
   const match = await deps.bankMatchRepo.create(input.tenantId, {
     statementLineId: input.statementLineId,
     journalId: input.journalId,
     sourceDocumentId: input.sourceDocumentId,
     sourceDocumentType: input.sourceDocumentType,
-    matchType: "MANUAL",
-    confidence: "HIGH",
+    matchType: 'MANUAL',
+    confidence: 'HIGH',
     confidenceScore: 100,
     matchedAmount: input.matchedAmount,
     currencyCode: input.currencyCode,
     matchedBy: input.userId,
   });
 
-  await deps.bankStatementRepo.updateLineMatchStatus(input.statementLineId, "MANUAL_MATCHED", match.id);
+  await deps.bankStatementRepo.updateLineMatchStatus(
+    input.statementLineId,
+    'MANUAL_MATCHED',
+    match.id
+  );
 
   await deps.outboxWriter.write({
     tenantId: input.tenantId,

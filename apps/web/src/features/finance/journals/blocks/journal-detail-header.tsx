@@ -1,7 +1,7 @@
-import { StatusBadge } from "@/components/erp/status-badge";
-import { DateCell } from "@/components/erp/date-cell";
-import { MoneyCell } from "@/components/erp/money-cell";
-import type { JournalDetail } from "../queries/journal.queries";
+import { StatusBadge } from '@/components/erp/status-badge';
+import { DateCell } from '@/components/erp/date-cell';
+import { MoneyCell } from '@/components/erp/money-cell';
+import type { JournalDetail } from '../queries/journal.queries';
 
 interface JournalDetailHeaderProps {
   journal: JournalDetail;
@@ -45,7 +45,7 @@ export function JournalDetailHeader({ journal }: JournalDetailHeaderProps) {
 
       {journal.reversedById && (
         <div className="rounded-md border border-border bg-muted p-3 text-sm">
-          <strong>Reversed</strong> by journal{" "}
+          <strong>Reversed</strong> by journal{' '}
           <span className="font-mono">{journal.reversedById}</span>
         </div>
       )}

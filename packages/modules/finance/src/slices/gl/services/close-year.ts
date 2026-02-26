@@ -12,21 +12,23 @@
  * 5. Locks all periods in the year
  * 6. Emits YEAR_CLOSED outbox event
  */
-import type { Result } from "@afenda/core";
-import { ok, err, AppError } from "@afenda/core";
-import type { FiscalPeriod } from "../entities/fiscal-period.js";
-import type { Journal } from "../entities/journal.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
-import type { IJournalRepo, CreateJournalInput } from "../../../slices/gl/ports/journal-repo.js";
-import type { IFiscalPeriodRepo } from "../../../slices/gl/ports/fiscal-period-repo.js";
-import type { IGlBalanceRepo } from "../../../slices/gl/ports/gl-balance-repo.js";
-import type { ILedgerRepo } from "../../../slices/gl/ports/ledger-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import { classifyIncomeStatement } from "../../../shared/ports/close-readiness-hook.js";
-import type { ClassifiableRow } from "../../../shared/ports/close-readiness-hook.js";
-import { resolveCloseReadiness } from "../../../shared/ports/close-readiness-hook.js";
-import type { CloseTask } from "../../../shared/ports/close-readiness-hook.js";
+import type { Result } from '@afenda/core';
+import { ok, err, AppError } from '@afenda/core';
+import type { FiscalPeriod } from '../entities/fiscal-period.js';
+import type { Journal } from '../entities/journal.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
+import type { IJournalRepo, CreateJournalInput } from '../../../slices/gl/ports/journal-repo.js';
+import type { IFiscalPeriodRepo } from '../../../slices/gl/ports/fiscal-period-repo.js';
+import type { IGlBalanceRepo } from '../../../slices/gl/ports/gl-balance-repo.js';
+import type { ILedgerRepo } from '../../../slices/gl/ports/ledger-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { ISoDActionLogRepo } from '../../../shared/ports/sod-action-log-repo.js';
+import type { IApprovalWorkflow } from '../../../shared/ports/approval-workflow.js';
+import { classifyIncomeStatement } from '../../../shared/ports/close-readiness-hook.js';
+import type { ClassifiableRow } from '../../../shared/ports/close-readiness-hook.js';
+import { resolveCloseReadiness } from '../../../shared/ports/close-readiness-hook.js';
+import type { CloseTask } from '../../../shared/ports/close-readiness-hook.js';
 
 export interface CloseYearInput {
   readonly tenantId: string;
@@ -59,17 +61,47 @@ export interface CloseYearDeps {
   readonly balanceRepo: IGlBalanceRepo;
   readonly ledgerRepo: ILedgerRepo;
   readonly outboxWriter: IOutboxWriter;
+  readonly sodActionLogRepo?: ISoDActionLogRepo;
+  readonly approvalWorkflow?: IApprovalWorkflow;
 }
 
 export async function closeYear(
   input: CloseYearInput,
   deps: CloseYearDeps,
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<CloseYearResult>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
 
   if (input.periodIds.length === 0) {
-    return err(new AppError("VALIDATION", "At least one period ID required for year-end close"));
+    return err(new AppError('VALIDATION', 'At least one period ID required for year-end close'));
+  }
+
+  // GAP-A2: Approval workflow integration — opt-in
+  if (deps.approvalWorkflow) {
+    const entityId = `${input.ledgerId}:${input.fiscalYear}`;
+    const approved = await deps.approvalWorkflow.isApproved(tenantId, 'year_end_close', entityId);
+    if (!approved) {
+      const submitResult = await deps.approvalWorkflow.submit({
+        tenantId,
+        entityType: 'year_end_close',
+        entityId,
+        requestedBy: ctx?.actor?.userId ?? 'system',
+        metadata: {
+          fiscalYear: input.fiscalYear,
+          ledgerId: input.ledgerId,
+          periodCount: String(input.periodIds.length),
+        },
+      });
+      if (!submitResult.ok) return submitResult as Result<never>;
+      if (submitResult.value.status === 'PENDING') {
+        return err(
+          new AppError(
+            'INVALID_STATE',
+            `Year-end close for FY${input.fiscalYear} requires approval`
+          )
+        );
+      }
+    }
   }
 
   // ── Step 1: Load ledger for currency ─────────────────────────────
@@ -85,43 +117,47 @@ export async function closeYear(
   if (periods.length !== input.periodIds.length) {
     const foundIds = new Set(periods.map((p) => p.id));
     const missing = input.periodIds.filter((id) => !foundIds.has(id));
-    return err(new AppError("NOT_FOUND", `Fiscal period(s) not found: ${missing.join(", ")}`));
+    return err(new AppError('NOT_FOUND', `Fiscal period(s) not found: ${missing.join(', ')}`));
   }
 
   // Build close tasks from periods for readiness check
   const closeTasks: CloseTask[] = periods.map((p, i) => ({
     id: p.id,
     name: p.name,
-    status: p.status === "CLOSED" || p.status === "LOCKED" ? "completed" as const : "pending" as const,
+    status:
+      p.status === 'CLOSED' || p.status === 'LOCKED'
+        ? ('completed' as const)
+        : ('pending' as const),
     dependsOn: i > 0 ? [periods[i - 1]!.id] : [],
     companyId: String(p.companyId),
   }));
 
   const readiness = resolveCloseReadiness(closeTasks);
   if (!readiness.result.ready) {
-    const pendingNames = periods
-      .filter((p) => p.status === "OPEN")
-      .map((p) => p.name);
+    const pendingNames = periods.filter((p) => p.status === 'OPEN').map((p) => p.name);
     return err(
       new AppError(
-        "INVALID_STATE",
-        `Year-end close blocked: ${pendingNames.length} period(s) still OPEN — ${pendingNames.join(", ")}. Close all periods first.`,
-      ),
+        'INVALID_STATE',
+        `Year-end close blocked: ${pendingNames.length} period(s) still OPEN — ${pendingNames.join(', ')}. Close all periods first.`
+      )
     );
   }
 
   // ── Step 3: Check no DRAFT journals in any period ────────────────
   for (const period of periods) {
-    const draftsResult = await deps.journalRepo.findByPeriod(period.id, "DRAFT", { page: 1, limit: 1 });
+    const draftsResult = await deps.journalRepo.findByPeriod(period.id, 'DRAFT', {
+      page: 1,
+      limit: 1,
+    });
     if (!draftsResult.ok) {
-      return err(new AppError("VALIDATION", `Failed to check drafts for period ${period.name}`));
+      return err(new AppError('VALIDATION', `Failed to check drafts for period ${period.name}`));
     }
     if (draftsResult.value.total > 0) {
       return err(
         new AppError(
-          "VALIDATION",
-          `Cannot close year — ${draftsResult.value.total} DRAFT journal(s) in period ${period.name}. Post or void them first.`,
-        ),
+          'VALIDATION',
+          `Cannot close year — ${draftsResult.value.total} DRAFT journal(s) in period ${period.name}. Post or void them first.`
+        )
       );
     }
   }
@@ -134,7 +170,7 @@ export async function closeYear(
   if (!tbResult.ok) return tbResult as Result<never>;
 
   evidence.push({
-    type: "trial_balance",
+    type: 'trial_balance',
     label: `Trial Balance — FY${input.fiscalYear}`,
     data: {
       rowCount: tbResult.value.rows.length,
@@ -156,7 +192,7 @@ export async function closeYear(
   const netIncome = incomeResult.netIncome.amount;
 
   evidence.push({
-    type: "income_statement",
+    type: 'income_statement',
     label: `Income Statement — FY${input.fiscalYear}`,
     data: {
       revenue: incomeResult.revenue.total.amount.toString(),
@@ -170,9 +206,10 @@ export async function closeYear(
 
   if (netIncome !== 0n) {
     // Collect P&L account balances
-    const plLines: { accountId: string; accountCode: string; accountType: string; net: bigint }[] = [];
+    const plLines: { accountId: string; accountCode: string; accountType: string; net: bigint }[] =
+      [];
     for (const row of tbResult.value.rows) {
-      if (row.accountType === "REVENUE" || row.accountType === "EXPENSE") {
+      if (row.accountType === 'REVENUE' || row.accountType === 'EXPENSE') {
         const net = row.debitTotal.amount - row.creditTotal.amount;
         if (net !== 0n) {
           plLines.push({
@@ -188,7 +225,7 @@ export async function closeYear(
     // Build closing journal lines:
     // For each P&L account, reverse its balance (debit if credit-normal, credit if debit-normal)
     // Then offset to Retained Earnings
-    const journalLines: CreateJournalInput["lines"][number][] = [];
+    const journalLines: CreateJournalInput['lines'][number][] = [];
 
     for (const pl of plLines) {
       if (pl.net > 0n) {
@@ -244,7 +281,7 @@ export async function closeYear(
 
     // DEFECT-02 fix: Post the closing journal so it becomes a posted fact.
     // GL balances must reflect the closing entry before periods are locked.
-    const postedClosing: Journal = { ...closingJournalResult.value, status: "POSTED" };
+    const postedClosing: Journal = { ...closingJournalResult.value, status: 'POSTED' };
     const postResult = await deps.journalRepo.save(postedClosing);
     if (!postResult.ok) return postResult;
     closingJournalId = postedClosing.id;
@@ -263,14 +300,14 @@ export async function closeYear(
     });
 
     evidence.push({
-      type: "closing_journal",
+      type: 'closing_journal',
       label: `Closing Journal — FY${input.fiscalYear}`,
       data: {
         journalId: closingJournalId,
         journalNumber: `YEC-${input.fiscalYear}`,
         lineCount: journalLines.length,
         netIncome: netIncome.toString(),
-        status: "POSTED",
+        status: 'POSTED',
       },
     });
   }
@@ -278,14 +315,14 @@ export async function closeYear(
   // ── Step 6: Lock all periods ─────────────────────────────────────
   let periodsLocked = 0;
   for (const period of periods) {
-    if (period.status === "LOCKED") continue;
+    if (period.status === 'LOCKED') continue;
     const lockResult = await deps.periodRepo.lock(period.id);
     if (!lockResult.ok) return lockResult;
     periodsLocked++;
   }
 
   evidence.push({
-    type: "periods_locked",
+    type: 'periods_locked',
     label: `Periods Locked — FY${input.fiscalYear}`,
     data: {
       periodsLocked,
@@ -307,6 +344,14 @@ export async function closeYear(
       periodsLocked,
       closedAt: closedAt.toISOString(),
     },
+  });
+
+  await deps.sodActionLogRepo?.logAction({
+    tenantId,
+    entityType: 'fiscalPeriod',
+    entityId: input.fiscalYear,
+    actorId: ctx?.actor?.userId ?? 'system',
+    action: 'year:close',
   });
 
   return ok({

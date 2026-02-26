@@ -1,31 +1,57 @@
-import { NextResponse, type NextRequest } from "next/server";
+/**
+ * Next.js 16 Proxy — Route protection using Neon Auth middleware.
+ *
+ * Uses the v16 `proxy()` + `config` convention (replaces middleware.ts).
+ * Delegates to `auth.middleware()` for protected routes which handles:
+ *   1. OAuth token exchange (session verifier → session cookie)
+ *   2. Session validation via signed cookie / upstream API
+ *   3. Redirect to /login when unauthenticated
+ *
+ * Public paths (login, register, etc.) are allowed through without a
+ * session check so unauthenticated users can reach auth pages.
+ */
+import { NextResponse, type NextRequest } from 'next/server';
+import { auth } from '@/lib/auth';
 
-const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
+const PUBLIC_PATHS = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  // '/two-factor', — MFA not yet supported in Neon Auth (on roadmap)
+  '/onboarding',
+  '/verify-email',
+  '/accept-invite',
+];
 
-export function proxy(request: NextRequest) {
+// Neon Auth middleware — handles OAuth callback exchange, session refresh, redirects
+const neonAuthProxy = auth.middleware({ loginUrl: '/login' });
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public paths, static assets, and API routes
-  if (
-    PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname.includes(".")
-  ) {
+  // Allow auth API routes (handled by [...path] route handler)
+  if (pathname.startsWith('/api/auth')) {
     return NextResponse.next();
   }
 
-  const sessionToken = request.cookies.get("session_token")?.value;
-
-  if (!sessionToken) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+  // Allow public auth pages (login, register, etc.)
+  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
+  // Allow other API routes (protected at the API layer, not here)
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
+  }
+
+  // Delegate to Neon Auth middleware for protected routes:
+  // - Exchanges OAuth session verifier → session cookie on callback
+  // - Validates existing session cookies (signed JWT cache)
+  // - Redirects to /login if unauthenticated
+  return neonAuthProxy(request);
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 };

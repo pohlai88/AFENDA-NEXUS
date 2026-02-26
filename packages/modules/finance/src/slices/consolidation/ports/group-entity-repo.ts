@@ -1,9 +1,9 @@
-import type { GroupEntity } from "../entities/group-entity.js";
+import type { GroupEntity } from '../entities/group-entity.js';
 
 export interface CreateGroupEntityInput {
   readonly companyId: string;
   readonly name: string;
-  readonly entityType: GroupEntity["entityType"];
+  readonly entityType: GroupEntity['entityType'];
   readonly parentEntityId: string | null;
   readonly baseCurrency: string;
   readonly countryCode: string;
@@ -15,5 +15,8 @@ export interface IGroupEntityRepo {
   findByParent(parentEntityId: string): Promise<readonly GroupEntity[]>;
   findAll(): Promise<readonly GroupEntity[]>;
   create(tenantId: string, input: CreateGroupEntityInput): Promise<GroupEntity>;
-  update(id: string, input: Partial<CreateGroupEntityInput & { isActive: boolean }>): Promise<GroupEntity>;
+  update(
+    id: string,
+    input: Partial<CreateGroupEntityInput & { isActive: boolean }>
+  ): Promise<GroupEntity>;
 }

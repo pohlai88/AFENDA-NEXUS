@@ -1,8 +1,11 @@
-import { eq } from "drizzle-orm";
-import type { TenantTx } from "@afenda/db";
-import { hedgeRelationships } from "@afenda/db";
-import type { HedgeRelationship, HedgeStatus } from "../entities/hedge-relationship.js";
-import type { IHedgeRelationshipRepo, CreateHedgeRelationshipInput } from "../ports/hedge-relationship-repo.js";
+import { eq } from 'drizzle-orm';
+import type { TenantTx } from '@afenda/db';
+import { hedgeRelationships } from '@afenda/db';
+import type { HedgeRelationship, HedgeStatus } from '../entities/hedge-relationship.js';
+import type {
+  IHedgeRelationshipRepo,
+  CreateHedgeRelationshipInput,
+} from '../ports/hedge-relationship-repo.js';
 
 type Row = typeof hedgeRelationships.$inferSelect;
 
@@ -11,13 +14,13 @@ function mapToDomain(row: Row): HedgeRelationship {
     id: row.id,
     tenantId: row.tenantId,
     companyId: row.companyId,
-    hedgeType: row.hedgeType as HedgeRelationship["hedgeType"],
+    hedgeType: row.hedgeType as HedgeRelationship['hedgeType'],
     hedgingInstrumentId: row.hedgingInstrumentId,
     hedgedItemId: row.hedgedItemId,
     hedgedRisk: row.hedgedRisk,
     hedgeRatio: row.hedgeRatio,
     designationDate: row.designationDate,
-    status: row.status as HedgeRelationship["status"],
+    status: row.status as HedgeRelationship['status'],
     discontinuationDate: row.discontinuationDate,
     discontinuationReason: row.discontinuationReason,
     ociReserveBalance: row.ociReserveBalance,
@@ -31,7 +34,11 @@ export class DrizzleHedgeRelationshipRepo implements IHedgeRelationshipRepo {
   constructor(private readonly db: TenantTx) {}
 
   async findById(id: string): Promise<HedgeRelationship | null> {
-    const rows = await this.db.select().from(hedgeRelationships).where(eq(hedgeRelationships.id, id)).limit(1);
+    const rows = await this.db
+      .select()
+      .from(hedgeRelationships)
+      .where(eq(hedgeRelationships.id, id))
+      .limit(1);
     return rows[0] ? mapToDomain(rows[0]) : null;
   }
 
@@ -49,13 +56,16 @@ export class DrizzleHedgeRelationshipRepo implements IHedgeRelationshipRepo {
   }
 
   async create(tenantId: string, input: CreateHedgeRelationshipInput): Promise<HedgeRelationship> {
-    const [row] = await this.db.insert(hedgeRelationships).values({ tenantId, ...input }).returning();
+    const [row] = await this.db
+      .insert(hedgeRelationships)
+      .values({ tenantId, ...input })
+      .returning();
     return mapToDomain(row!);
   }
 
   async updateStatus(id: string, status: HedgeStatus, reason?: string): Promise<HedgeRelationship> {
     const setValues: Record<string, unknown> = { status };
-    if (status === "DISCONTINUED") {
+    if (status === 'DISCONTINUED') {
       setValues.discontinuationDate = new Date();
       if (reason) setValues.discontinuationReason = reason;
     }

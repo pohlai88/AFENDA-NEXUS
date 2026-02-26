@@ -1,7 +1,9 @@
 ---
 name: openclaw-audit-watchdog
 version: 0.1.0
-description: Automated daily security audits for OpenClaw agents with email reporting. Runs deep audits and sends formatted reports.
+description:
+  Automated daily security audits for OpenClaw agents with email reporting. Runs
+  deep audits and sends formatted reports.
 homepage: https://clawsec.prompt.security
 metadata: { 'openclaw': { 'emoji': '🔭', 'category': 'security' } }
 clawdis:
@@ -20,13 +22,17 @@ You can get openclaw-audit-watchdog in two ways:
 
 **If you've installed clawsec-suite, you may already have this!**
 
-Openclaw-audit-watchdog is bundled alongside ClawSec Suite to provide crucial automated security audit capabilities. When you install the suite, if you don't already have the audit watchdog installed, it will be deployed from the bundled copy.
+Openclaw-audit-watchdog is bundled alongside ClawSec Suite to provide crucial
+automated security audit capabilities. When you install the suite, if you don't
+already have the audit watchdog installed, it will be deployed from the bundled
+copy.
 
 **Advantages:**
 
 - Convenient - no separate download needed
 - Standard location - installed to `~/.openclaw/skills/openclaw-audit-watchdog/`
-- Preserved - if you already have audit watchdog installed, it won't be overwritten
+- Preserved - if you already have audit watchdog installed, it won't be
+  overwritten
 - Single verification - integrity checked as part of suite package
 
 ### Option B: Standalone Installation (This Page)
@@ -192,7 +198,9 @@ Each will send reports with clear host identification.
 
 ### Example 7: Suppressing Known Findings
 
-To suppress audit findings that have been reviewed and accepted, pass the `--enable-suppressions` flag and ensure the config file includes the `"enabledFor": ["audit"]` sentinel:
+To suppress audit findings that have been reviewed and accepted, pass the
+`--enable-suppressions` flag and ensure the config file includes the
+`"enabledFor": ["audit"]` sentinel:
 
 ```bash
 # Create or edit the suppression config
@@ -214,18 +222,23 @@ JSON
 /openclaw-audit-watchdog --enable-suppressions
 ```
 
-Suppressed findings still appear in the report under an informational section but are excluded from critical/warning totals.
+Suppressed findings still appear in the report under an informational section
+but are excluded from critical/warning totals.
 
 ## Suppression / Allowlist
 
-The audit pipeline supports an opt-in suppression mechanism for managing reviewed findings. Suppression uses defense-in-depth activation: two independent gates must both be satisfied.
+The audit pipeline supports an opt-in suppression mechanism for managing
+reviewed findings. Suppression uses defense-in-depth activation: two independent
+gates must both be satisfied.
 
 ### Activation Requirements
 
 1. **CLI flag:** The `--enable-suppressions` flag must be passed at invocation.
-2. **Config sentinel:** The configuration file must include `"enabledFor"` with `"audit"` in the array.
+2. **Config sentinel:** The configuration file must include `"enabledFor"` with
+   `"audit"` in the array.
 
-If either gate is absent, all findings are reported normally and the suppression list is ignored.
+If either gate is absent, all findings are reported normally and the suppression
+list is ignored.
 
 ### Config File Resolution (4-tier)
 
@@ -252,14 +265,17 @@ If either gate is absent, all findings are reported normally and the suppression
 
 ### Sentinel Semantics
 
-- `"enabledFor": ["audit"]` -- audit suppression active (requires `--enable-suppressions` flag too)
-- `"enabledFor": ["advisory"]` -- only advisory pipeline suppression (no effect on audit)
+- `"enabledFor": ["audit"]` -- audit suppression active (requires
+  `--enable-suppressions` flag too)
+- `"enabledFor": ["advisory"]` -- only advisory pipeline suppression (no effect
+  on audit)
 - `"enabledFor": ["audit", "advisory"]` -- both pipelines honor suppressions
 - Missing or empty `enabledFor` -- no suppression active (safe default)
 
 ### Matching Rules
 
-- **checkId:** exact match against the audit finding's check identifier (e.g., `skills.code_safety`)
+- **checkId:** exact match against the audit finding's check identifier (e.g.,
+  `skills.code_safety`)
 - **skill:** case-insensitive match against the skill name from the finding
 - Both fields must match for a finding to be suppressed
 
@@ -276,12 +292,15 @@ Optional env:
 
 - `PROMPTSEC_TZ` (IANA timezone; default `UTC`)
 - `PROMPTSEC_HOST_LABEL` (label included in report; default uses `hostname`)
-- `PROMPTSEC_INSTALL_DIR` (stable path used by cron payload to `cd` before running runner; default: `~/.config/security-checkup`)
-- `PROMPTSEC_GIT_PULL=1` (runner will `git pull --ff-only` if installed from git)
+- `PROMPTSEC_INSTALL_DIR` (stable path used by cron payload to `cd` before
+  running runner; default: `~/.config/security-checkup`)
+- `PROMPTSEC_GIT_PULL=1` (runner will `git pull --ff-only` if installed from
+  git)
 
 Interactive install is last resort if env vars or defaults are not set.
 
-even in that case keep prompts minimalistic the watchdog tool is pretty straight up configured out of the box.
+even in that case keep prompts minimalistic the watchdog tool is pretty straight
+up configured out of the box.
 
 ## Create the cron job
 
@@ -328,7 +347,8 @@ A) If an email channel plugin exists in this deployment, use:
 
 B) Otherwise, fallback to local sendmail if available:
 
-- `exec` with: `printf "%s" "$REPORT" | /usr/sbin/sendmail -t` (construct To/Subject headers)
+- `exec` with: `printf "%s" "$REPORT" | /usr/sbin/sendmail -t` (construct
+  To/Subject headers)
 
 If neither path is possible, still DM the user and include a line:
 
@@ -339,7 +359,8 @@ If neither path is possible, still DM the user and include a line:
 Before adding a new job:
 
 - `cron.list(includeDisabled=true)`
-- If a job with name matching `"Daily security audit"` exists, update it instead of adding a duplicate:
+- If a job with name matching `"Daily security audit"` exists, update it instead
+  of adding a duplicate:
   - adjust schedule tz/expr
   - adjust DM target
 

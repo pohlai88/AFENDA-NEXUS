@@ -1,12 +1,12 @@
-import type { Result } from "@afenda/core";
-import { err, AppError } from "@afenda/core";
-import type { ArPaymentAllocation } from "../entities/ar-payment-allocation.js";
-import type { IArInvoiceRepo } from "../ports/ar-invoice-repo.js";
-import type { IArPaymentAllocationRepo } from "../ports/ar-payment-allocation-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { FinanceContext } from "../../../shared/finance-context.js";
-import { FinanceEventType } from "../../../shared/events.js";
-import { allocatePaymentFifo, type AllocationInput } from "../calculators/payment-allocation.js";
+import type { Result } from '@afenda/core';
+import { err, AppError } from '@afenda/core';
+import type { ArPaymentAllocation } from '../entities/ar-payment-allocation.js';
+import type { IArInvoiceRepo } from '../ports/ar-invoice-repo.js';
+import type { IArPaymentAllocationRepo } from '../ports/ar-payment-allocation-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { FinanceContext } from '../../../shared/finance-context.js';
+import { FinanceEventType } from '../../../shared/events.js';
+import { allocatePaymentFifo, type AllocationInput } from '../calculators/payment-allocation.js';
 
 export interface AllocatePaymentInput {
   readonly tenantId: string;
@@ -26,7 +26,7 @@ export async function allocatePayment(
     arPaymentAllocationRepo: IArPaymentAllocationRepo;
     outboxWriter: IOutboxWriter;
   },
-  ctx?: FinanceContext,
+  ctx?: FinanceContext
 ): Promise<Result<ArPaymentAllocation>> {
   const tenantId = ctx?.tenantId ?? input.tenantId;
   const userId = ctx?.actor.userId ?? input.userId;
@@ -36,7 +36,9 @@ export async function allocatePayment(
   const customerInvoices = unpaid.filter((inv) => inv.customerId === input.customerId);
 
   if (customerInvoices.length === 0) {
-    return err(new AppError("VALIDATION", `No unpaid invoices found for customer ${input.customerId}`));
+    return err(
+      new AppError('VALIDATION', `No unpaid invoices found for customer ${input.customerId}`)
+    );
   }
 
   // FIFO allocation
@@ -49,7 +51,7 @@ export async function allocatePayment(
   const result = allocatePaymentFifo(input.paymentAmount, allocationInputs);
 
   if (result.totalAllocated === 0n) {
-    return err(new AppError("VALIDATION", "No amount could be allocated"));
+    return err(new AppError('VALIDATION', 'No amount could be allocated'));
   }
 
   // Create payment allocation record

@@ -2,19 +2,19 @@
  * TX-06 service: Issue WHT certificate for a payee.
  */
 
-import type { Result } from "@afenda/core";
-import type { WhtCertificate } from "../entities/wht-certificate.js";
-import type { IWhtCertificateRepo } from "../ports/wht-certificate-repo.js";
-import type { IOutboxWriter } from "../../../shared/ports/outbox-writer.js";
-import type { IDocumentNumberGenerator } from "../../../shared/ports/journal-posting-port.js";
-import { FinanceEventType } from "../../../shared/events.js";
+import type { Result } from '@afenda/core';
+import type { WhtCertificate } from '../entities/wht-certificate.js';
+import type { IWhtCertificateRepo } from '../ports/wht-certificate-repo.js';
+import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
+import type { IDocumentNumberGenerator } from '../../../shared/ports/journal-posting-port.js';
+import { FinanceEventType } from '../../../shared/events.js';
 
 export interface IssueWhtCertificateInput {
   readonly tenantId: string;
   readonly userId: string;
   readonly payeeId: string;
   readonly payeeName: string;
-  readonly payeeType: "RESIDENT" | "NON_RESIDENT";
+  readonly payeeType: 'RESIDENT' | 'NON_RESIDENT';
   readonly countryCode: string;
   readonly incomeType: string;
   readonly grossAmount: bigint;
@@ -31,9 +31,13 @@ export interface IssueWhtCertificateInput {
 
 export async function issueWhtCertificate(
   input: IssueWhtCertificateInput,
-  deps: { whtCertificateRepo: IWhtCertificateRepo; outboxWriter: IOutboxWriter; documentNumberGenerator: IDocumentNumberGenerator },
+  deps: {
+    whtCertificateRepo: IWhtCertificateRepo;
+    outboxWriter: IOutboxWriter;
+    documentNumberGenerator: IDocumentNumberGenerator;
+  }
 ): Promise<Result<WhtCertificate>> {
-  const certNumResult = await deps.documentNumberGenerator.next(input.tenantId, "WHT");
+  const certNumResult = await deps.documentNumberGenerator.next(input.tenantId, 'WHT');
   if (!certNumResult.ok) return certNumResult;
   const certificateNumber = certNumResult.value;
 

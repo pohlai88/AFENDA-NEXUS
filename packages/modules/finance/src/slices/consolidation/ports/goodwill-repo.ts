@@ -1,4 +1,4 @@
-import type { Goodwill } from "../entities/goodwill.js";
+import type { Goodwill } from '../entities/goodwill.js';
 
 export interface CreateGoodwillInput {
   readonly ownershipRecordId: string;
@@ -16,9 +16,12 @@ export interface IGoodwillRepo {
   findByChild(childEntityId: string): Promise<Goodwill | null>;
   findAll(): Promise<readonly Goodwill[]>;
   create(tenantId: string, input: CreateGoodwillInput): Promise<Goodwill>;
-  update(id: string, input: Partial<{
-    accumulatedImpairment: bigint;
-    carryingAmount: bigint;
-    status: Goodwill["status"];
-  }>): Promise<Goodwill>;
+  update(
+    id: string,
+    input: Partial<{
+      accumulatedImpairment: bigint;
+      carryingAmount: bigint;
+      status: Goodwill['status'];
+    }>
+  ): Promise<Goodwill>;
 }

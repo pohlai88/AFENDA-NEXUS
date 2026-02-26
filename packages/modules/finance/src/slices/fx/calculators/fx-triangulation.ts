@@ -6,7 +6,7 @@
  * Computes cross rates by triangulating through a common base currency
  * when a direct rate is unavailable.
  */
-import type { CalculatorResult } from "../../../shared/types.js";
+import type { CalculatorResult } from '../../../shared/types.js';
 
 export interface RateEntry {
   readonly fromCurrency: string;
@@ -20,7 +20,7 @@ export interface TriangulatedRate {
   readonly fromCurrency: string;
   readonly toCurrency: string;
   readonly rate: number;
-  readonly method: "direct" | "triangulated" | "inverse";
+  readonly method: 'direct' | 'triangulated' | 'inverse';
   readonly baseCurrency?: string;
   readonly leg1Rate?: number;
   readonly leg2Rate?: number;
@@ -28,7 +28,7 @@ export interface TriangulatedRate {
 
 export interface TriangulationResult {
   readonly rate: TriangulatedRate;
-  readonly confidence: "high" | "medium" | "low";
+  readonly confidence: 'high' | 'medium' | 'low';
 }
 
 /**
@@ -41,7 +41,7 @@ export function triangulateRate(
   fromCurrency: string,
   toCurrency: string,
   availableRates: readonly RateEntry[],
-  baseCurrency: string = "USD",
+  baseCurrency: string = 'USD'
 ): CalculatorResult<TriangulationResult> {
   if (fromCurrency === toCurrency) {
     return {
@@ -50,9 +50,9 @@ export function triangulateRate(
           fromCurrency,
           toCurrency,
           rate: 1.0,
-          method: "direct",
+          method: 'direct',
         },
-        confidence: "high",
+        confidence: 'high',
       },
       inputs: { fromCurrency, toCurrency, baseCurrency },
       explanation: `Same currency ${fromCurrency} → ${toCurrency}: rate = 1.0`,
@@ -61,7 +61,7 @@ export function triangulateRate(
 
   // 1. Try direct rate
   const direct = availableRates.find(
-    (r) => r.fromCurrency === fromCurrency && r.toCurrency === toCurrency,
+    (r) => r.fromCurrency === fromCurrency && r.toCurrency === toCurrency
   );
   if (direct) {
     return {
@@ -70,9 +70,9 @@ export function triangulateRate(
           fromCurrency,
           toCurrency,
           rate: direct.rate,
-          method: "direct",
+          method: 'direct',
         },
-        confidence: "high",
+        confidence: 'high',
       },
       inputs: { fromCurrency, toCurrency, source: direct.source },
       explanation: `Direct rate ${fromCurrency} → ${toCurrency}: ${direct.rate} (source: ${direct.source})`,
@@ -81,7 +81,7 @@ export function triangulateRate(
 
   // 2. Try inverse rate
   const inverse = availableRates.find(
-    (r) => r.fromCurrency === toCurrency && r.toCurrency === fromCurrency,
+    (r) => r.fromCurrency === toCurrency && r.toCurrency === fromCurrency
   );
   if (inverse && inverse.rate > 0) {
     const invertedRate = 1 / inverse.rate;
@@ -91,9 +91,9 @@ export function triangulateRate(
           fromCurrency,
           toCurrency,
           rate: invertedRate,
-          method: "inverse",
+          method: 'inverse',
         },
-        confidence: "medium",
+        confidence: 'medium',
       },
       inputs: { fromCurrency, toCurrency, inverseRate: inverse.rate },
       explanation: `Inverse rate ${toCurrency} → ${fromCurrency}: ${inverse.rate}, inverted to ${invertedRate}`,
@@ -101,24 +101,18 @@ export function triangulateRate(
   }
 
   // 3. Try triangulation via base currency
-  const leg1 = availableRates.find(
-    (r) => r.fromCurrency === fromCurrency && r.toCurrency === baseCurrency,
-  ) ?? availableRates.find(
-    (r) => r.fromCurrency === baseCurrency && r.toCurrency === fromCurrency,
-  );
+  const leg1 =
+    availableRates.find((r) => r.fromCurrency === fromCurrency && r.toCurrency === baseCurrency) ??
+    availableRates.find((r) => r.fromCurrency === baseCurrency && r.toCurrency === fromCurrency);
 
-  const leg2 = availableRates.find(
-    (r) => r.fromCurrency === baseCurrency && r.toCurrency === toCurrency,
-  ) ?? availableRates.find(
-    (r) => r.fromCurrency === toCurrency && r.toCurrency === baseCurrency,
-  );
+  const leg2 =
+    availableRates.find((r) => r.fromCurrency === baseCurrency && r.toCurrency === toCurrency) ??
+    availableRates.find((r) => r.fromCurrency === toCurrency && r.toCurrency === baseCurrency);
 
   if (leg1 && leg2) {
     // Normalize legs to FROM→BASE and BASE→TO
-    const leg1Rate =
-      leg1.fromCurrency === fromCurrency ? leg1.rate : 1 / leg1.rate;
-    const leg2Rate =
-      leg2.fromCurrency === baseCurrency ? leg2.rate : 1 / leg2.rate;
+    const leg1Rate = leg1.fromCurrency === fromCurrency ? leg1.rate : 1 / leg1.rate;
+    const leg2Rate = leg2.fromCurrency === baseCurrency ? leg2.rate : 1 / leg2.rate;
 
     const crossRate = leg1Rate * leg2Rate;
 
@@ -128,12 +122,12 @@ export function triangulateRate(
           fromCurrency,
           toCurrency,
           rate: crossRate,
-          method: "triangulated",
+          method: 'triangulated',
           baseCurrency,
           leg1Rate,
           leg2Rate,
         },
-        confidence: "low",
+        confidence: 'low',
       },
       inputs: { fromCurrency, toCurrency, baseCurrency, leg1Rate, leg2Rate },
       explanation: `Triangulated ${fromCurrency} → ${baseCurrency} → ${toCurrency}: ${leg1Rate} × ${leg2Rate} = ${crossRate}`,
@@ -141,7 +135,7 @@ export function triangulateRate(
   }
 
   throw new Error(
-    `No rate path found for ${fromCurrency} → ${toCurrency} (tried direct, inverse, triangulation via ${baseCurrency})`,
+    `No rate path found for ${fromCurrency} → ${toCurrency} (tried direct, inverse, triangulation via ${baseCurrency})`
   );
 }
 
@@ -149,7 +143,7 @@ export function triangulateRate(
 
 export interface RateAuditIssue {
   readonly rateEntry: RateEntry;
-  readonly issue: "stale" | "wide_spread" | "zero_rate" | "negative_rate" | "duplicate";
+  readonly issue: 'stale' | 'wide_spread' | 'zero_rate' | 'negative_rate' | 'duplicate';
   readonly detail: string;
 }
 
@@ -170,7 +164,7 @@ export function auditRateSources(
   rates: readonly RateEntry[],
   referenceDate: string,
   maxAgeDays: number = 7,
-  maxSpreadPct: number = 5,
+  maxSpreadPct: number = 5
 ): CalculatorResult<RateAuditResult> {
   const issues: RateAuditIssue[] = [];
   const refDate = new Date(referenceDate).getTime();
@@ -183,7 +177,7 @@ export function auditRateSources(
     if (rate.rate <= 0) {
       issues.push({
         rateEntry: rate,
-        issue: rate.rate === 0 ? "zero_rate" : "negative_rate",
+        issue: rate.rate === 0 ? 'zero_rate' : 'negative_rate',
         detail: `Rate ${rate.fromCurrency}→${rate.toCurrency} is ${rate.rate}`,
       });
       continue;
@@ -195,7 +189,7 @@ export function auditRateSources(
       const ageDays = Math.round((refDate - rateDate) / (24 * 60 * 60 * 1000));
       issues.push({
         rateEntry: rate,
-        issue: "stale",
+        issue: 'stale',
         detail: `Rate ${rate.fromCurrency}→${rate.toCurrency} is ${ageDays} days old (max: ${maxAgeDays})`,
       });
     }
@@ -215,7 +209,7 @@ export function auditRateSources(
     if (entries.length > 1) {
       issues.push({
         rateEntry: entries[1]!,
-        issue: "duplicate",
+        issue: 'duplicate',
         detail: `${pairKey} has ${entries.length} entries`,
       });
 
@@ -228,7 +222,7 @@ export function auditRateSources(
         if (spreadPct > maxSpreadPct) {
           issues.push({
             rateEntry: entries[0]!,
-            issue: "wide_spread",
+            issue: 'wide_spread',
             detail: `${pairKey} spread is ${spreadPct.toFixed(2)}% (max: ${maxSpreadPct}%)`,
           });
         }
