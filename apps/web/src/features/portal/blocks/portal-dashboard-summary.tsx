@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/erp/status-badge';
 import { MoneyCell } from '@/components/erp/money-cell';
@@ -48,7 +49,7 @@ function MetricCard({
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon
-          className={`h-4 w-4 text-muted-foreground ${iconClassName ?? ''}`}
+          className={cn('h-4 w-4 text-muted-foreground', iconClassName)}
           aria-hidden="true"
         />
       </CardHeader>

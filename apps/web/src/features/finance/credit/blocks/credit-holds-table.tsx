@@ -157,9 +157,8 @@ export function CreditHoldsTable({ holds }: CreditHoldsTableProps) {
       searchPlaceholder="Search holds..."
       searchKeys={['customerCode', 'customerName', 'reason']}
       emptyState={{
+        key: 'finance.credit.holds',
         icon: Ban,
-        title: 'No credit holds',
-        description: 'No customers are currently on credit hold.',
       }}
     />
   );

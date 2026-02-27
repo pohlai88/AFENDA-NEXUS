@@ -109,9 +109,8 @@ export function CostDriversTable({ drivers }: CostDriversTableProps) {
       searchPlaceholder="Search drivers..."
       searchKeys={['code', 'name', 'description']}
       emptyState={{
+        key: 'finance.costAccounting.drivers',
         icon: Activity,
-        title: 'No cost drivers defined',
-        description: 'Create cost drivers to allocate costs across cost centers.',
         action: (
           <Button asChild>
             <Link href={routes.finance.costDriverNew}>

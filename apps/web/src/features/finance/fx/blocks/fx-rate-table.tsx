@@ -85,7 +85,7 @@ export function FxRateTable({ data, editAction }: FxRateTableProps) {
           row.source.toLowerCase().includes(q)
         );
       }}
-      emptyMessage="No FX rates match your search."
+      emptyState={{ key: 'finance.fxRates' }}
     />
   );
 }

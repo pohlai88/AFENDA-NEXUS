@@ -47,7 +47,7 @@ export function LedgerTable({ data }: LedgerTableProps) {
           row.baseCurrency.toLowerCase().includes(q)
         );
       }}
-      emptyMessage="No ledgers match your search."
+      emptyState={{ key: 'finance.ledgers' }}
     />
   );
 }

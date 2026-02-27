@@ -2,6 +2,16 @@ import { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ReportWrapper, DrilldownRow } from '@/components/erp/report-wrapper';
 import { ReportPeriodPicker } from '@/components/erp/report-period-picker';
 import { formatCurrency } from '@/lib/utils';
@@ -91,67 +101,66 @@ async function CostAllocationTable() {
         <CardTitle>Cost Allocation Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-3 px-2 font-semibold">Cost Center</th>
-                <th className="text-right py-3 px-2 font-semibold">Direct Costs</th>
-                <th className="text-right py-3 px-2 font-semibold">Allocated In</th>
-                <th className="text-right py-3 px-2 font-semibold">Allocated Out</th>
-                <th className="text-right py-3 px-2 font-semibold">Total Cost</th>
-                <th className="w-8" aria-hidden />
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((item) => (
-                <DrilldownRow
-                  key={item.costCenterId}
-                  href={routes.finance.costCenterDetail(item.costCenterId)}
-                >
-                  <td className="py-3 px-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="font-mono">
-                        {item.costCenterCode}
-                      </Badge>
-                      <span>{item.costCenterName}</span>
-                    </div>
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {formatCurrency(item.directCosts, data.currency)}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono text-green-600">
-                    {item.allocatedIn > 0 ? formatCurrency(item.allocatedIn, data.currency) : '—'}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono text-red-600">
-                    {item.allocatedOut < 0 ? formatCurrency(item.allocatedOut, data.currency) : '—'}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono font-semibold">
-                    {formatCurrency(item.totalCost, data.currency)}
-                  </td>
-                </DrilldownRow>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="font-bold bg-muted/50">
-                <td className="py-3 px-2">Total</td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.directCosts, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.allocatedIn, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.allocatedOut, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.totalCost, data.currency)}
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <Table>
+          <TableCaption className="sr-only">Cost allocation report</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Cost Center</TableHead>
+              <TableHead className="text-right">Direct Costs</TableHead>
+              <TableHead className="text-right">Allocated In</TableHead>
+              <TableHead className="text-right">Allocated Out</TableHead>
+              <TableHead className="text-right">Total Cost</TableHead>
+              <TableHead className="w-8" aria-hidden />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.items.map((item) => (
+              <DrilldownRow
+                key={item.costCenterId}
+                href={routes.finance.costCenterDetail(item.costCenterId)}
+              >
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-mono">
+                      {item.costCenterCode}
+                    </Badge>
+                    <span>{item.costCenterName}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {formatCurrency(item.directCosts, data.currency)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-green-600">
+                  {item.allocatedIn > 0 ? formatCurrency(item.allocatedIn, data.currency) : '—'}
+                </TableCell>
+                <TableCell className="text-right font-mono text-red-600">
+                  {item.allocatedOut < 0 ? formatCurrency(item.allocatedOut, data.currency) : '—'}
+                </TableCell>
+                <TableCell className="text-right font-mono font-semibold">
+                  {formatCurrency(item.totalCost, data.currency)}
+                </TableCell>
+              </DrilldownRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>Total</TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.directCosts, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.allocatedIn, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.allocatedOut, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.totalCost, data.currency)}
+              </TableCell>
+              <TableCell />
+            </TableRow>
+          </TableFooter>
+        </Table>
       </CardContent>
     </Card>
   );

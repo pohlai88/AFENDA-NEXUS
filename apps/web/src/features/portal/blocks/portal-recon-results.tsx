@@ -30,6 +30,7 @@ function ReconLineTable({
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">Reconciliation lines</caption>
         <TableHeader>
           <TableRow>
             <TableHead>Statement Ref</TableHead>

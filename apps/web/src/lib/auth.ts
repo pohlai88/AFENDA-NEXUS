@@ -97,3 +97,28 @@ export async function getRequestContext(existing?: NeonSession) {
     token: session.session.token,
   };
 }
+
+/**
+ * I-KRN-08: Get the user's lastActiveOrgId from preferences.
+ * Returns null if preferences are unavailable or lastActiveOrgId is not set.
+ * Used by onboarding to auto-restore the last active org.
+ */
+export async function getLastActiveOrgId(session: NeonSession): Promise<string | null> {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL;
+  if (!apiBase) return null;
+
+  try {
+    const resp = await fetch(`${apiBase}/me/preferences`, {
+      headers: {
+        authorization: `Bearer ${session.session.token}`,
+        'content-type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+    if (!resp.ok) return null;
+    const prefs = await resp.json();
+    return prefs?.lastActiveOrgId ?? null;
+  } catch {
+    return null;
+  }
+}

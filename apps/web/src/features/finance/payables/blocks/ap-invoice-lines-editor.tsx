@@ -1,8 +1,10 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import { useFieldArray, type UseFormReturn } from 'react-hook-form';
 import type { CreateApInvoice } from '@afenda/contracts';
 import { MoneyCell } from '@/components/erp/money-cell';
+import { EntityCombobox, type EntityOption } from '@/components/erp/entity-combobox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,6 +17,7 @@ import {
   TableFooter,
 } from '@/components/ui/table';
 import { Plus, Trash2 } from 'lucide-react';
+import { searchAccounts } from '../actions/entity-search.actions';
 
 interface ApInvoiceLinesEditorProps {
   form: UseFormReturn<CreateApInvoice>;
@@ -29,6 +32,19 @@ export function ApInvoiceLinesEditor({ form }: ApInvoiceLinesEditorProps) {
   const lines = form.watch('lines');
   const totalAmount = lines?.reduce((sum, l) => sum + (l.amount || 0), 0) ?? 0;
   const totalTax = lines?.reduce((sum, l) => sum + (l.taxAmount || 0), 0) ?? 0;
+
+  // Track account selections per line (keyed by field array id)
+  const [accountSelections, setAccountSelections] = useState<Record<string, EntityOption | null>>({});
+
+  const handleAccountChange = useCallback(
+    (fieldId: string, index: number, next: EntityOption | null) => {
+      setAccountSelections((prev) => ({ ...prev, [fieldId]: next }));
+      form.setValue(`lines.${index}.accountId`, next?.id ?? '', { shouldValidate: true });
+    },
+    [form]
+  );
+
+  const accountLoader = useCallback((q: string) => searchAccounts(q), []);
 
   return (
     <div className="space-y-3">
@@ -56,9 +72,10 @@ export function ApInvoiceLinesEditor({ form }: ApInvoiceLinesEditorProps) {
 
       <div className="rounded-md border">
         <Table>
+          <caption className="sr-only">Invoice line items</caption>
           <TableHeader>
             <TableRow>
-              <TableHead>Account ID</TableHead>
+              <TableHead>Account</TableHead>
               <TableHead>Description</TableHead>
               <TableHead className="text-right">Qty</TableHead>
               <TableHead className="text-right">Unit Price</TableHead>
@@ -70,12 +87,14 @@ export function ApInvoiceLinesEditor({ form }: ApInvoiceLinesEditorProps) {
           <TableBody>
             {fields.map((field, index) => (
               <TableRow key={field.id}>
-                <TableCell>
-                  <Input
-                    {...form.register(`lines.${index}.accountId`)}
-                    placeholder="Account UUID"
-                    aria-label={`Line ${index + 1} account`}
-                    className="font-mono text-xs"
+                <TableCell className="min-w-[220px]">
+                  <EntityCombobox
+                    value={accountSelections[field.id] ?? null}
+                    onChange={(next) => handleAccountChange(field.id, index, next)}
+                    loadOptions={accountLoader}
+                    placeholder="Search accounts…"
+                    ariaLabel={`Line ${index + 1} account`}
+                    error={form.formState.errors.lines?.[index]?.accountId?.message}
                   />
                 </TableCell>
                 <TableCell>

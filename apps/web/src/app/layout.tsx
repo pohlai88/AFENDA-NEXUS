@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
+import { WebVitals } from './_components/web-vitals';
 import './globals.css';
 
 const inter = Inter({
@@ -113,9 +114,20 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
+      <head>
+        {/* Inline script to apply density class before first paint (prevents FOUC).
+            Mirrors how next-themes handles theme flash. Reads the shell_prefs cookie
+            and sets [data-density] + the CSS class on <html>. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=document.cookie.match(/shell_prefs=([^;]+)/);if(m){var p=JSON.parse(decodeURIComponent(m[1]));if(p&&p.v===1&&p.density&&p.density!=='default'){var c={compact:'compact',ultra:'ultra',touch:'touch-mode'};var cls=c[p.density];if(cls){document.documentElement.classList.add(cls);document.documentElement.dataset.density=p.density}}}}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider defaultTheme="system">
           <TooltipProvider delayDuration={300}>
+            <WebVitals />
             {children}
             <Toaster richColors closeButton position="bottom-right" />
           </TooltipProvider>

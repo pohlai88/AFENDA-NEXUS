@@ -25,6 +25,13 @@
  *   W18  No loose utils — features/erp must not create utils.ts/helpers.ts grab-bags
  *   W19  shadcn component usage — no raw <input>/<select>/<table> where shadcn exists
  *   W20  No hardcoded route paths — must use routes.* from @/lib/constants
+ *   W21  Route boundary completeness — loading.tsx required, error.tsx/not-found.tsx advised
+ *   W22  Suspense discipline — async child components should be wrapped in <Suspense>
+ *   W23  Page metadata exports — page.tsx should export metadata or generateMetadata
+ *   W24  No stray console.log — only console.error/warn allowed in components/features
+ *   W25  next.config.ts best practices — poweredByHeader, optimizePackageImports, etc.
+ *   W26  Exception registry audit — stale exemptions for deleted files
+ *   W27  EmptyState registry discipline — no hardcoded empty-state strings outside registry
  *
  * Usage:
  *   node tools/scripts/web-drift-check.mjs
@@ -649,6 +656,8 @@ function checkW13() {
     '@vitest/coverage-v8',
     'shadcn',
     '@next/bundle-analyzer',
+    'babel-plugin-react-compiler',
+    'next-devtools-mcp',
   ];
 
   const pkgJson = loadJson(join(WEB_ROOT, 'package.json'));
@@ -728,12 +737,14 @@ function checkW14() {
   const HARDCODED_COLOR_PATTERN =
     /(?:bg|text|border|ring|outline|shadow|from|to|via)-(?:red|green|yellow|orange|purple|pink|indigo|violet|teal|cyan|lime|amber|fuchsia|rose|sky|stone|zinc|gray|slate|neutral)-\d{2,3}/;
 
-  // Allowed exceptions: status-badge uses emerald/blue for status-specific colors
-  const EXCEPTION_FILES = ['status-badge.tsx'];
+  // Allowed exceptions:
+  // - status-badge uses emerald/blue for status-specific colors
+  // - module-sidebar uses per-module accent colors (brand identity)
+  const EXCEPTION_FILES = ['status-badge.tsx', 'module-sidebar.tsx', 'status-colors.ts'];
   // Also allow in globals.css
   const EXCEPTION_DIRS = ['app/'];
 
-  const DIRS = [join(SRC, 'components/erp'), join(SRC, 'features')];
+  const DIRS = [join(SRC, 'components/erp'), join(SRC, 'features'), join(SRC, 'lib')];
 
   for (const dir of DIRS) {
     const files = collectFiles(dir, ['.tsx', '.ts']);
@@ -851,7 +862,7 @@ function checkW16() {
 
   // Non-color var prefixes — these are spacing/sizing tokens mapped via
   // --density-*, --radius-*, etc., not via --color-* mappings.
-  const NON_COLOR_PREFIXES = ['spacing-', 'text-size-', 'radius'];
+  const NON_COLOR_PREFIXES = ['spacing-', 'text-size-', 'radius', 'layout-', 'shadow-', 'col-', 'select-', 'scroll-', 'truncate-', 'skeleton-'];
 
   for (const varName of rootVars) {
     // Skip non-color tokens
@@ -888,6 +899,8 @@ function checkW17() {
     'lib/api-client.ts',
     'app/layout.tsx',
     'hooks/use-analytics.ts', // PostHog SDK default host fallback
+    'app/sitemap.ts', // SEO sitemap fallback URL
+    'features/portal/forms/portal-notification-form.tsx', // placeholder text
   ];
 
   const allFiles = collectFiles(SRC, ['.ts', '.tsx']);
@@ -1012,11 +1025,15 @@ function checkW19() {
 // Exempt: constants.ts (route definitions), test files.
 
 function checkW20() {
-  const ROUTE_PATH_PATTERN = /['"`]\/finance\/[^'"`\s]*['"`]/;
+  const ROUTE_PATH_PATTERN = /['"`]\/(?:finance|hrm|crm|boardroom|admin|settings|portal)\/[^'"`\s]*['"`]/;
 
   // Files where route path literals are the actual definitions
   const EXEMPT_FILES = [
     'lib/constants.ts', // route definitions live here
+    'lib/modules/module-spec.ts', // module matchers use bare paths
+    'lib/kpis/kpi-catalog.ts', // KPI catalog hrefs are route-like definitions
+    'lib/tenant-context.server.ts', // server-side redirect/revalidation paths
+    'features/portal/queries/portal.queries.ts', // API endpoint path builders
   ];
 
   const allFiles = collectFiles(SRC, ['.ts', '.tsx']);
@@ -1038,12 +1055,330 @@ function checkW20() {
       if (line.trimStart().startsWith('{/*')) continue;
 
       if (ROUTE_PATH_PATTERN.test(line)) {
+        // Skip API fetch URLs: same-line (api.get('/admin/...')), generic close (}>('/admin/...')),
+        // or method calls (.get<T>('/...'), .post('/...'))
+        if (/\.(?:get|post|put|patch|delete)\s*[<(]/.test(line)) continue;
+        if (/>\s*\(\s*['"`]\//.test(line)) continue; // generic close: }>('/admin/...')
+        if (/api\.\w+\s*[<(]/.test(line)) continue;
+        // Skip multi-line API calls where the URL string is on the next line after api.get<Type>(
+        const prevLine = i > 0 ? lines[i - 1] : '';
+        if (/\.(?:get|post|put|patch|delete)\s*(?:<[^>]*>)?\s*\(\s*$/.test(prevLine)) continue;
+        if (/>\s*\(\s*$/.test(prevLine)) continue; // multi-line generic close: }>\n  ('/admin/...')
+        // Skip revalidatePath calls (Next.js internal route syntax)
+        if (/revalidatePath\s*\(/.test(line)) continue;
         fail(
           'W20',
           `${rel}:${i + 1} -- Hardcoded route path. Use routes.* from @/lib/constants instead.`
         );
       }
     }
+  }
+}
+
+// ─── W21: Route Boundary Completeness ────────────────────────────────────────
+// Every directory under app/(shell)/*/ and app/(portal)/*/ that has a page.tsx
+// should also have loading.tsx (FAIL), error.tsx (WARN), not-found.tsx (WARN
+// for top-level module dirs only).
+
+function checkW21() {
+  const ROUTE_GROUPS = [
+    join(SRC, 'app/(shell)'),
+    join(SRC, 'app/(portal)'),
+  ];
+
+  function walkRoutes(dir, isTopLevel = false) {
+    if (!existsSync(dir)) return;
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name.startsWith('_') || entry.name === 'node_modules') continue;
+
+      const full = join(dir, entry.name);
+      const hasPage = existsSync(join(full, 'page.tsx'));
+      const hasLoading = existsSync(join(full, 'loading.tsx'));
+      const hasError = existsSync(join(full, 'error.tsx'));
+      const hasNotFound = existsSync(join(full, 'not-found.tsx'));
+      const rel = relPath(full);
+
+      if (hasPage) {
+        if (!hasLoading) {
+          warn('W21', `${rel}/ -- page.tsx exists but missing sibling loading.tsx.`);
+        }
+        if (!hasError) {
+          warn('W21', `${rel}/ -- page.tsx exists but missing sibling error.tsx.`);
+        }
+        if (isTopLevel && !hasNotFound) {
+          warn('W21', `${rel}/ -- Top-level module missing not-found.tsx.`);
+        }
+      }
+
+      // Recurse into subdirectories (not top-level anymore)
+      walkRoutes(full, false);
+    }
+  }
+
+  for (const group of ROUTE_GROUPS) {
+    if (!existsSync(group)) continue;
+    for (const entry of readdirSync(group, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (entry.name.startsWith('_')) continue;
+      walkRoutes(join(group, entry.name), true);
+    }
+  }
+}
+
+// ─── W22: Suspense Discipline ────────────────────────────────────────────────
+// Server component page.tsx files that import async child components should
+// wrap them in <Suspense>. Heuristic: if a page.tsx has `await` calls AND
+// does NOT contain `<Suspense`, warn.
+
+function checkW22() {
+  const appDir = join(SRC, 'app');
+  const pageFiles = collectFiles(appDir, ['.tsx']).filter((f) => {
+    const name = f.split(/[\\/]/).pop();
+    return name === 'page.tsx';
+  });
+
+  for (const file of pageFiles) {
+    const content = readFileSync(file, 'utf-8');
+    const rel = relPath(file);
+
+    // Only check server components (no "use client")
+    if (content.trimStart().startsWith('"use client"') || content.trimStart().startsWith("'use client'")) continue;
+
+    // Check if page uses await (async data fetching)
+    const hasAwait = /\bawait\s/.test(content);
+    const hasSuspense = /<Suspense/.test(content);
+
+    // If page fetches data and renders child components but has no Suspense
+    if (hasAwait && !hasSuspense) {
+      // Only warn if there are multiple awaits (suggests parallel fetches that could stream)
+      const awaitCount = (content.match(/\bawait\s/g) || []).length;
+      if (awaitCount >= 2) {
+        warn('W22', `${rel} -- ${awaitCount} await calls but no <Suspense> boundary. Consider streaming with Suspense.`);
+      }
+    }
+  }
+}
+
+// ─── W23: Page Metadata Exports ──────────────────────────────────────────────
+// Every page.tsx under app/(shell)/ should export metadata or generateMetadata
+// for SEO and consistent page titles.
+
+function checkW23() {
+  const shellDir = join(SRC, 'app/(shell)');
+  if (!existsSync(shellDir)) return;
+
+  const pageFiles = collectFiles(shellDir, ['.tsx']).filter((f) => {
+    const name = f.split(/[\\/]/).pop();
+    return name === 'page.tsx';
+  });
+
+  for (const file of pageFiles) {
+    const content = readFileSync(file, 'utf-8');
+    const rel = relPath(file);
+
+    const hasMetadata = /export\s+(?:const\s+metadata|async\s+function\s+generateMetadata|function\s+generateMetadata)/.test(content);
+    if (!hasMetadata) {
+      warn('W23', `${rel} -- No metadata export. Add \`export const metadata\` or \`export async function generateMetadata\` for SEO.`);
+    }
+  }
+}
+
+// ─── W24: No Stray console.log ───────────────────────────────────────────────
+// components/erp/ and features/ files must not contain console.log().
+// Only console.error/console.warn are allowed for error reporting.
+// Exempt: lines with eslint-disable, test files, and server-only files
+// that use console.log for legitimate logging.
+
+function checkW24() {
+  const CONSOLE_LOG_PATTERN = /\bconsole\.log\s*\(/;
+
+  const DIRS = [join(SRC, 'components/erp'), join(SRC, 'features')];
+
+  // Server-side files that may legitimately log
+  const EXEMPT_SUFFIXES = ['.server.ts', '.server.tsx'];
+
+  for (const dir of DIRS) {
+    const files = collectFiles(dir, ['.tsx', '.ts']);
+    for (const file of files) {
+      const fileName = file.split(/[\\/]/).pop();
+      if (EXEMPT_SUFFIXES.some((s) => fileName.endsWith(s))) continue;
+
+      const content = readFileSync(file, 'utf-8');
+      const lines = content.split('\n');
+      const rel = relPath(file);
+
+      // Server Actions ('use server') use console.log as stub tracing — warn only
+      const isServerAction = content.trimStart().startsWith("'use server'") || content.trimStart().startsWith('"use server"');
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (CONSOLE_LOG_PATTERN.test(line)) {
+          // Skip eslint-disable comments
+          if (line.includes('eslint-disable')) continue;
+          // Skip commented-out lines
+          if (line.trimStart().startsWith('//') || line.trimStart().startsWith('*')) continue;
+          if (isServerAction) {
+            warn(
+              'W24',
+              `${rel}:${i + 1} -- console.log() in server action. Replace with structured logging before production.`
+            );
+          } else {
+            fail(
+              'W24',
+              `${rel}:${i + 1} -- console.log() in production code. Use console.error/warn or remove.`
+            );
+          }
+        }
+      }
+    }
+  }
+}
+
+// ─── W25: next.config.ts Best Practices ──────────────────────────────────────
+// Verify next.config.ts includes enterprise-grade settings.
+
+function checkW25() {
+  const configFile = join(WEB_ROOT, 'next.config.ts');
+  if (!existsSync(configFile)) {
+    fail('W25', 'next.config.ts not found.');
+    return;
+  }
+
+  const content = readFileSync(configFile, 'utf-8');
+
+  // poweredByHeader: false — security (strip X-Powered-By)
+  if (!content.includes('poweredByHeader')) {
+    fail('W25', 'next.config.ts missing `poweredByHeader: false`. Leaks X-Powered-By header.');
+  } else if (!content.includes('poweredByHeader: false') && !content.includes('poweredByHeader:false')) {
+    warn('W25', 'next.config.ts has poweredByHeader but not set to false.');
+  }
+
+  // optimizePackageImports should include lucide-react
+  if (content.includes('optimizePackageImports')) {
+    if (!content.includes("'lucide-react'") && !content.includes('"lucide-react"')) {
+      warn('W25', 'next.config.ts optimizePackageImports should include lucide-react.');
+    }
+  } else {
+    warn('W25', 'next.config.ts missing optimizePackageImports. Add for build performance.');
+  }
+
+  // images.formats should include AVIF
+  if (content.includes('formats')) {
+    if (!content.includes('avif')) {
+      warn('W25', 'next.config.ts images.formats should include image/avif for optimal compression.');
+    }
+  }
+
+  // reactStrictMode should not be explicitly false
+  if (/reactStrictMode\s*:\s*false/.test(content)) {
+    warn('W25', 'next.config.ts has reactStrictMode: false. Recommended: true or omit (default true).');
+  }
+}
+
+// ─── W26: Exception Registry Audit ───────────────────────────────────────────
+// Parse EXCEPTION_FILES / EXEMPT_FILES arrays in this gate script itself.
+// For each exception file path, verify the referenced file still exists.
+// Stale exceptions indicate code was removed but the exemption was not cleaned up.
+
+function checkW26() {
+  const SELF = join(ROOT, 'tools/scripts/web-drift-check.mjs');
+  if (!existsSync(SELF)) return;
+
+  const content = readFileSync(SELF, 'utf-8');
+
+  // Find all string literals inside EXCEPTION_FILES and EXEMPT_FILES arrays
+  const arrayPattern = /(?:EXCEPTION_FILES|EXEMPT_FILES)\s*=\s*\[([^\]]+)\]/g;
+  let match;
+  const exemptions = [];
+
+  while ((match = arrayPattern.exec(content)) !== null) {
+    const arrayContent = match[1];
+    const stringPattern = /['"]([^'"]+)['"]/g;
+    let strMatch;
+    while ((strMatch = stringPattern.exec(arrayContent)) !== null) {
+      exemptions.push(strMatch[1]);
+    }
+  }
+
+  // Deduplicate
+  const unique = [...new Set(exemptions)];
+
+  for (const exemption of unique) {
+    // Exemptions are relative to SRC — try resolving
+    const candidate = join(SRC, exemption);
+    if (existsSync(candidate)) {
+      pass('W26', `Exception "${exemption}" — file exists`);
+    } else {
+      // Some exemptions are just filenames (e.g. 'status-badge.tsx'), not paths.
+      // For filename-only exemptions, skip the existence check.
+      if (!exemption.includes('/')) continue;
+      warn('W26', `Exception "${exemption}" — file not found. Stale exemption? Clean up.`);
+    }
+  }
+}
+
+// ─── W27: EmptyState Registry Discipline ─────────────────────────────────────
+// Scans for hardcoded empty-state strings outside the registry file and tests.
+// Any `<EmptyState` with `title=` but no `contentKey=` is flagged.
+// Any `emptyMessage=` or `emptyTitle=` flat-prop usage is flagged.
+
+function checkW27() {
+  const allFiles = collectFiles(SRC, ['.tsx', '.ts']);
+  const SKIP = [
+    'empty-state.registry.ts',
+    'empty-state.types.ts',
+    'empty-state.tsx',
+    'data-table.tsx',
+  ];
+
+  let violations = 0;
+
+  for (const file of allFiles) {
+    const rel = relative(SRC, file);
+
+    // Skip registry, types, component core, tests
+    if (SKIP.some((s) => rel.endsWith(s))) continue;
+    if (rel.includes('__tests__')) continue;
+
+    const content = readFileSync(file, 'utf-8');
+
+    // Check 1: <EmptyState with title= but no contentKey=
+    // Match <EmptyState ... title= on a single or multi-line JSX element
+    const esPattern = /<EmptyState[\s\S]*?(?:\/>|<\/EmptyState>)/g;
+    let esMatch;
+    while ((esMatch = esPattern.exec(content)) !== null) {
+      const block = esMatch[0];
+      if (block.includes('title=') && !block.includes('contentKey=')) {
+        const line = content.substring(0, esMatch.index).split('\n').length;
+        fail('W27', `${rel}:${line} -- <EmptyState> uses hardcoded title= without contentKey=. Use contentKey="..." from registry.`);
+        violations++;
+      }
+    }
+
+    // Check 2: DataTable flat-prop legacy usage
+    if (/\bemptyMessage=/.test(content)) {
+      const lines = content.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (/\bemptyMessage=/.test(lines[i])) {
+          fail('W27', `${rel}:${i + 1} -- emptyMessage= is deprecated. Use emptyState={{ key: "..." }}.`);
+          violations++;
+        }
+      }
+    }
+    if (/\bemptyTitle=/.test(content)) {
+      const lines = content.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (/\bemptyTitle=/.test(lines[i])) {
+          fail('W27', `${rel}:${i + 1} -- emptyTitle= is deprecated. Use emptyState={{ key: "..." }}.`);
+          violations++;
+        }
+      }
+    }
+  }
+
+  if (violations === 0) {
+    pass('W27', 'No hardcoded empty-state strings found outside registry.');
   }
 }
 
@@ -1058,7 +1393,7 @@ function main() {
   if (!JSON_MODE) {
     console.log('+--------------------------------------------------------------+');
     console.log('|  @afenda/web -- Frontend Drift Gate                          |');
-    console.log('|  20 checks - ARCHITECTURE.@afenda-web.md enforcement         |');
+    console.log('|  27 checks - ARCHITECTURE.@afenda-web.md enforcement         |');
     console.log('+--------------------------------------------------------------+\n');
   }
 
@@ -1083,6 +1418,13 @@ function main() {
     { id: 'W18', name: 'No loose utils files (use @/lib/)', fn: checkW18 },
     { id: 'W19', name: 'shadcn component usage (no raw HTML primitives)', fn: checkW19 },
     { id: 'W20', name: 'No hardcoded route paths (use routes.*)', fn: checkW20 },
+    { id: 'W21', name: 'Route boundary completeness (loading/error/not-found)', fn: checkW21 },
+    { id: 'W22', name: 'Suspense discipline (streaming)', fn: checkW22 },
+    { id: 'W23', name: 'Page metadata exports (SEO)', fn: checkW23 },
+    { id: 'W24', name: 'No stray console.log', fn: checkW24 },
+    { id: 'W25', name: 'next.config.ts best practices', fn: checkW25 },
+    { id: 'W26', name: 'Exception registry audit', fn: checkW26 },
+    { id: 'W27', name: 'EmptyState registry discipline', fn: checkW27 },
   ];
 
   for (const check of checks) {

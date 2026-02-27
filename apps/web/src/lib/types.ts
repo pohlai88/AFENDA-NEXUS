@@ -41,6 +41,13 @@ export interface TenantContext {
   companies: CompanyContext[];
   activeCompanyId: string;
   activePeriod?: PeriodContext;
+  /** Kernel v1: org-level settings from API (optional — absent on first load if API unreachable) */
+  orgSettings?: {
+    defaultCurrency: string;
+    locale: string;
+    timezone: string;
+    dateFormat: string;
+  };
 }
 
 export interface CompanyContext {

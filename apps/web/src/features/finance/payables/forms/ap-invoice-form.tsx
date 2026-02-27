@@ -1,43 +1,54 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateApInvoiceSchema, type CreateApInvoice } from '@afenda/contracts';
 import { ApInvoiceLinesEditor } from '../blocks/ap-invoice-lines-editor';
 import { useReceipt } from '@/hooks/use-receipt';
 import { ReceiptPanel } from '@/components/erp/receipt-panel';
+import { EntityCombobox, type EntityOption } from '@/components/erp/entity-combobox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { routes } from '@/lib/constants';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
+import {
+  searchSuppliers,
+  searchCompanies,
+  searchLedgers,
+} from '../actions/entity-search.actions';
 import Link from 'next/link';
 
 interface ApInvoiceFormProps {
   onSubmit: (data: CreateApInvoice) => Promise<ApiResult<CommandReceipt>>;
-  defaultCompanyId?: string;
-  defaultLedgerId?: string;
+  defaultCompany?: EntityOption | null;
+  defaultLedger?: EntityOption | null;
 }
 
-export function ApInvoiceForm({ onSubmit, defaultCompanyId, defaultLedgerId }: ApInvoiceFormProps) {
+export function ApInvoiceForm({ onSubmit, defaultCompany, defaultLedger }: ApInvoiceFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { receipt, showReceipt, clearReceipt, isOpen } = useReceipt();
 
   const idempotencyKeyRef = useRef(crypto.randomUUID());
 
+  // ─── Entity selections (controlled outside react-hook-form) ─────────────
+  const [selectedSupplier, setSelectedSupplier] = useState<EntityOption | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<EntityOption | null>(defaultCompany ?? null);
+  const [selectedLedger, setSelectedLedger] = useState<EntityOption | null>(defaultLedger ?? null);
+
   const form = useForm<CreateApInvoice>({
     resolver: zodResolver(CreateApInvoiceSchema),
     defaultValues: {
-      companyId: defaultCompanyId ?? '',
-      ledgerId: defaultLedgerId ?? '',
+      companyId: defaultCompany?.id ?? '',
+      ledgerId: defaultLedger?.id ?? '',
       supplierId: '',
       invoiceNumber: '',
       supplierRef: '',
       invoiceDate: new Date().toISOString().split('T')[0],
       dueDate: '',
-      currencyCode: 'USD',
+      currencyCode: '',
       description: '',
       poRef: '',
       receiptRef: '',
@@ -46,6 +57,39 @@ export function ApInvoiceForm({ onSubmit, defaultCompanyId, defaultLedgerId }: A
       ],
     },
   });
+
+  // ─── Entity change handlers (sync combobox → form values) ───────────────
+  const handleSupplierChange = useCallback(
+    (next: EntityOption | null) => {
+      setSelectedSupplier(next);
+      form.setValue('supplierId', next?.id ?? '', { shouldValidate: true });
+    },
+    [form]
+  );
+
+  const handleCompanyChange = useCallback(
+    (next: EntityOption | null) => {
+      setSelectedCompany(next);
+      form.setValue('companyId', next?.id ?? '', { shouldValidate: true });
+      // Reset ledger when company changes
+      setSelectedLedger(null);
+      form.setValue('ledgerId', '', { shouldValidate: true });
+    },
+    [form]
+  );
+
+  const handleLedgerChange = useCallback(
+    (next: EntityOption | null) => {
+      setSelectedLedger(next);
+      form.setValue('ledgerId', next?.id ?? '', { shouldValidate: true });
+    },
+    [form]
+  );
+
+  const ledgerLoader = useCallback(
+    (q: string) => searchLedgers(q, selectedCompany?.id),
+    [selectedCompany?.id]
+  );
 
   async function handleSubmit(data: CreateApInvoice) {
     setSubmitting(true);
@@ -77,7 +121,29 @@ export function ApInvoiceForm({ onSubmit, defaultCompanyId, defaultLedgerId }: A
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-      {/* Row 1: Invoice Number + Supplier */}
+      {/* Row 1: Company + Ledger */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <EntityCombobox
+          label="Company"
+          value={selectedCompany}
+          onChange={handleCompanyChange}
+          loadOptions={searchCompanies}
+          placeholder="Select company…"
+          error={form.formState.errors.companyId?.message}
+        />
+        <EntityCombobox
+          label="Ledger"
+          value={selectedLedger}
+          onChange={handleLedgerChange}
+          loadOptions={ledgerLoader}
+          placeholder="Select ledger…"
+          disabled={!selectedCompany}
+          description={!selectedCompany ? 'Select a company first' : undefined}
+          error={form.formState.errors.ledgerId?.message}
+        />
+      </div>
+
+      {/* Row 2: Invoice Number + Supplier */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="invoiceNumber">
@@ -95,25 +161,18 @@ export function ApInvoiceForm({ onSubmit, defaultCompanyId, defaultLedgerId }: A
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="supplierId">
-            Supplier ID <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="supplierId"
-            {...form.register('supplierId')}
-            placeholder="Supplier UUID"
-            className="font-mono text-xs"
-          />
-          {form.formState.errors.supplierId && (
-            <p className="text-xs text-destructive" role="alert">
-              {form.formState.errors.supplierId.message}
-            </p>
-          )}
-        </div>
+        <EntityCombobox
+          label="Supplier"
+          value={selectedSupplier}
+          onChange={handleSupplierChange}
+          loadOptions={searchSuppliers}
+          placeholder="Search suppliers…"
+          createHref={undefined}
+          error={form.formState.errors.supplierId?.message}
+        />
       </div>
 
-      {/* Row 2: Dates + Currency */}
+      {/* Row 3: Dates + Currency */}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="invoiceDate">
@@ -144,7 +203,7 @@ export function ApInvoiceForm({ onSubmit, defaultCompanyId, defaultLedgerId }: A
           <Input
             id="currencyCode"
             {...form.register('currencyCode')}
-            placeholder="USD"
+            placeholder="e.g. USD, EUR, MYR"
             maxLength={3}
             className="uppercase"
           />

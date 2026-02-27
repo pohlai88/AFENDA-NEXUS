@@ -63,6 +63,14 @@ function toPascal(s) {
 }
 
 /** @param {string} s */
+function toCamel(s) {
+  return toKebab(s)
+    .split('-')
+    .map((w, i) => (i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)))
+    .join('');
+}
+
+/** @param {string} s */
 function toTitle(s) {
   return toKebab(s)
     .split('-')
@@ -80,9 +88,11 @@ if (!match) {
 const entityPascal = match[1]; // "Account", "ApInvoice"
 const entityKebab = entityFlag || toKebab(entityPascal) + 's'; // pluralize for directory
 const entitySingularKebab = toKebab(entityPascal);
+const entityCamel = toCamel(entityPascal);
 const entityTitle = toTitle(entityPascal);
 const module_ = moduleFlag || 'finance';
 const prefix = entitySingularKebab; // file prefix
+const registryKey = `${module_}.${entityCamel}`;
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -134,8 +144,7 @@ export function ${entityPascal}Table({ data, total }: ${entityPascal}TableProps)
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No ${entityTitle.toLowerCase()}s found"
-        description="Create your first ${entityTitle.toLowerCase()} to get started."
+        contentKey="${registryKey}"
         icon={FileText}
         action={
           <Button asChild>
@@ -208,6 +217,7 @@ Available formatters (already imported):
 Next steps:
   1. Fill in column headers in <TableHead>
   2. Fill in column cells in <TableCell>
-  3. Customize the EmptyState icon and copy
-  4. Run:  pnpm --filter @afenda/web typecheck
+  3. Add registry entry for "${registryKey}" in empty-state.registry.ts
+  4. Add "${registryKey}" to EmptyStateKey type in empty-state.types.ts
+  5. Run:  pnpm --filter @afenda/web typecheck
 `);

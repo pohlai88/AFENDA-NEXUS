@@ -248,8 +248,7 @@ export function ApprovalsTable({ items, pagination, loading }: ApprovalsTablePro
       onRowClick={handleRowClick}
       loading={loading}
       loadingRows={5}
-      emptyTitle="No pending approvals"
-      emptyMessage="You're all caught up! There are no items waiting for your approval."
+      emptyState={{ key: 'finance.approvals' }}
       selectable
       selectedIds={selectedIds}
       onSelectionChange={setSelectedIds}

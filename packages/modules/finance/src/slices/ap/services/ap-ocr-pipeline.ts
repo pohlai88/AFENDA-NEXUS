@@ -1,168 +1,299 @@
-import type { Result } from '@afenda/core';
-import { ok, err, AppError } from '@afenda/core';
-import type { ApInvoice } from '../entities/ap-invoice.js';
+import crypto from 'crypto';
+import { AppError, toMinorUnits } from '@afenda/core';
 import type { IApInvoiceRepo, CreateApInvoiceInput } from '../ports/ap-invoice-repo.js';
-import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
-import type { IIdempotencyStore } from '../../../shared/ports/idempotency-store.js';
+import type { ISupplierRepo } from '../ports/supplier-repo.js';
+import type { IOcrProvider } from '../ports/ocr-provider.js';
+import type { IOcrJobRepo, OcrConfidenceLevel } from '../ports/ocr-job-repo.js';
+import type { IInvoiceAttachmentRepo } from '../entities/invoice-attachment.js';
+import { computeOcrConfidence, type OcrScorerContext } from './ocr-confidence-scorer.js';
+import { resolveSupplier } from './ocr-supplier-resolver.js';
 import { FinanceEventType } from '../../../shared/events.js';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
-export type OcrConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
-
-export interface OcrInvoicePayload {
+export interface OcrPipelineContext {
   readonly tenantId: string;
-  readonly provider: string;
-  readonly externalRef: string;
-  readonly confidence: OcrConfidence;
   readonly companyId: string;
-  readonly supplierId: string;
   readonly ledgerId: string;
-  readonly invoiceNumber: string;
-  readonly supplierRef: string | null;
-  readonly invoiceDate: string;
-  readonly dueDate: string;
-  readonly currencyCode: string;
-  readonly description: string | null;
-  readonly poRef: string | null;
-  readonly receiptRef: string | null;
-  readonly lines: readonly OcrInvoiceLine[];
-  readonly rawPayload?: Record<string, unknown>;
+  readonly defaultAccountId: string;
+  readonly userId: string;
+  readonly forceRetry?: boolean;
+  readonly currencyDecimals?: number;
 }
 
-export interface OcrInvoiceLine {
-  readonly accountId: string;
-  readonly description: string | null;
-  readonly quantity: number;
-  readonly unitPrice: bigint;
-  readonly amount: bigint;
-  readonly taxAmount: bigint;
-  readonly whtIncomeType?: string | null;
+export interface OcrPipelineResult {
+  readonly jobId: string;
+  readonly invoiceId: string | null;
+  readonly status: string;
+  readonly confidence: OcrConfidenceLevel | null;
+  readonly errorReason: string | null;
 }
 
-export interface OcrInvoiceResult {
-  readonly invoice: ApInvoice;
-  readonly initialStatus: 'DRAFT' | 'INCOMPLETE';
-  readonly confidence: OcrConfidence;
-  readonly provider: string;
-  readonly externalRef: string;
+export interface R2Storage {
+  put(key: string, data: Buffer | string): Promise<void>;
 }
 
-// ─── Service ────────────────────────────────────────────────────────────────
+export interface OutboxWriter {
+  write(event: {
+    tenantId: string;
+    eventType: string;
+    payload: Record<string, unknown>;
+  }): Promise<void>;
+}
 
-/**
- * B3: OCR/Automation webhook receiver.
- *
- * Accepts an OCR-extracted invoice payload from an external provider,
- * validates the structure, and creates a DRAFT or INCOMPLETE invoice
- * depending on confidence level.
- *
- * - HIGH confidence → DRAFT (ready for approval flow)
- * - MEDIUM/LOW confidence → INCOMPLETE (enters triage queue)
- *
- * Uses idempotency guard keyed on `provider:externalRef` to prevent
- * duplicate processing of the same OCR result.
- */
-export async function processOcrInvoice(
-  input: OcrInvoicePayload,
-  deps: {
-    apInvoiceRepo: IApInvoiceRepo;
-    outboxWriter: IOutboxWriter;
-    idempotencyStore?: IIdempotencyStore;
-  }
-): Promise<Result<OcrInvoiceResult>> {
-  // Validate required fields
-  if (!input.invoiceNumber?.trim()) {
-    return err(new AppError('VALIDATION', 'OCR payload missing invoiceNumber'));
-  }
-  if (input.lines.length === 0) {
-    return err(new AppError('VALIDATION', 'OCR payload has no invoice lines'));
-  }
-  if (!input.externalRef?.trim()) {
-    return err(new AppError('VALIDATION', 'OCR payload missing externalRef'));
-  }
+export interface OcrPipelineDeps {
+  readonly ocrProvider: IOcrProvider;
+  readonly ocrJobRepo: IOcrJobRepo;
+  readonly supplierRepo: ISupplierRepo;
+  readonly apInvoiceRepo: IApInvoiceRepo;
+  readonly invoiceAttachmentRepo?: IInvoiceAttachmentRepo;
+  readonly r2Storage: R2Storage;
+  readonly outboxWriter: OutboxWriter;
+}
 
-  // Idempotency guard — keyed on provider + externalRef
-  if (deps.idempotencyStore) {
-    const idempotencyKey = `OCR_${input.provider}_${input.externalRef}`;
-    const claim = await deps.idempotencyStore.claimOrGet({
-      tenantId: input.tenantId,
-      key: idempotencyKey,
-      commandType: 'OCR_INVOICE',
-    });
-    if (!claim.claimed) {
-      return err(
-        new AppError(
-          'IDEMPOTENCY_CONFLICT',
-          `OCR invoice ${input.provider}:${input.externalRef} already processed`
-        )
-      );
+export async function uploadOcrInvoice(
+  fileBuffer: Buffer,
+  mimeType: string,
+  context: OcrPipelineContext,
+  deps: OcrPipelineDeps
+): Promise<OcrPipelineResult> {
+  const checksum = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+  const fileSize = fileBuffer.length;
+
+  const claimResult = await deps.ocrJobRepo.claimOrGet(context.tenantId, checksum, {
+    fileSize,
+    mimeType,
+  });
+
+  if (!claimResult.claimed) {
+    const existing = claimResult.existing;
+
+    if (existing.status === 'COMPLETED') {
+      return {
+        jobId: existing.id,
+        invoiceId: existing.invoiceId,
+        status: 'COMPLETED',
+        confidence: existing.confidence,
+        errorReason: null,
+      };
+    }
+
+    if (existing.status === 'FAILED') {
+      if (!context.forceRetry) {
+        return {
+          jobId: existing.id,
+          invoiceId: null,
+          status: 'FAILED',
+          confidence: null,
+          errorReason: existing.errorReason ?? 'Unknown error',
+        };
+      }
+      await deps.ocrJobRepo.resetForRetry(existing.id);
+    } else {
+      return {
+        jobId: existing.id,
+        invoiceId: existing.invoiceId,
+        status: existing.status,
+        confidence: existing.confidence,
+        errorReason: null,
+      };
     }
   }
 
-  const initialStatus = input.confidence === 'HIGH' ? 'DRAFT' : 'INCOMPLETE';
+  const jobId = claimResult.claimed ? claimResult.jobId : claimResult.existing.id;
+
+  try {
+    const storageKey = `ocr/${context.tenantId}/${jobId}`;
+    await deps.r2Storage.put(storageKey, fileBuffer);
+    await deps.ocrJobRepo.updateStatus(jobId, 'UPLOADED', { storageKey });
+
+    const extraction = await deps.ocrProvider.extractInvoice(fileBuffer, mimeType);
+    await deps.ocrJobRepo.updateStatus(jobId, 'EXTRACTING', {
+      providerName: deps.ocrProvider.name,
+    });
+
+    await deps.r2Storage.put(
+      `${storageKey}.meta.json`,
+      JSON.stringify(extraction.rawPayload)
+    );
+
+    const scorerContext: OcrScorerContext = {
+      currencyDecimals: context.currencyDecimals,
+    };
+    const score = computeOcrConfidence(extraction, scorerContext);
+
+    await deps.ocrJobRepo.updateStatus(jobId, 'SCORED', { confidence: score.level });
+
+    const supplierResolution = await resolveSupplier(
+      context.tenantId,
+      extraction,
+      deps.supplierRepo
+    );
+
+    await deps.outboxWriter.write({
+      tenantId: context.tenantId,
+      eventType: FinanceEventType.AP_OCR_REQUESTED,
+      payload: {
+        jobId,
+        storageKey,
+        providerName: deps.ocrProvider.name,
+        confidence: score.level,
+        sourcesUsed: extraction.rawPayload.sourcesUsed as unknown as string,
+      },
+    });
+
+    await deps.ocrJobRepo.updateStatus(jobId, 'INVOICE_CREATING');
+
+    const invoiceId = await createInvoiceFromExtraction(
+      context,
+      extraction,
+      score.level,
+      supplierResolution.supplierId,
+      jobId,
+      storageKey,
+      fileSize,
+      deps
+    );
+
+    await deps.ocrJobRepo.updateStatus(jobId, 'COMPLETED', { invoiceId });
+
+    return {
+      jobId,
+      invoiceId,
+      status: 'COMPLETED',
+      confidence: score.level,
+      errorReason: null,
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    await deps.ocrJobRepo.updateStatus(jobId, 'FAILED', {
+      errorReason: 'INTERNAL_ERROR',
+    });
+
+    // Write failure metadata to R2 if storageKey exists
+    const failStorageKey = `ocr/${context.tenantId}/${jobId}`;
+    try {
+      await deps.r2Storage.put(
+        `${failStorageKey}.failure.json`,
+        JSON.stringify({ jobId, errorMessage, failedAt: new Date().toISOString() })
+      );
+    } catch {
+      // R2 write failure is non-critical; don't mask original error
+    }
+
+    await deps.outboxWriter.write({
+      tenantId: context.tenantId,
+      eventType: FinanceEventType.AP_OCR_EXTRACTION_FAILED,
+      payload: {
+        jobId,
+        reasonCode: 'INTERNAL_ERROR',
+        errorMessage,
+        providerName: deps.ocrProvider.name,
+        storageKey: failStorageKey,
+      },
+    });
+
+    throw error;
+  }
+}
+
+async function createInvoiceFromExtraction(
+  context: OcrPipelineContext,
+  extraction: Awaited<ReturnType<IOcrProvider['extractInvoice']>>,
+  confidence: OcrConfidenceLevel,
+  supplierId: string | null,
+  jobId: string,
+  storageKey: string,
+  fileSizeBytes: number,
+  deps: OcrPipelineDeps
+): Promise<string> {
+  const invoiceNumber = extraction.invoiceNumber?.value ?? `OCR-${jobId.substring(0, 8)}`;
+  const invoiceDate = extraction.invoiceDate?.value
+    ? new Date(extraction.invoiceDate.value)
+    : new Date();
+  const dueDate = extraction.dueDate?.value ? new Date(extraction.dueDate.value) : new Date();
+  const currencyCode = extraction.currencyCode?.value ?? 'USD';
+  const parsedAmount = extraction.totalAmount?.value
+    ? Number(extraction.totalAmount.value.replace(/,/g, ''))
+    : 0;
+  const totalAmount = parsedAmount > 0 ? toMinorUnits(parsedAmount, currencyCode) : 0n;
+
+  const initialStatus = confidence === 'HIGH' ? 'DRAFT' : 'INCOMPLETE';
+
+  // Step 10: Soft duplicate detection — advisory, never blocks creation
+  let possibleDuplicate = false;
+  if (supplierId && invoiceNumber) {
+    try {
+      const existing = await deps.apInvoiceRepo.findAll({
+        tenantId: context.tenantId,
+        supplierId,
+        page: 1,
+        limit: 10,
+      } as Parameters<typeof deps.apInvoiceRepo.findAll>[0]);
+      possibleDuplicate = existing.data.some(
+        (inv) => inv.invoiceNumber === invoiceNumber
+      );
+    } catch {
+      // Duplicate check is advisory; don't fail pipeline
+    }
+  }
 
   const createInput: CreateApInvoiceInput = {
-    tenantId: input.tenantId,
-    companyId: input.companyId,
-    supplierId: input.supplierId,
-    ledgerId: input.ledgerId,
-    invoiceNumber: input.invoiceNumber,
-    supplierRef: input.supplierRef,
-    invoiceDate: new Date(input.invoiceDate),
-    dueDate: new Date(input.dueDate),
-    currencyCode: input.currencyCode,
-    description: input.description,
-    poRef: input.poRef,
-    receiptRef: input.receiptRef,
+    tenantId: context.tenantId,
+    companyId: context.companyId,
+    supplierId: supplierId ?? context.companyId,
+    ledgerId: context.ledgerId,
+    invoiceNumber,
+    supplierRef: null,
+    invoiceDate,
+    dueDate,
+    currencyCode,
+    description: `OCR extracted invoice (${confidence} confidence)`,
+    poRef: null,
+    receiptRef: null,
     paymentTermsId: null,
-    lines: input.lines.map((l) => ({
-      accountId: l.accountId,
-      description: l.description,
-      quantity: l.quantity,
-      unitPrice: l.unitPrice,
-      amount: l.amount,
-      taxAmount: l.taxAmount,
-      whtIncomeType: l.whtIncomeType ?? null,
-    })),
+    lines: [
+      {
+        accountId: context.defaultAccountId,
+        description: 'OCR extracted line',
+        quantity: 1,
+        unitPrice: totalAmount,
+        amount: totalAmount,
+        taxAmount: 0n,
+        whtIncomeType: null,
+      },
+    ],
   };
 
   const created = await deps.apInvoiceRepo.create(createInput);
-  if (!created.ok) return created as Result<never>;
+  if (!created.ok) {
+    throw new AppError('INVOICE_CREATE_FAILED', created.error.message);
+  }
 
-  // If confidence is not HIGH, mark as INCOMPLETE so it enters triage
   if (initialStatus === 'INCOMPLETE') {
-    const statusUpdate = await deps.apInvoiceRepo.updateStatus(created.value.id, 'INCOMPLETE');
-    if (!statusUpdate.ok) return statusUpdate as Result<never>;
+    await deps.apInvoiceRepo.updateStatus(created.value.id, 'INCOMPLETE');
+  }
+
+  if (deps.invoiceAttachmentRepo) {
+    await deps.invoiceAttachmentRepo.attach({
+      tenantId: context.tenantId,
+      invoiceId: created.value.id,
+      storageKey,
+      fileName: `invoice-${invoiceNumber}.pdf`,
+      mimeType: 'application/pdf',
+      fileSizeBytes,
+      uploadedBy: context.userId,
+    });
   }
 
   await deps.outboxWriter.write({
-    tenantId: input.tenantId,
+    tenantId: context.tenantId,
     eventType: FinanceEventType.AP_OCR_INVOICE_RECEIVED,
     payload: {
+      jobId,
       invoiceId: created.value.id,
-      provider: input.provider,
-      externalRef: input.externalRef,
-      confidence: input.confidence,
-      initialStatus,
-      invoiceNumber: input.invoiceNumber,
+      confidence,
+      possibleDuplicate,
     },
   });
 
-  if (deps.idempotencyStore) {
-    await deps.idempotencyStore.recordOutcome?.(
-      input.tenantId,
-      `OCR_${input.provider}_${input.externalRef}`,
-      'OCR_INVOICE',
-      created.value.id
-    );
-  }
-
-  return ok({
-    invoice: created.value,
-    initialStatus,
-    confidence: input.confidence,
-    provider: input.provider,
-    externalRef: input.externalRef,
-  });
+  return created.value.id;
 }

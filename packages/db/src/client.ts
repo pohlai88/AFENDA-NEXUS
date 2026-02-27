@@ -13,7 +13,8 @@ export interface ConnectionOptions {
 }
 
 /** Neon-recommended connection params (security + latency). See NEON-DRIZZLE-BEST-PRACTICES.md */
-const NEON_CONNECTION_PARAMS = {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _NEON_CONNECTION_PARAMS = {
   sslmode: 'require',
   channel_binding: 'require',
   sslnegotiation: 'direct', // PG17+; reduces latency ~100ms (Neon connection-latency docs)

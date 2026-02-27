@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useCallback, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ReceiptPanel } from '@/components/erp/receipt-panel';
+import { EntityCombobox, type EntityOption } from '@/components/erp/entity-combobox';
 import { useReceipt } from '@/hooks/use-receipt';
 import { routes } from '@/lib/constants';
 import {
@@ -21,6 +22,10 @@ import {
   postApInvoiceAction,
   cancelApInvoiceAction,
 } from '../actions/ap.actions';
+import {
+  searchFiscalPeriods,
+  searchAccounts,
+} from '../actions/entity-search.actions';
 import type { ApInvoiceStatus } from '@afenda/contracts';
 import { CheckCircle, Send, XCircle, DollarSign } from 'lucide-react';
 import Link from 'next/link';
@@ -42,8 +47,13 @@ export function ApInvoiceActions({ invoiceId, status }: ApInvoiceActionsProps) {
 
   // ─── Post Dialog State ──────────────────────────────────────────────
   const [postDialogOpen, setPostDialogOpen] = useState(false);
-  const [fiscalPeriodId, setFiscalPeriodId] = useState('');
-  const [apAccountId, setApAccountId] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState<EntityOption | null>(null);
+  const [selectedApAccount, setSelectedApAccount] = useState<EntityOption | null>(null);
+
+  const apAccountLoader = useCallback(
+    (q: string) => searchAccounts(q),
+    []
+  );
 
   function handleApprove() {
     setError(null);
@@ -59,13 +69,13 @@ export function ApInvoiceActions({ invoiceId, status }: ApInvoiceActionsProps) {
   }
 
   function handlePostSubmit() {
-    if (!fiscalPeriodId.trim() || !apAccountId.trim()) return;
+    if (!selectedPeriod || !selectedApAccount) return;
     setError(null);
     startTransition(async () => {
       const result = await postApInvoiceAction(
         invoiceId,
-        fiscalPeriodId.trim(),
-        apAccountId.trim()
+        selectedPeriod.id,
+        selectedApAccount.id
       );
       if (result.ok) {
         setPostDialogOpen(false);
@@ -242,29 +252,20 @@ export function ApInvoiceActions({ invoiceId, status }: ApInvoiceActionsProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="fiscal-period-id">
-                Fiscal Period ID <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="fiscal-period-id"
-                value={fiscalPeriodId}
-                onChange={(e) => setFiscalPeriodId(e.target.value)}
-                placeholder="UUID of fiscal period"
-                autoFocus
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ap-account-id">
-                AP Account ID <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="ap-account-id"
-                value={apAccountId}
-                onChange={(e) => setApAccountId(e.target.value)}
-                placeholder="UUID of AP control account"
-              />
-            </div>
+            <EntityCombobox
+              label="Fiscal Period"
+              value={selectedPeriod}
+              onChange={setSelectedPeriod}
+              loadOptions={searchFiscalPeriods}
+              placeholder="Search open periods…"
+            />
+            <EntityCombobox
+              label="AP Control Account"
+              value={selectedApAccount}
+              onChange={setSelectedApAccount}
+              loadOptions={apAccountLoader}
+              placeholder="Search accounts…"
+            />
           </div>
           {error && (
             <p className="text-xs text-destructive" role="alert">
@@ -283,7 +284,7 @@ export function ApInvoiceActions({ invoiceId, status }: ApInvoiceActionsProps) {
             <Button
               type="button"
               onClick={handlePostSubmit}
-              disabled={isPending || !fiscalPeriodId.trim() || !apAccountId.trim()}
+              disabled={isPending || !selectedPeriod || !selectedApAccount}
             >
               {isPending ? 'Posting…' : 'Confirm Post'}
             </Button>

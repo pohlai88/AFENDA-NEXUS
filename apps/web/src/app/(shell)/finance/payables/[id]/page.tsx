@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { AuditPanel } from '@/components/erp/audit-panel';
@@ -9,11 +10,26 @@ import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { getApInvoice } from '@/features/finance/payables/queries/ap.queries';
 import { getApInvoiceAuditAction } from '@/features/finance/payables/actions/ap.actions';
+import { getInvoiceTimeline, getInvoiceHolds } from '@/features/finance/payables/queries/ap-hold.queries';
+import { ApInvoiceTimeline } from '@/features/finance/payables/blocks/ap-invoice-timeline';
+import { ApHoldTable } from '@/features/finance/payables/blocks/ap-hold-table';
 import { routes } from '@/lib/constants';
 
-export const metadata = { title: 'Payable Detail' };
+type Props = { params: Promise<{ id: string }> };
 
-export default async function PayableDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const ctx = await getRequestContext();
+  const result = await getApInvoice(ctx, id);
+  if (!result.ok) return { title: 'Payable | Payables' };
+  const invoice = result.value;
+  return {
+    title: `${invoice.invoiceNumber} | Payables | Finance`,
+    description: `Payable invoice ${invoice.invoiceNumber} — ${invoice.supplierName} — ${invoice.status}`,
+  };
+}
+
+export default async function PayableDetailPage({ params }: Props) {
   const { id } = await params;
   const ctx = await getRequestContext();
   const result = await getApInvoice(ctx, id);
@@ -25,8 +41,14 @@ export default async function PayableDetailPage({ params }: { params: Promise<{ 
 
   const invoice = result.value;
 
-  const auditResult = await getApInvoiceAuditAction(id);
+  const [auditResult, timelineResult, holdsResult] = await Promise.all([
+    getApInvoiceAuditAction(id),
+    getInvoiceTimeline(ctx, id),
+    getInvoiceHolds(ctx, id),
+  ]);
   const auditEntries = auditResult.ok ? auditResult.value : [];
+  const timelineEntries = timelineResult.ok ? timelineResult.value : [];
+  const holds = holdsResult.ok ? holdsResult.value : [];
 
   return (
     <div className="space-y-6">
@@ -53,6 +75,16 @@ export default async function PayableDetailPage({ params }: { params: Promise<{ 
                 totalTax={invoice.totalTax}
               />
             ),
+          },
+          {
+            value: 'timeline',
+            label: 'Timeline',
+            content: <ApInvoiceTimeline entries={timelineEntries} />,
+          },
+          {
+            value: 'holds',
+            label: `Holds (${holds.length})`,
+            content: <ApHoldTable data={holds} />,
           },
           {
             value: 'audit',

@@ -74,8 +74,7 @@ export function JournalTable({ data, total }: JournalTableProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No journals found"
-        description="Create your first journal entry to get started."
+        contentKey="finance.journals"
         icon={FileText}
         action={
           <Button asChild>
@@ -100,7 +99,7 @@ export function JournalTable({ data, total }: JournalTableProps) {
             row.description.toLowerCase().includes(q)
           );
         }}
-        emptyMessage="No journals match your search."
+        emptyState={{ key: 'finance.journals' }}
       />
       <p className="mt-2 text-xs text-muted-foreground">
         {total} journal{total !== 1 ? 's' : ''} total

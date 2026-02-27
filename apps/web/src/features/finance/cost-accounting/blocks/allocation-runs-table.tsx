@@ -137,9 +137,8 @@ export function AllocationRunsTable({ runs }: AllocationRunsTableProps) {
       searchKeys={['runNumber', 'period', 'initiatedBy']}
       onRowClick={handleRowClick}
       emptyState={{
+        key: 'finance.costAccounting.allocations',
         icon: Calculator,
-        title: 'No allocation runs',
-        description: 'Create an allocation run to distribute costs across cost centers.',
         action: (
           <Button asChild>
             <Link href={routes.finance.allocationNew}>

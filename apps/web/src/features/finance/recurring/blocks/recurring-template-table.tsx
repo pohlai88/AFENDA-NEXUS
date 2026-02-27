@@ -78,7 +78,7 @@ export function RecurringTemplateTable({ data }: RecurringTemplateTableProps) {
         const q = query.toLowerCase();
         return row.description.toLowerCase().includes(q);
       }}
-      emptyMessage="No templates match your search."
+      emptyState={{ key: 'finance.recurring' }}
     />
   );
 }

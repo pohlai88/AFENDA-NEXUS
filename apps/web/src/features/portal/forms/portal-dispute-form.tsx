@@ -90,7 +90,7 @@ export function PortalDisputeForm({ supplierId }: PortalDisputeFormProps) {
               id="disputeInvoiceId"
               value={invoiceId}
               onChange={(e) => setInvoiceId(e.target.value)}
-              placeholder="Invoice UUID"
+              placeholder="Select invoice"
             />
           </div>
           <div className="space-y-2">
@@ -99,7 +99,7 @@ export function PortalDisputeForm({ supplierId }: PortalDisputeFormProps) {
               id="disputePaymentRunId"
               value={paymentRunId}
               onChange={(e) => setPaymentRunId(e.target.value)}
-              placeholder="Payment run UUID"
+              placeholder="Select payment run"
             />
           </div>
           <div className="space-y-2 md:col-span-2">

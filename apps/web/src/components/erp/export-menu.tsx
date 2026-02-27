@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useCallback } from 'react';
 import { Download, FileJson, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -97,3 +98,6 @@ export function ExportMenu({ payload }: ExportMenuProps) {
     </DropdownMenu>
   );
 }
+ExportMenu.displayName = 'ExportMenu';
+
+export type { ExportMenuProps, ExportFormat };

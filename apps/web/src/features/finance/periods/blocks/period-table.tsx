@@ -65,7 +65,7 @@ export function PeriodTable({ data }: PeriodTableProps) {
       columns={columns}
       data={data}
       keyFn={(row) => row.id}
-      emptyMessage="No periods found."
+      emptyState={{ key: 'finance.periods' }}
     />
   );
 }

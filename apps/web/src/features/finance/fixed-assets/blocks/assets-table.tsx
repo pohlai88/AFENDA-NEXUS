@@ -158,9 +158,8 @@ export function AssetsTable({ assets, pagination }: AssetsTableProps) {
       searchable
       searchPlaceholder="Search assets..."
       emptyState={{
+        key: 'finance.fixedAssets',
         icon: Box,
-        title: 'No fixed assets found',
-        description: 'Add your first fixed asset to start tracking depreciation.',
         action: {
           label: 'Add Asset',
           href: `${routes.finance.fixedAssets}/new`,

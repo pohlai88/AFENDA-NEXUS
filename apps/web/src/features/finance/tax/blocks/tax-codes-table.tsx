@@ -138,9 +138,8 @@ export function TaxCodesTable({ taxCodes }: TaxCodesTableProps) {
       searchable
       searchPlaceholder="Search tax codes..."
       emptyState={{
+        key: 'finance.tax.codes',
         icon: FileText,
-        title: 'No tax codes found',
-        description: 'Create your first tax code to start tracking taxes.',
         action: {
           label: 'Create Tax Code',
           href: `${routes.finance.tax}/codes/new`,

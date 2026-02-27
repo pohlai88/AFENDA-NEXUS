@@ -1,65 +1,77 @@
 'use client';
 
+import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+/** A single tab definition within a business document. */
 interface BusinessDocumentTab {
+  /** Unique value used as the tab key. */
   value: string;
+  /** Label shown in the tab trigger. */
   label: string;
+  /** Content rendered for this tab. */
   content: React.ReactNode;
 }
 
-interface BusinessDocumentProps {
+interface BusinessDocumentProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Document header (title, status, amounts, etc.). */
   header: React.ReactNode;
+  /** Tab definitions for the body section. */
   tabs: BusinessDocumentTab[];
+  /** Value of the initially selected tab. Defaults to the first tab. */
   defaultTab?: string;
+  /** Optional right-rail content (audit panel, metadata, actions). */
   rightRail?: React.ReactNode;
-  className?: string;
 }
 
-export function BusinessDocument({
-  header,
-  tabs,
-  defaultTab,
-  rightRail,
-  className,
-}: BusinessDocumentProps) {
-  const defaultValue = defaultTab ?? tabs[0]?.value ?? 'details';
+// ─── Component ───────────────────────────────────────────────────────────────
 
-  return (
-    <div className={cn('flex flex-col gap-6', className)}>
-      {/* Document header */}
-      <div className="rounded-lg border bg-card p-6">{header}</div>
+const BusinessDocument = React.forwardRef<HTMLDivElement, BusinessDocumentProps>(
+  ({ header, tabs, defaultTab, rightRail, className, ...props }, ref) => {
+    const defaultValue = defaultTab ?? tabs[0]?.value ?? 'details';
 
-      {/* Body: tabs + optional right rail */}
-      <div className="flex gap-6">
-        {/* Main content area with tabs */}
-        <div className="min-w-0 flex-1">
-          <Tabs defaultValue={defaultValue}>
-            <TabsList>
+    return (
+      <div ref={ref} className={cn('flex flex-col gap-6', className)} {...props}>
+        {/* Document header */}
+        <div className="rounded-lg border bg-card p-6">{header}</div>
+
+        {/* Body: tabs + optional right rail */}
+        <div className="flex gap-6">
+          {/* Main content area with tabs */}
+          <div className="min-w-0 flex-1">
+            <Tabs defaultValue={defaultValue}>
+              <TabsList>
+                {tabs.map((tab) => (
+                  <TabsTrigger key={tab.value} value={tab.value}>
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              <Separator className="my-4" />
               {tabs.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value}>
-                  {tab.label}
-                </TabsTrigger>
+                <TabsContent key={tab.value} value={tab.value}>
+                  {tab.content}
+                </TabsContent>
               ))}
-            </TabsList>
-            <Separator className="my-4" />
-            {tabs.map((tab) => (
-              <TabsContent key={tab.value} value={tab.value}>
-                {tab.content}
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
+            </Tabs>
+          </div>
 
-        {/* Right rail (audit panel, metadata, actions) */}
-        {rightRail && (
-          <aside className="hidden w-80 shrink-0 lg:block">
-            <div className="sticky top-6 space-y-4">{rightRail}</div>
-          </aside>
-        )}
+          {/* Right rail (audit panel, metadata, actions) */}
+          {rightRail && (
+            <aside className="hidden w-80 shrink-0 lg:block">
+              <div className="sticky top-6 space-y-4">{rightRail}</div>
+            </aside>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  },
+);
+BusinessDocument.displayName = 'BusinessDocument';
+
+export { BusinessDocument };
+export type { BusinessDocumentProps, BusinessDocumentTab };

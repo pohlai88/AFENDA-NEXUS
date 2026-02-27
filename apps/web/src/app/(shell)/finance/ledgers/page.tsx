@@ -44,8 +44,7 @@ export default async function LedgersPage({ searchParams }: LedgersPageProps) {
 
       {ledgers.length === 0 ? (
         <EmptyState
-          title="No ledgers"
-          description="Create a ledger to start recording journal entries."
+          contentKey="finance.ledgers"
           icon={BookOpen}
         />
       ) : (

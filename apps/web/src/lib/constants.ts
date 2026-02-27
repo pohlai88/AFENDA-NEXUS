@@ -40,6 +40,29 @@ export const routes = {
     payableNew: '/finance/payables/new',
     payablePay: (id: string) => `/finance/payables/${id}/pay`,
 
+    // AP Payment Runs
+    paymentRuns: '/finance/payables/payment-runs',
+    paymentRunDetail: (id: string) => `/finance/payables/payment-runs/${id}`,
+    paymentRunNew: '/finance/payables/payment-runs/new',
+    paymentRunItems: (id: string) => `/finance/payables/payment-runs/${id}/items`,
+    paymentRunRemittance: (id: string) => `/finance/payables/payment-runs/${id}/remittance`,
+    paymentRunRejection: (id: string) => `/finance/payables/payment-runs/${id}/rejection`,
+
+    // AP Suppliers
+    suppliers: '/finance/payables/suppliers',
+    supplierDetail: (id: string) => `/finance/payables/suppliers/${id}`,
+    supplierNew: '/finance/payables/suppliers/new',
+
+    // AP Holds
+    holds: '/finance/payables/holds',
+
+    // AP Capture Extras
+    creditMemoNew: '/finance/payables/credit-memos/new',
+    debitMemoNew: '/finance/payables/debit-memos/new',
+    batchImport: '/finance/payables/import',
+    supplierRecon: '/finance/payables/reconciliation',
+    closeChecklist: '/finance/payables/close-checklist',
+
     // Accounts Receivable
     receivables: '/finance/receivables',
     receivableDetail: (id: string) => `/finance/receivables/${id}`,
@@ -75,6 +98,7 @@ export const routes = {
     whtCertificates: '/finance/tax/wht-certificates',
     whtList: '/finance/tax/wht',
     whtDetail: (id: string) => `/finance/tax/wht/${id}`,
+    whtReport: '/finance/reports/wht',
 
     // Fixed Assets
     fixedAssets: '/finance/fixed-assets',
@@ -173,11 +197,11 @@ export const routes = {
     consolidation: '/finance/consolidation',
     consolidationRun: '/finance/consolidation/run',
     consolidationEntityNew: '/finance/consolidation/entities/new',
-    groupEntities: '/finance/consolidation',
+    groupEntities: '/finance/consolidation#entities',
     groupEntityDetail: (id: string) => `/finance/consolidation/entities/${id}`,
-    ownership: '/finance/consolidation',
-    goodwill: '/finance/consolidation',
-    eliminations: '/finance/consolidation',
+    ownership: '/finance/consolidation#ownership',
+    goodwill: '/finance/consolidation#goodwill',
+    eliminations: '/finance/consolidation#eliminations',
 
     // Transfer Pricing
     transferPricing: '/finance/transfer-pricing',
@@ -202,6 +226,58 @@ export const routes = {
     consolidationReport: '/finance/reports/consolidation',
   },
   settings: '/settings',
+  settingsOrganization: '/settings/organization',
+  settingsOrgConfig: '/settings/organization/config',
+  settingsMembers: '/settings/members',
+  settingsMembersInvite: '/settings/members/invite',
+  settingsPreferences: '/settings/preferences',
+  settingsAuditLog: '/settings/audit-log',
+
+  // Platform Admin
+  admin: {
+    config: '/admin/config',
+    tenants: '/admin/tenants',
+    tenantDetail: (id: string) => `/admin/tenants/${id}`,
+    users: '/admin/users',
+    actions: '/admin/actions',
+    audit: '/admin/audit',
+  },
+
+  // HRM Module
+  hrm: {
+    dashboard: '/hrm',
+    employees: '/hrm/employees',
+    attendance: '/hrm/attendance',
+    leave: '/hrm/leave',
+    payroll: '/hrm/payroll',
+    recruitment: '/hrm/recruitment',
+    performance: '/hrm/performance',
+    training: '/hrm/training',
+    orgChart: '/hrm/org-chart',
+  },
+
+  // CRM Module
+  crm: {
+    dashboard: '/crm',
+    contacts: '/crm/contacts',
+    leads: '/crm/leads',
+    opportunities: '/crm/opportunities',
+    accounts: '/crm/accounts',
+    campaigns: '/crm/campaigns',
+    pipeline: '/crm/pipeline',
+    activities: '/crm/activities',
+  },
+
+  // Boardroom Module
+  boardroom: {
+    dashboard: '/boardroom',
+    announcements: '/boardroom/announcements',
+    meetings: '/boardroom/meetings',
+    polls: '/boardroom/polls',
+    documents: '/boardroom/documents',
+    calendar: '/boardroom/calendar',
+    teamChat: '/boardroom/chat',
+  },
 
   // Supplier Portal
   portal: {
@@ -305,9 +381,35 @@ export interface NavGroup {
   icon: string;
   items: NavItem[];
   collapsible?: boolean;
+  /** Dashboard shortcut card metadata (optional override) */
+  shortcut?: {
+    title?: string;
+    description?: string;
+    icon?: string;
+    maxItems?: number;
+  };
 }
 
+/**
+ * Finance navigation groups — SAP/Oracle-style SOD (Separation of Duties).
+ *
+ * Each group maps to a distinct functional team / responsibility centre:
+ *   FI-GL  → General Ledger (Controller / GL Accountant)
+ *   FI-AP  → Accounts Payable (AP Clerk / AP Manager)
+ *   FI-AR  → Accounts Receivable (AR Clerk / Credit Controller)
+ *   FI-AA  → Asset Accounting (Asset Accountant)
+ *   FI-TV  → Travel & Expenses (Submitters / Approvers)
+ *   TR     → Treasury (Treasurer / Cash Manager)
+ *   CO     → Controlling / Cost Accounting (Cost Accountant)
+ *   FI-LC  → Consolidation (Group Accountant)
+ *   FI-TX  → Tax & Compliance (Tax Manager)
+ *   FI-BL  → Banking & Liquidity (Bank Accountant)
+ *   EC-CS  → IFRS Compliance (Technical Accountant)
+ *   IC     → Intercompany (IC Accountant)
+ *   FI-RP  → Financial Reports (All readers)
+ */
 export const financeNavigationGroups: NavGroup[] = [
+  // ── Overview (cross-functional) ───────────────────────────────────────
   {
     title: 'Overview',
     icon: 'LayoutDashboard',
@@ -316,104 +418,156 @@ export const financeNavigationGroups: NavGroup[] = [
       { title: 'Approvals', href: routes.finance.approvals, icon: 'CheckCircle' },
     ],
   },
+
+  // ── FI-GL: General Ledger ─────────────────────────────────────────────
   {
-    title: 'General Ledger',
+    title: 'General Ledger (FI-GL)',
     icon: 'BookOpen',
     collapsible: true,
+    shortcut: { description: 'Chart of Accounts, journals, periods' },
     items: [
-      { title: 'Journals', href: routes.finance.journals, icon: 'FileText' },
-      { title: 'Accounts', href: routes.finance.accounts, icon: 'List' },
-      { title: 'Trial Balance', href: routes.finance.trialBalance, icon: 'Scale' },
+      { title: 'Chart of Accounts', href: routes.finance.accounts, icon: 'List' },
+      { title: 'Journal Entries', href: routes.finance.journals, icon: 'FileText' },
+      { title: 'Recurring Journals', href: routes.finance.recurring, icon: 'RefreshCw' },
       { title: 'Ledgers', href: routes.finance.ledgers, icon: 'BookOpen' },
-      { title: 'Periods', href: routes.finance.periods, icon: 'Calendar' },
-      { title: 'Recurring', href: routes.finance.recurring, icon: 'RefreshCw' },
+      { title: 'Fiscal Periods', href: routes.finance.periods, icon: 'Calendar' },
+      { title: 'Trial Balance', href: routes.finance.trialBalance, icon: 'Scale' },
     ],
   },
+
+  // ── FI-AP: Accounts Payable ───────────────────────────────────────────
   {
-    title: 'Payables & Receivables',
-    icon: 'CreditCard',
+    title: 'Accounts Payable (FI-AP)',
+    icon: 'Receipt',
     collapsible: true,
+    shortcut: { description: 'Invoice processing, payment runs, suppliers' },
     items: [
-      { title: 'Payables', href: routes.finance.payables, icon: 'Receipt' },
-      { title: 'Receivables', href: routes.finance.receivables, icon: 'HandCoins' },
-      { title: 'Credit Limits', href: routes.finance.creditLimits, icon: 'Shield' },
+      { title: 'AP Invoices', href: routes.finance.payables, icon: 'Receipt' },
+      { title: 'Credit Memos', href: routes.finance.creditMemoNew, icon: 'FileText' },
+      { title: 'Debit Memos', href: routes.finance.debitMemoNew, icon: 'FileText' },
+      { title: 'Payment Runs', href: routes.finance.paymentRuns, icon: 'Banknote' },
+      { title: 'Supplier Master', href: routes.finance.suppliers, icon: 'Users' },
+      { title: 'Invoice Holds', href: routes.finance.holds, icon: 'PauseCircle' },
+      { title: 'AP Aging', href: routes.finance.apAging, icon: 'Clock' },
     ],
   },
+
+  // ── FI-AR: Accounts Receivable ────────────────────────────────────────
   {
-    title: 'Banking',
+    title: 'Accounts Receivable (FI-AR)',
+    icon: 'HandCoins',
+    collapsible: true,
+    shortcut: { description: 'Customer invoices, collections, credit control' },
+    items: [
+      { title: 'AR Invoices', href: routes.finance.receivables, icon: 'HandCoins' },
+      { title: 'Credit Limits', href: routes.finance.creditLimits, icon: 'Shield' },
+      { title: 'Payment Allocation', href: routes.finance.receivables, icon: 'GitMerge' },
+      { title: 'AR Aging', href: routes.finance.arAging, icon: 'Clock' },
+    ],
+  },
+
+  // ── FI-AA: Asset Accounting ───────────────────────────────────────────
+  {
+    title: 'Asset Accounting (FI-AA)',
+    icon: 'Building',
+    collapsible: true,
+    shortcut: { description: 'Fixed assets, depreciation, disposals' },
+    items: [
+      { title: 'Asset Master', href: routes.finance.fixedAssets, icon: 'Building' },
+      { title: 'Depreciation Runs', href: routes.finance.depreciationRuns, icon: 'TrendingDown' },
+      { title: 'Intangible Assets', href: routes.finance.intangibles, icon: 'Sparkles' },
+      { title: 'Asset Disposals', href: routes.finance.assetDisposals, icon: 'Trash2' },
+      { title: 'Asset Register', href: routes.finance.assetRegister, icon: 'Package' },
+    ],
+  },
+
+  // ── FI-TV: Travel & Expenses ──────────────────────────────────────────
+  {
+    title: 'Travel & Expenses (FI-TV)',
+    icon: 'Wallet',
+    collapsible: true,
+    shortcut: { description: 'Expense claims, policies, reimbursement' },
+    items: [
+      { title: 'My Claims', href: routes.finance.expensesMine, icon: 'User' },
+      { title: 'All Claims', href: routes.finance.expenses, icon: 'Users' },
+      { title: 'Expense Policies', href: routes.finance.expensePolicies, icon: 'Shield' },
+    ],
+  },
+
+  // ── FI-BL: Banking & Liquidity ────────────────────────────────────────
+  {
+    title: 'Banking & Liquidity (FI-BL)',
     icon: 'Landmark',
     collapsible: true,
+    shortcut: { description: 'Bank statements, reconciliation, rules' },
     items: [
-      { title: 'Statements', href: routes.finance.bankStatements, icon: 'FileSpreadsheet' },
+      { title: 'Bank Statements', href: routes.finance.bankStatements, icon: 'FileSpreadsheet' },
       { title: 'Reconciliation', href: routes.finance.bankReconciliation, icon: 'GitMerge' },
-      { title: 'Rules', href: routes.finance.bankRules, icon: 'Settings2' },
+      { title: 'Matching Rules', href: routes.finance.bankRules, icon: 'Settings2' },
     ],
   },
+
+  // ── TR: Treasury ──────────────────────────────────────────────────────
   {
-    title: 'Tax & Compliance',
+    title: 'Treasury (TR)',
+    icon: 'Vault',
+    collapsible: true,
+    shortcut: { description: 'Cash forecasts, covenants, FX, loans' },
+    items: [
+      { title: 'Cash Forecasts', href: routes.finance.cashForecasts, icon: 'TrendingUp' },
+      { title: 'Loans & Facilities', href: routes.finance.icLoans, icon: 'ArrowLeftRight' },
+      { title: 'Covenants', href: routes.finance.covenants, icon: 'FileWarning' },
+      { title: 'FX Rates', href: routes.finance.fxRates, icon: 'ArrowRightLeft' },
+    ],
+  },
+
+  // ── CO: Controlling / Cost Accounting ─────────────────────────────────
+  {
+    title: 'Controlling (CO)',
+    icon: 'PieChart',
+    collapsible: true,
+    shortcut: { description: 'Cost centers, projects, allocations' },
+    items: [
+      { title: 'Cost Centers', href: routes.finance.costCenters, icon: 'PieChart' },
+      { title: 'Projects', href: routes.finance.projects, icon: 'FolderKanban' },
+      { title: 'Allocation Runs', href: routes.finance.allocationRuns, icon: 'Workflow' },
+      { title: 'Cost Allocation Report', href: routes.finance.costAllocation, icon: 'BarChart3' },
+    ],
+  },
+
+  // ── FI-TX: Tax & Compliance ───────────────────────────────────────────
+  {
+    title: 'Tax & Compliance (FI-TX)',
     icon: 'FileCheck',
     collapsible: true,
+    shortcut: { description: 'Tax codes, returns, WHT certificates' },
     items: [
       { title: 'Tax Codes', href: routes.finance.taxCodes, icon: 'Hash' },
       { title: 'Tax Returns', href: routes.finance.taxReturns, icon: 'FileSignature' },
       { title: 'WHT Certificates', href: routes.finance.whtCertificates, icon: 'Award' },
+      { title: 'Tax Summary', href: routes.finance.taxSummary, icon: 'FileCheck' },
     ],
   },
+
+  // ── IC: Intercompany ──────────────────────────────────────────────────
   {
-    title: 'Assets',
-    icon: 'Package',
-    collapsible: true,
-    items: [
-      { title: 'Fixed Assets', href: routes.finance.fixedAssets, icon: 'Building' },
-      { title: 'Depreciation', href: routes.finance.depreciationRuns, icon: 'TrendingDown' },
-      { title: 'Intangibles', href: routes.finance.intangibles, icon: 'Sparkles' },
-      { title: 'Disposals', href: routes.finance.assetDisposals, icon: 'Trash2' },
-    ],
-  },
-  {
-    title: 'Expenses',
-    icon: 'Wallet',
-    collapsible: true,
-    items: [
-      { title: 'My Claims', href: routes.finance.expensesMine, icon: 'User' },
-      { title: 'All Claims', href: routes.finance.expenses, icon: 'Users' },
-      { title: 'Policies', href: routes.finance.expensePolicies, icon: 'Shield' },
-    ],
-  },
-  {
-    title: 'Projects',
-    icon: 'FolderKanban',
-    collapsible: true,
-    items: [
-      { title: 'Projects', href: routes.finance.projects, icon: 'FolderKanban' },
-      { title: 'Cost Centers', href: routes.finance.costCenters, icon: 'PieChart' },
-      { title: 'Allocation Runs', href: routes.finance.allocationRuns, icon: 'Workflow' },
-    ],
-  },
-  {
-    title: 'Treasury',
-    icon: 'Vault',
-    collapsible: true,
-    items: [
-      { title: 'Cash Forecasts', href: routes.finance.cashForecasts, icon: 'TrendingUp' },
-      { title: 'Covenants', href: routes.finance.covenants, icon: 'FileWarning' },
-      { title: 'IC Loans', href: routes.finance.icLoans, icon: 'ArrowLeftRight' },
-      { title: 'FX Rates', href: routes.finance.fxRates, icon: 'ArrowRightLeft' },
-    ],
-  },
-  {
-    title: 'Intercompany',
+    title: 'Intercompany (IC)',
     icon: 'Network',
     collapsible: true,
+    shortcut: { description: 'IC transactions, transfer pricing' },
     items: [
-      { title: 'Transactions', href: routes.finance.icTransactions, icon: 'ArrowLeftRight' },
+      { title: 'IC Transactions', href: routes.finance.icTransactions, icon: 'ArrowLeftRight' },
       { title: 'Transfer Pricing', href: routes.finance.transferPricing, icon: 'Calculator' },
+      { title: 'IC Aging', href: routes.finance.icAging, icon: 'Clock' },
     ],
   },
+
+  // ── EC-CS: IFRS Compliance ────────────────────────────────────────────
   {
-    title: 'IFRS Compliance',
+    title: 'IFRS & Standards (EC-CS)',
     icon: 'ShieldCheck',
     collapsible: true,
+    shortcut: { description: 'Lease, provision, hedge, instrument accounting' },
     items: [
       { title: 'Leases (IFRS 16)', href: routes.finance.leases, icon: 'Key' },
       { title: 'Provisions (IAS 37)', href: routes.finance.provisions, icon: 'AlertCircle' },
@@ -422,34 +576,34 @@ export const financeNavigationGroups: NavGroup[] = [
       { title: 'Deferred Tax (IAS 12)', href: routes.finance.deferredTax, icon: 'Clock' },
     ],
   },
+
+  // ── FI-LC: Consolidation ──────────────────────────────────────────────
   {
-    title: 'Consolidation',
+    title: 'Consolidation (FI-LC)',
     icon: 'GitBranch',
     collapsible: true,
+    shortcut: { description: 'Group entities, eliminations, goodwill' },
     items: [
       { title: 'Group Entities', href: routes.finance.groupEntities, icon: 'Building2' },
-      { title: 'Ownership', href: routes.finance.ownership, icon: 'Users' },
+      { title: 'Ownership Structure', href: routes.finance.ownership, icon: 'Users' },
       { title: 'Eliminations', href: routes.finance.eliminations, icon: 'MinusCircle' },
       { title: 'Goodwill', href: routes.finance.goodwill, icon: 'Star' },
+      { title: 'Consolidation Report', href: routes.finance.consolidationReport, icon: 'GitBranch' },
     ],
   },
+
+  // ── FI-RP: Financial Reports ──────────────────────────────────────────
   {
-    title: 'Reports',
+    title: 'Financial Reports (FI-RP)',
     icon: 'BarChart3',
     collapsible: true,
+    shortcut: { description: 'Statutory & management reports' },
     items: [
       { title: 'Balance Sheet', href: routes.finance.balanceSheet, icon: 'Scale' },
       { title: 'Income Statement', href: routes.finance.incomeStatement, icon: 'TrendingUp' },
-      { title: 'Cash Flow', href: routes.finance.cashFlow, icon: 'Banknote' },
+      { title: 'Cash Flow Statement', href: routes.finance.cashFlow, icon: 'Banknote' },
       { title: 'Equity Statement', href: routes.finance.equityStatement, icon: 'PieChart' },
-      { title: 'AP Aging', href: routes.finance.apAging, icon: 'Receipt' },
-      { title: 'AR Aging', href: routes.finance.arAging, icon: 'HandCoins' },
-      { title: 'IC Aging', href: routes.finance.icAging, icon: 'ArrowLeftRight' },
       { title: 'Budget Variance', href: routes.finance.budgetVariance, icon: 'Target' },
-      { title: 'Asset Register', href: routes.finance.assetRegister, icon: 'Package' },
-      { title: 'Tax Summary', href: routes.finance.taxSummary, icon: 'FileCheck' },
-      { title: 'Cost Allocation', href: routes.finance.costAllocation, icon: 'PieChart' },
-      { title: 'Consolidation', href: routes.finance.consolidationReport, icon: 'GitBranch' },
     ],
   },
 ];
@@ -467,7 +621,170 @@ export const portalNavigationItems: NavItem[] = [
   { title: 'Settings', href: routes.portal.notificationSettings, icon: 'Settings' },
 ];
 
+// ─── HRM Navigation Config ──────────────────────────────────────────────────
+
+export const hrmNavigationGroups: NavGroup[] = [
+  {
+    title: 'Overview',
+    icon: 'LayoutDashboard',
+    items: [
+      { title: 'Dashboard', href: routes.hrm.dashboard, icon: 'LayoutDashboard' },
+    ],
+  },
+  {
+    title: 'People',
+    icon: 'Users',
+    collapsible: true,
+    shortcut: { description: 'Manage your workforce' },
+    items: [
+      { title: 'Employees', href: routes.hrm.employees, icon: 'User' },
+      { title: 'Org Chart', href: routes.hrm.orgChart, icon: 'Network' },
+      { title: 'Attendance', href: routes.hrm.attendance, icon: 'Calendar' },
+      { title: 'Leave', href: routes.hrm.leave, icon: 'Clock' },
+    ],
+  },
+  {
+    title: 'Compensation',
+    icon: 'Banknote',
+    collapsible: true,
+    shortcut: { description: 'Payroll & benefits' },
+    items: [
+      { title: 'Payroll', href: routes.hrm.payroll, icon: 'Banknote' },
+    ],
+  },
+  {
+    title: 'Talent',
+    icon: 'Star',
+    collapsible: true,
+    shortcut: { description: 'Recruitment & development' },
+    items: [
+      { title: 'Recruitment', href: routes.hrm.recruitment, icon: 'Target' },
+      { title: 'Performance', href: routes.hrm.performance, icon: 'TrendingUp' },
+      { title: 'Training', href: routes.hrm.training, icon: 'BookOpen' },
+    ],
+  },
+];
+
+// ─── CRM Navigation Config ──────────────────────────────────────────────────
+
+export const crmNavigationGroups: NavGroup[] = [
+  {
+    title: 'Overview',
+    icon: 'LayoutDashboard',
+    items: [
+      { title: 'Dashboard', href: routes.crm.dashboard, icon: 'LayoutDashboard' },
+    ],
+  },
+  {
+    title: 'Sales Pipeline',
+    icon: 'TrendingUp',
+    collapsible: true,
+    shortcut: { description: 'Track deals & opportunities' },
+    items: [
+      { title: 'Leads', href: routes.crm.leads, icon: 'Target' },
+      { title: 'Opportunities', href: routes.crm.opportunities, icon: 'TrendingUp' },
+      { title: 'Pipeline', href: routes.crm.pipeline, icon: 'Workflow' },
+    ],
+  },
+  {
+    title: 'Relationships',
+    icon: 'Users',
+    collapsible: true,
+    shortcut: { description: 'Contacts & accounts' },
+    items: [
+      { title: 'Contacts', href: routes.crm.contacts, icon: 'User' },
+      { title: 'Accounts', href: routes.crm.accounts, icon: 'Building2' },
+      { title: 'Activities', href: routes.crm.activities, icon: 'Clock' },
+    ],
+  },
+  {
+    title: 'Marketing',
+    icon: 'Sparkles',
+    collapsible: true,
+    shortcut: { description: 'Campaigns & outreach' },
+    items: [
+      { title: 'Campaigns', href: routes.crm.campaigns, icon: 'Sparkles' },
+    ],
+  },
+];
+
+// ─── Boardroom Navigation Config ────────────────────────────────────────────
+
+export const boardroomNavigationGroups: NavGroup[] = [
+  {
+    title: 'Overview',
+    icon: 'LayoutDashboard',
+    items: [
+      { title: 'Dashboard', href: routes.boardroom.dashboard, icon: 'LayoutDashboard' },
+    ],
+  },
+  {
+    title: 'Communication',
+    icon: 'MessageSquare',
+    collapsible: true,
+    shortcut: { description: 'Team communication' },
+    items: [
+      { title: 'Announcements', href: routes.boardroom.announcements, icon: 'FileText' },
+      { title: 'Team Chat', href: routes.boardroom.teamChat, icon: 'MessageSquare' },
+      { title: 'Polls', href: routes.boardroom.polls, icon: 'BarChart3' },
+    ],
+  },
+  {
+    title: 'Collaboration',
+    icon: 'FolderKanban',
+    collapsible: true,
+    shortcut: { description: 'Meetings & documents' },
+    items: [
+      { title: 'Meetings', href: routes.boardroom.meetings, icon: 'Calendar' },
+      { title: 'Documents', href: routes.boardroom.documents, icon: 'FolderKanban' },
+      { title: 'Calendar', href: routes.boardroom.calendar, icon: 'Calendar' },
+    ],
+  },
+];
+
+// ─── Settings Navigation Config ─────────────────────────────────────────────
+
+export const settingsNavigationGroups: NavGroup[] = [
+  {
+    title: 'Organization',
+    icon: 'Building2',
+    items: [
+      { title: 'Organization', href: routes.settingsOrganization, icon: 'Building2' },
+      { title: 'Members', href: routes.settingsMembers, icon: 'Users' },
+    ],
+  },
+  {
+    title: 'Preferences',
+    icon: 'Settings',
+    items: [
+      { title: 'Preferences', href: routes.settingsPreferences, icon: 'Settings' },
+      { title: 'Audit Log', href: routes.settingsAuditLog, icon: 'ScrollText' },
+    ],
+  },
+];
+
+// ─── Admin Navigation Config ────────────────────────────────────────────────
+
+export const adminNavigationGroups: NavGroup[] = [
+  {
+    title: 'Platform',
+    icon: 'ShieldCheck',
+    items: [
+      { title: 'System Config', href: routes.admin.config, icon: 'Settings' },
+      { title: 'Tenants', href: routes.admin.tenants, icon: 'Building2' },
+      { title: 'Users', href: routes.admin.users, icon: 'Users' },
+      { title: 'Actions', href: routes.admin.actions, icon: 'Workflow' },
+      { title: 'Audit', href: routes.admin.audit, icon: 'ScrollText' },
+    ],
+  },
+];
+
 // Legacy flat navigation config for backwards compatibility
+/**
+ * @deprecated Use `computeVisibleModulesWithNav()` from `@/lib/modules/module-definitions.server`
+ * or the `modules` prop passed through `AppShell` instead. This export is only retained
+ * for the constants test suite and will be removed in a future cleanup.
+ */
 export const navigationConfig: NavItem[] = [
   {
     title: 'Dashboard',
@@ -480,7 +797,9 @@ export const navigationConfig: NavItem[] = [
     icon: 'BookOpen',
     children: [
       { title: 'Journals', href: routes.finance.journals, icon: 'FileText' },
-      { title: 'Payables', href: routes.finance.payables, icon: 'Receipt' },
+      { title: 'Invoices (AP)', href: routes.finance.payables, icon: 'Receipt' },
+      { title: 'Payment Runs', href: routes.finance.paymentRuns, icon: 'Banknote' },
+      { title: 'Suppliers', href: routes.finance.suppliers, icon: 'Users' },
       { title: 'Receivables', href: routes.finance.receivables, icon: 'HandCoins' },
       { title: 'Trial Balance', href: routes.finance.trialBalance, icon: 'Scale' },
       { title: 'Accounts', href: routes.finance.accounts, icon: 'List' },
@@ -496,5 +815,11 @@ export const navigationConfig: NavItem[] = [
     title: 'Settings',
     href: routes.settings,
     icon: 'Settings',
+    children: [
+      { title: 'Organization', href: routes.settingsOrganization, icon: 'Building2' },
+      { title: 'Members', href: routes.settingsMembers, icon: 'Users' },
+      { title: 'Preferences', href: routes.settingsPreferences, icon: 'SlidersHorizontal' },
+      { title: 'Audit Log', href: routes.settingsAuditLog, icon: 'ScrollText' },
+    ],
   },
 ];

@@ -24,8 +24,7 @@ export function PortalWhtTable({ data }: PortalWhtTableProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No WHT certificates found"
-        description="Withholding tax certificates will appear here once issued."
+        contentKey="portal.whtCerts"
         icon={Award}
       />
     );
@@ -34,6 +33,7 @@ export function PortalWhtTable({ data }: PortalWhtTableProps) {
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">WHT certificates — {data.length} certificates</caption>
         <TableHeader>
           <TableRow>
             <TableHead>Certificate #</TableHead>
@@ -43,29 +43,46 @@ export function PortalWhtTable({ data }: PortalWhtTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((cert) => (
-            <TableRow key={cert.id} className="cursor-pointer">
-              <TableCell>
-                <Link
-                  href={routes.portal.whtDetail(cert.id)}
-                  className="font-mono text-sm font-medium text-primary hover:underline"
-                >
-                  {cert.certificateNumber}
-                </Link>
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">
-                <DateCell date={cert.periodStart} format="short" />
-                {' \u2013 '}
-                <DateCell date={cert.periodEnd} format="short" />
-              </TableCell>
-              <TableCell>
-                <DateCell date={cert.issuedAt} format="short" />
-              </TableCell>
-              <TableCell className="text-right">
-                <MoneyCell amount={cert.whtAmount} currency={cert.currencyCode} />
-              </TableCell>
-            </TableRow>
-          ))}
+          {data.map((cert) => {
+            const detailHref = routes.portal.whtDetail(cert.id);
+            return (
+              <TableRow
+                key={cert.id}
+                className="cursor-pointer"
+                tabIndex={0}
+                role="link"
+                aria-label={`Open WHT certificate ${cert.certificateNumber}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    window.location.href = detailHref;
+                  }
+                }}
+                onClick={() => { window.location.href = detailHref; }}
+              >
+                <TableCell>
+                  <Link
+                    href={detailHref}
+                    className="font-mono text-sm font-medium text-primary hover:underline"
+                    tabIndex={-1}
+                  >
+                    {cert.certificateNumber}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  <DateCell date={cert.periodStart} format="short" />
+                  {' \u2013 '}
+                  <DateCell date={cert.periodEnd} format="short" />
+                </TableCell>
+                <TableCell>
+                  <DateCell date={cert.issuedAt} format="short" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <MoneyCell amount={cert.whtAmount} currency={cert.currencyCode} />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

@@ -1,6 +1,8 @@
 'use client';
 
+import * as React from 'react';
 import { useState } from 'react';
+import NextImage from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -24,7 +26,8 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface DocumentFile {
+/** Represents a single file that can be viewed or downloaded. */
+interface DocumentFile {
   id: string;
   name: string;
   type: string;
@@ -66,6 +69,11 @@ function formatFileSize(bytes?: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
+/** Use next/image for https URLs (optimized); fallback to img for blob/data URLs */
+function isNextImageSupported(url: string): boolean {
+  return url.startsWith('https://');
+}
+
 // ─── Image Viewer ────────────────────────────────────────────────────────────
 
 function ImageViewer({
@@ -91,6 +99,24 @@ function ImageViewer({
         <div className="flex flex-col items-center gap-2 text-muted-foreground">
           <Image className="h-12 w-12" />
           <p>Failed to load image</p>
+        </div>
+      ) : isNextImageSupported(file.url) ? (
+        <div className="relative h-full w-full min-h-[200px]">
+          <NextImage
+            src={file.url}
+            alt={file.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 80vw"
+            className="object-contain transition-transform duration-200"
+            style={{
+              transform: `scale(${zoom}) rotate(${rotation}deg)`,
+            }}
+            onLoad={() => setIsLoading(false)}
+            onError={() => {
+              setIsLoading(false);
+              setError(true);
+            }}
+          />
         </div>
       ) : (
         <img
@@ -342,11 +368,21 @@ export function DocumentViewer({
                       )}
                     >
                       {file.type.startsWith('image/') ? (
-                        <img
-                          src={file.url}
-                          alt={file.name}
-                          className="h-full w-full rounded object-cover"
-                        />
+                        isNextImageSupported(file.url) ? (
+                          <NextImage
+                            src={file.url}
+                            alt={file.name}
+                            width={56}
+                            height={56}
+                            className="h-full w-full rounded object-cover"
+                          />
+                        ) : (
+                          <img
+                            src={file.url}
+                            alt={file.name}
+                            className="h-full w-full rounded object-cover"
+                          />
+                        )
                       ) : (
                         <FileIcon className="h-6 w-6 text-muted-foreground" />
                       )}
@@ -365,9 +401,13 @@ export function DocumentViewer({
 // ─── Attachments Panel ───────────────────────────────────────────────────────
 
 interface AttachmentsPanelProps {
+  /** Files to display in the panel. */
   files: DocumentFile[];
+  /** Called when files are uploaded. */
   onUpload?: (files: File[]) => Promise<void>;
+  /** Called when a file is deleted. */
   onDelete?: (id: string) => Promise<void>;
+  /** When true, upload/delete actions are available. */
   canEdit?: boolean;
   className?: string;
 }
@@ -443,3 +483,6 @@ export function AttachmentsPanel({
     </div>
   );
 }
+AttachmentsPanel.displayName = 'AttachmentsPanel';
+
+export type { DocumentFile, DocumentViewerProps, AttachmentsPanelProps };

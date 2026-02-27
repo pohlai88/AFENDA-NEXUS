@@ -76,8 +76,8 @@ export default async function IcAgingPage({ searchParams }: IcAgingPageProps) {
       {/* No params */}
       {(!currency || !asOfDate) && (
         <EmptyState
-          title="Select parameters"
-          description="Provide a currency and as-of date to generate the IC aging report."
+          contentKey="finance.reports.icAging"
+          variant="firstRun"
           icon={ArrowLeftRight}
         />
       )}
@@ -85,8 +85,8 @@ export default async function IcAgingPage({ searchParams }: IcAgingPageProps) {
       {/* Report table */}
       {data && data.rows.length === 0 && (
         <EmptyState
-          title="No aging data"
-          description="No intercompany balances found for the selected parameters."
+          contentKey="finance.reports.icAging"
+          variant="noResults"
           icon={ArrowLeftRight}
         />
       )}
@@ -94,6 +94,7 @@ export default async function IcAgingPage({ searchParams }: IcAgingPageProps) {
       {data && data.rows.length > 0 && (
         <div className="rounded-md border">
           <Table>
+            <caption className="sr-only">Intercompany aging report</caption>
             <TableHeader>
               <TableRow>
                 <TableHead>Company</TableHead>

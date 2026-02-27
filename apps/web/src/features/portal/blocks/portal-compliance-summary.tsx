@@ -50,6 +50,7 @@ export function PortalComplianceSummaryBlock({ data }: PortalComplianceSummaryBl
         <CardContent>
           <div className="rounded-md border">
             <Table>
+              <caption className="sr-only">Compliance items — {data.items.length} items</caption>
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>

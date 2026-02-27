@@ -381,6 +381,9 @@ export type {
   SupplierSite,
   SupplierBankAccount,
   SupplierStatus,
+  SupplierOnboardingStatus,
+  SupplierAccountGroup,
+  SupplierCategory,
   PaymentMethodType,
 } from './slices/ap/entities/supplier.js';
 export type {
@@ -390,6 +393,64 @@ export type {
   CreateSupplierSiteInput,
   CreateSupplierBankAccountInput,
 } from './slices/ap/ports/supplier-repo.js';
+
+// ─── Supplier MDM entities ────────────────────────────────────────────────
+export type {
+  SupplierBlock,
+  SupplierBlockHistoryEntry,
+  SupplierBlacklist,
+  SupplierBlockType,
+  SupplierBlockScope,
+  SupplierBlockAction,
+} from './slices/ap/entities/supplier-block.js';
+export type { SupplierTaxRegistration, SupplierTaxType } from './slices/ap/entities/supplier-tax.js';
+export type {
+  SupplierLegalDocument,
+  SupplierLegalDocType,
+  SupplierLegalDocStatus,
+  SupplierDocRequirement,
+} from './slices/ap/entities/supplier-legal-doc.js';
+export type {
+  SupplierEvalTemplate,
+  SupplierEvalCriteria,
+  SupplierEvaluation,
+  SupplierEvalScore,
+  SupplierEvalStatus,
+} from './slices/ap/entities/supplier-evaluation.js';
+export type { SupplierRiskIndicator, SupplierRiskRating, SupplierRiskCategory } from './slices/ap/entities/supplier-risk.js';
+export type { SupplierDiversity, SupplierDiversityCode } from './slices/ap/entities/supplier-diversity.js';
+export type { SupplierContact, SupplierContactRole } from './slices/ap/entities/supplier-contact.js';
+export type { SupplierDuplicateSuspect, SupplierDuplicateMatchType, SupplierDuplicateStatus } from './slices/ap/entities/supplier-duplicate.js';
+export type { SupplierCompanyOverride } from './slices/ap/entities/supplier-company-override.js';
+export type { SupplierAccountGroupConfig } from './slices/ap/entities/supplier-account-group.js';
+
+// ─── Supplier MDM ports ───────────────────────────────────────────────────
+export type { ISupplierBlockRepo } from './slices/ap/ports/supplier-block-repo.js';
+export type { ISupplierTaxRepo } from './slices/ap/ports/supplier-tax-repo.js';
+export type { ISupplierLegalDocRepo } from './slices/ap/ports/supplier-legal-doc-repo.js';
+export type { ISupplierEvalRepo } from './slices/ap/ports/supplier-eval-repo.js';
+export type { ISupplierRiskRepo } from './slices/ap/ports/supplier-risk-repo.js';
+export type { ISupplierContactRepo } from './slices/ap/ports/supplier-contact-repo.js';
+export type { ISupplierDiversityRepo } from './slices/ap/ports/supplier-diversity-repo.js';
+export type { ISupplierDuplicateRepo } from './slices/ap/ports/supplier-duplicate-repo.js';
+export type { ISupplierCompanyOverrideRepo } from './slices/ap/ports/supplier-company-override-repo.js';
+export type { ISupplierAccountGroupRepo } from './slices/ap/ports/supplier-account-group-repo.js';
+
+// ─── Supplier MDM services ────────────────────────────────────────────────
+export {
+  checkSupplierProcurementEligibility,
+  checkSupplierInvoiceEligibility,
+  checkSupplierPaymentEligibility,
+  checkSupplierPortalEligibility,
+  type SupplierGuardDeps,
+} from './slices/ap/services/supplier-guards.js';
+export {
+  checkActivationReadiness,
+  activateSupplier,
+  type ActivationReadiness,
+  type CheckActivationInput,
+  type ActivateSupplierInput,
+} from './slices/ap/services/supplier-activation.js';
 
 // ─── AP Hold entities, ports & services ───────────────────────────────────
 export type { ApHold, ApHoldType, ApHoldStatus } from './slices/ap/entities/ap-hold.js';
@@ -428,6 +489,7 @@ export { registerApInvoiceRoutes } from './slices/ap/routes/ap-invoice-routes.js
 export { registerApPaymentRunRoutes } from './slices/ap/routes/ap-payment-run-routes.js';
 export { registerApAgingRoutes } from './slices/ap/routes/ap-aging-routes.js';
 export { registerSupplierRoutes } from './slices/ap/routes/supplier-routes.js';
+export { registerSupplierMdmRoutes } from './slices/ap/routes/supplier-mdm-routes.js';
 export { registerApHoldRoutes } from './slices/ap/routes/ap-hold-routes.js';
 export { registerApSupplierReconRoutes } from './slices/ap/routes/ap-supplier-recon-routes.js';
 export { registerApReportingRoutes } from './slices/ap/routes/ap-reporting-routes.js';
@@ -640,14 +702,38 @@ export {
   type TriageQueueQuery,
 } from './slices/ap/services/ap-triage-queue.js';
 
-// ─── B3: OCR/Automation pipeline ───────────────────────────────────────────
+// ─── B3: OCR/Automation pipeline (two-boundary) ─────────────────────────────
 export {
-  processOcrInvoice,
-  type OcrInvoicePayload,
-  type OcrInvoiceLine,
-  type OcrInvoiceResult,
-  type OcrConfidence,
+  uploadOcrInvoice,
+  type OcrPipelineContext,
+  type OcrPipelineResult,
+  type OcrPipelineDeps,
+  type R2Storage,
+  type OutboxWriter,
 } from './slices/ap/services/ap-ocr-pipeline.js';
+export type {
+  IOcrProvider,
+  OcrExtractionResult,
+  OcrFieldEvidence,
+  OcrSource,
+} from './slices/ap/ports/ocr-provider.js';
+export type {
+  IOcrJobRepo,
+  OcrJob,
+  OcrJobStatus,
+  ClaimResult,
+  OcrConfidenceLevel,
+  OcrFailureReason,
+} from './slices/ap/ports/ocr-job-repo.js';
+export {
+  computeOcrConfidence,
+  type OcrConfidenceScore,
+  type OcrScorerContext,
+} from './slices/ap/services/ocr-confidence-scorer.js';
+export {
+  resolveSupplier,
+  type SupplierResolutionResult,
+} from './slices/ap/services/ocr-supplier-resolver.js';
 
 // ─── K4: Tamper-resistant outbox ────────────────────────────────────────────
 export {

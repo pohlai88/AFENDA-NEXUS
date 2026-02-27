@@ -32,12 +32,22 @@ export function registerSupplierRoutes(
           companyId: body.companyId,
           code: body.code,
           name: body.name,
+          tradingName: body.tradingName ?? null,
+          registrationNumber: body.registrationNumber ?? null,
+          countryOfIncorporation: body.countryOfIncorporation ?? null,
+          legalForm: body.legalForm ?? null,
           taxId: body.taxId ?? null,
           currencyCode: body.currencyCode,
           defaultPaymentTermsId: body.defaultPaymentTermsId ?? null,
           defaultPaymentMethod: body.defaultPaymentMethod ?? null,
           whtRateId: body.whtRateId ?? null,
           remittanceEmail: body.remittanceEmail ?? null,
+          accountGroup: body.accountGroup,
+          category: body.category,
+          industryCode: body.industryCode ?? null,
+          industryDescription: body.industryDescription ?? null,
+          parentSupplierId: body.parentSupplierId ?? null,
+          isGroupHeader: body.isGroupHeader,
         });
       });
 
@@ -124,6 +134,12 @@ export function registerSupplierRoutes(
           postalCode: body.postalCode ?? null,
           countryCode: body.countryCode,
           isPrimary: body.isPrimary,
+          isPaySite: body.isPaySite,
+          isPurchasingSite: body.isPurchasingSite,
+          isRemitTo: body.isRemitTo,
+          contactName: body.contactName ?? null,
+          contactEmail: body.contactEmail ?? null,
+          contactPhone: body.contactPhone ?? null,
         });
       });
 
@@ -145,6 +161,7 @@ export function registerSupplierRoutes(
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.supplierRepo.addBankAccount({
           supplierId: id,
+          siteId: body.siteId ?? null,
           bankName: body.bankName,
           accountName: body.accountName,
           accountNumber: body.accountNumber,

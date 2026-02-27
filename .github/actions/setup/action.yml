@@ -1,0 +1,56 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Composite Action: Monorepo Setup
+# ──────────────────────────────────────────────────────────────────────────────
+# DRY checkout+pnpm+node+install+cache pattern used by all CI jobs.
+# Caches both the pnpm store (fast install) and Turbo local cache
+# (near-instant build on cache hit).
+#
+# Usage in a workflow job:
+#   steps:
+#     - uses: actions/checkout@v4
+#     - uses: ./.github/actions/setup
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: 'Monorepo Setup'
+description: 'Setup pnpm, Node.js, install dependencies, and restore Turbo cache'
+
+inputs:
+  node-version:
+    description: 'Node.js version'
+    required: false
+    default: '22'
+  pnpm-version:
+    description: 'pnpm version'
+    required: false
+    default: '9.15.4'
+
+runs:
+  using: 'composite'
+  steps:
+    # ── Package Manager ────────────────────────────────────────────────────
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    # ── Node.js (with pnpm store cache) ────────────────────────────────────
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+
+    # ── Turbo Cache (cross-run build artifact reuse) ───────────────────────
+    - name: Restore Turbo cache
+      uses: actions/cache@v4
+      with:
+        path: node_modules/.cache/turbo
+        key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+        restore-keys: |
+          turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+          turbo-${{ runner.os }}-
+
+    # ── Install ────────────────────────────────────────────────────────────
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

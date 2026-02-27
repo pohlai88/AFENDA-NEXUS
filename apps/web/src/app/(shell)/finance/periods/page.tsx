@@ -55,8 +55,7 @@ export default async function PeriodsPage({ searchParams }: PeriodsPageProps) {
       {/* Empty state */}
       {periods.length === 0 && (
         <EmptyState
-          title="No periods found"
-          description="No fiscal periods found for the selected year."
+          contentKey="finance.periods"
           icon={Calendar}
         />
       )}

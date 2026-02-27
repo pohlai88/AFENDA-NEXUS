@@ -7,7 +7,7 @@ import type { MetadataRoute } from 'next';
  * Only includes public routes (auth pages, not protected finance routes).
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://afenda.io';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.VERCEL_URL ?? 'https://afenda.io';
   const currentDate = new Date();
 
   return [

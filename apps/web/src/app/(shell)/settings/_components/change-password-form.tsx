@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { authClient } from '@/lib/auth-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -139,15 +140,16 @@ export function ChangePasswordForm() {
           </div>
           <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="revoke-others"
               checked={revokeOthers}
-              onChange={(e) => setRevokeOthers(e.target.checked)}
-              className="rounded border-input"
+              onCheckedChange={(checked) => setRevokeOthers(checked === true)}
             />
-            <span className="text-muted-foreground">Sign out from all other devices</span>
-          </label>
+            <Label htmlFor="revoke-others" className="text-sm text-muted-foreground">
+              Sign out from all other devices
+            </Label>
+          </div>
 
           <Button type="submit" disabled={isPending}>
             {isPending ? (

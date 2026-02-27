@@ -41,10 +41,10 @@ export default async function TrialBalancePage({ searchParams }: TrialBalancePag
 
   const result = ledgerId
     ? await getTrialBalance(ctx, {
-        ledgerId,
-        year,
-        period: params.period,
-      })
+      ledgerId,
+      year,
+      period: params.period,
+    })
     : null;
 
   if (result && !result.ok) {
@@ -79,8 +79,8 @@ export default async function TrialBalancePage({ searchParams }: TrialBalancePag
       {/* No ledger selected */}
       {!ledgerId && (
         <EmptyState
-          title="Select a ledger"
-          description="Choose a ledger and year from the filters above to view the trial balance."
+          contentKey="finance.reports.trialBalance"
+          variant="firstRun"
           icon={Scale}
         />
       )}
@@ -89,13 +89,14 @@ export default async function TrialBalancePage({ searchParams }: TrialBalancePag
       {ledgerId && rows.length > 0 && (
         <div className="rounded-md border">
           <Table>
+            <caption className="sr-only">Trial balance data</caption>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[120px]">Account Code</TableHead>
+                <TableHead className="col-account">Account Code</TableHead>
                 <TableHead>Account Name</TableHead>
-                <TableHead className="text-right w-[140px]">Debit</TableHead>
-                <TableHead className="text-right w-[140px]">Credit</TableHead>
-                <TableHead className="text-right w-[140px]">Balance</TableHead>
+                <TableHead className="col-amount text-right">Debit</TableHead>
+                <TableHead className="col-amount text-right">Credit</TableHead>
+                <TableHead className="col-amount text-right">Balance</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,8 +135,8 @@ export default async function TrialBalancePage({ searchParams }: TrialBalancePag
       {/* Empty state — ledger selected but no data */}
       {ledgerId && rows.length === 0 && (
         <EmptyState
-          title="No balances found"
-          description="No account balances were found for the selected ledger and period."
+          contentKey="finance.reports.trialBalance"
+          variant="noResults"
           icon={Scale}
         />
       )}
@@ -185,11 +186,10 @@ function TrialBalanceFilters({
             <a
               key={y}
               href={buildUrl({ year: y, period: currentPeriod })}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                isActive
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              }`}
+                }`}
             >
               {y}
             </a>
@@ -205,11 +205,10 @@ function TrialBalanceFilters({
             <a
               key={p.label}
               href={buildUrl({ year: currentYear, period: p.value })}
-              className={`whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
-                isActive
+              className={`whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${isActive
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-              }`}
+                }`}
             >
               {p.label}
             </a>

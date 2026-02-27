@@ -137,7 +137,7 @@ export const cardVariants: Variants = {
     transition: transitions.spring,
   },
   exit: { opacity: 0, y: 8, scale: 0.98 },
-  hover: { y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' },
+  hover: { y: -2, boxShadow: 'var(--shadow-card-hover)' },
   tap: { scale: 0.98 },
 };
 

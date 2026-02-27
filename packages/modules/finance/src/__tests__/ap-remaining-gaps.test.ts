@@ -26,7 +26,7 @@ import {
   type ITriageAssignmentRepo,
   type TriageAssignment,
 } from '../slices/ap/services/ap-triage-queue.js';
-import { processOcrInvoice } from '../slices/ap/services/ap-ocr-pipeline.js';
+// B3 OCR tests moved to ap-ocr-pipeline.test.ts (two-boundary rewrite)
 import {
   computeContentHash,
   verifyOutboxChain,
@@ -162,7 +162,7 @@ function mockIdempotencyStore(alreadyClaimed = false): IIdempotencyStore & { cla
       claims.push(`${input.commandType}:${input.key}`);
       return { claimed: true };
     },
-    async recordOutcome() {},
+    async recordOutcome() { },
   };
 }
 
@@ -317,184 +317,9 @@ describe('B2: Triage Queue', () => {
 });
 
 // ─── B3: OCR/Automation Pipeline ────────────────────────────────────────────
-
-describe('B3: OCR/Automation Pipeline', () => {
-  it('processOcrInvoice creates DRAFT invoice for HIGH confidence', async () => {
-    const outbox = mockOutboxWriter();
-    const result = await processOcrInvoice(
-      {
-        tenantId: TENANT_ID,
-        provider: 'tesseract',
-        externalRef: 'ocr-123',
-        confidence: 'HIGH',
-        companyId: COMPANY_ID,
-        supplierId: 'sup-1',
-        ledgerId: LEDGER_ID,
-        invoiceNumber: 'OCR-INV-001',
-        supplierRef: null,
-        invoiceDate: '2025-01-15',
-        dueDate: '2025-02-14',
-        currencyCode: 'USD',
-        description: 'OCR scanned invoice',
-        poRef: null,
-        receiptRef: null,
-        lines: [
-          {
-            accountId: 'acc-1',
-            description: 'Line 1',
-            quantity: 1,
-            unitPrice: 5000n,
-            amount: 5000n,
-            taxAmount: 0n,
-          },
-        ],
-      },
-      { apInvoiceRepo: mockApInvoiceRepo([]), outboxWriter: outbox }
-    );
-
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.value.initialStatus).toBe('DRAFT');
-      expect(result.value.confidence).toBe('HIGH');
-      expect(result.value.provider).toBe('tesseract');
-    }
-    expect(outbox.events).toHaveLength(1);
-    expect(outbox.events[0]!.eventType).toBe('AP_OCR_INVOICE_RECEIVED');
-  });
-
-  it('processOcrInvoice creates INCOMPLETE invoice for LOW confidence', async () => {
-    const repo = mockApInvoiceRepo([]);
-    const outbox = mockOutboxWriter();
-    const result = await processOcrInvoice(
-      {
-        tenantId: TENANT_ID,
-        provider: 'tesseract',
-        externalRef: 'ocr-456',
-        confidence: 'LOW',
-        companyId: COMPANY_ID,
-        supplierId: 'sup-1',
-        ledgerId: LEDGER_ID,
-        invoiceNumber: 'OCR-INV-002',
-        supplierRef: null,
-        invoiceDate: '2025-01-15',
-        dueDate: '2025-02-14',
-        currencyCode: 'USD',
-        description: null,
-        poRef: null,
-        receiptRef: null,
-        lines: [
-          {
-            accountId: 'acc-1',
-            description: null,
-            quantity: 1,
-            unitPrice: 1000n,
-            amount: 1000n,
-            taxAmount: 0n,
-          },
-        ],
-      },
-      { apInvoiceRepo: repo, outboxWriter: outbox }
-    );
-
-    expect(result.ok).toBe(true);
-    if (result.ok) expect(result.value.initialStatus).toBe('INCOMPLETE');
-  });
-
-  it('rejects OCR payload with missing invoiceNumber', async () => {
-    const result = await processOcrInvoice(
-      {
-        tenantId: TENANT_ID,
-        provider: 'test',
-        externalRef: 'ref-1',
-        confidence: 'HIGH',
-        companyId: COMPANY_ID,
-        supplierId: 'sup-1',
-        ledgerId: LEDGER_ID,
-        invoiceNumber: '',
-        supplierRef: null,
-        invoiceDate: '2025-01-15',
-        dueDate: '2025-02-14',
-        currencyCode: 'USD',
-        description: null,
-        poRef: null,
-        receiptRef: null,
-        lines: [
-          {
-            accountId: 'acc-1',
-            description: null,
-            quantity: 1,
-            unitPrice: 1000n,
-            amount: 1000n,
-            taxAmount: 0n,
-          },
-        ],
-      },
-      { apInvoiceRepo: mockApInvoiceRepo([]), outboxWriter: mockOutboxWriter() }
-    );
-    expect(result.ok).toBe(false);
-  });
-
-  it('rejects OCR payload with empty lines', async () => {
-    const result = await processOcrInvoice(
-      {
-        tenantId: TENANT_ID,
-        provider: 'test',
-        externalRef: 'ref-2',
-        confidence: 'HIGH',
-        companyId: COMPANY_ID,
-        supplierId: 'sup-1',
-        ledgerId: LEDGER_ID,
-        invoiceNumber: 'INV-1',
-        supplierRef: null,
-        invoiceDate: '2025-01-15',
-        dueDate: '2025-02-14',
-        currencyCode: 'USD',
-        description: null,
-        poRef: null,
-        receiptRef: null,
-        lines: [],
-      },
-      { apInvoiceRepo: mockApInvoiceRepo([]), outboxWriter: mockOutboxWriter() }
-    );
-    expect(result.ok).toBe(false);
-  });
-
-  it('OCR pipeline uses idempotency guard when provided', async () => {
-    const idempotencyStore = mockIdempotencyStore(true);
-    const result = await processOcrInvoice(
-      {
-        tenantId: TENANT_ID,
-        provider: 'test',
-        externalRef: 'ref-dup',
-        confidence: 'HIGH',
-        companyId: COMPANY_ID,
-        supplierId: 'sup-1',
-        ledgerId: LEDGER_ID,
-        invoiceNumber: 'INV-DUP',
-        supplierRef: null,
-        invoiceDate: '2025-01-15',
-        dueDate: '2025-02-14',
-        currencyCode: 'USD',
-        description: null,
-        poRef: null,
-        receiptRef: null,
-        lines: [
-          {
-            accountId: 'acc-1',
-            description: null,
-            quantity: 1,
-            unitPrice: 1000n,
-            amount: 1000n,
-            taxAmount: 0n,
-          },
-        ],
-      },
-      { apInvoiceRepo: mockApInvoiceRepo([]), outboxWriter: mockOutboxWriter(), idempotencyStore }
-    );
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.message).toContain('already processed');
-  });
-});
+// B3 tests moved to ap-ocr-pipeline.test.ts (two-boundary rewrite with
+// uploadOcrInvoice, checksum idempotency, state machine, and hybrid OCR).
+// See also: ap-ocr-confidence.test.ts for confidence scorer tests.
 
 // ─── F2: WHT Line Classification ────────────────────────────────────────────
 

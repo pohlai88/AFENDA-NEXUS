@@ -1,5 +1,5 @@
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default function PortalLoading() {
-  return <LoadingSkeleton />;
+  return <LoadingSkeleton variant="dashboard" />;
 }

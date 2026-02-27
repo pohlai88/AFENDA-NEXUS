@@ -84,8 +84,8 @@ export default async function IncomeStatementPage({ searchParams }: IncomeStatem
       {/* No params */}
       {(!ledgerId || !fromPeriodId || !toPeriodId) && (
         <EmptyState
-          title="Select parameters"
-          description="Choose a ledger and period range to generate the income statement."
+          contentKey="finance.reports.incomeStatement"
+          variant="firstRun"
           icon={TrendingUp}
         />
       )}
@@ -115,6 +115,7 @@ function ReportSectionTable({ section }: { section: ReportSection }) {
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">Income statement section</caption>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[100px]">Code</TableHead>

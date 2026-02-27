@@ -25,4 +25,4 @@ export const outbox = erpSchema.table(
       .on(t.tenantId, t.createdAt)
       .where(sql`${t.processedAt} IS NULL`),
   ]
-);
+).enableRLS();

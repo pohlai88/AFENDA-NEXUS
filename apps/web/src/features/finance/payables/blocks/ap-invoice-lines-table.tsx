@@ -26,6 +26,7 @@ export function ApInvoiceLinesTable({
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">Invoice line items — {lines.length} lines</caption>
         <TableHeader>
           <TableRow>
             <TableHead>Account</TableHead>

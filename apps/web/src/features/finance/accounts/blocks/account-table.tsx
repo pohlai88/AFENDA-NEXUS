@@ -86,7 +86,7 @@ export function AccountTable({ data }: AccountTableProps) {
         const q = query.toLowerCase();
         return row.code.toLowerCase().includes(q) || row.name.toLowerCase().includes(q);
       }}
-      emptyMessage="No accounts match your search."
+      emptyState={{ key: 'finance.accounts' }}
     />
   );
 }

@@ -73,7 +73,7 @@ export function ArInvoiceLinesEditor({ form }: ArInvoiceLinesEditorProps) {
                 <TableCell>
                   <Input
                     {...form.register(`lines.${index}.accountId`)}
-                    placeholder="Account UUID"
+                    placeholder="Select account"
                     aria-label={`Line ${index + 1} account`}
                     className="font-mono text-xs"
                   />

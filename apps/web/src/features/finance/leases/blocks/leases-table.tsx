@@ -161,9 +161,8 @@ export function LeasesTable({ leases }: LeasesTableProps) {
       searchKeys={['leaseNumber', 'description', 'lessorName']}
       onRowClick={handleRowClick}
       emptyState={{
+        key: 'finance.leases',
         icon: FileText,
-        title: 'No leases found',
-        description: 'Create a new lease to start tracking under IFRS 16.',
         action: (
           <Button asChild>
             <Link href={routes.finance.leaseNew}>

@@ -555,3 +555,155 @@ export const whtIncomeTypeEnum = pgEnum('wht_income_type', [
   'COMMISSION',
   'OTHER',
 ]);
+
+// ─── OCR Pipeline enums ──────────────────────────────────────────────────
+
+export const ocrJobStatusEnum = pgEnum('ocr_job_status', [
+  'CLAIMED',
+  'UPLOADED',
+  'EXTRACTING',
+  'SCORED',
+  'INVOICE_CREATING',
+  'COMPLETED',
+  'FAILED',
+]);
+
+export const ocrFailureReasonEnum = pgEnum('ocr_failure_reason', [
+  'PROVIDER_TIMEOUT',
+  'PROVIDER_REJECTED',
+  'UNSUPPORTED_MIME',
+  'PARSE_ERROR',
+  'INTERNAL_ERROR',
+]);
+
+export const ocrConfidenceLevelEnum = pgEnum('ocr_confidence_level', ['HIGH', 'MEDIUM', 'LOW']);
+
+// ─── Supplier MDM enums ──────────────────────────────────────────────────
+
+export const supplierOnboardingStatusEnum = pgEnum('supplier_onboarding_status', [
+  'PROSPECT',
+  'PENDING_APPROVAL',
+  'ACTIVE',
+  'SUSPENDED',
+  'INACTIVE',
+]);
+
+export const supplierAccountGroupEnum = pgEnum('supplier_account_group', [
+  'TRADE',
+  'INTERCOMPANY',
+  'ONE_TIME',
+  'EMPLOYEE',
+  'GOVERNMENT',
+  'SUBCONTRACTOR',
+]);
+
+export const supplierCategoryEnum = pgEnum('supplier_category', [
+  'GOODS',
+  'SERVICES',
+  'SUBCONTRACTOR',
+  'ONE_TIME',
+  'INTERCOMPANY',
+  'GOVERNMENT',
+  'EMPLOYEE',
+]);
+
+export const supplierBlockTypeEnum = pgEnum('supplier_block_type', [
+  'PURCHASING_BLOCK',
+  'POSTING_BLOCK',
+  'PAYMENT_BLOCK',
+  'FULL_BLOCK',
+]);
+
+export const supplierBlockScopeEnum = pgEnum('supplier_block_scope', [
+  'ALL_COMPANIES',
+  'SPECIFIC_COMPANY',
+  'SPECIFIC_SITE',
+]);
+
+export const supplierBlockActionEnum = pgEnum('supplier_block_action', ['BLOCKED', 'UNBLOCKED']);
+
+export const supplierTaxTypeEnum = pgEnum('supplier_tax_type', [
+  'VAT',
+  'GST',
+  'SST',
+  'TIN',
+  'CIT',
+  'WHT',
+  'CUSTOM',
+]);
+
+export const supplierLegalDocTypeEnum = pgEnum('supplier_legal_doc_type', [
+  'REGISTRATION_CERTIFICATE',
+  'TAX_REGISTRATION',
+  'ARTICLES_OF_INCORPORATION',
+  'POWER_OF_ATTORNEY',
+  'BANK_CONFIRMATION_LETTER',
+  'INSURANCE_CERTIFICATE',
+  'TRADE_LICENSE',
+  'GOOD_STANDING_CERTIFICATE',
+  'BENEFICIAL_OWNERSHIP',
+  'OTHER',
+]);
+
+export const supplierLegalDocStatusEnum = pgEnum('supplier_legal_doc_status', [
+  'PENDING',
+  'VERIFIED',
+  'EXPIRED',
+  'REJECTED',
+]);
+
+export const supplierEvalStatusEnum = pgEnum('supplier_eval_status', [
+  'DRAFT',
+  'SUBMITTED',
+  'APPROVED',
+]);
+
+export const supplierRiskRatingEnum = pgEnum('supplier_risk_rating', [
+  'LOW',
+  'MEDIUM',
+  'HIGH',
+  'CRITICAL',
+]);
+
+export const supplierRiskCategoryEnum = pgEnum('supplier_risk_category', [
+  'FINANCIAL',
+  'QUALITY',
+  'COMPLIANCE',
+  'FRAUD',
+  'DELIVERY',
+  'OTHER',
+]);
+
+export const supplierDiversityCodeEnum = pgEnum('supplier_diversity_code', [
+  'SMALL_BUSINESS',
+  'MINORITY_OWNED',
+  'WOMEN_OWNED',
+  'VETERAN_OWNED',
+  'DISABLED_OWNED',
+  'INDIGENOUS_OWNED',
+  'LARGE_ENTERPRISE',
+  'NONE',
+]);
+
+export const supplierContactRoleEnum = pgEnum('supplier_contact_role', [
+  'AP_CONTACT',
+  'SALES_REP',
+  'COMPLIANCE_OFFICER',
+  'LOGISTICS',
+  'EXECUTIVE',
+  'OTHER',
+]);
+
+export const supplierDuplicateMatchTypeEnum = pgEnum('supplier_duplicate_match_type', [
+  'NAME_MATCH',
+  'TAX_ID_MATCH',
+  'REG_NO_MATCH',
+  'COMBINED',
+]);
+
+export const supplierDuplicateStatusEnum = pgEnum('supplier_duplicate_status', [
+  'OPEN',
+  'CONFIRMED_DUPLICATE',
+  'DISMISSED',
+  'MERGED',
+]);

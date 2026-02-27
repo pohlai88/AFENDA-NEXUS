@@ -1,4 +1,4 @@
-import { eq, and, count, desc } from 'drizzle-orm';
+import { eq, and, count, desc, sql } from 'drizzle-orm';
 import { ok, err, NotFoundError } from '@afenda/core';
 import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
 import type { TenantTx } from '@afenda/db';
@@ -35,6 +35,12 @@ function mapSiteToDomain(row: SiteRow): SupplierSite {
     postalCode: row.postalCode ?? null,
     countryCode: row.countryCode,
     isPrimary: row.isPrimary,
+    isPaySite: row.isPaySite,
+    isPurchasingSite: row.isPurchasingSite,
+    isRemitTo: row.isRemitTo,
+    contactName: row.contactName ?? null,
+    contactEmail: row.contactEmail ?? null,
+    contactPhone: row.contactPhone ?? null,
     isActive: row.isActive,
   };
 }
@@ -43,6 +49,7 @@ function mapBankToDomain(row: BankRow, currencyCode: string): SupplierBankAccoun
   return {
     id: row.id,
     supplierId: row.supplierId,
+    siteId: row.siteId ?? null,
     bankName: row.bankName,
     accountName: row.accountName,
     accountNumber: row.accountNumber,
@@ -51,6 +58,10 @@ function mapBankToDomain(row: BankRow, currencyCode: string): SupplierBankAccoun
     localBankCode: row.localBankCode ?? null,
     currencyCode,
     isPrimary: row.isPrimary,
+    isVerified: row.isVerified,
+    verifiedBy: row.verifiedBy ?? null,
+    verifiedAt: row.verifiedAt ?? null,
+    verificationMethod: row.verificationMethod ?? null,
     isActive: row.isActive,
   };
 }
@@ -68,6 +79,10 @@ function mapToDomain(
     companyId: row.companyId,
     code: row.code,
     name: row.name,
+    tradingName: row.tradingName ?? null,
+    registrationNumber: row.registrationNumber ?? null,
+    countryOfIncorporation: row.countryOfIncorporation ?? null,
+    legalForm: row.legalForm ?? null,
     taxId: row.taxId ?? null,
     currencyCode,
     defaultPaymentTermsId: row.defaultPaymentTermsId ?? null,
@@ -75,6 +90,13 @@ function mapToDomain(
     whtRateId: row.whtRateId ?? null,
     remittanceEmail: row.remittanceEmail ?? null,
     status: row.status as Supplier['status'],
+    onboardingStatus: row.onboardingStatus as Supplier['onboardingStatus'],
+    accountGroup: row.accountGroup as Supplier['accountGroup'],
+    category: row.category as Supplier['category'],
+    industryCode: row.industryCode ?? null,
+    industryDescription: row.industryDescription ?? null,
+    parentSupplierId: row.parentSupplierId ?? null,
+    isGroupHeader: row.isGroupHeader,
     sites: sites.map(mapSiteToDomain),
     bankAccounts: bankRows.map((b) =>
       mapBankToDomain(b, bankCurrencyCodes.get(b.currencyId) ?? currencyCode)
@@ -85,7 +107,7 @@ function mapToDomain(
 }
 
 export class DrizzleSupplierRepo implements ISupplierRepo {
-  constructor(private readonly tx: TenantTx) {}
+  constructor(private readonly tx: TenantTx) { }
 
   private async resolveCurrencyCode(currencyId: string): Promise<string> {
     const curr = await this.tx.query.currencies.findFirst({
@@ -130,6 +152,10 @@ export class DrizzleSupplierRepo implements ISupplierRepo {
         companyId: input.companyId,
         code: input.code,
         name: input.name,
+        tradingName: input.tradingName ?? null,
+        registrationNumber: input.registrationNumber ?? null,
+        countryOfIncorporation: input.countryOfIncorporation ?? null,
+        legalForm: input.legalForm ?? null,
         taxId: input.taxId,
         currencyId: curr.id,
         defaultPaymentTermsId: input.defaultPaymentTermsId,
@@ -137,6 +163,12 @@ export class DrizzleSupplierRepo implements ISupplierRepo {
           input.defaultPaymentMethod as typeof suppliers.$inferSelect.defaultPaymentMethod,
         whtRateId: input.whtRateId,
         remittanceEmail: input.remittanceEmail,
+        accountGroup: (input.accountGroup ?? 'TRADE') as typeof suppliers.$inferSelect.accountGroup,
+        category: (input.category ?? 'GOODS') as typeof suppliers.$inferSelect.category,
+        industryCode: input.industryCode ?? null,
+        industryDescription: input.industryDescription ?? null,
+        parentSupplierId: input.parentSupplierId ?? null,
+        isGroupHeader: input.isGroupHeader ?? false,
       })
       .returning();
 
@@ -230,6 +262,11 @@ export class DrizzleSupplierRepo implements ISupplierRepo {
     const values: Record<string, unknown> = { updatedAt: new Date() };
 
     if (input.name !== undefined) values.name = input.name;
+    if (input.tradingName !== undefined) values.tradingName = input.tradingName;
+    if (input.registrationNumber !== undefined) values.registrationNumber = input.registrationNumber;
+    if (input.countryOfIncorporation !== undefined)
+      values.countryOfIncorporation = input.countryOfIncorporation;
+    if (input.legalForm !== undefined) values.legalForm = input.legalForm;
     if (input.taxId !== undefined) values.taxId = input.taxId;
     if (input.defaultPaymentTermsId !== undefined)
       values.defaultPaymentTermsId = input.defaultPaymentTermsId;
@@ -238,6 +275,14 @@ export class DrizzleSupplierRepo implements ISupplierRepo {
     if (input.whtRateId !== undefined) values.whtRateId = input.whtRateId;
     if (input.remittanceEmail !== undefined) values.remittanceEmail = input.remittanceEmail;
     if (input.status !== undefined) values.status = input.status;
+    if (input.onboardingStatus !== undefined) values.onboardingStatus = input.onboardingStatus;
+    if (input.accountGroup !== undefined) values.accountGroup = input.accountGroup;
+    if (input.category !== undefined) values.category = input.category;
+    if (input.industryCode !== undefined) values.industryCode = input.industryCode;
+    if (input.industryDescription !== undefined)
+      values.industryDescription = input.industryDescription;
+    if (input.parentSupplierId !== undefined) values.parentSupplierId = input.parentSupplierId;
+    if (input.isGroupHeader !== undefined) values.isGroupHeader = input.isGroupHeader;
 
     if (input.currencyCode !== undefined) {
       const curr = await this.tx.query.currencies.findFirst({
@@ -260,6 +305,49 @@ export class DrizzleSupplierRepo implements ISupplierRepo {
     return this.findById(link.supplierId);
   }
 
+  async findByTaxId(tenantId: string, taxId: string): Promise<Supplier | null> {
+    const row = await this.tx.query.suppliers.findFirst({
+      where: and(eq(suppliers.tenantId, tenantId), eq(suppliers.taxId, taxId)),
+    });
+    if (!row) return null;
+
+    const cc = await this.resolveCurrencyCode(row.currencyId);
+    const { sites, bankRows, bankCurrencyCodes } = await this.loadSubEntities(row.id, cc);
+    return mapToDomain(row, cc, sites, bankRows, bankCurrencyCodes);
+  }
+
+  async findByNameNormalized(tenantId: string, normalizedName: string): Promise<Supplier | null> {
+    const rows = await this.tx
+      .select()
+      .from(suppliers)
+      .where(
+        and(
+          eq(suppliers.tenantId, tenantId),
+          sql`upper(
+            regexp_replace(
+              regexp_replace(
+                ${suppliers.name}, 
+                '\\s+(SDN BHD|BERHAD|LTD|LIMITED|INC|INCORPORATED|PLC|PTE|CO\\.|CORP|CORPORATION|LLC|LLP|S\\.A\\.|GMBH|AG|B\\.V\\.|N\\.V\\.)\\s*$', 
+                '', 
+                'i'
+              ),
+              '[^A-Za-z0-9 ]', 
+              '', 
+              'g'
+            )
+          ) = ${normalizedName}`
+        )
+      )
+      .limit(1);
+
+    const row = rows[0];
+    if (!row) return null;
+
+    const cc = await this.resolveCurrencyCode(row.currencyId);
+    const { sites, bankRows, bankCurrencyCodes } = await this.loadSubEntities(row.id, cc);
+    return mapToDomain(row, cc, sites, bankRows, bankCurrencyCodes);
+  }
+
   async addSite(input: CreateSupplierSiteInput): Promise<Result<SupplierSite>> {
     const supplier = await this.tx.query.suppliers.findFirst({
       where: eq(suppliers.id, input.supplierId),
@@ -280,6 +368,12 @@ export class DrizzleSupplierRepo implements ISupplierRepo {
         postalCode: input.postalCode,
         countryCode: input.countryCode,
         isPrimary: input.isPrimary,
+        isPaySite: input.isPaySite ?? false,
+        isPurchasingSite: input.isPurchasingSite ?? false,
+        isRemitTo: input.isRemitTo ?? false,
+        contactName: input.contactName ?? null,
+        contactEmail: input.contactEmail ?? null,
+        contactPhone: input.contactPhone ?? null,
       })
       .returning();
 
@@ -305,6 +399,7 @@ export class DrizzleSupplierRepo implements ISupplierRepo {
       .values({
         tenantId: supplier.tenantId,
         supplierId: input.supplierId,
+        siteId: input.siteId ?? null,
         bankName: input.bankName,
         accountName: input.accountName,
         accountNumber: input.accountNumber,
@@ -318,5 +413,70 @@ export class DrizzleSupplierRepo implements ISupplierRepo {
 
     if (!row) return err(new NotFoundError('SupplierBankAccount', 'new'));
     return ok(mapBankToDomain(row, input.currencyCode));
+  }
+
+  async findChildren(
+    parentId: string,
+    params?: PaginationParams
+  ): Promise<PaginatedResult<Supplier>> {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 20;
+    const offset = (page - 1) * limit;
+
+    const [rows, countRows] = await Promise.all([
+      this.tx.query.suppliers.findMany({
+        where: eq(suppliers.parentSupplierId, parentId),
+        orderBy: [desc(suppliers.createdAt), desc(suppliers.id)],
+        limit,
+        offset,
+      }),
+      this.tx
+        .select({ total: count() })
+        .from(suppliers)
+        .where(eq(suppliers.parentSupplierId, parentId)),
+    ]);
+    const total = countRows[0]?.total ?? 0;
+
+    const data = await Promise.all(
+      rows.map(async (r) => {
+        const cc = await this.resolveCurrencyCode(r.currencyId);
+        const { sites, bankRows, bankCurrencyCodes } = await this.loadSubEntities(r.id, cc);
+        return mapToDomain(r, cc, sites, bankRows, bankCurrencyCodes);
+      })
+    );
+
+    return { data, total, page, limit };
+  }
+
+  async findGroupHeaders(
+    params?: PaginationParams
+  ): Promise<PaginatedResult<Supplier>> {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 20;
+    const offset = (page - 1) * limit;
+
+    const [rows, countRows] = await Promise.all([
+      this.tx.query.suppliers.findMany({
+        where: eq(suppliers.isGroupHeader, true),
+        orderBy: [desc(suppliers.createdAt), desc(suppliers.id)],
+        limit,
+        offset,
+      }),
+      this.tx
+        .select({ total: count() })
+        .from(suppliers)
+        .where(eq(suppliers.isGroupHeader, true)),
+    ]);
+    const total = countRows[0]?.total ?? 0;
+
+    const data = await Promise.all(
+      rows.map(async (r) => {
+        const cc = await this.resolveCurrencyCode(r.currencyId);
+        const { sites, bankRows, bankCurrencyCodes } = await this.loadSubEntities(r.id, cc);
+        return mapToDomain(r, cc, sites, bankRows, bankCurrencyCodes);
+      })
+    );
+
+    return { data, total, page, limit };
   }
 }

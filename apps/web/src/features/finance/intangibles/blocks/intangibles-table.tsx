@@ -196,9 +196,8 @@ export function IntangiblesTable({ assets, pagination }: IntangiblesTableProps) 
       searchable
       searchPlaceholder="Search intangible assets..."
       emptyState={{
+        key: 'finance.intangibles',
         icon: Lightbulb,
-        title: 'No intangible assets found',
-        description: 'Add your first intangible asset to start tracking amortization.',
         action: {
           label: 'Add Intangible',
           href: `${routes.finance.intangibles}/new`,

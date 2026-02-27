@@ -27,8 +27,7 @@ export function ArInvoiceTable({ data, total }: ArInvoiceTableProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No receivable invoices found"
-        description="Create your first AR invoice to get started."
+        contentKey="finance.receivables"
         icon={HandCoins}
         action={
           <Button asChild>
@@ -43,6 +42,7 @@ export function ArInvoiceTable({ data, total }: ArInvoiceTableProps) {
     <div>
       <div className="rounded-md border">
         <Table>
+          <caption className="sr-only">AR invoices list</caption>
           <TableHeader>
             <TableRow>
               <TableHead>Invoice #</TableHead>

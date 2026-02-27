@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +13,13 @@ import { cn } from '@/lib/utils';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
+  /** Custom fallback UI. When provided, replaces the default error card. */
   fallback?: ReactNode;
+  /** Name of the component tree for error reporting context. */
   componentName?: string;
+  /** Whether to show the correlation ID in the error card. Defaults to `true`. */
   showCorrelationId?: boolean;
+  /** Callback fired when an error is caught. */
   onError?: (error: Error, correlationId: string) => void;
 }
 
@@ -190,9 +195,13 @@ export function ErrorDisplay({
 // ─── Not Found Display Component ─────────────────────────────────────────────
 
 interface NotFoundDisplayProps {
+  /** Heading text. Defaults to "Page not found". */
   title?: string;
+  /** Description text below the heading. */
   description?: string;
+  /** Whether to show a link to the home page. */
   showHomeLink?: boolean;
+  /** Whether to show a "Go Back" button. */
   showBackLink?: boolean;
   className?: string;
 }
@@ -233,3 +242,6 @@ export function NotFoundDisplay({
     </div>
   );
 }
+NotFoundDisplay.displayName = 'NotFoundDisplay';
+
+export type { ErrorBoundaryProps, ErrorDisplayProps, NotFoundDisplayProps };

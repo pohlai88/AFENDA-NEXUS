@@ -1,7 +1,7 @@
 import type { Result } from '@afenda/core';
 import { ok, err, AppError } from '@afenda/core';
-import type { WhtCertificate } from '../../../slices/tax/entities/wht-certificate.js';
-import type { IWhtCertificateRepo } from '../../../slices/tax/ports/wht-certificate-repo.js';
+import type { WhtCertificate } from '../../../shared/ports/wht-certificate-port.js';
+import type { IWhtCertificateRepo } from '../../../shared/ports/wht-certificate-port.js';
 import type { ISupplierRepo } from '../ports/supplier-repo.js';
 
 /**

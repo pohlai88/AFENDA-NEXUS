@@ -6,7 +6,7 @@ import type { IJournalRepo } from '../../../shared/ports/journal-posting-port.js
 import type { IOutboxWriter } from '../../../shared/ports/outbox-writer.js';
 import type { IDocumentNumberGenerator } from '../../../shared/ports/journal-posting-port.js';
 import type { IIdempotencyStore } from '../../../shared/ports/idempotency-store.js';
-import type { IFiscalPeriodRepo } from '../../gl/ports/fiscal-period-repo.js';
+import type { IFiscalPeriodRepo } from '../../../shared/ports/fiscal-period-port.js';
 import type { FinanceContext } from '../../../shared/finance-context.js';
 import { FinanceEventType } from '../../../shared/events.js';
 

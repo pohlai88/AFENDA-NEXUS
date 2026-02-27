@@ -3,8 +3,8 @@ import { PageHeader, PageHeaderHeading, PageHeaderDescription } from '@/componen
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { DashboardPage } from '@/components/erp/dashboard-page';
 import {
-  getDashboardKPIs,
   getCashFlowChart,
   getRevenueExpenseChart,
   getARAgingChart,
@@ -12,11 +12,10 @@ import {
   getAttentionItems,
   getQuickActions,
 } from '@/features/finance/dashboard/queries/dashboard.queries';
-import { KPICards } from '@/features/finance/dashboard/blocks/kpi-cards';
-import { DashboardCharts } from '@/features/finance/dashboard/blocks/dashboard-charts';
 import { ActivityFeed } from '@/features/finance/dashboard/blocks/activity-feed';
 import { QuickActions } from '@/features/finance/dashboard/blocks/quick-actions';
 import { AttentionPanel } from '@/features/finance/dashboard/blocks/attention-panel';
+import { DashboardCharts } from '@/features/finance/dashboard/blocks/dashboard-charts';
 
 import type { Metadata } from 'next';
 
@@ -34,24 +33,6 @@ export const metadata: Metadata = {
 };
 
 // ─── Loading Skeletons ───────────────────────────────────────────────────────
-
-function KPICardsSkeleton() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {[1, 2, 3, 4].map((i) => (
-        <Card key={i}>
-          <CardHeader className="pb-2">
-            <Skeleton className="h-4 w-24" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-20" />
-            <Skeleton className="mt-2 h-3 w-16" />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
-}
 
 function ChartsSkeleton() {
   return (
@@ -77,12 +58,6 @@ function ChartsSkeleton() {
 }
 
 // ─── Dashboard Content Components ────────────────────────────────────────────
-
-async function DashboardKPIs() {
-  const result = await getDashboardKPIs();
-  if (!result.ok) throw new Error('Failed to load KPIs');
-  return <KPICards kpis={result.data} />;
-}
 
 async function DashboardChartsSection() {
   const [cashFlowResult, revenueExpenseResult, arAgingResult] = await Promise.all([
@@ -134,10 +109,8 @@ export default function FinanceDashboardPage() {
         </PageHeaderDescription>
       </PageHeader>
 
-      {/* KPI Cards */}
-      <Suspense fallback={<KPICardsSkeleton />}>
-        <DashboardKPIs />
-      </Suspense>
+      {/* KPI Cards + Feature Shortcuts (config-driven) */}
+      <DashboardPage scope={{ type: 'module', id: 'finance' }} />
 
       {/* Attention Panel */}
       <Suspense fallback={<LoadingSkeleton variant="detail" />}>

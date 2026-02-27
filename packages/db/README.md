@@ -71,13 +71,13 @@ export const glJournals = erpSchema.table('gl_journal', {
 
 ### CI Gate Configuration
 
-The `pnpm db:ci` script (`tools/scripts/db-check-ci.mjs`) runs two checks:
+Three CI gates protect the database package:
 
-1. **`drizzle-kit check`** — validates migration snapshots are internally
-   consistent
-2. **`drizzle-kit generate` (dry-run)** — detects uncommitted schema changes
-
-Add to your CI pipeline:
+| Gate | Script | Purpose |
+| ---- | ------ | ------- |
+| `db:ci` | `db-check-ci.mjs` | Snapshot consistency + no uncommitted schema changes |
+| `gate:db-module` | `gate-db-module.mjs` | Every table has `ENABLE ROW LEVEL SECURITY` + `CREATE POLICY` |
+| `gate:schema-conventions` | `gate-schema-conventions.mjs` | SC-01–SC-08: enableRLS, tenantCol, references, AnyPgColumn, moneyBigint, pkId, timestamps, relations |
 
 ```yaml
 # GitHub Actions example
@@ -90,12 +90,12 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
-      - run: pnpm db:ci # ← fails if schema changes lack migrations
-      - run: pnpm arch:guard # ← architecture governance
+      - run: pnpm db:ci             # ← fails if schema changes lack migrations
+      - run: pnpm module:gates       # ← runs all 31 gates including db-module + schema-conventions
 ```
 
-If `db:ci` fails, the developer must run `pnpm db:generate` and commit the
-result.
+If `db:ci` fails, run `pnpm db:generate` and commit the result.
+If `gate:schema-conventions` fails, see [CONTRIBUTING-DB.md](./CONTRIBUTING-DB.md) for fix instructions.
 
 **Troubleshooting:** If `db:generate` produces a full schema dump (70KB+ SQL)
 instead of an incremental migration, the snapshot chain is broken. See
@@ -125,13 +125,13 @@ neonctl branches delete feature/my-feature --project-id dark-band-87285012
 
 ## Architecture
 
-### Schemas (27 tables)
+### Schemas (125 tables)
 
-| Schema     | Purpose                     | Tables                                                                                                                                                                                                                                                                                                                                                                                                       |
-| ---------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `platform` | Multi-tenant infrastructure | `tenant`, `company`, `user`                                                                                                                                                                                                                                                                                                                                                                                  |
-| `erp`      | Core ERP domain             | `currency`, `fiscal_year`, `fiscal_period`, `account`, `ledger`, `gl_journal`, `gl_journal_line`, `gl_balance`, `counterparty`, `fx_rate`, `ic_agreement`, `ic_transaction`, `ic_transaction_leg`, `ic_settlement`, `ic_settlement_line`, `recurring_template`, `budget_entry`, `revenue_contract`, `recognition_milestone`, `classification_rule_set`, `classification_rule`, `idempotency_store`, `outbox` |
-| `audit`    | Immutable audit trail       | `audit_log`                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Schema     | Tables | Purpose                     | Key Domains                                                                                             |
+| ---------- | ------ | --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `platform` | 7      | Multi-tenant infrastructure | `tenant`, `company`, `user`, `user_preference`, `system_config`, `admin_user`, `admin_action_log`       |
+| `erp`      | 117    | Core ERP domain             | GL, AP, AR, IC, Tax, Assets, Banking, Credit, Expenses, Projects, Leases, Provisions, Cost Accounting, Consolidation, IFRS, Supplier MDM, Documents, SoD, Approvals, Outbox |
+| `audit`    | 1      | Immutable audit trail       | `audit_log`                                                                                             |
 
 ### Connection Types
 
@@ -238,8 +238,14 @@ import { createPooledClient } from '@afenda/db/client';
 
 ## Related
 
+- [`CONTRIBUTING-DB.md`](./CONTRIBUTING-DB.md) — **Schema conventions, drift
+  prevention, new-table checklist**
 - [`architecture.db.md`](./architecture.db.md) — Full Neon-optimized spec
 - [`ARCHITECTURE.@afenda-db.md`](./ARCHITECTURE.@afenda-db.md) — Governance
   frontmatter
+- [`docs/NEON-INTEGRATION.md`](./docs/NEON-INTEGRATION.md) — Schema sync & Neon
+  capabilities
+- [`docs/NEON-DRIZZLE-BEST-PRACTICES.md`](./docs/NEON-DRIZZLE-BEST-PRACTICES.md)
+  — Industry-benchmarked patterns
 - [`drizzle/_archive/`](./drizzle/_archive/) — Legacy hand-written migrations
   (pre-Drizzle Kit)

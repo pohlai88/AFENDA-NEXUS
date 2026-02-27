@@ -26,8 +26,7 @@ export function PortalDisputeTable({ data }: PortalDisputeTableProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No disputes"
-        description="Raise a dispute if you have a billing or payment issue."
+        contentKey="portal.disputes"
         icon={MessageSquareWarning}
         action={
           <Button asChild>
@@ -41,6 +40,7 @@ export function PortalDisputeTable({ data }: PortalDisputeTableProps) {
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">Disputes — {data.length} disputes</caption>
         <TableHeader>
           <TableRow>
             <TableHead>Subject</TableHead>
@@ -51,32 +51,49 @@ export function PortalDisputeTable({ data }: PortalDisputeTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((dispute) => (
-            <TableRow key={dispute.id} className="cursor-pointer">
-              <TableCell>
-                <Link
-                  href={routes.portal.disputeDetail(dispute.id)}
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  {dispute.subject}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline" className="text-xs">
-                  {dispute.category}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={dispute.status} />
-              </TableCell>
-              <TableCell>
-                <DateCell date={dispute.createdAt} format="short" />
-              </TableCell>
-              <TableCell>
-                <DateCell date={dispute.updatedAt} format="short" />
-              </TableCell>
-            </TableRow>
-          ))}
+          {data.map((dispute) => {
+            const detailHref = routes.portal.disputeDetail(dispute.id);
+            return (
+              <TableRow
+                key={dispute.id}
+                className="cursor-pointer"
+                tabIndex={0}
+                role="link"
+                aria-label={`Open dispute ${dispute.subject}`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    window.location.href = detailHref;
+                  }
+                }}
+                onClick={() => { window.location.href = detailHref; }}
+              >
+                <TableCell>
+                  <Link
+                    href={detailHref}
+                    className="text-sm font-medium text-primary hover:underline"
+                    tabIndex={-1}
+                  >
+                    {dispute.subject}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="text-xs">
+                    {dispute.category}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <StatusBadge status={dispute.status} />
+                </TableCell>
+                <TableCell>
+                  <DateCell date={dispute.createdAt} format="short" />
+                </TableCell>
+                <TableCell>
+                  <DateCell date={dispute.updatedAt} format="short" />
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

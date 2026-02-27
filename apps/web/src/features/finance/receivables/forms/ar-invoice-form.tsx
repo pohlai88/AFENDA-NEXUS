@@ -37,7 +37,7 @@ export function ArInvoiceForm({ onSubmit, defaultCompanyId, defaultLedgerId }: A
       customerRef: '',
       invoiceDate: new Date().toISOString().split('T')[0],
       dueDate: '',
-      currencyCode: 'USD',
+      currencyCode: '',
       description: '',
       lines: [
         { accountId: '', description: '', quantity: 1, unitPrice: 0, amount: 0, taxAmount: 0 },
@@ -100,7 +100,7 @@ export function ArInvoiceForm({ onSubmit, defaultCompanyId, defaultLedgerId }: A
           <Input
             id="customerId"
             {...form.register('customerId')}
-            placeholder="Customer UUID"
+            placeholder="Select customer"
             className="font-mono text-xs"
           />
           {form.formState.errors.customerId && (

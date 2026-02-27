@@ -29,6 +29,7 @@ boundary_rules:
     "src/slices/*/repos/**": ["drizzle-orm", "@afenda/db", "postgres"]
     "src/shared/routes/**": ["fastify"]
     "src/shared/repos/**": ["drizzle-orm", "@afenda/db", "postgres"]
+    "src/__tests__/**": ["fastify"]
   forbid_cross_layer_imports:
     - { from: "src/domain/**", forbid: ["src/app/**", "src/infra/**"] }
     - { from: "src/app/**", forbid: ["src/infra/**"] }

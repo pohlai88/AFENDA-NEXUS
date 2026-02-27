@@ -21,8 +21,7 @@ export function PortalBankAccountList({ data }: PortalBankAccountListProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No bank accounts"
-        description="Add a bank account to receive payments."
+        contentKey="portal.bankAccounts"
         icon={Landmark}
       />
     );
@@ -31,6 +30,7 @@ export function PortalBankAccountList({ data }: PortalBankAccountListProps) {
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">Bank accounts — {data.length} accounts</caption>
         <TableHeader>
           <TableRow>
             <TableHead>Bank</TableHead>

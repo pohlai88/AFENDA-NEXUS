@@ -148,9 +148,8 @@ export function ClaimsTable({ claims, pagination, showEmployee = true }: ClaimsT
       searchKeys={['claimNumber', 'employeeName', 'expenseCategory']}
       searchPlaceholder="Search claims..."
       emptyState={{
+        key: 'finance.expenses.claims',
         icon: Receipt,
-        title: 'No expense claims found',
-        description: 'Create your first expense claim to get started.',
         action: {
           label: 'New Claim',
           href: `${routes.finance.expenses}/new`,

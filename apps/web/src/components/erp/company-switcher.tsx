@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { useTenantContext } from '@/providers/tenant-provider';
@@ -13,14 +14,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
-export function CompanySwitcher({
-  className,
-  onSwitchCompany,
-}: {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface CompanySwitcherProps {
   className?: string;
+  /** Server action called when the active company changes. */
   onSwitchCompany?: (companyId: string) => Promise<void>;
-}) {
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+function CompanySwitcher({ className, onSwitchCompany }: CompanySwitcherProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { tenant, activeCompany, switchCompany } = useTenantContext();
@@ -42,19 +48,16 @@ export function CompanySwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            'flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent',
-            className
-          )}
+        <Button
+          variant="outline"
           aria-label={`Current company: ${activeCompany.name}. Click to switch.`}
+          className={cn('w-full justify-start gap-2 px-3', className)}
         >
           <Building className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <span className="truncate font-medium">{activeCompany.name}</span>
           <span className="ml-1 text-xs text-muted-foreground">({activeCompany.baseCurrency})</span>
           <ChevronsUpDown className="ml-auto h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        </button>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
         <DropdownMenuLabel>Switch Company</DropdownMenuLabel>
@@ -64,8 +67,8 @@ export function CompanySwitcher({
             key={company.id}
             disabled={isPending}
             onClick={() => {
-              startTransition(() => {
-                void handleSwitchCompany(company.id);
+              startTransition(async () => {
+                await handleSwitchCompany(company.id);
               });
             }}
           >
@@ -83,3 +86,7 @@ export function CompanySwitcher({
     </DropdownMenu>
   );
 }
+CompanySwitcher.displayName = 'CompanySwitcher';
+
+export { CompanySwitcher };
+export type { CompanySwitcherProps };

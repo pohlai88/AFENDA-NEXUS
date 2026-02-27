@@ -12,10 +12,17 @@
     "neon": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@neondatabase/mcp-server-neon", "start"],
-      "env": {
-        "NEON_API_KEY": "napi_pbu7zv32cluaofcpfh24o3r9buq4q104qg7vxtjj6l1tfrcqpmb1xq6558s9exwc"
-      }
+      "args": [
+        "-y",
+        "@neondatabase/mcp-server-neon",
+        "start",
+        "napi_pbu7zv32cluaofcpfh24o3r9buq4q104qg7vxtjj6l1tfrcqpmb1xq6558s9exwc"
+      ]
+    },
+    "next-devtools-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "next-devtools-mcp@latest"]
     }
   }
 }

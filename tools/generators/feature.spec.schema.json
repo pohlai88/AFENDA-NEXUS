@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://afenda.dev/schemas/feature-spec.json",
+  "title": "Afenda Feature Spec",
+  "description": "Single source of truth for the afenda-gen feature orchestrator. All sub-generators read this spec.",
+  "type": "object",
+  "required": ["module", "slice", "entity"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "module": {
+      "type": "string",
+      "description": "Module name (e.g. 'finance')",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "slice": {
+      "type": "string",
+      "description": "Slice within the module (e.g. 'ar', 'ap', 'gl')",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "entity": {
+      "type": "object",
+      "required": ["name", "table", "statuses"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "PascalCase entity name (e.g. 'ArInvoice')",
+          "pattern": "^[A-Z][a-zA-Z0-9]*$"
+        },
+        "table": {
+          "type": "string",
+          "description": "snake_case DB table name (e.g. 'ar_invoice')",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "idBrand": {
+          "type": "string",
+          "description": "Branded ID type name (e.g. 'ArInvoiceId'). Defaults to {name}Id.",
+          "pattern": "^[A-Z][a-zA-Z0-9]*Id$"
+        },
+        "statuses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "minItems": 1,
+          "description": "SCREAMING_SNAKE status union members (e.g. ['DRAFT','POSTED','CANCELLED'])"
+        },
+        "moneyFields": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z][a-zA-Z0-9]*$" },
+          "default": [],
+          "description": "camelCase field names that use the Money type"
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["field", "entity"],
+            "properties": {
+              "field": {
+                "type": "string",
+                "description": "camelCase FK field name (e.g. 'customerId')",
+                "pattern": "^[a-z][a-zA-Z0-9]*$"
+              },
+              "brand": {
+                "type": "string",
+                "description": "Branded ID type for the FK (e.g. 'ArCustomerId')",
+                "pattern": "^[A-Z][a-zA-Z0-9]*Id$"
+              },
+              "entity": {
+                "type": "string",
+                "description": "PascalCase referenced entity name (e.g. 'ArCustomer')",
+                "pattern": "^[A-Z][a-zA-Z0-9]*$"
+              }
+            }
+          },
+          "default": [],
+          "description": "Foreign key references to other entities"
+        },
+        "extraFields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^[a-z][a-zA-Z0-9]*$" },
+              "type": { "type": "string" },
+              "nullable": { "type": "boolean", "default": false },
+              "description": { "type": "string" }
+            }
+          },
+          "default": [],
+          "description": "Additional entity fields beyond the standard set"
+        }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "service", "route"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Command verb (e.g. 'post', 'approve', 'cancel')",
+            "pattern": "^[a-z][a-zA-Z0-9]*$"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service function name (e.g. 'postArInvoice')",
+            "pattern": "^[a-z][a-zA-Z0-9]*$"
+          },
+          "route": {
+            "type": "string",
+            "description": "HTTP method + path (e.g. 'POST /ar/invoices/:id/post')"
+          },
+          "idempotent": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this command needs an idempotency guard"
+          }
+        }
+      },
+      "default": [],
+      "description": "Domain commands beyond CRUD (post, approve, void, etc.)"
+    },
+    "frontend": {
+      "type": "object",
+      "properties": {
+        "routeGroup": {
+          "type": "string",
+          "description": "URL path prefix for frontend pages (e.g. '/finance/receivables/invoices')"
+        },
+        "featureKey": {
+          "type": "string",
+          "description": "Kebab-case feature identifier (e.g. 'ar-invoice')",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "featureDir": {
+          "type": "string",
+          "description": "Feature directory name under features/finance/ (e.g. 'receivables')",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        }
+      },
+      "required": ["routeGroup", "featureKey", "featureDir"],
+      "description": "Frontend scaffold config. Omit this key entirely to skip frontend generation."
+    },
+    "contracts": {
+      "type": "boolean",
+      "default": true,
+      "description": "Generate Zod schemas in @afenda/contracts"
+    },
+    "migration": {
+      "type": "boolean",
+      "default": true,
+      "description": "Generate SQL migration + Drizzle schema"
+    }
+  },
+  "additionalProperties": false
+}

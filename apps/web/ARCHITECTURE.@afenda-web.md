@@ -63,6 +63,8 @@ dependency_kinds:
     - '@vitest/coverage-v8'
     - 'shadcn'
     - '@next/bundle-analyzer'
+    - 'babel-plugin-react-compiler'
+    - 'next-devtools-mcp'
   allowed_peer: []
 enforced_structure:
   required_files:
@@ -537,14 +539,37 @@ User fills form
 
 ## §9. Drift Checks (UI-Specific)
 
-| Check                    | Rule                                                                                                             |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| Route imports            | Routes (`app/**`) may only import from `@/features/*`, `@/components/*`, `@/lib/*`, `@/hooks/*`, `@/providers/*` |
-| Feature isolation        | `features/finance/*` must not import from `features/inventory/*` etc.                                            |
-| No direct module imports | UI never imports from `@afenda/modules/*` — only via API client                                                  |
-| No DB imports            | `@afenda/db`, `drizzle-orm`, `postgres` are forbidden                                                            |
-| No duplicated enums      | Status/currency/etc. come from `@afenda/contracts` only                                                          |
-| shadcn purity            | `components/ui/*` files are not hand-edited (managed by shadcn CLI)                                              |
+26 automated checks enforced by `tools/scripts/web-drift-check.mjs` (run via
+`pnpm web:drift` or as part of `pnpm gate:web-module`).
+
+| ID   | Check                        | Level | Rule                                                                  |
+| ---- | ---------------------------- | ----- | --------------------------------------------------------------------- |
+| W01  | Radix primitives             | FAIL  | No direct `@radix-ui/*` imports outside `components/ui/`              |
+| W02  | className merging            | FAIL  | Template literals / concatenation in className → use `cn()`           |
+| W03  | Forbidden imports            | FAIL  | No `fastify`, `drizzle-orm`, `postgres`, `pino`, `@afenda/db`        |
+| W04  | Contract compliance          | FAIL  | No hand-written `*Payload`/`*Request`/`*Response` types in features/  |
+| W05  | Route boundary               | FAIL  | `page.tsx`/`layout.tsx` only import from allowed prefixes             |
+| W06  | Feature isolation             | FAIL  | `features/X/` must not import from `features/Y/`                     |
+| W07  | shadcn purity                | FAIL  | `components/ui/` must not import domain code                         |
+| W08  | No `any` in props            | FAIL  | No `: any` or `as any` in component/hook/provider files              |
+| W09  | Accessibility                | FAIL  | `<button>` needs `type=`, `<img>` needs `alt=`                      |
+| W10  | Tailwind v4 compat           | WARN  | No `@apply`, `theme()`, `tailwind.config` in components              |
+| W11  | `"use client"` discipline    | FAIL  | No `"use client"` in `lib/` or `queries/` files                     |
+| W12  | Required structure           | FAIL  | Required files and directories from ARCHITECTURE.md exist             |
+| W13  | Dependency audit             | FAIL  | All deps in `package.json` must be in allowlist                      |
+| W14  | No hardcoded colors          | FAIL  | Use CSS vars (`bg-success`) not palette (`bg-green-500`)             |
+| W15  | Server Action pattern        | WARN  | Forms use Server Actions, not client-side `fetch()`                  |
+| W16  | `@theme inline`              | FAIL  | Every `:root` CSS var has a `--color-*` mapping in `@theme inline`   |
+| W17  | No hardcoded URLs            | FAIL  | No `localhost`, `127.0.0.1`, or literal `https://` URLs              |
+| W18  | No loose utils               | FAIL  | No `utils.ts`/`helpers.ts` in `features/` or `components/erp/`      |
+| W19  | shadcn component usage       | FAIL  | No raw `<input>`, `<select>`, `<table>` where shadcn exists          |
+| W20  | No hardcoded route paths     | FAIL  | All module routes use `routes.*` from `@/lib/constants`              |
+| W21  | Route boundary completeness  | WARN  | `page.tsx` should have sibling `loading.tsx`, `error.tsx`            |
+| W22  | Suspense discipline          | WARN  | Pages with 2+ `await` calls should use `<Suspense>` for streaming   |
+| W23  | Page metadata exports        | WARN  | `page.tsx` under `(shell)/` should export `metadata`/`generateMetadata` |
+| W24  | No stray `console.log`       | FAIL* | No `console.log()` in components/features (*WARN in server actions)  |
+| W25  | `next.config.ts` practices   | FAIL  | `poweredByHeader: false`, `optimizePackageImports`, AVIF formats     |
+| W26  | Exception registry audit     | WARN  | Stale exemptions in the gate script itself are flagged                |
 
 ---
 

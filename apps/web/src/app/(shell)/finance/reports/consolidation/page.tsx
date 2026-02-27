@@ -2,6 +2,16 @@ import { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ReportWrapper, DrilldownRow } from '@/components/erp/report-wrapper';
 import { ReportPeriodPicker } from '@/components/erp/report-period-picker';
 import { formatCurrency } from '@/lib/utils';
@@ -97,77 +107,76 @@ async function ConsolidationTable() {
         <CardTitle>Consolidation Summary by Entity</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-3 px-2 font-semibold">Entity</th>
-                <th className="text-right py-3 px-2 font-semibold">Local Revenue</th>
-                <th className="text-right py-3 px-2 font-semibold">Local Profit</th>
-                <th className="text-center py-3 px-2 font-semibold">FX Rate</th>
-                <th className="text-right py-3 px-2 font-semibold">Reporting Revenue</th>
-                <th className="text-right py-3 px-2 font-semibold">Reporting Profit</th>
-                <th className="text-right py-3 px-2 font-semibold">Eliminations</th>
-                <th className="text-right py-3 px-2 font-semibold">Consolidated</th>
-                <th className="w-8" aria-hidden />
-              </tr>
-            </thead>
-            <tbody>
-              {data.entities.map((e) => (
-                <DrilldownRow key={e.entityId} href={routes.finance.groupEntityDetail(e.entityId)}>
-                  <td className="py-3 px-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="font-mono">
-                        {e.entityCode}
-                      </Badge>
-                      <span>{e.entityName}</span>
-                    </div>
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono text-muted-foreground">
-                    {formatCurrency(e.localRevenue, e.currency)}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono text-muted-foreground">
-                    {formatCurrency(e.localProfit, e.currency)}
-                  </td>
-                  <td className="text-center py-3 px-2 font-mono">{e.fxRate.toFixed(4)}</td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {formatCurrency(e.reportingRevenue, data.reportingCurrency)}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {formatCurrency(e.reportingProfit, data.reportingCurrency)}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono text-red-600">
-                    {e.eliminations !== 0
-                      ? formatCurrency(e.eliminations, data.reportingCurrency)
-                      : '—'}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono font-semibold">
-                    {formatCurrency(e.consolidatedProfit, data.reportingCurrency)}
-                  </td>
-                </DrilldownRow>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="font-bold bg-muted/50">
-                <td className="py-3 px-2">Group Total</td>
-                <td colSpan={3} className="py-3 px-2"></td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.reportingRevenue, data.reportingCurrency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.reportingProfit, data.reportingCurrency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.eliminations, data.reportingCurrency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.consolidatedProfit, data.reportingCurrency)}
-                </td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <Table>
+          <TableCaption className="sr-only">Consolidation report</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Entity</TableHead>
+              <TableHead className="text-right">Local Revenue</TableHead>
+              <TableHead className="text-right">Local Profit</TableHead>
+              <TableHead className="text-center">FX Rate</TableHead>
+              <TableHead className="text-right">Reporting Revenue</TableHead>
+              <TableHead className="text-right">Reporting Profit</TableHead>
+              <TableHead className="text-right">Eliminations</TableHead>
+              <TableHead className="text-right">Consolidated</TableHead>
+              <TableHead className="w-8" aria-hidden />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.entities.map((e) => (
+              <DrilldownRow key={e.entityId} href={routes.finance.groupEntityDetail(e.entityId)}>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="font-mono">
+                      {e.entityCode}
+                    </Badge>
+                    <span>{e.entityName}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right font-mono text-muted-foreground">
+                  {formatCurrency(e.localRevenue, e.currency)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-muted-foreground">
+                  {formatCurrency(e.localProfit, e.currency)}
+                </TableCell>
+                <TableCell className="text-center font-mono">{e.fxRate.toFixed(4)}</TableCell>
+                <TableCell className="text-right font-mono">
+                  {formatCurrency(e.reportingRevenue, data.reportingCurrency)}
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {formatCurrency(e.reportingProfit, data.reportingCurrency)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-red-600">
+                  {e.eliminations !== 0
+                    ? formatCurrency(e.eliminations, data.reportingCurrency)
+                    : '—'}
+                </TableCell>
+                <TableCell className="text-right font-mono font-semibold">
+                  {formatCurrency(e.consolidatedProfit, data.reportingCurrency)}
+                </TableCell>
+              </DrilldownRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>Group Total</TableCell>
+              <TableCell colSpan={3} />
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.reportingRevenue, data.reportingCurrency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.reportingProfit, data.reportingCurrency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.eliminations, data.reportingCurrency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.consolidatedProfit, data.reportingCurrency)}
+              </TableCell>
+              <TableCell />
+            </TableRow>
+          </TableFooter>
+        </Table>
       </CardContent>
     </Card>
   );

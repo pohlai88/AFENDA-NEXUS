@@ -11,6 +11,16 @@ import type { ISupplierNotificationPrefRepo } from '../services/supplier-portal-
 import type { ISupplierComplianceRepo } from '../services/supplier-portal-compliance.js';
 import type { IInvoiceAttachmentRepo } from '../entities/invoice-attachment.js';
 import type { IWhtCertificateRepo as IApWhtCertificateRepo } from './wht-certificate-repo.js';
+import type { ISupplierBlockRepo } from './supplier-block-repo.js';
+import type { ISupplierTaxRepo } from './supplier-tax-repo.js';
+import type { ISupplierLegalDocRepo } from './supplier-legal-doc-repo.js';
+import type { ISupplierEvalRepo } from './supplier-eval-repo.js';
+import type { ISupplierRiskRepo } from './supplier-risk-repo.js';
+import type { ISupplierContactRepo } from './supplier-contact-repo.js';
+import type { ISupplierDiversityRepo } from './supplier-diversity-repo.js';
+import type { ISupplierDuplicateRepo } from './supplier-duplicate-repo.js';
+import type { ISupplierCompanyOverrideRepo } from './supplier-company-override-repo.js';
+import type { ISupplierAccountGroupRepo } from './supplier-account-group-repo.js';
 
 export interface ApDeps {
   readonly apInvoiceRepo: IApInvoiceRepo;
@@ -26,4 +36,14 @@ export interface ApDeps {
   readonly supplierNotificationPrefRepo: ISupplierNotificationPrefRepo;
   readonly supplierComplianceRepo: ISupplierComplianceRepo;
   readonly apWhtCertificateRepo: IApWhtCertificateRepo;
+  readonly supplierBlockRepo?: ISupplierBlockRepo;
+  readonly supplierTaxRepo?: ISupplierTaxRepo;
+  readonly supplierLegalDocRepo?: ISupplierLegalDocRepo;
+  readonly supplierEvalRepo?: ISupplierEvalRepo;
+  readonly supplierRiskRepo?: ISupplierRiskRepo;
+  readonly supplierContactRepo?: ISupplierContactRepo;
+  readonly supplierDiversityRepo?: ISupplierDiversityRepo;
+  readonly supplierDuplicateRepo?: ISupplierDuplicateRepo;
+  readonly supplierCompanyOverrideRepo?: ISupplierCompanyOverrideRepo;
+  readonly supplierAccountGroupRepo?: ISupplierAccountGroupRepo;
 }

@@ -26,6 +26,7 @@ export function JournalLinesTable({
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">Journal line items</caption>
         <TableHeader>
           <TableRow>
             <TableHead>Account</TableHead>

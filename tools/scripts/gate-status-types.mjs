@@ -58,15 +58,15 @@ for (const fp of [...portFiles, ...entityFiles]) {
   });
 }
 
-// This is a WARN gate, not a FAIL gate — we track regressions
+// Strict gate — fails CI on violations (hardened from warn-only)
 if (warnings.length > 0) {
-  console.warn('⚠️  gate:status-types — WARNINGS\n');
+  console.error('❌ gate:status-types FAILED\n');
   for (const v of warnings) {
-    console.warn(`  ${v.file}:${v.line}: ${v.issue}`);
+    console.error(`  ${v.file}:${v.line}: ${v.issue}`);
   }
-  console.warn(`\n${warnings.length} bare status: string found in ${portFiles.length} port + ${entityFiles.length} entity files.`);
-  console.warn('Recommendation: replace with union types like ApInvoiceStatus | ArInvoiceStatus.');
-  // Exit 0 — warn only, don't block CI
+  console.error(`\n${warnings.length} bare status: string found in ${portFiles.length} port + ${entityFiles.length} entity files.`);
+  console.error('Fix: replace with union types like ApInvoiceStatus | ArInvoiceStatus.');
+  process.exit(1);
 } else {
   console.log('✅ gate:status-types PASSED');
   console.log(`   Checked ${portFiles.length} port + ${entityFiles.length} entity files — all status fields use union types.`);

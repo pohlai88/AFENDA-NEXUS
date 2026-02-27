@@ -1,6 +1,16 @@
 import { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ReportWrapper } from '@/components/erp/report-wrapper';
 import { ReportPeriodPicker } from '@/components/erp/report-period-picker';
 import { formatCurrency } from '@/lib/utils';
@@ -117,78 +127,77 @@ async function EquityTable() {
         <CardTitle>Statement of Changes in Equity</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-3 px-2 font-semibold">Component</th>
-                <th className="text-right py-3 px-2 font-semibold">Opening</th>
-                <th className="text-right py-3 px-2 font-semibold">Comprehensive Income</th>
-                <th className="text-right py-3 px-2 font-semibold">Dividends</th>
-                <th className="text-right py-3 px-2 font-semibold">Share Issues</th>
-                <th className="text-right py-3 px-2 font-semibold">Treasury</th>
-                <th className="text-right py-3 px-2 font-semibold">Other</th>
-                <th className="text-right py-3 px-2 font-semibold">Closing</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.movements.map((m) => (
-                <tr key={m.component} className="border-b hover:bg-accent/50">
-                  <td className="py-3 px-2">{m.component}</td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {formatCurrency(m.openingBalance, data.currency)}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {m.comprehensiveIncome !== 0
-                      ? formatCurrency(m.comprehensiveIncome, data.currency)
-                      : '—'}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {m.dividends !== 0 ? formatCurrency(m.dividends, data.currency) : '—'}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {m.shareIssues !== 0 ? formatCurrency(m.shareIssues, data.currency) : '—'}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {m.treasuryShares !== 0 ? formatCurrency(m.treasuryShares, data.currency) : '—'}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {m.otherMovements !== 0 ? formatCurrency(m.otherMovements, data.currency) : '—'}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono font-semibold">
-                    {formatCurrency(m.closingBalance, data.currency)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="font-bold bg-muted/50">
-                <td className="py-3 px-2">Total Equity</td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(totals.openingBalance, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(totals.comprehensiveIncome, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(totals.dividends, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(totals.shareIssues, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(totals.treasuryShares, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(totals.otherMovements, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(totals.closingBalance, data.currency)}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <Table>
+          <TableCaption className="sr-only">Statement of changes in equity</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Component</TableHead>
+              <TableHead className="text-right">Opening</TableHead>
+              <TableHead className="text-right">Comprehensive Income</TableHead>
+              <TableHead className="text-right">Dividends</TableHead>
+              <TableHead className="text-right">Share Issues</TableHead>
+              <TableHead className="text-right">Treasury</TableHead>
+              <TableHead className="text-right">Other</TableHead>
+              <TableHead className="text-right">Closing</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.movements.map((m) => (
+              <TableRow key={m.component}>
+                <TableCell>{m.component}</TableCell>
+                <TableCell className="text-right font-mono">
+                  {formatCurrency(m.openingBalance, data.currency)}
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {m.comprehensiveIncome !== 0
+                    ? formatCurrency(m.comprehensiveIncome, data.currency)
+                    : '—'}
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {m.dividends !== 0 ? formatCurrency(m.dividends, data.currency) : '—'}
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {m.shareIssues !== 0 ? formatCurrency(m.shareIssues, data.currency) : '—'}
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {m.treasuryShares !== 0 ? formatCurrency(m.treasuryShares, data.currency) : '—'}
+                </TableCell>
+                <TableCell className="text-right font-mono">
+                  {m.otherMovements !== 0 ? formatCurrency(m.otherMovements, data.currency) : '—'}
+                </TableCell>
+                <TableCell className="text-right font-mono font-semibold">
+                  {formatCurrency(m.closingBalance, data.currency)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>Total Equity</TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(totals.openingBalance, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(totals.comprehensiveIncome, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(totals.dividends, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(totals.shareIssues, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(totals.treasuryShares, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(totals.otherMovements, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(totals.closingBalance, data.currency)}
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
       </CardContent>
     </Card>
   );

@@ -28,8 +28,7 @@ export function PortalDocumentTable({ data }: PortalDocumentTableProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No documents found"
-        description="Upload documents to your secure vault."
+        contentKey="portal.documents"
         icon={FolderOpen}
       />
     );
@@ -38,6 +37,7 @@ export function PortalDocumentTable({ data }: PortalDocumentTableProps) {
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">Documents — {data.length} files</caption>
         <TableHeader>
           <TableRow>
             <TableHead>Title</TableHead>

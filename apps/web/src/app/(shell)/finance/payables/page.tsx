@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/erp/page-header';
 import { ApInvoiceTable } from '@/features/finance/payables/blocks/ap-invoice-table';
+import { Pagination } from '@/components/erp/pagination';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { getApInvoices } from '@/features/finance/payables/queries/ap.queries';
@@ -38,7 +39,6 @@ export default async function PayablesPage({ searchParams }: PayablesPageProps) 
   const total = result.value.total;
   const page = result.value.page;
   const limit = result.value.limit;
-  const totalPages = Math.ceil(total / limit);
 
   return (
     <div className="space-y-6">
@@ -57,24 +57,30 @@ export default async function PayablesPage({ searchParams }: PayablesPageProps) 
       />
 
       {/* Filter bar */}
-      <ApListFilters currentStatus={params.status} currentPage={page} totalPages={totalPages} />
+      <ApStatusFilters currentStatus={params.status} />
 
       <ApInvoiceTable data={invoices} total={total} />
+
+      <Pagination
+        page={page}
+        pageSize={limit}
+        totalCount={total}
+        buildHref={(nextPage) => {
+          const p = new URLSearchParams();
+          if (params.status) p.set('status', params.status);
+          if (params.supplierId) p.set('supplierId', params.supplierId);
+          if (nextPage > 1) p.set('page', String(nextPage));
+          const qs = p.toString();
+          return qs ? `${routes.finance.payables}?${qs}` : routes.finance.payables;
+        }}
+      />
     </div>
   );
 }
 
-// ─── Filter bar (server-rendered links for zero JS) ─────────────────────────
+// ─── Status filter bar (server-rendered links for zero JS) ──────────────────
 
-function ApListFilters({
-  currentStatus,
-  currentPage,
-  totalPages,
-}: {
-  currentStatus?: string;
-  currentPage: number;
-  totalPages: number;
-}) {
+function ApStatusFilters({ currentStatus }: { currentStatus?: string }) {
   const statuses = [
     { value: undefined, label: 'All' },
     { value: 'DRAFT', label: 'Draft' },
@@ -86,54 +92,27 @@ function ApListFilters({
     { value: 'CANCELLED', label: 'Cancelled' },
   ];
 
-  function buildUrl(overrides: { status?: string; page?: number }) {
-    const params = new URLSearchParams();
-    const status = overrides.status ?? currentStatus;
-    if (status) params.set('status', status);
-    const p = overrides.page ?? currentPage;
-    if (p > 1) params.set('page', String(p));
-    const qs = params.toString();
-    return qs ? `${routes.finance.payables}?${qs}` : routes.finance.payables;
-  }
-
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-wrap gap-1">
-        {statuses.map((s) => {
-          const isActive = s.value === currentStatus || (!s.value && !currentStatus);
-          return (
-            <Link
-              key={s.label}
-              href={buildUrl({ status: s.value, page: 1 })}
-              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+    <div className="flex flex-wrap gap-1">
+      {statuses.map((s) => {
+        const isActive = s.value === currentStatus || (!s.value && !currentStatus);
+        const params = new URLSearchParams();
+        if (s.value) params.set('status', s.value);
+        const qs = params.toString();
+        const href = qs ? `${routes.finance.payables}?${qs}` : routes.finance.payables;
+        return (
+          <Link
+            key={s.label}
+            href={href}
+            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${isActive
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
               }`}
-            >
-              {s.label}
-            </Link>
-          );
-        })}
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center gap-2">
-          {currentPage > 1 && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href={buildUrl({ page: currentPage - 1 })}>Previous</Link>
-            </Button>
-          )}
-          <span className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages}
-          </span>
-          {currentPage < totalPages && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href={buildUrl({ page: currentPage + 1 })}>Next</Link>
-            </Button>
-          )}
-        </div>
-      )}
+          >
+            {s.label}
+          </Link>
+        );
+      })}
     </div>
   );
 }

@@ -1,0 +1,76 @@
+// ─── Shell Preferences Types ─────────────────────────────────────────────────
+//
+// Defines the shape and persistence boundary for all shell-level state.
+//
+// PERSISTENCE BOUNDARY:
+//   Cookie (SSR-critical, avoids FOUC / layout shift):
+//     - density, leftCollapsed, rightOpen
+//     - theme stays with next-themes (already cookie-backed)
+//
+//   localStorage (convenience, not SSR-critical):
+//     - favorites, recents, dashboardLayout
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Density profiles matching the design system's `_density.css` pillar. */
+export type DensityProfile = 'default' | 'compact' | 'ultra' | 'touch';
+
+/**
+ * SSR-critical shell preferences persisted in a single cookie (`shell_prefs`).
+ * Versioned for forward-compatible migration.
+ */
+export interface ShellPreferences {
+  /** Schema version — bump on breaking changes. */
+  v: 1;
+  /** Active density profile. */
+  density: DensityProfile;
+  /** Whether the left (module) sidebar is collapsed to icon-only rail. */
+  leftCollapsed: boolean;
+  /** Whether the right (domain) sidebar is visible. */
+  rightOpen: boolean;
+}
+
+/** Default preferences used when no cookie is present. */
+export const SHELL_PREFS_DEFAULTS: ShellPreferences = {
+  v: 1,
+  density: 'default',
+  leftCollapsed: false,
+  rightOpen: true,
+};
+
+// ─── Convenience Preferences (localStorage) ─────────────────────────────────
+
+/** A recently-visited page. No PII stored. */
+export interface RecentItem {
+  href: string;
+  title: string;
+  moduleId: string;
+  ts: number;
+}
+
+/** A user-pinned (starred) page. */
+export interface FavoriteItem {
+  href: string;
+  title: string;
+  icon?: string;
+  moduleId: string;
+  addedAt: number;
+}
+
+/** Dashboard widget visibility toggles. */
+export interface WidgetVisibility {
+  kpis: boolean;
+  attention: boolean;
+  activity: boolean;
+  shortcuts: boolean;
+  charts: boolean;
+}
+
+/** Default widget visibility. */
+export const DEFAULT_WIDGET_VISIBILITY: WidgetVisibility = {
+  kpis: true,
+  attention: true,
+  activity: true,
+  shortcuts: true,
+  charts: true,
+};

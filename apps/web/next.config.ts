@@ -7,19 +7,47 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   transpilePackages: ['@afenda/core', '@afenda/contracts', '@afenda/authz', '@afenda/db'],
-  serverExternalPackages: ['@neondatabase/serverless', 'drizzle-orm'],
+  serverExternalPackages: [
+    '@neondatabase/serverless',
+    'drizzle-orm',
+    // @opentelemetry/api@1.9.0 has a broken ESM build (build/esm/ missing api/
+    // subdirectory). Turbopack resolves via "module" → build/esm/index.js and
+    // fails on `import { TraceAPI } from './api/trace'`. Externalising forces
+    // Node.js CJS resolution (build/src/) which works correctly.
+    '@opentelemetry/api',
+  ],
   output: process.env.STANDALONE === 'true' ? 'standalone' : undefined,
-
   // Compiler optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
 
+  // React Compiler — auto-memoization for client components
+  reactCompiler: true,
+
+  // Dev-only fetch logging (reduces overhead in production)
+  logging:
+    process.env.NODE_ENV === 'development'
+      ? { fetches: { fullUrl: true } }
+      : undefined,
+
   // Experimental features for performance
   experimental: {
+    // Turbopack: faster production builds via filesystem cache
+    turbopackFileSystemCacheForBuild: true,
+    // Client router cache: ERP dashboards refresh within 30s, static pages cache 180s
+    staleTimes: { dynamic: 30, static: 180 },
+    // Smooth View Transitions API for page navigations
+    viewTransition: true,
     optimizePackageImports: [
+      'cmdk',
+      'react-day-picker',
       '@radix-ui/react-icons',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-radio-group',
+      '@radix-ui/react-progress',
       'lucide-react',
       'recharts',
       'date-fns',
@@ -70,7 +98,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' data:",
               isDev
                 ? "connect-src 'self' http://localhost:* ws://localhost:* https://*.neon.tech https://o4508206844526592.ingest.us.sentry.io"
-                : "connect-src 'self' https://*.afenda.io https://*.neon.tech https://o4508206844526592.ingest.us.sentry.io",
+                : "connect-src 'self' https://*.afenda.io https://*.neon.tech https://*.posthog.com https://o4508206844526592.ingest.us.sentry.io",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

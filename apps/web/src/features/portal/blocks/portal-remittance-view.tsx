@@ -40,6 +40,7 @@ export function PortalRemittanceView({ remittance }: PortalRemittanceViewProps) 
 
       <div className="rounded-md border">
         <Table>
+          <caption className="sr-only">Remittance advice — {remittance.items.length} invoices</caption>
           <TableHeader>
             <TableRow>
               <TableHead>Invoice #</TableHead>

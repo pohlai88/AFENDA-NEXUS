@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { AuditPanel } from '@/components/erp/audit-panel';
@@ -11,13 +12,21 @@ import { getArInvoice } from '@/features/finance/receivables/queries/ar.queries'
 import { getArInvoiceAuditAction } from '@/features/finance/receivables/actions/ar.actions';
 import { routes } from '@/lib/constants';
 
-export const metadata = { title: 'Receivable Detail' };
+type Props = { params: Promise<{ id: string }> };
 
-export default async function ReceivableDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const ctx = await getRequestContext();
+  const result = await getArInvoice(ctx, id);
+  if (!result.ok) return { title: 'Receivable | Receivables' };
+  const invoice = result.value;
+  return {
+    title: `${invoice.invoiceNumber} | Receivables | Finance`,
+    description: `Receivable invoice ${invoice.invoiceNumber} — ${invoice.customerName} — ${invoice.status}`,
+  };
+}
+
+export default async function ReceivableDetailPage({ params }: Props) {
   const { id } = await params;
   const ctx = await getRequestContext();
   const result = await getArInvoice(ctx, id);

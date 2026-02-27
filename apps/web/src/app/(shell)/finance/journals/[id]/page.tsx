@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { AuditPanel } from '@/components/erp/audit-panel';
@@ -11,9 +12,21 @@ import { getJournal } from '@/features/finance/journals/queries/journal.queries'
 import { getJournalAuditAction } from '@/features/finance/journals/actions/journal.actions';
 import { routes } from '@/lib/constants';
 
-export const metadata = { title: 'Journal Detail' };
+type Props = { params: Promise<{ id: string }> };
 
-export default async function JournalDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const ctx = await getRequestContext();
+  const result = await getJournal(ctx, id);
+  if (!result.ok) return { title: 'Journal | Finance' };
+  const journal = result.value;
+  return {
+    title: `${journal.documentNumber} | Journals | Finance`,
+    description: `Journal ${journal.documentNumber} — ${journal.status} — ${journal.lines.length} lines`,
+  };
+}
+
+export default async function JournalDetailPage({ params }: Props) {
   const { id } = await params;
   const ctx = await getRequestContext();
   const result = await getJournal(ctx, id);

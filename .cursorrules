@@ -1,0 +1,12 @@
+# Cursor Rules — Afenda
+
+When working on the Next.js app (`apps/web`):
+
+1. **Start the dev server** before using Next.js MCP tools:
+   - `pnpm dev` or `pnpm --filter @afenda/web dev`
+
+2. **Call `init` first** at session start (next-devtools-mcp) to set up context and docs-first requirements. Optionally pass `project_path: "apps/web"`.
+
+3. **Use `nextjs_index`** before implementing changes to inspect routes, components, and current errors.
+
+4. **See AGENTS.md** for full MCP workflow and conventions.

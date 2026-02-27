@@ -1,26 +1,50 @@
+import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { formatDate, formatDateTime, formatRelativeTime } from '@/lib/format';
 
-interface DateCellProps {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type DateFormat = 'short' | 'medium' | 'long' | 'datetime' | 'relative';
+
+interface DateCellProps extends Omit<React.TimeHTMLAttributes<HTMLTimeElement>, 'children'> {
+  /** ISO-8601 string or Date object. */
   date: string | Date;
-  format?: 'short' | 'medium' | 'long' | 'datetime' | 'relative';
-  className?: string;
+  /** Display format. @default 'medium' */
+  format?: DateFormat;
 }
 
-export function DateCell({ date, format = 'medium', className }: DateCellProps) {
-  const formatted =
-    format === 'datetime'
-      ? formatDateTime(date)
-      : format === 'relative'
-        ? formatRelativeTime(date)
-        : formatDate(date, format);
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-  return (
+function formatByStyle(date: string | Date, style: DateFormat): string {
+  switch (style) {
+    case 'datetime':
+      return formatDateTime(date);
+    case 'relative':
+      return formatRelativeTime(date);
+    default:
+      return formatDate(date, style);
+  }
+}
+
+function toISOString(date: string | Date): string {
+  return typeof date === 'string' ? date : date.toISOString();
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+const DateCell = React.forwardRef<HTMLTimeElement, DateCellProps>(
+  ({ date, format = 'medium', className, ...props }, ref) => (
     <time
-      dateTime={typeof date === 'string' ? date : date.toISOString()}
+      ref={ref}
+      dateTime={toISOString(date)}
       className={cn('text-sm text-muted-foreground', className)}
+      {...props}
     >
-      {formatted}
+      {formatByStyle(date, format)}
     </time>
-  );
-}
+  ),
+);
+DateCell.displayName = 'DateCell';
+
+export { DateCell };
+export type { DateCellProps, DateFormat };

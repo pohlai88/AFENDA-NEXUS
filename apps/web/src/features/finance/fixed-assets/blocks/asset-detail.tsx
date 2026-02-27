@@ -284,6 +284,7 @@ function DepreciationScheduleTab({ schedule }: { schedule: DepreciationScheduleE
       </CardHeader>
       <CardContent>
         <Table>
+          <caption className="sr-only">Depreciation schedule</caption>
           <TableHeader>
             <TableRow>
               <TableHead>Period</TableHead>

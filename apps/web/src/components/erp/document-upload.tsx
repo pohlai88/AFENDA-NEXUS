@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useCallback, useState } from 'react';
 import { useDropzone, type FileRejection } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,8 @@ import { toast } from 'sonner';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface UploadedFile {
+/** Represents a file being uploaded or already stored. */
+interface UploadedFile {
   id: string;
   name: string;
   size: number;
@@ -19,21 +21,27 @@ export interface UploadedFile {
   progress?: number;
   status: 'uploading' | 'complete' | 'error';
   error?: string;
-  /** Raw File for form submit (when not uploaded to storage) */
+  /** Raw File for form submit (when not uploaded to storage). */
   file?: File;
 }
 
 interface DocumentUploadProps {
+  /** Called when files are dropped / selected. Must return the upload results. */
   onUpload: (files: File[]) => Promise<UploadedFile[]>;
+  /** Maximum number of files allowed (default: 10). */
   maxFiles?: number;
+  /** Maximum file size in bytes (default: 10 MB). */
   maxSize?: number;
+  /** Accepted MIME types → extensions map. */
   accept?: Record<string, string[]>;
+  /** When true the dropzone is disabled. */
   disabled?: boolean;
   className?: string;
 }
 
 // ─── File Icon Helper ────────────────────────────────────────────────────────
 
+/** Return a Lucide icon component appropriate for the file's MIME type. */
 function getFileIcon(type: string) {
   if (type.startsWith('image/')) return Image;
   if (type === 'application/pdf') return FileText;
@@ -65,7 +73,7 @@ const defaultAccept = {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-export function DocumentUpload({
+function DocumentUpload({
   onUpload,
   maxFiles = 10,
   maxSize = 10 * 1024 * 1024, // 10MB
@@ -219,3 +227,7 @@ export function DocumentUpload({
     </div>
   );
 }
+DocumentUpload.displayName = 'DocumentUpload';
+
+export { DocumentUpload };
+export type { DocumentUploadProps, UploadedFile };

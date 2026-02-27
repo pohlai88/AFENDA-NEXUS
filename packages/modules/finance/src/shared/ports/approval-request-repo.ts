@@ -22,6 +22,7 @@ export interface CreateApprovalRequestInput {
 }
 
 export interface CreateApprovalStepInput {
+  readonly tenantId: string;
   readonly requestId: string;
   readonly stepIndex: number;
   readonly approverId: string;

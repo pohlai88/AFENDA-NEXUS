@@ -70,6 +70,7 @@ const pascal = toPascal(entity);
 const camel = toCamel(entity);
 const title = toTitle(entity);
 const prefix = kebab; // file prefix  e.g. "accounts" or "cost-centers"
+const registryKey = `${module_}.${camel}`;
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
@@ -224,8 +225,7 @@ export function ${pascal}Table({ data, total }: ${pascal}TableProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No ${title.toLowerCase()}s found"
-        description="Create your first ${title.toLowerCase()} to get started."
+        contentKey="${registryKey}"
         icon={FileText}
         action={
           <Button asChild>
@@ -548,8 +548,10 @@ Next steps:
   1. Fill in view model fields in ${prefix}.queries.ts
   2. Add columns to ${prefix}-table.tsx
   3. Add detail fields to ${prefix}-detail-header.tsx
-  4. Generate a form:  pnpm gen:form Create${pascal}Schema
-  5. Generate a table:  pnpm gen:table-ui ${pascal}ListItem
-  6. Add routes to constants.ts + nav items
-  7. Run:  pnpm --filter @afenda/web typecheck
+  4. Add registry entry for "${registryKey}" in empty-state.registry.ts
+  5. Add "${registryKey}" to EmptyStateKey type in empty-state.types.ts
+  6. Generate a form:  pnpm gen:form Create${pascal}Schema
+  7. Generate a table:  pnpm gen:table-ui ${pascal}ListItem
+  8. Add routes to constants.ts + nav items
+  9. Run:  pnpm --filter @afenda/web typecheck
 `);

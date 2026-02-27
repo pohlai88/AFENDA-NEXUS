@@ -52,6 +52,10 @@ async function apiFetch<T>(
   headers.set('Content-Type', 'application/json');
   headers.set('Accept', 'application/json');
 
+  // G9/G-KRN-05: x-tenant-id and x-user-id are LEGACY headers.
+  // req.authUser (from Bearer token) is the sole SoT for identity.
+  // These headers are kept temporarily for backward compat with older middleware
+  // that reads them before the auth plugin runs. Do NOT add new header-based identity.
   if (ctx?.tenantId) headers.set('x-tenant-id', ctx.tenantId);
   if (ctx?.userId) headers.set('x-user-id', ctx.userId);
   if (ctx?.token) headers.set('Authorization', `Bearer ${ctx.token}`);

@@ -67,8 +67,7 @@ export default async function IcTransactionsPage({ searchParams }: IcTransaction
       {/* Empty state */}
       {transactions.length === 0 && (
         <EmptyState
-          title="No IC transactions"
-          description="No intercompany transactions found. Create one to get started."
+          contentKey="finance.intercompany"
           icon={ArrowLeftRight}
           action={
             <Button asChild>

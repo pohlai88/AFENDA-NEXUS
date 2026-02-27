@@ -239,9 +239,8 @@ export function WHTCertificatesTable({ certificates }: WHTCertificatesTableProps
       searchable
       searchPlaceholder="Search certificates..."
       emptyState={{
+        key: 'finance.tax.whtCerts',
         icon: FileText,
-        title: 'No WHT certificates',
-        description: 'Create a withholding tax certificate to get started.',
         action: {
           label: 'Create Certificate',
           href: `${routes.finance.tax}/wht/new`,

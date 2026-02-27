@@ -6,6 +6,13 @@ import { ReceiptPanel } from '@/components/erp/receipt-panel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { createIcTransactionAction } from '@/features/finance/intercompany/actions/ic.actions';
 import type { CommandReceipt } from '@/lib/types';
 import Link from 'next/link';
@@ -97,23 +104,22 @@ export function IcTransactionCreateForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="agreementId">IC Agreement</Label>
-          <select
-            id="agreementId"
-            name="agreementId"
-            required
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="">Select agreement…</option>
-            {agreements.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.sellerCompanyName} → {a.buyerCompanyName}
-              </option>
-            ))}
-          </select>
+          <Select name="agreementId" required>
+            <SelectTrigger id="agreementId" className="w-full">
+              <SelectValue placeholder="Select agreement…" />
+            </SelectTrigger>
+            <SelectContent>
+              {agreements.map((a) => (
+                <SelectItem key={a.id} value={a.id}>
+                  {a.sellerCompanyName} → {a.buyerCompanyName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="fiscalPeriodId">Fiscal Period ID</Label>
-          <Input id="fiscalPeriodId" name="fiscalPeriodId" required placeholder="UUID" />
+          <Input id="fiscalPeriodId" name="fiscalPeriodId" required placeholder="Select fiscal period" />
         </div>
       </div>
 
@@ -121,11 +127,11 @@ export function IcTransactionCreateForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="sourceLedgerId">Source Ledger ID</Label>
-          <Input id="sourceLedgerId" name="sourceLedgerId" required placeholder="UUID" />
+          <Input id="sourceLedgerId" name="sourceLedgerId" required placeholder="Select source ledger" />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="mirrorLedgerId">Mirror Ledger ID</Label>
-          <Input id="mirrorLedgerId" name="mirrorLedgerId" required placeholder="UUID" />
+          <Input id="mirrorLedgerId" name="mirrorLedgerId" required placeholder="Select mirror ledger" />
         </div>
       </div>
 
@@ -158,7 +164,7 @@ export function IcTransactionCreateForm({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="sourceAccountId">Account ID</Label>
-            <Input id="sourceAccountId" name="sourceAccountId" required placeholder="UUID" />
+            <Input id="sourceAccountId" name="sourceAccountId" required placeholder="Select account" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="sourceDebit">Debit</Label>
@@ -189,7 +195,7 @@ export function IcTransactionCreateForm({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="mirrorAccountId">Account ID</Label>
-            <Input id="mirrorAccountId" name="mirrorAccountId" required placeholder="UUID" />
+            <Input id="mirrorAccountId" name="mirrorAccountId" required placeholder="Select account" />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="mirrorDebit">Debit</Label>

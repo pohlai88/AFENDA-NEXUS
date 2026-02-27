@@ -1,4 +1,4 @@
-import { jsonb, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { index, jsonb, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { auditSchema } from './_schemas';
 import { pkId, tenantCol } from './_common';
 
@@ -16,4 +16,8 @@ export const auditLogs = auditSchema.table('audit_log', {
   ipAddress: varchar('ip_address', { length: 45 }),
   userAgent: text('user_agent'),
   occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [
+  index('idx_audit_log_table_record').on(t.tenantId, t.tableName, t.recordId),
+  index('idx_audit_log_user').on(t.tenantId, t.userId),
+  index('idx_audit_log_occurred').on(t.tenantId, t.occurredAt),
+]).enableRLS();

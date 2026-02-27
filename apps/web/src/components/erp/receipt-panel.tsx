@@ -1,20 +1,26 @@
 'use client';
 
+import * as React from 'react';
 import { CheckCircle, X, ExternalLink, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDateTime, truncateId } from '@/lib/format';
 import type { CommandReceipt } from '@/lib/types';
 
 interface ReceiptPanelProps {
+  /** The command receipt data. */
   receipt: CommandReceipt;
+  /** Success heading text. */
   title: string;
+  /** Called when the panel is dismissed. */
   onClose: () => void;
+  /** Link to view the created document. */
   viewHref?: string;
+  /** Link to navigate back to the list. */
   backHref?: string;
   className?: string;
 }
 
-export function ReceiptPanel({
+function ReceiptPanel({
   receipt,
   title,
   onClose,
@@ -89,3 +95,7 @@ export function ReceiptPanel({
     </div>
   );
 }
+ReceiptPanel.displayName = 'ReceiptPanel';
+
+export { ReceiptPanel };
+export type { ReceiptPanelProps };

@@ -2,6 +2,16 @@ import { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ReportWrapper, DrilldownRow } from '@/components/erp/report-wrapper';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { routes } from '@/lib/constants';
@@ -95,66 +105,63 @@ async function AssetRegisterTable() {
         <CardTitle>Fixed Asset Register</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-3 px-2 font-semibold">Asset #</th>
-                <th className="text-left py-3 px-2 font-semibold">Description</th>
-                <th className="text-left py-3 px-2 font-semibold">Category</th>
-                <th className="text-left py-3 px-2 font-semibold">Location</th>
-                <th className="text-left py-3 px-2 font-semibold">Acquisition</th>
-                <th className="text-right py-3 px-2 font-semibold">Cost</th>
-                <th className="text-right py-3 px-2 font-semibold">Accum. Depr.</th>
-                <th className="text-right py-3 px-2 font-semibold">NBV</th>
-                <th className="py-3 px-2 font-semibold">Status</th>
-                <th className="w-8" aria-hidden />
-              </tr>
-            </thead>
-            <tbody>
-              {data.assets.map((a) => (
-                <DrilldownRow key={a.assetId} href={routes.finance.fixedAssetDetail(a.assetId)}>
-                  <td className="py-3 px-2 font-mono">{a.assetNumber}</td>
-                  <td className="py-3 px-2 max-w-[200px] truncate">{a.description}</td>
-                  <td className="py-3 px-2">
-                    <Badge variant="secondary">{a.category}</Badge>
-                  </td>
-                  <td className="py-3 px-2">{a.location}</td>
-                  <td className="py-3 px-2">{formatDate(a.acquisitionDate)}</td>
-                  <td className="text-right py-3 px-2 font-mono">
-                    {formatCurrency(a.originalCost, data.currency)}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono text-muted-foreground">
-                    {formatCurrency(a.accumulatedDepreciation, data.currency)}
-                  </td>
-                  <td className="text-right py-3 px-2 font-mono font-semibold">
-                    {formatCurrency(a.netBookValue, data.currency)}
-                  </td>
-                  <td className="py-3 px-2">
-                    <Badge className="bg-green-100 text-green-800">Active</Badge>
-                  </td>
-                </DrilldownRow>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="font-bold bg-muted/50">
-                <td colSpan={5} className="py-3 px-2">
-                  Total
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.originalCost, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.accumulatedDepreciation, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.netBookValue, data.currency)}
-                </td>
-                <td colSpan={2}></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <Table>
+          <TableCaption className="sr-only">Asset register</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Asset #</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Acquisition</TableHead>
+              <TableHead className="text-right">Cost</TableHead>
+              <TableHead className="text-right">Accum. Depr.</TableHead>
+              <TableHead className="text-right">NBV</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="w-8" aria-hidden />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.assets.map((a) => (
+              <DrilldownRow key={a.assetId} href={routes.finance.fixedAssetDetail(a.assetId)}>
+                <TableCell className="font-mono">{a.assetNumber}</TableCell>
+                <TableCell className="max-w-[200px] truncate">{a.description}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{a.category}</Badge>
+                </TableCell>
+                <TableCell>{a.location}</TableCell>
+                <TableCell>{formatDate(a.acquisitionDate)}</TableCell>
+                <TableCell className="text-right font-mono">
+                  {formatCurrency(a.originalCost, data.currency)}
+                </TableCell>
+                <TableCell className="text-right font-mono text-muted-foreground">
+                  {formatCurrency(a.accumulatedDepreciation, data.currency)}
+                </TableCell>
+                <TableCell className="text-right font-mono font-semibold">
+                  {formatCurrency(a.netBookValue, data.currency)}
+                </TableCell>
+                <TableCell>
+                  <Badge className="bg-green-100 text-green-800">Active</Badge>
+                </TableCell>
+              </DrilldownRow>
+            ))}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={5}>Total</TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.originalCost, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.accumulatedDepreciation, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.netBookValue, data.currency)}
+              </TableCell>
+              <TableCell colSpan={2} />
+            </TableRow>
+          </TableFooter>
+        </Table>
       </CardContent>
     </Card>
   );

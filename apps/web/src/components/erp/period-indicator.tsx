@@ -1,12 +1,21 @@
 'use client';
 
+import * as React from 'react';
 import { useTenantContext } from '@/providers/tenant-provider';
 import { Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getStatusConfig } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-export function PeriodIndicator({ className }: { className?: string }) {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface PeriodIndicatorProps {
+  className?: string;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+function PeriodIndicator({ className }: PeriodIndicatorProps) {
   const { activePeriod } = useTenantContext();
 
   if (!activePeriod) {
@@ -30,3 +39,7 @@ export function PeriodIndicator({ className }: { className?: string }) {
     </div>
   );
 }
+PeriodIndicator.displayName = 'PeriodIndicator';
+
+export { PeriodIndicator };
+export type { PeriodIndicatorProps };

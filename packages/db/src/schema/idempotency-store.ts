@@ -20,4 +20,4 @@ export const idempotencyStore = erpSchema.table(
   (t) => [
     uniqueIndex('uq_idempotency_tenant_key_cmd').on(t.tenantId, t.idempotencyKey, t.commandType),
   ]
-);
+).enableRLS();

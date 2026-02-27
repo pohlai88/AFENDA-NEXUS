@@ -158,9 +158,8 @@ export function CovenantsTable({ covenants }: CovenantsTableProps) {
       searchKeys={['name', 'metric', 'facilityName']}
       onRowClick={handleRowClick}
       emptyState={{
+        key: 'finance.treasury.covenants',
         icon: FileCheck,
-        title: 'No covenants defined',
-        description: 'Set up covenant monitoring for your credit facilities.',
         action: (
           <Button asChild>
             <Link href={routes.finance.covenantNew}>

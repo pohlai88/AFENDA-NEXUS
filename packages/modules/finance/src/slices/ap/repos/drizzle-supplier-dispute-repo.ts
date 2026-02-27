@@ -1,4 +1,4 @@
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import type { TenantTx } from '@afenda/db';
 import { supplierDisputes } from '@afenda/db';
 import type {
@@ -30,7 +30,7 @@ function mapToDomain(row: DisputeRow): SupplierDispute {
 }
 
 export class DrizzleSupplierDisputeRepo implements ISupplierDisputeRepo {
-  constructor(private readonly tx: TenantTx) {}
+  constructor(private readonly tx: TenantTx) { }
 
   async create(dispute: SupplierDispute): Promise<SupplierDispute> {
     const [row] = await this.tx

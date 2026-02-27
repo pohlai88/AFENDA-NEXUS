@@ -26,8 +26,7 @@ export function PortalPaymentTable({ data, total }: PortalPaymentTableProps) {
   if (data.length === 0) {
     return (
       <EmptyState
-        title="No payment runs found"
-        description="Payment runs will appear here once payments are processed."
+        contentKey="portal.payments"
         icon={Banknote}
       />
     );
@@ -37,6 +36,7 @@ export function PortalPaymentTable({ data, total }: PortalPaymentTableProps) {
     <div>
       <div className="rounded-md border">
         <Table>
+          <caption className="sr-only">Payment runs — {total} runs</caption>
           <TableHeader>
             <TableRow>
               <TableHead>Run #</TableHead>
@@ -47,28 +47,45 @@ export function PortalPaymentTable({ data, total }: PortalPaymentTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((run) => (
-              <TableRow key={run.id} className="cursor-pointer">
-                <TableCell>
-                  <Link
-                    href={routes.portal.paymentDetail(run.id)}
-                    className="font-mono text-sm font-medium text-primary hover:underline"
-                  >
-                    {run.runNumber}
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <DateCell date={run.runDate} format="short" />
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={run.status} />
-                </TableCell>
-                <TableCell className="text-right font-mono text-sm">{run.invoiceCount}</TableCell>
-                <TableCell className="text-right">
-                  <MoneyCell amount={run.totalAmount} currency={run.currencyCode} />
-                </TableCell>
-              </TableRow>
-            ))}
+            {data.map((run) => {
+              const detailHref = routes.portal.paymentDetail(run.id);
+              return (
+                <TableRow
+                  key={run.id}
+                  className="cursor-pointer"
+                  tabIndex={0}
+                  role="link"
+                  aria-label={`Open payment run ${run.runNumber}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      window.location.href = detailHref;
+                    }
+                  }}
+                  onClick={() => { window.location.href = detailHref; }}
+                >
+                  <TableCell>
+                    <Link
+                      href={detailHref}
+                      className="font-mono text-sm font-medium text-primary hover:underline"
+                      tabIndex={-1}
+                    >
+                      {run.runNumber}
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <DateCell date={run.runDate} format="short" />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={run.status} />
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-sm">{run.invoiceCount}</TableCell>
+                  <TableCell className="text-right">
+                    <MoneyCell amount={run.totalAmount} currency={run.currencyCode} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

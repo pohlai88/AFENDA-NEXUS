@@ -43,6 +43,8 @@ export function createFinanceContext(input: {
   return {
     tenantId: input.tenantId,
     companyId: input.companyId as CompanyId,
+    // G11: Callers MUST pass currency from company.baseCurrency or tenantSettings.defaultCurrency.
+    // 'USD' fallback is kept only for backward-compat tests; new code must never rely on it.
     currency: input.currency ?? 'USD',
     actor: {
       userId: input.userId,

@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useState, useCallback, useTransition, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -29,13 +30,15 @@ import { toast } from 'sonner';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface DrilldownLink {
+/** A link used inside drilldown navigation breadcrumbs. */
+interface DrilldownLink {
   label: string;
   href: string;
   type: 'account' | 'journal' | 'document' | 'entity';
 }
 
-export interface ReportBreadcrumb {
+/** A breadcrumb segment rendered above the report title. */
+interface ReportBreadcrumb {
   label: string;
   href?: string;
 }
@@ -88,6 +91,7 @@ function DrilldownBreadcrumb({ path }: { path: DrilldownLink[] }) {
     </div>
   );
 }
+DrilldownBreadcrumb.displayName = 'DrilldownBreadcrumb';
 
 // ─── Report Loading Skeleton ─────────────────────────────────────────────────
 
@@ -105,6 +109,7 @@ function ReportLoadingSkeleton() {
     </div>
   );
 }
+ReportLoadingSkeleton.displayName = 'ReportLoadingSkeleton';
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -347,3 +352,5 @@ export function useReportFavorites() {
 
   return { favorites, toggleFavorite, isFavorite };
 }
+
+export type { DrilldownLink, ReportBreadcrumb, ReportWrapperProps, DrilldownRowProps };

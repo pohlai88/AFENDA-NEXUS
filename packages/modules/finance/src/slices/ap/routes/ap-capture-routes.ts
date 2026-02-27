@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { IdParamSchema } from '@afenda/contracts';
+import { IdParamSchema, OcrUploadContextSchema } from '@afenda/contracts';
 import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
@@ -8,8 +8,8 @@ import { createCreditMemo } from '../services/create-credit-memo.js';
 import { batchInvoiceImport } from '../services/batch-invoice-import.js';
 import { processBankRejection } from '../services/process-bank-rejection.js';
 import { generateRemittanceAdvice } from '../services/generate-remittance-advice.js';
-import { processOcrInvoice } from '../services/ap-ocr-pipeline.js';
-import type { OcrInvoicePayload } from '../services/ap-ocr-pipeline.js';
+import { uploadOcrInvoice } from '../services/ap-ocr-pipeline.js';
+import type { OcrPipelineDeps } from '../services/ap-ocr-pipeline.js';
 import { extractIdentity } from '@afenda/api-kit';
 
 export function registerApCaptureRoutes(
@@ -114,21 +114,69 @@ export function registerApCaptureRoutes(
     }
   );
 
-  // B3: POST /ap/ocr/webhook — OCR provider webhook receiver
+  // B3: POST /ap/ocr/upload — multipart file upload OCR pipeline
+  // Validation order (spec invariant 2): auth → mime check → buffer → claimOrGet
   app.post(
-    '/ap/ocr/webhook',
+    '/ap/ocr/upload',
     { preHandler: [requirePermission(policy, 'journal:create')] },
     async (req, reply) => {
       const { tenantId, userId } = extractIdentity(req);
-      const body = req.body as Omit<OcrInvoicePayload, 'tenantId'>;
+      const body = req.body as {
+        file: { data: Buffer; mimetype: string };
+        companyId: string;
+        ledgerId: string;
+        defaultAccountId: string;
+        forceRetry?: boolean;
+      };
 
-      const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
-        return processOcrInvoice({ ...body, tenantId }, deps);
+      // Step 0: Validate mime from multipart metadata BEFORE reading buffer
+      const file = body.file;
+      if (!file) {
+        return reply.status(400).send({ error: 'Missing file in multipart body' });
+      }
+      const allowedMimes = ['application/pdf', 'image/png', 'image/jpeg'];
+      if (!allowedMimes.includes(file.mimetype)) {
+        return reply.status(400).send({
+          error: `Unsupported mime type: ${file.mimetype}. Allowed: ${allowedMimes.join(', ')}`,
+        });
+      }
+
+      const ctx = OcrUploadContextSchema.parse({
+        companyId: body.companyId,
+        ledgerId: body.ledgerId,
+        defaultAccountId: body.defaultAccountId,
+        forceRetry: body.forceRetry,
       });
 
-      return result.ok
-        ? reply.status(201).send(result.value)
-        : reply.status(mapErrorToStatus(result.error)).send({ error: result.error });
+      const ocrDeps = (runtime as unknown as { ocrDeps?: OcrPipelineDeps }).ocrDeps;
+      if (!ocrDeps) {
+        return reply.status(501).send({ error: 'OCR pipeline not configured' });
+      }
+
+      try {
+        const result = await uploadOcrInvoice(file.data, file.mimetype, {
+          tenantId,
+          userId,
+          companyId: ctx.companyId,
+          ledgerId: ctx.ledgerId,
+          defaultAccountId: ctx.defaultAccountId,
+          forceRetry: ctx.forceRetry,
+        }, ocrDeps);
+
+        // Spec: 201 new completed, 200 idempotent completed, 202 in-progress, 409 failed
+        let httpStatus: number;
+        if (result.status === 'COMPLETED') {
+          httpStatus = result.invoiceId ? 201 : 200;
+        } else if (result.status === 'FAILED') {
+          httpStatus = 409;
+        } else {
+          httpStatus = 202;
+        }
+        return reply.status(httpStatus).send(result);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'OCR pipeline error';
+        return reply.status(502).send({ error: message });
+      }
     }
   );
 }

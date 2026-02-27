@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import * as React from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect, useContext } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { ShortcutContext } from '@/providers/shortcut-provider';
 import {
   Table,
   TableBody,
@@ -24,6 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/erp/empty-state';
+import type { EmptyStateKey, EmptyStateVariant, EmptyStateSize } from '@/components/erp/empty-state.types';
 import { ExportMenu, type ExportPayload } from '@/components/erp/export-menu';
 import { cn } from '@/lib/utils';
 import {
@@ -109,12 +112,24 @@ export interface PaginationProps {
 
 // ─── DataTable Props ─────────────────────────────────────────────────────────
 
-export interface EmptyStateConfig {
-  icon?: React.ElementType;
-  title?: string;
-  description?: string;
-  action?: React.ReactNode | { label: string; href: string };
-}
+export type EmptyStateConfig =
+  | {
+      /** Registry key — resolves title/description from the empty-state registry. */
+      key: EmptyStateKey;
+      variant?: EmptyStateVariant;
+      size?: EmptyStateSize;
+      action?: React.ReactNode | { label: string; href: string };
+      icon?: React.ElementType;
+    }
+  | {
+      /** Direct title (legacy escape hatch — prefer `key`). */
+      title: string;
+      description?: string;
+      variant?: EmptyStateVariant;
+      size?: EmptyStateSize;
+      action?: React.ReactNode | { label: string; href: string };
+      icon?: React.ElementType;
+    };
 
 /** Legacy pagination (page/perPage/total/totalPages) - baseUrl derived from current path when missing */
 export interface LegacyPaginationProps {
@@ -393,6 +408,99 @@ function isLegacyPagination(
   return p != null && !('baseUrl' in p);
 }
 
+// ─── Table Keyboard Navigation Hook ──────────────────────────────────────────
+
+/**
+ * Keyboard shortcuts for DataTable:
+ * - j / ArrowDown: Move focus down
+ * - k / ArrowUp: Move focus up
+ * - Enter: Navigate to focused row (using onRowClick)
+ * - /: Focus search input
+ * - Escape: Blur search / clear focus
+ */
+function useTableKeyboard<T>({
+  rowCount,
+  onRowClick,
+  searchInputRef,
+  tableRef,
+}: {
+  rowCount: number;
+  onRowClick?: (row: T) => void;
+  searchInputRef: React.RefObject<HTMLInputElement | null>;
+  tableRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1);
+
+  // Reset focus when data changes
+  useEffect(() => {
+    setFocusedRowIndex(-1);
+  }, [rowCount]);
+
+  const handleTableKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+
+      // `/` to focus search (only when not in input)
+      if (e.key === '/' && !isInput) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      // Escape: blur search or clear row focus
+      if (e.key === 'Escape') {
+        if (isInput) {
+          (target as HTMLInputElement).blur();
+        }
+        setFocusedRowIndex(-1);
+        return;
+      }
+
+      // Skip navigation shortcuts when typing in search
+      if (isInput) return;
+
+      // j / ArrowDown: next row
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setFocusedRowIndex((prev) => {
+          const next = prev + 1;
+          return next >= rowCount ? prev : next;
+        });
+        return;
+      }
+
+      // k / ArrowUp: previous row
+      if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setFocusedRowIndex((prev) => {
+          const next = prev - 1;
+          return next < 0 ? 0 : next;
+        });
+        return;
+      }
+
+      // Enter: activate focused row
+      if (e.key === 'Enter' && focusedRowIndex >= 0) {
+        e.preventDefault();
+        // Handler will be called from render
+        return;
+      }
+    },
+    [rowCount, focusedRowIndex, searchInputRef],
+  );
+
+  // Scroll focused row into view
+  useEffect(() => {
+    if (focusedRowIndex < 0 || !tableRef.current) return;
+    const rows = tableRef.current.querySelectorAll('tbody tr[data-row-index]');
+    const row = rows[focusedRowIndex] as HTMLElement | undefined;
+    row?.scrollIntoView({ block: 'nearest' });
+  }, [focusedRowIndex, tableRef]);
+
+  return { focusedRowIndex, setFocusedRowIndex, handleTableKeyDown };
+}
+
 export function DataTable<T>({
   columns: rawColumns,
   data,
@@ -463,23 +571,64 @@ export function DataTable<T>({
     return undefined;
   }, [searchFnProp, searchKeys, searchable]);
 
-  const emptyTitle = emptyTitleProp ?? emptyState?.title ?? 'No data';
-  const emptyMessage = emptyMessageProp ?? emptyState?.description ?? 'No results found.';
-  const emptyIcon = emptyIconProp ?? emptyState?.icon ?? Inbox;
-  const emptyAction: React.ReactNode =
-    emptyActionProp ??
-    (emptyState?.action && typeof emptyState.action === 'object' && 'href' in emptyState.action
-      ? (() => {
-          const a = emptyState!.action as { label: string; href: string };
-          return (
-            <Button asChild>
-              <Link href={a.href}>{a.label}</Link>
-            </Button>
-          );
-        })()
-      : (emptyState?.action as React.ReactNode | undefined));
-
+  // ─── State (must come before derived values) ────────────────────────────
   const [search, setSearch] = useState('');
+
+  // ─── Refs for keyboard navigation ─────────────────────────────────────
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const tableContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // ─── Legacy flat-prop deprecation warning ──────────────────────────────
+  if (process.env.NODE_ENV === 'development') {
+    if (emptyTitleProp || emptyMessageProp || emptyIconProp || emptyActionProp) {
+      console.warn(
+        '[DataTable] emptyTitle/emptyMessage/emptyIcon/emptyAction are deprecated. ' +
+          'Use emptyState={{ key: "…" }} instead.',
+      );
+    }
+  }
+
+  // ─── Infer variant from active search ──────────────────────────────────
+  const inferredVariant: EmptyStateVariant = search ? 'noResults' : 'firstRun';
+
+  /** Resolve `{ label, href }` shorthand into a `<Button>` ReactNode. */
+  function resolveAction(
+    action: React.ReactNode | { label: string; href: string } | undefined,
+  ): React.ReactNode | undefined {
+    if (action && typeof action === 'object' && 'href' in action) {
+      const a = action as { label: string; href: string };
+      return (
+        <Button asChild>
+          <Link href={a.href}>{a.label}</Link>
+        </Button>
+      );
+    }
+    return action as React.ReactNode | undefined;
+  }
+
+  // ─── Resolve empty-state config ────────────────────────────────────────
+  const resolvedEmptyState = (() => {
+    // New key-based config takes priority
+    if (emptyState && 'key' in emptyState) {
+      return {
+        contentKey: emptyState.key,
+        variant: emptyState.variant ?? inferredVariant,
+        size: emptyState.size,
+        icon: emptyIconProp ?? emptyState.icon,
+        action: resolveAction(emptyActionProp ?? emptyState.action),
+      } as const;
+    }
+
+    // Legacy title-based config or flat props
+    return {
+      title: emptyTitleProp ?? emptyState?.title ?? 'No data',
+      description: emptyMessageProp ?? emptyState?.description ?? 'No results found.',
+      icon: emptyIconProp ?? emptyState?.icon ?? Inbox,
+      action: resolveAction(emptyActionProp ?? emptyState?.action),
+      variant: emptyState?.variant ?? inferredVariant,
+      size: emptyState?.size,
+    } as const;
+  })();
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(new Set());
@@ -506,6 +655,41 @@ export function DataTable<T>({
     const sorted = [...filteredData].sort(col.sortFn);
     return sortDirection === 'desc' ? sorted.reverse() : sorted;
   }, [filteredData, sortColumn, sortDirection, columns]);
+
+  // ─── Table Keyboard Navigation ─────────────────────────────────────────
+  const { focusedRowIndex, handleTableKeyDown } = useTableKeyboard<T>({
+    rowCount: sortedData.length,
+    onRowClick,
+    searchInputRef,
+    tableRef: tableContainerRef,
+  });
+
+  // ─── Shortcut Scope Integration ────────────────────────────────────────
+  // Push 'table' scope when the table container receives focus so that
+  // j/k shortcuts take priority over global shortcuts. Pop on blur.
+  const shortcutCtx = useContext(ShortcutContext);
+  const handleTableFocus = useCallback(() => {
+    shortcutCtx?.engine.pushScope('table');
+  }, [shortcutCtx]);
+  const handleTableBlur = useCallback((e: React.FocusEvent) => {
+    // Only pop if focus moves outside the table container
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      shortcutCtx?.engine.popScope('table');
+    }
+  }, [shortcutCtx]);
+
+  // Note: Enter key on focused row is handled by useTableKeyboard's
+  // handleTableKeyDown via React's onKeyDown. The hook sets focusedRowIndex
+  // and onRowClick is invoked through the onKeyDown handler below.
+  const handleRowEnter = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && focusedRowIndex >= 0 && sortedData[focusedRowIndex] != null && onRowClick) {
+        e.preventDefault();
+        onRowClick(sortedData[focusedRowIndex]!);
+      }
+    },
+    [focusedRowIndex, sortedData, onRowClick],
+  );
 
   // Sorting handlers
   function handleSort(columnId: string) {
@@ -575,6 +759,7 @@ export function DataTable<T>({
               <div className="relative max-w-sm flex-1 sm:flex-none">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  ref={searchInputRef}
                   placeholder={searchPlaceholder}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -629,7 +814,16 @@ export function DataTable<T>({
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-md border">
+      <div
+        ref={tableContainerRef}
+        className="overflow-x-auto rounded-md border focus-visible:outline-none"
+        tabIndex={0}
+        onKeyDown={(e) => { handleTableKeyDown(e); handleRowEnter(e); }}
+        onFocus={handleTableFocus}
+        onBlur={handleTableBlur}
+        role="region"
+        aria-label="Data table with keyboard navigation. Use j/k or arrow keys to navigate rows, Enter to activate, / to search."
+      >
         <Table
           role="grid"
           aria-rowcount={rowCount}
@@ -686,27 +880,45 @@ export function DataTable<T>({
               /* Empty state */
               <TableRow>
                 <TableCell colSpan={columnCount} className="h-48">
-                  <EmptyState
-                    title={emptyTitle}
-                    description={emptyMessage}
-                    icon={emptyIcon}
-                    action={emptyAction}
-                  />
+                  {'contentKey' in resolvedEmptyState ? (
+                    <EmptyState
+                      contentKey={resolvedEmptyState.contentKey}
+                      variant={resolvedEmptyState.variant}
+                      size={resolvedEmptyState.size}
+                      icon={resolvedEmptyState.icon}
+                      action={resolvedEmptyState.action}
+                    />
+                  ) : (
+                    <EmptyState
+                      title={resolvedEmptyState.title}
+                      description={resolvedEmptyState.description}
+                      variant={resolvedEmptyState.variant}
+                      size={resolvedEmptyState.size}
+                      icon={resolvedEmptyState.icon}
+                      action={resolvedEmptyState.action}
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
               /* Data rows */
-              sortedData.map((row) => {
+              sortedData.map((row, rowIndex) => {
                 const rowId = keyFn(row);
                 const isSelected = effectiveSelectedIds.has(rowId);
+                const isFocused = focusedRowIndex === rowIndex;
 
                 return (
                   <TableRow
                     key={rowId}
-                    className={cn(onRowClick && 'cursor-pointer', isSelected && 'bg-muted/50')}
+                    className={cn(
+                      onRowClick && 'cursor-pointer',
+                      isSelected && 'bg-muted/50',
+                      isFocused && 'ring-2 ring-inset ring-primary/50 bg-accent/30',
+                    )}
                     onClick={() => onRowClick?.(row)}
                     aria-selected={selectable ? isSelected : undefined}
                     data-state={isSelected ? 'selected' : undefined}
+                    data-row-index={rowIndex}
                   >
                     {/* Selection checkbox */}
                     {selectable && (
@@ -745,3 +957,9 @@ export function DataTable<T>({
     </div>
   );
 }
+
+export type {
+  DataTableProps,
+  PaginationProps as DataTablePaginationProps,
+};
+

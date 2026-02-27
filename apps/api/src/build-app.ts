@@ -38,6 +38,7 @@ import {
   registerApPaymentRunRoutes,
   registerApAgingRoutes,
   registerSupplierRoutes,
+  registerSupplierMdmRoutes,
   registerApHoldRoutes,
   registerApSupplierReconRoutes,
   registerApReportingRoutes,
@@ -73,6 +74,8 @@ import {
 } from '@afenda/finance/infra';
 import { createR2Adapter, createMockObjectStore, loadR2Config } from '@afenda/storage';
 import { registerHealthRoutes } from './routes/health.js';
+import { registerKernelSettingsRoutes } from './routes/kernel-settings.js';
+import { registerKernelAdminRoutes } from './routes/kernel-admin.js';
 import { tenantContextPlugin } from './middleware/tenant-context.js';
 import { authPlugin } from './middleware/auth.js';
 import { requestLoggingPlugin } from './middleware/request-logging.js';
@@ -167,6 +170,7 @@ export async function buildApp(deps: BuildAppDeps) {
   registerApPaymentRunRoutes(app, financeRuntime, authPolicy);
   registerApAgingRoutes(app, financeRuntime, authPolicy);
   registerSupplierRoutes(app, financeRuntime, authPolicy);
+  registerSupplierMdmRoutes(app, financeRuntime, authPolicy);
   registerApHoldRoutes(app, financeRuntime, authPolicy);
   registerApSupplierReconRoutes(app, financeRuntime, authPolicy);
   registerApReportingRoutes(app, financeRuntime, authPolicy);
@@ -207,6 +211,12 @@ export async function buildApp(deps: BuildAppDeps) {
 
   // GAP-A2: Approval Workflow
   registerApprovalRoutes(app, financeRuntime, authPolicy);
+
+  // Kernel: Org Settings + User Preferences
+  registerKernelSettingsRoutes(app, { db: deps.db });
+
+  // Kernel: Platform Admin (super-admin only)
+  registerKernelAdminRoutes(app, { db: deps.db });
 
   // Dashboard
   registerDashboardRoutes(app, financeRuntime, authPolicy);

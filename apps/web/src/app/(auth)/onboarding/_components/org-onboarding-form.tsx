@@ -20,10 +20,11 @@ import { AlertTriangle, Building2, Plus, ArrowRight } from 'lucide-react';
  * This sets the `activeOrganizationId` on the session, which enables
  * the RLS tenant context for all subsequent API calls.
  */
-export function OrgOnboardingForm() {
+export function OrgOnboardingForm({ lastActiveOrgId }: { lastActiveOrgId?: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [mode, setMode] = useState<'select' | 'create'>('select');
+  const [autoRestoreAttempted, setAutoRestoreAttempted] = useState(false);
   const { data: orgs, isPending: orgsLoading } = authClient.useListOrganizations();
 
   // If user has no orgs, show create mode by default
@@ -32,6 +33,25 @@ export function OrgOnboardingForm() {
       setMode('create');
     }
   }, [orgs, orgsLoading]);
+
+  // I-KRN-08: Auto-restore lastActiveOrgId if available and org exists
+  useEffect(() => {
+    if (autoRestoreAttempted || orgsLoading || !orgs || !lastActiveOrgId) return;
+    setAutoRestoreAttempted(true);
+
+    const matchingOrg = orgs.find((o) => o.id === lastActiveOrgId);
+    if (matchingOrg) {
+      startTransition(async () => {
+        const { error: setActiveError } = await authClient.organization.setActive({
+          organizationId: lastActiveOrgId,
+        });
+        if (!setActiveError) {
+          window.location.href = '/';
+        }
+        // If restore fails, fall through to manual selection
+      });
+    }
+  }, [orgsLoading, orgs, lastActiveOrgId, autoRestoreAttempted]);
 
   function handleCreateOrg(formData: FormData) {
     const name = formData.get('orgName') as string;

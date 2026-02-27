@@ -38,7 +38,9 @@
     "db:reset": "drizzle-kit migrate && pnpm db:seed",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "gate:schema": "node ../../tools/scripts/gate-schema-conventions.mjs",
+    "gate:db": "node ../../tools/scripts/gate-db-module.mjs"
   },
   "dependencies": {
     "@neondatabase/api-client": "^2.6.0",

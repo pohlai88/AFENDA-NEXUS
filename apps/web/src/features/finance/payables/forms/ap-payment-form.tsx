@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { RecordApPaymentSchema, type RecordApPayment } from '@afenda/contracts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,30 +26,24 @@ export function ApPaymentForm({ invoice }: ApPaymentFormProps) {
   const [error, setError] = useState<string | null>(null);
   const { receipt, showReceipt, clearReceipt, isOpen } = useReceipt();
 
-  const [amount, setAmount] = useState('');
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0] ?? '');
-  const [paymentRef, setPaymentRef] = useState('');
+  const form = useForm<RecordApPayment>({
+    resolver: zodResolver(RecordApPaymentSchema),
+    defaultValues: {
+      amount: undefined,
+      paymentDate: new Date().toISOString().split('T')[0],
+      paymentRef: '',
+    },
+  });
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
-      setError('Enter a valid payment amount.');
-      return;
-    }
-    if (!paymentRef.trim()) {
-      setError('Payment reference is required.');
-      return;
-    }
-
+  async function handleSubmit(data: RecordApPayment) {
     setSubmitting(true);
     setError(null);
 
     const result = await recordApPaymentAction(
       invoice.id,
-      numAmount,
-      paymentDate,
-      paymentRef.trim()
+      data.amount,
+      data.paymentDate,
+      data.paymentRef
     );
 
     setSubmitting(false);
@@ -74,7 +71,7 @@ export function ApPaymentForm({ invoice }: ApPaymentFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
       {/* Invoice summary */}
       <div className="rounded-lg border p-4">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -112,12 +109,16 @@ export function ApPaymentForm({ invoice }: ApPaymentFormProps) {
             type="number"
             min="0"
             step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            {...form.register('amount', { valueAsNumber: true })}
             placeholder="0.00"
             className="font-mono"
             autoFocus
           />
+          {form.formState.errors.amount && (
+            <p className="text-xs text-destructive" role="alert">
+              {form.formState.errors.amount.message}
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="payment-date">
@@ -126,9 +127,13 @@ export function ApPaymentForm({ invoice }: ApPaymentFormProps) {
           <Input
             id="payment-date"
             type="date"
-            value={paymentDate}
-            onChange={(e) => setPaymentDate(e.target.value)}
+            {...form.register('paymentDate')}
           />
+          {form.formState.errors.paymentDate && (
+            <p className="text-xs text-destructive" role="alert">
+              {form.formState.errors.paymentDate.message}
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="payment-ref">
@@ -136,10 +141,14 @@ export function ApPaymentForm({ invoice }: ApPaymentFormProps) {
           </Label>
           <Input
             id="payment-ref"
-            value={paymentRef}
-            onChange={(e) => setPaymentRef(e.target.value)}
+            {...form.register('paymentRef')}
             placeholder="e.g. CHK-001, EFT-123"
           />
+          {form.formState.errors.paymentRef && (
+            <p className="text-xs text-destructive" role="alert">
+              {form.formState.errors.paymentRef.message}
+            </p>
+          )}
         </div>
       </div>
 

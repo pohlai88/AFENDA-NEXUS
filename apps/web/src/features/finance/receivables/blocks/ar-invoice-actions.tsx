@@ -280,7 +280,7 @@ export function ArInvoiceActions({ invoiceId, status }: ArInvoiceActionsProps) {
                 id="ar-fiscal-period-id"
                 value={fiscalPeriodId}
                 onChange={(e) => setFiscalPeriodId(e.target.value)}
-                placeholder="UUID of fiscal period"
+                placeholder="Select fiscal period"
                 autoFocus
               />
             </div>
@@ -292,7 +292,7 @@ export function ArInvoiceActions({ invoiceId, status }: ArInvoiceActionsProps) {
                 id="ar-account-id"
                 value={arAccountId}
                 onChange={(e) => setArAccountId(e.target.value)}
-                placeholder="UUID of AR control account"
+                placeholder="Select AR control account"
               />
             </div>
           </div>

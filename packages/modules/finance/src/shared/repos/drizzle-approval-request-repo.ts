@@ -88,6 +88,7 @@ export class DrizzleApprovalRequestRepo implements IApprovalRequestRepo {
       .insert(approvalSteps)
       .values(
         steps.map((s) => ({
+          tenantId: s.tenantId,
           requestId: s.requestId,
           stepIndex: s.stepIndex,
           approverId: s.approverId,

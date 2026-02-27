@@ -11,9 +11,13 @@ This document outlines the enterprise-grade performance optimizations implemente
 #### Compiler Optimizations
 - **Console removal**: Removes `console.log` in production (keeps `error` and `warn`)
 - **Server external packages**: Optimizes bundling for `@neondatabase/serverless` and `drizzle-orm`
+- **Fetch logging**: Dev-only (disabled in production to reduce overhead)
 
 #### Experimental Features
+- **turbopackFileSystemCacheForBuild**: Filesystem caching for faster production builds
 - **optimizePackageImports**: Tree-shaking for large libraries
+  - `cmdk` (command palette)
+  - `react-day-picker`
   - `@radix-ui/react-icons`
   - `lucide-react`
   - `recharts`
@@ -52,18 +56,17 @@ This document outlines the enterprise-grade performance optimizations implemente
 - `Permissions-Policy`: Restricts camera, microphone, geolocation, payment
 - `Strict-Transport-Security`: HSTS with 2-year max-age and preload
 
-## Middleware (Edge Runtime)
+## Proxy (Next.js 16 — network layer)
 
-### Benefits
-- Runs on Vercel Edge Network (low latency)
-- Minimal cold start times
-- Global distribution
+Next.js 16 replaces `middleware.ts` with `proxy.ts`. The proxy runs at the network entry point before routes are rendered.
 
 ### Responsibilities
 - Session validation
 - OAuth token exchange
 - Protected route enforcement
 - Security header injection
+
+See `src/proxy.ts` and [Next.js proxy docs](https://nextjs.org/docs/app/api-reference/file-conventions/proxy).
 
 ## Font Optimization
 
@@ -156,8 +159,8 @@ This document outlines the enterprise-grade performance optimizations implemente
 - Reports with stable data
 - Dashboard widgets with revalidation
 
-### 3. Edge Runtime
-- Middleware for auth checks
+### 3. Proxy (network layer)
+- Proxy (`proxy.ts`) for auth checks and redirects
 - API routes for simple operations
 
 ### 4. Database Optimization
@@ -203,7 +206,7 @@ This document outlines the enterprise-grade performance optimizations implemente
 ## Performance Checklist
 
 - [x] Next.js config optimized
-- [x] Middleware on Edge Runtime
+- [x] Proxy (`proxy.ts`) for auth and headers
 - [x] Comprehensive security headers
 - [x] Image optimization configured
 - [x] Font optimization with preload

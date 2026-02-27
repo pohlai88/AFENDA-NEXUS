@@ -505,8 +505,38 @@ export const ConsolidationQuerySchema = z.object({
 
 // ─── Supplier Schemas ──────────────────────────────────────────────────────
 
-export const SupplierStatusSchema = z.enum(['ACTIVE', 'ON_HOLD', 'INACTIVE']);
+export const SupplierStatusSchema = z.enum(['ACTIVE', 'ON_HOLD', 'INACTIVE', 'BLOCKED', 'BLACKLISTED']);
 export type SupplierStatus = z.infer<typeof SupplierStatusSchema>;
+
+export const SupplierOnboardingStatusSchema = z.enum([
+  'PROSPECT',
+  'PENDING_APPROVAL',
+  'ACTIVE',
+  'SUSPENDED',
+  'INACTIVE',
+]);
+export type SupplierOnboardingStatus = z.infer<typeof SupplierOnboardingStatusSchema>;
+
+export const SupplierAccountGroupSchema = z.enum([
+  'TRADE',
+  'INTERCOMPANY',
+  'ONE_TIME',
+  'EMPLOYEE',
+  'GOVERNMENT',
+  'SUBCONTRACTOR',
+]);
+export type SupplierAccountGroup = z.infer<typeof SupplierAccountGroupSchema>;
+
+export const SupplierCategorySchema = z.enum([
+  'GOODS',
+  'SERVICES',
+  'SUBCONTRACTOR',
+  'ONE_TIME',
+  'INTERCOMPANY',
+  'GOVERNMENT',
+  'EMPLOYEE',
+]);
+export type SupplierCategory = z.infer<typeof SupplierCategorySchema>;
 
 export const PaymentMethodTypeSchema = z.enum([
   'BANK_TRANSFER',
@@ -521,17 +551,31 @@ export const CreateSupplierSchema = z.object({
   companyId: z.string().uuid(),
   code: z.string().min(1).max(20),
   name: z.string().min(1).max(200),
+  tradingName: z.string().max(200).nullable().optional(),
+  registrationNumber: z.string().max(50).nullable().optional(),
+  countryOfIncorporation: z.string().length(3).nullable().optional(),
+  legalForm: z.string().max(50).nullable().optional(),
   taxId: z.string().max(50).nullable().optional(),
   currencyCode: z.string().length(3),
   defaultPaymentTermsId: z.string().uuid().nullable().optional(),
   defaultPaymentMethod: PaymentMethodTypeSchema.nullable().optional(),
   whtRateId: z.string().uuid().nullable().optional(),
   remittanceEmail: z.string().email().max(255).nullable().optional(),
+  accountGroup: SupplierAccountGroupSchema.optional(),
+  category: SupplierCategorySchema.optional(),
+  industryCode: z.string().max(20).nullable().optional(),
+  industryDescription: z.string().max(200).nullable().optional(),
+  parentSupplierId: z.string().uuid().nullable().optional(),
+  isGroupHeader: z.boolean().optional(),
 });
 export type CreateSupplier = z.infer<typeof CreateSupplierSchema>;
 
 export const UpdateSupplierSchema = z.object({
   name: z.string().min(1).max(200).optional(),
+  tradingName: z.string().max(200).nullable().optional(),
+  registrationNumber: z.string().max(50).nullable().optional(),
+  countryOfIncorporation: z.string().length(3).nullable().optional(),
+  legalForm: z.string().max(50).nullable().optional(),
   taxId: z.string().max(50).nullable().optional(),
   currencyCode: z.string().length(3).optional(),
   defaultPaymentTermsId: z.string().uuid().nullable().optional(),
@@ -539,11 +583,23 @@ export const UpdateSupplierSchema = z.object({
   whtRateId: z.string().uuid().nullable().optional(),
   remittanceEmail: z.string().email().max(255).nullable().optional(),
   status: SupplierStatusSchema.optional(),
+  onboardingStatus: SupplierOnboardingStatusSchema.optional(),
+  accountGroup: SupplierAccountGroupSchema.optional(),
+  category: SupplierCategorySchema.optional(),
+  industryCode: z.string().max(20).nullable().optional(),
+  industryDescription: z.string().max(200).nullable().optional(),
+  parentSupplierId: z.string().uuid().nullable().optional(),
+  isGroupHeader: z.boolean().optional(),
 });
 export type UpdateSupplier = z.infer<typeof UpdateSupplierSchema>;
 
 export const SupplierListQuerySchema = PaginationSchema.extend({
   status: SupplierStatusSchema.optional(),
+  accountGroup: SupplierAccountGroupSchema.optional(),
+  category: SupplierCategorySchema.optional(),
+  onboardingStatus: SupplierOnboardingStatusSchema.optional(),
+  industryCode: z.string().max(20).optional(),
+  isGroupHeader: z.coerce.boolean().optional(),
 });
 export type SupplierListQuery = z.infer<typeof SupplierListQuerySchema>;
 
@@ -557,6 +613,12 @@ export const CreateSupplierSiteSchema = z.object({
   postalCode: z.string().max(20).nullable().optional(),
   countryCode: z.string().length(3),
   isPrimary: z.boolean().default(false),
+  isPaySite: z.boolean().default(false),
+  isPurchasingSite: z.boolean().default(false),
+  isRemitTo: z.boolean().default(false),
+  contactName: z.string().max(200).nullable().optional(),
+  contactEmail: z.string().email().max(255).nullable().optional(),
+  contactPhone: z.string().max(50).nullable().optional(),
 });
 export type CreateSupplierSite = z.infer<typeof CreateSupplierSiteSchema>;
 
@@ -568,9 +630,240 @@ export const CreateSupplierBankAccountSchema = z.object({
   swiftBic: z.string().max(11).nullable().optional(),
   localBankCode: z.string().max(20).nullable().optional(),
   currencyCode: z.string().length(3),
+  siteId: z.string().uuid().nullable().optional(),
   isPrimary: z.boolean().default(false),
 });
 export type CreateSupplierBankAccount = z.infer<typeof CreateSupplierBankAccountSchema>;
+
+// ─── Supplier MDM Schemas ─────────────────────────────────────────────────
+
+export const SupplierBlockTypeSchema = z.enum([
+  'PURCHASING_BLOCK',
+  'POSTING_BLOCK',
+  'PAYMENT_BLOCK',
+  'FULL_BLOCK',
+]);
+export type SupplierBlockType = z.infer<typeof SupplierBlockTypeSchema>;
+
+export const SupplierBlockScopeSchema = z.enum([
+  'ALL_COMPANIES',
+  'SPECIFIC_COMPANY',
+  'SPECIFIC_SITE',
+]);
+export type SupplierBlockScope = z.infer<typeof SupplierBlockScopeSchema>;
+
+export const CreateSupplierBlockSchema = z.object({
+  blockType: SupplierBlockTypeSchema,
+  scope: SupplierBlockScopeSchema,
+  companyId: z.string().uuid().nullable().optional(),
+  siteId: z.string().uuid().nullable().optional(),
+  reasonCode: z.string().min(1).max(50),
+  reason: z.string().min(1),
+  effectiveFrom: z.string().datetime().optional(),
+  effectiveUntil: z.string().datetime().nullable().optional(),
+});
+export type CreateSupplierBlock = z.infer<typeof CreateSupplierBlockSchema>;
+
+export const CreateSupplierBlacklistSchema = z.object({
+  justification: z.string().min(1),
+  validFrom: z.string().datetime().optional(),
+  validUntil: z.string().datetime().nullable().optional(),
+});
+export type CreateSupplierBlacklist = z.infer<typeof CreateSupplierBlacklistSchema>;
+
+export const ReverseSupplierBlacklistSchema = z.object({
+  reversalReason: z.string().min(1),
+});
+export type ReverseSupplierBlacklist = z.infer<typeof ReverseSupplierBlacklistSchema>;
+
+export const SupplierTaxTypeSchema = z.enum(['VAT', 'GST', 'SST', 'TIN', 'CIT', 'WHT', 'CUSTOM']);
+export type SupplierTaxType = z.infer<typeof SupplierTaxTypeSchema>;
+
+export const CreateSupplierTaxRegistrationSchema = z.object({
+  taxType: SupplierTaxTypeSchema,
+  registrationNumber: z.string().min(1).max(50),
+  issuingCountry: z.string().length(3),
+  validFrom: z.string().datetime().nullable().optional(),
+  validUntil: z.string().datetime().nullable().optional(),
+  isPrimary: z.boolean().default(false),
+});
+export type CreateSupplierTaxRegistration = z.infer<typeof CreateSupplierTaxRegistrationSchema>;
+
+export const VerifyBankAccountSchema = z.object({
+  verificationMethod: z.string().min(1).max(50),
+});
+export type VerifyBankAccount = z.infer<typeof VerifyBankAccountSchema>;
+
+export const SupplierLegalDocTypeSchema = z.enum([
+  'REGISTRATION_CERTIFICATE',
+  'TAX_REGISTRATION',
+  'ARTICLES_OF_INCORPORATION',
+  'POWER_OF_ATTORNEY',
+  'BANK_CONFIRMATION_LETTER',
+  'INSURANCE_CERTIFICATE',
+  'TRADE_LICENSE',
+  'GOOD_STANDING_CERTIFICATE',
+  'BENEFICIAL_OWNERSHIP',
+  'OTHER',
+]);
+export type SupplierLegalDocType = z.infer<typeof SupplierLegalDocTypeSchema>;
+
+export const SupplierLegalDocStatusSchema = z.enum(['PENDING', 'VERIFIED', 'EXPIRED', 'REJECTED']);
+export type SupplierLegalDocStatus = z.infer<typeof SupplierLegalDocStatusSchema>;
+
+export const CreateSupplierLegalDocSchema = z.object({
+  docType: SupplierLegalDocTypeSchema,
+  documentNumber: z.string().max(100).nullable().optional(),
+  issuingAuthority: z.string().max(200).nullable().optional(),
+  issueDate: z.string().datetime().nullable().optional(),
+  expiryDate: z.string().datetime().nullable().optional(),
+  storageKey: z.string().nullable().optional(),
+  checksumSha256: z.string().max(64).nullable().optional(),
+});
+export type CreateSupplierLegalDoc = z.infer<typeof CreateSupplierLegalDocSchema>;
+
+export const RejectSupplierLegalDocSchema = z.object({
+  rejectionReason: z.string().min(1),
+});
+export type RejectSupplierLegalDoc = z.infer<typeof RejectSupplierLegalDocSchema>;
+
+export const UpsertSupplierDocRequirementSchema = z.object({
+  accountGroup: SupplierAccountGroupSchema,
+  docType: SupplierLegalDocTypeSchema,
+  isMandatory: z.boolean(),
+  countryCode: z.string().length(3).nullable().optional(),
+  isActive: z.boolean().default(true),
+});
+export type UpsertSupplierDocRequirement = z.infer<typeof UpsertSupplierDocRequirementSchema>;
+
+export const SupplierEvalStatusSchema = z.enum(['DRAFT', 'SUBMITTED', 'APPROVED']);
+export type SupplierEvalStatus = z.infer<typeof SupplierEvalStatusSchema>;
+
+export const CreateSupplierEvalCriteriaSchema = z.object({
+  code: z.string().min(1).max(50),
+  name: z.string().min(1).max(200),
+  description: z.string().nullable().optional(),
+  weight: z.number().int().min(0).max(100),
+  maxScore: z.number().int().min(1).max(10).default(5),
+});
+export type CreateSupplierEvalCriteria = z.infer<typeof CreateSupplierEvalCriteriaSchema>;
+
+export const CreateSupplierEvalTemplateSchema = z.object({
+  companyId: z.string().uuid().nullable().optional(),
+  criteria: z.array(CreateSupplierEvalCriteriaSchema).min(1),
+});
+export type CreateSupplierEvalTemplate = z.infer<typeof CreateSupplierEvalTemplateSchema>;
+
+export const CreateSupplierEvaluationSchema = z.object({
+  templateVersionId: z.string().uuid(),
+  periodStart: z.string().datetime(),
+  periodEnd: z.string().datetime(),
+  scores: z.array(
+    z.object({
+      criteriaId: z.string().uuid(),
+      score: z.number().int().min(1),
+      notes: z.string().nullable().optional(),
+    })
+  ).min(1),
+  notes: z.string().nullable().optional(),
+});
+export type CreateSupplierEvaluation = z.infer<typeof CreateSupplierEvaluationSchema>;
+
+export const SupplierRiskRatingSchema = z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
+export type SupplierRiskRating = z.infer<typeof SupplierRiskRatingSchema>;
+
+export const SupplierRiskCategorySchema = z.enum([
+  'FINANCIAL',
+  'QUALITY',
+  'COMPLIANCE',
+  'FRAUD',
+  'DELIVERY',
+  'OTHER',
+]);
+export type SupplierRiskCategory = z.infer<typeof SupplierRiskCategorySchema>;
+
+export const CreateSupplierRiskIndicatorSchema = z.object({
+  riskRating: SupplierRiskRatingSchema,
+  riskCategory: SupplierRiskCategorySchema,
+  description: z.string().min(1),
+  incidentDate: z.string().datetime().nullable().optional(),
+  documentId: z.string().uuid().nullable().optional(),
+});
+export type CreateSupplierRiskIndicator = z.infer<typeof CreateSupplierRiskIndicatorSchema>;
+
+export const SupplierDiversityCodeSchema = z.enum([
+  'SMALL_BUSINESS',
+  'MINORITY_OWNED',
+  'WOMEN_OWNED',
+  'VETERAN_OWNED',
+  'DISABLED_OWNED',
+  'INDIGENOUS_OWNED',
+  'LARGE_ENTERPRISE',
+  'NONE',
+]);
+export type SupplierDiversityCode = z.infer<typeof SupplierDiversityCodeSchema>;
+
+export const CreateSupplierDiversitySchema = z.object({
+  diversityCode: SupplierDiversityCodeSchema,
+  certificateNumber: z.string().max(100).nullable().optional(),
+  validFrom: z.string().datetime().nullable().optional(),
+  validUntil: z.string().datetime().nullable().optional(),
+  documentId: z.string().uuid().nullable().optional(),
+});
+export type CreateSupplierDiversity = z.infer<typeof CreateSupplierDiversitySchema>;
+
+export const SupplierContactRoleSchema = z.enum([
+  'AP_CONTACT',
+  'SALES_REP',
+  'COMPLIANCE_OFFICER',
+  'LOGISTICS',
+  'EXECUTIVE',
+  'OTHER',
+]);
+export type SupplierContactRole = z.infer<typeof SupplierContactRoleSchema>;
+
+export const CreateSupplierContactSchema = z.object({
+  siteId: z.string().uuid().nullable().optional(),
+  role: SupplierContactRoleSchema,
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  phone: z.string().max(50).nullable().optional(),
+  jobTitle: z.string().max(200).nullable().optional(),
+  isPrimary: z.boolean().default(false),
+});
+export type CreateSupplierContact = z.infer<typeof CreateSupplierContactSchema>;
+
+export const UpdateSupplierContactSchema = z.object({
+  role: SupplierContactRoleSchema.optional(),
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  email: z.string().email().max(255).optional(),
+  phone: z.string().max(50).nullable().optional(),
+  jobTitle: z.string().max(200).nullable().optional(),
+  isPrimary: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+});
+export type UpdateSupplierContact = z.infer<typeof UpdateSupplierContactSchema>;
+
+export const UpsertSupplierCompanyOverrideSchema = z.object({
+  defaultPaymentTermsId: z.string().uuid().nullable().optional(),
+  defaultPaymentMethod: PaymentMethodTypeSchema.nullable().optional(),
+  defaultCurrencyId: z.string().uuid().nullable().optional(),
+  tolerancePercent: z.coerce.number().min(0).max(100).nullable().optional(),
+  isActive: z.boolean().default(true),
+});
+export type UpsertSupplierCompanyOverride = z.infer<typeof UpsertSupplierCompanyOverrideSchema>;
+
+export const UpsertSupplierAccountGroupConfigSchema = z.object({
+  label: z.string().min(1).max(100),
+  requiresApproval: z.boolean().default(false),
+  requiresTaxVerification: z.boolean().default(false),
+  requiresBankVerification: z.boolean().default(false),
+  allowOneTimeUse: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+});
+export type UpsertSupplierAccountGroupConfig = z.infer<typeof UpsertSupplierAccountGroupConfigSchema>;
 
 // ─── AP Supplier Recon Schema ──────────────────────────────────────────────
 
@@ -674,6 +967,13 @@ export const ApInvoiceListQuerySchema = PaginationSchema.extend({
   supplierId: z.string().uuid().optional(),
 });
 export type ApInvoiceListQuery = z.infer<typeof ApInvoiceListQuerySchema>;
+
+export const RecordApPaymentSchema = z.object({
+  amount: z.coerce.number().positive('Payment amount must be positive'),
+  paymentDate: z.string().date('Invalid payment date'),
+  paymentRef: z.string().min(1, 'Payment reference is required').max(100),
+});
+export type RecordApPayment = z.infer<typeof RecordApPaymentSchema>;
 
 export const ApAgingQuerySchema = z.object({
   asOfDate: z.string().date().optional(),
@@ -2318,3 +2618,39 @@ export const SupplierPortalUpdateNotificationPrefsSchema = z.object({
   preferences: z.array(SupplierNotificationPrefItemSchema).min(1),
 });
 export type SupplierPortalUpdateNotificationPrefs = z.infer<typeof SupplierPortalUpdateNotificationPrefsSchema>;
+
+// ─── OCR Pipeline Schemas ─────────────────────────────────────────────────
+
+export const OcrConfidenceLevelSchema = z.enum(['HIGH', 'MEDIUM', 'LOW']);
+export type OcrConfidenceLevel = z.infer<typeof OcrConfidenceLevelSchema>;
+
+export const OcrJobStatusSchema = z.enum([
+  'CLAIMED',
+  'UPLOADED',
+  'EXTRACTING',
+  'SCORED',
+  'INVOICE_CREATING',
+  'COMPLETED',
+  'FAILED',
+]);
+export type OcrJobStatus = z.infer<typeof OcrJobStatusSchema>;
+
+export const OcrUploadContextSchema = z.object({
+  companyId: z.string().uuid(),
+  ledgerId: z.string().uuid(),
+  defaultAccountId: z.string().uuid(),
+  forceRetry: z.boolean().optional(),
+});
+export type OcrUploadContext = z.infer<typeof OcrUploadContextSchema>;
+
+export const OcrUploadResponseSchema = z.object({
+  jobId: z.string().uuid(),
+  invoiceId: z.string().uuid().nullable(),
+  status: OcrJobStatusSchema,
+  confidence: OcrConfidenceLevelSchema.nullable(),
+  errorReason: z.string().nullable(),
+});
+export type OcrUploadResponse = z.infer<typeof OcrUploadResponseSchema>;
+
+// ─── Kernel Contracts ─────────────────────────────────────────────────────────
+export * from './kernel/index.js';

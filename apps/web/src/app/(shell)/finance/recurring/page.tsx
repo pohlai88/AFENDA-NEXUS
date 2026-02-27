@@ -89,8 +89,7 @@ export default async function RecurringPage({ searchParams }: RecurringPageProps
       {/* Table */}
       {templates.length === 0 ? (
         <EmptyState
-          title="No recurring templates"
-          description="Create recurring journal templates to automate repetitive postings."
+          contentKey="finance.recurring"
           icon={RefreshCw}
         />
       ) : (

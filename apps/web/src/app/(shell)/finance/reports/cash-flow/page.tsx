@@ -72,8 +72,8 @@ export default async function CashFlowPage({ searchParams }: CashFlowPageProps) 
       {/* No params */}
       {(!ledgerId || !fromPeriodId || !toPeriodId) && (
         <EmptyState
-          title="Select parameters"
-          description="Choose a ledger and period range to generate the cash flow statement."
+          contentKey="finance.reports.cashFlow"
+          variant="firstRun"
           icon={Banknote}
         />
       )}

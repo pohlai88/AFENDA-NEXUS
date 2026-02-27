@@ -48,7 +48,7 @@ export const documentAttachments = erpSchema.table(
     index('idx_document_attachment_tenant_status').on(t.tenantId, t.status),
     index('idx_document_attachment_tenant_checksum_lookup').on(t.tenantId, t.checksumSha256),
   ]
-);
+).enableRLS();
 
 // ─── erp.document_link ───────────────────────────────────────────────────────
 
@@ -75,4 +75,4 @@ export const documentLinks = erpSchema.table(
     index('idx_document_link_tenant_entity').on(t.tenantId, t.entityType, t.entityId),
     index('idx_document_link_tenant_document').on(t.tenantId, t.documentId),
   ]
-);
+).enableRLS();

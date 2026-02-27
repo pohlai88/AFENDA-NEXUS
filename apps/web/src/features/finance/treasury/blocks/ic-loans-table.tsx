@@ -158,9 +158,8 @@ export function ICLoansTable({ loans }: ICLoansTableProps) {
       searchKeys={['loanNumber', 'lenderEntityName', 'borrowerEntityName']}
       onRowClick={handleRowClick}
       emptyState={{
+        key: 'finance.treasury.icLoans',
         icon: Building2,
-        title: 'No intercompany loans',
-        description: 'Set up intercompany loan tracking for transfer pricing compliance.',
         action: (
           <Button asChild>
             <Link href={routes.finance.treasuryLoanNew}>

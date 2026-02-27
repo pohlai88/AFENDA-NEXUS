@@ -76,11 +76,30 @@ export { registerApInvoiceRoutes } from './slices/ap/routes/ap-invoice-routes.js
 export { registerApPaymentRunRoutes } from './slices/ap/routes/ap-payment-run-routes.js';
 export { registerApAgingRoutes } from './slices/ap/routes/ap-aging-routes.js';
 export { registerSupplierRoutes } from './slices/ap/routes/supplier-routes.js';
+export { registerSupplierMdmRoutes } from './slices/ap/routes/supplier-mdm-routes.js';
 export { registerApHoldRoutes } from './slices/ap/routes/ap-hold-routes.js';
 export { registerApSupplierReconRoutes } from './slices/ap/routes/ap-supplier-recon-routes.js';
 export { registerApReportingRoutes } from './slices/ap/routes/ap-reporting-routes.js';
 export { registerApCaptureRoutes } from './slices/ap/routes/ap-capture-routes.js';
 export { registerSupplierPortalRoutes } from './slices/ap/routes/supplier-portal-routes.js';
+
+// ─── Supplier MDM repos ────────────────────────────────────────────────────
+export { DrizzleSupplierBlockRepo } from './slices/ap/repos/drizzle-supplier-block-repo.js';
+export { DrizzleSupplierTaxRepo } from './slices/ap/repos/drizzle-supplier-tax-repo.js';
+export { DrizzleSupplierLegalDocRepo } from './slices/ap/repos/drizzle-supplier-legal-doc-repo.js';
+export { DrizzleSupplierEvalRepo } from './slices/ap/repos/drizzle-supplier-eval-repo.js';
+export { DrizzleSupplierRiskRepo } from './slices/ap/repos/drizzle-supplier-risk-repo.js';
+export { DrizzleSupplierContactRepo } from './slices/ap/repos/drizzle-supplier-contact-repo.js';
+export { DrizzleSupplierDiversityRepo } from './slices/ap/repos/drizzle-supplier-diversity-repo.js';
+export { DrizzleSupplierDuplicateRepo } from './slices/ap/repos/drizzle-supplier-duplicate-repo.js';
+export { DrizzleSupplierCompanyOverrideRepo } from './slices/ap/repos/drizzle-supplier-company-override-repo.js';
+export { DrizzleSupplierAccountGroupRepo } from './slices/ap/repos/drizzle-supplier-account-group-repo.js';
+
+// ─── OCR pipeline repos & adapters ─────────────────────────────────────────
+export { DrizzleOcrJobRepo } from './slices/ap/repos/drizzle-ocr-job-repo.js';
+export { MockOcrProvider } from './slices/ap/adapters/mock-ocr-provider.js';
+export { OssOcrProvider } from './slices/ap/adapters/oss-ocr-provider.js';
+export { HybridInvoiceExtractProvider } from './slices/ap/adapters/hybrid-invoice-extract-provider.js';
 
 // ─── AR routes ──────────────────────────────────────────────────────────────
 export { registerArInvoiceRoutes } from './slices/ar/routes/ar-invoice-routes.js';

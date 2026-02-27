@@ -100,12 +100,13 @@ export default async function RecurringDetailPage({ params }: RecurringDetailPag
         <h3 className="text-sm font-semibold">Template Lines</h3>
         <div className="rounded-md border">
           <Table>
+            <caption className="sr-only">Recurring journal template lines</caption>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[120px]">Account Code</TableHead>
+                <TableHead className="col-account">Account Code</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead className="w-[140px] text-right">Debit</TableHead>
-                <TableHead className="w-[140px] text-right">Credit</TableHead>
+                <TableHead className="col-amount text-right">Debit</TableHead>
+                <TableHead className="col-amount text-right">Credit</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

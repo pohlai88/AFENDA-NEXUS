@@ -169,9 +169,8 @@ export function TaxReturnsTable({ periods }: TaxReturnsTableProps) {
       keyField="id"
       onRowClick={handleRowClick}
       emptyState={{
+        key: 'finance.tax.returns',
         icon: Calendar,
-        title: 'No tax return periods',
-        description: 'Tax return periods will appear here once configured.',
         action: {
           label: 'Create Period',
           href: `${routes.finance.tax}/returns/new`,

@@ -3,6 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { ReportWrapper, DrilldownRow } from '@/components/erp/report-wrapper';
 import { formatCurrency } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
@@ -119,89 +129,88 @@ async function ARAgingTable() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left py-3 px-2 font-semibold">Customer</th>
-                <th className="text-right py-3 px-2 font-semibold">Current</th>
-                <th className="text-right py-3 px-2 font-semibold">1-30 Days</th>
-                <th className="text-right py-3 px-2 font-semibold">31-60 Days</th>
-                <th className="text-right py-3 px-2 font-semibold">61-90 Days</th>
-                <th className="text-right py-3 px-2 font-semibold">&gt;90 Days</th>
-                <th className="text-right py-3 px-2 font-semibold">Total</th>
-                <th className="py-3 px-2 font-semibold w-[150px]">% of Total</th>
-                <th className="w-8" aria-hidden />
-              </tr>
-            </thead>
-            <tbody>
-              {data.buckets.map((b) => {
-                const isOverLimit = b.total > b.creditLimit;
-                const hasOverdue = b.days60 > 0 || b.days90 > 0 || b.over90 > 0;
-                return (
-                  <DrilldownRow key={b.customerId} href={`/sales/customers/${b.customerId}`}>
-                    <td className="py-3 px-2">
-                      <div className="flex items-center gap-2">
-                        {b.customer}
-                        {isOverLimit && (
-                          <Badge variant="destructive" className="text-xs">
-                            Over Limit
-                          </Badge>
-                        )}
-                        {hasOverdue && <AlertTriangle className="h-4 w-4 text-amber-500" />}
-                      </div>
-                    </td>
-                    <td className="text-right py-3 px-2 font-mono text-green-600">
-                      {b.current > 0 ? formatCurrency(b.current, data.currency) : '—'}
-                    </td>
-                    <td className="text-right py-3 px-2 font-mono text-blue-600">
-                      {b.days30 > 0 ? formatCurrency(b.days30, data.currency) : '—'}
-                    </td>
-                    <td className="text-right py-3 px-2 font-mono text-amber-600">
-                      {b.days60 > 0 ? formatCurrency(b.days60, data.currency) : '—'}
-                    </td>
-                    <td className="text-right py-3 px-2 font-mono text-orange-600">
-                      {b.days90 > 0 ? formatCurrency(b.days90, data.currency) : '—'}
-                    </td>
-                    <td className="text-right py-3 px-2 font-mono text-red-600">
-                      {b.over90 > 0 ? formatCurrency(b.over90, data.currency) : '—'}
-                    </td>
-                    <td className="text-right py-3 px-2 font-mono font-semibold">
-                      {formatCurrency(b.total, data.currency)}
-                    </td>
-                    <td className="py-3 px-2">
-                      <Progress value={(b.total / grandTotal) * 100} className="h-2" />
-                    </td>
-                  </DrilldownRow>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr className="font-bold bg-muted/50">
-                <td className="py-3 px-2">Total</td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.current, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.days30, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.days60, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.days90, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.over90, data.currency)}
-                </td>
-                <td className="text-right py-3 px-2 font-mono">
-                  {formatCurrency(data.totals.total, data.currency)}
-                </td>
-                <td colSpan={2}></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <Table>
+          <TableCaption className="sr-only">AR aging report</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Customer</TableHead>
+              <TableHead className="text-right">Current</TableHead>
+              <TableHead className="text-right">1-30 Days</TableHead>
+              <TableHead className="text-right">31-60 Days</TableHead>
+              <TableHead className="text-right">61-90 Days</TableHead>
+              <TableHead className="text-right">&gt;90 Days</TableHead>
+              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="w-[150px]">% of Total</TableHead>
+              <TableHead className="w-8" aria-hidden />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.buckets.map((b) => {
+              const isOverLimit = b.total > b.creditLimit;
+              const hasOverdue = b.days60 > 0 || b.days90 > 0 || b.over90 > 0;
+              return (
+                <DrilldownRow key={b.customerId} href={`/sales/customers/${b.customerId}`}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {b.customer}
+                      {isOverLimit && (
+                        <Badge variant="destructive" className="text-xs">
+                          Over Limit
+                        </Badge>
+                      )}
+                      {hasOverdue && <AlertTriangle className="h-4 w-4 text-amber-500" />}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-green-600">
+                    {b.current > 0 ? formatCurrency(b.current, data.currency) : '—'}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-blue-600">
+                    {b.days30 > 0 ? formatCurrency(b.days30, data.currency) : '—'}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-amber-600">
+                    {b.days60 > 0 ? formatCurrency(b.days60, data.currency) : '—'}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-orange-600">
+                    {b.days90 > 0 ? formatCurrency(b.days90, data.currency) : '—'}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-red-600">
+                    {b.over90 > 0 ? formatCurrency(b.over90, data.currency) : '—'}
+                  </TableCell>
+                  <TableCell className="text-right font-mono font-semibold">
+                    {formatCurrency(b.total, data.currency)}
+                  </TableCell>
+                  <TableCell>
+                    <Progress value={(b.total / grandTotal) * 100} className="h-2" />
+                  </TableCell>
+                </DrilldownRow>
+              );
+            })}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell>Total</TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.current, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.days30, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.days60, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.days90, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.over90, data.currency)}
+              </TableCell>
+              <TableCell className="text-right font-mono">
+                {formatCurrency(data.totals.total, data.currency)}
+              </TableCell>
+              <TableCell colSpan={2} />
+            </TableRow>
+          </TableFooter>
+        </Table>
       </CardContent>
     </Card>
   );

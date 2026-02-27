@@ -178,9 +178,8 @@ export function StatementsTable({ statements, pagination }: StatementsTableProps
       onRowClick={handleRowClick}
       pagination={pagination}
       emptyState={{
+        key: 'finance.banking.statements',
         icon: FileText,
-        title: 'No statements found',
-        description: 'Import a bank statement to get started with reconciliation.',
         action: {
           label: 'Import Statement',
           href: `${routes.finance.banking}/import`,

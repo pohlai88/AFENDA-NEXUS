@@ -210,9 +210,8 @@ export function ProjectsTable({ projects, pagination }: ProjectsTableProps) {
       searchKeys={['projectNumber', 'name', 'customerName', 'projectManager']}
       onRowClick={handleRowClick}
       emptyState={{
+        key: 'finance.projects',
         icon: Briefcase,
-        title: 'No projects found',
-        description: 'Get started by creating your first project.',
         action: (
           <Button asChild>
             <Link href={routes.finance.projectNew}>

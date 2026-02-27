@@ -185,9 +185,8 @@ export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
       searchKeys={['customerCode', 'customerName']}
       onRowClick={handleRowClick}
       emptyState={{
+        key: 'finance.credit.customers',
         icon: CreditCard,
-        title: 'No customer credits',
-        description: 'Set up credit limits for your customers.',
         action: (
           <Button asChild>
             <Link href={routes.finance.creditNew}>

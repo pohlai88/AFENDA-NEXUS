@@ -138,6 +138,7 @@ function IcLinesTable({ lines, title }: { lines: IcJournalLineView[]; title: str
       <h3 className="text-sm font-semibold">{title}</h3>
       <div className="rounded-md border">
         <Table>
+          <caption className="sr-only">Intercompany transaction lines</caption>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">Code</TableHead>

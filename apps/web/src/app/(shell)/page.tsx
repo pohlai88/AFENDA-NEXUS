@@ -1,24 +1,58 @@
+import { Suspense } from 'react';
 import { PageHeader } from '@/components/erp/page-header';
 import { StatusBadge } from '@/components/erp/status-badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DashboardPage as ModuleDashboard } from '@/components/erp/dashboard-page';
+import { DashboardWidgets } from '@/components/erp/dashboard-widgets';
+import { NeedsAttention } from '@/components/erp/needs-attention';
+import { resolveAttentionSummary } from '@/lib/attention/attention-registry.server';
 import { getRequestContext } from '@/lib/auth';
 import { formatMoney, formatRelativeTime } from '@/lib/format';
 import { getDashboardSummary } from '@/features/finance/dashboard/queries/dashboard.queries';
-import { DollarSign, ArrowUpRight, ArrowDownLeft, CalendarDays, Activity } from 'lucide-react';
+import { DollarSign, ArrowUpRight, ArrowDownLeft, CalendarDays, Activity, AlertTriangle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default async function DashboardPage() {
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+  description: 'Overview of your financial operations and key metrics.',
+  openGraph: {
+    title: 'Dashboard | Afenda',
+    description: 'Overview of your financial operations.',
+  },
+};
+
+// ─── Summary Skeleton (streaming fallback) ────────────────────────────────────
+
+function SummarySkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-[120px] rounded-lg" />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Skeleton className="h-[200px] rounded-lg" />
+        <Skeleton className="h-[200px] rounded-lg lg:col-span-2" />
+      </div>
+    </div>
+  );
+}
+
+// ─── Async Summary (streams in after layout + KPIs) ───────────────────────────
+
+async function HomeSummary() {
   const ctx = await getRequestContext();
   const result = await getDashboardSummary(ctx);
 
   if (!result.ok) {
     return (
-      <div className="space-y-6">
-        <PageHeader title="Dashboard" description="Overview of your financial operations." />
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
-          <p className="text-sm text-destructive">
-            Failed to load dashboard data. Please try again later.
-          </p>
-        </div>
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+        <p className="text-sm text-destructive">
+          Failed to load dashboard data. Please try again later.
+        </p>
       </div>
     );
   }
@@ -26,9 +60,7 @@ export default async function DashboardPage() {
   const { cashBalance, openAr, openAp, currentPeriod, recentActivity } = result.value;
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Dashboard" description="Overview of your financial operations." />
-
+    <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -106,7 +138,23 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <Card>
+      {/* Row 2: Needs Attention (1/3) + Recent Activity (2/3) */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium">
+              <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+              Needs Attention
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Suspense fallback={<Skeleton className="h-[140px] rounded-md" />}>
+              <AttentionWidget />
+            </Suspense>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-4 w-4" aria-hidden="true" />
@@ -143,7 +191,8 @@ export default async function DashboardPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -154,4 +203,35 @@ function formatEventType(eventType: string): string {
     .replace(/\s+/g, ' ')
     .trim()
     .replace(/^\w/, (c) => c.toUpperCase());
+}
+
+// ─── Attention Widget (async server component) ──────────────────────────────
+
+async function AttentionWidget() {
+  try {
+    const ctx = await getRequestContext();
+    const summary = await resolveAttentionSummary(ctx);
+    return <NeedsAttention summary={summary} />;
+  } catch {
+    return (
+      <p className="text-xs text-muted-foreground py-2">
+        Unable to load attention items.
+      </p>
+    );
+  }
+}
+
+// ─── Main Page (streams summary via Suspense) ──────────────────────────────────
+
+export default function HomePage() {
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Dashboard" description="Overview of your financial operations." />
+      <ModuleDashboard scope={{ type: 'module', id: 'home' }} />
+      <Suspense fallback={<SummarySkeleton />}>
+        <HomeSummary />
+      </Suspense>
+      <DashboardWidgets />
+    </div>
+  );
 }

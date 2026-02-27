@@ -50,6 +50,7 @@ export class ApprovalWorkflowService implements IApprovalWorkflow {
 
     // Create steps from chain
     const stepInputs = route.chain.map((chainStep, idx) => ({
+      tenantId: input.tenantId,
       requestId: reqResult.value.id,
       stepIndex: idx,
       approverId: chainStep.approverValue,

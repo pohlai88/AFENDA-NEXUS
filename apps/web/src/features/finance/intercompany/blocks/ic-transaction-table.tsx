@@ -84,7 +84,7 @@ export function IcTransactionTable({ data }: IcTransactionTableProps) {
           row.mirrorCompanyName.toLowerCase().includes(q)
         );
       }}
-      emptyMessage="No IC transactions match your search."
+      emptyState={{ key: 'finance.intercompany' }}
     />
   );
 }

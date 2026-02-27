@@ -30,6 +30,7 @@
     "web:drift": "node tools/scripts/web-drift-check.mjs",
     "audit:ais": "node tools/scripts/audit-ais.mjs",
     "audit:sox": "node tools/scripts/audit-sox.mjs",
+    "audit:finance": "node tools/scripts/audit-finance-ui.mjs",
     "audit:pack": "node tools/scripts/generate-evidence-pack.mjs",
     "audit:export": "node tools/scripts/export-audit-evidence.mjs",
     "format": "prettier --write .",
@@ -43,9 +44,30 @@
     "gate:worker-module": "node tools/scripts/gate-worker-module.mjs",
     "gate:web-module": "node tools/scripts/gate-web-module.mjs",
     "gate:openapi-drift": "node tools/scripts/gate-openapi-drift.mjs",
+    "gate:frontend-quality": "node tools/scripts/gate-frontend-quality.mjs",
+    "gate:money-safety": "node tools/scripts/gate-money-safety.mjs",
+    "gate:currency-safety": "node tools/scripts/gate-currency-safety.mjs",
+    "gate:kernel-invariants": "node tools/scripts/gate-kernel-invariants.mjs",
+    "gate:status-types": "node tools/scripts/gate-status-types.mjs",
+    "gate:loading-skeleton": "node tools/scripts/gate-loading-skeleton.mjs",
+    "gate:icon-integrity": "node tools/scripts/gate-icon-integrity.mjs",
+    "gate:contract-response-drift": "node tools/scripts/gate-contract-response-drift.mjs",
+    "gate:kpi-stub-tracker": "node tools/scripts/gate-kpi-stub-tracker.mjs",
+    "gate:response-type-sot": "node tools/scripts/gate-response-type-sot.mjs",
+    "gate:e2e-coverage-map": "node tools/scripts/gate-e2e-coverage-map.mjs",
+    "gate:api-smoke-ci": "node tools/scripts/gate-api-smoke-ci.mjs",
+    "gate:schema-entity-alignment": "node tools/scripts/gate-schema-entity-alignment.mjs",
+    "gate:contract-completeness": "node tools/scripts/gate-contract-completeness.mjs",
+    "gate:unused-exports": "node tools/drift-check/src/unused-exports.mjs",
+    "gate:dep-audit": "pnpm audit --audit-level=high",
     "gen:openapi": "node tools/scripts/gen-openapi.mjs",
-    "module:gates": "pnpm gate:identity-sot && pnpm gate:api-module && pnpm gate:worker-module && pnpm gate:web-module && pnpm gate:db-module && pnpm gate:openapi-drift",
+    "module:gates": "pnpm gate:identity-sot && pnpm gate:api-module && pnpm gate:worker-module && pnpm gate:web-module && pnpm gate:db-module && pnpm gate:openapi-drift && pnpm gate:frontend-quality && pnpm gate:money-safety && pnpm gate:currency-safety && pnpm gate:kernel-invariants && pnpm gate:status-types && pnpm gate:loading-skeleton && pnpm gate:icon-integrity && pnpm gate:contract-response-drift && pnpm gate:kpi-stub-tracker && pnpm gate:response-type-sot && pnpm gate:e2e-coverage-map && pnpm gate:api-smoke-ci && pnpm gate:schema-entity-alignment && pnpm gate:contract-completeness && pnpm gate:unused-exports",
     "ci:gates": "pnpm arch:guard && pnpm drift && pnpm agents:drift && pnpm web:drift && pnpm neon:sync && pnpm audit:ais && pnpm audit:sox --fail && pnpm check:test-dir && pnpm module:gates",
+    "ci:gates:parallel": "node tools/scripts/run-gates-parallel.mjs",
+    "ci:gates:parallel:arch": "node tools/scripts/run-gates-parallel.mjs --group arch",
+    "ci:gates:parallel:module": "node tools/scripts/run-gates-parallel.mjs --group module",
+    "ci:gates:parallel:domain": "node tools/scripts/run-gates-parallel.mjs --group domain",
+    "ci:gates:parallel:compliance": "node tools/scripts/run-gates-parallel.mjs --group compliance",
     "ci:gates:fast": "pnpm check:test-dir && pnpm db:ci && pnpm format:check",
     "branch:env": "node tools/scripts/neon-branch-env.mjs",
     "neon:sync": "node tools/scripts/neon-integration-sync.mjs",
@@ -63,11 +85,28 @@
     ]
   },
   "devDependencies": {
+    "@adobe/css-tools": "^4.4.4",
+    "@asamuzakjp/css-color": "3.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "turbo": "catalog:",
     "typescript": "catalog:",
     "wrangler": "catalog:"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@opentelemetry/api@1.9.0": "patches/@opentelemetry__api@1.9.0.patch"
+    },
+    "overrides": {
+      "minimatch@<4.0.0": "3.1.4",
+      "minimatch@>=9.0.0 <10.0.0": "9.0.7",
+      "minimatch@>=10.0.0": "10.2.3",
+      "eslint>minimatch": "10.2.3",
+      "@eslint/config-array>minimatch": "10.2.3",
+      "@eslint/eslintrc>minimatch": "10.2.3",
+      "eslint-plugin-jsx-a11y>minimatch": "10.2.3",
+      "@modelcontextprotocol/sdk": "1.26.0"
+    }
   }
 }

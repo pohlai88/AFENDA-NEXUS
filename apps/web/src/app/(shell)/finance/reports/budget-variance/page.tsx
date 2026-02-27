@@ -58,9 +58,9 @@ export default async function BudgetVariancePage({ searchParams }: BudgetVarianc
     getReportFilterData(),
     ...(ledgerId && periodId
       ? [
-          getBudgetVariance(ctx, { ledgerId, periodId }),
-          getVarianceAlerts(ctx, { ledgerId, periodId }),
-        ]
+        getBudgetVariance(ctx, { ledgerId, periodId }),
+        getVarianceAlerts(ctx, { ledgerId, periodId }),
+      ]
       : []),
   ]);
 
@@ -106,8 +106,8 @@ export default async function BudgetVariancePage({ searchParams }: BudgetVarianc
       {/* No params */}
       {(!ledgerId || !periodId) && (
         <EmptyState
-          title="Select parameters"
-          description="Choose a ledger and fiscal period to generate the budget variance report."
+          contentKey="finance.reports.budgetVariance"
+          variant="firstRun"
           icon={BarChart3}
         />
       )}
@@ -144,8 +144,8 @@ export default async function BudgetVariancePage({ searchParams }: BudgetVarianc
       {/* Variance table */}
       {data && data.rows.length === 0 && (
         <EmptyState
-          title="No variance data"
-          description="No budget entries found for the selected parameters."
+          contentKey="finance.reports.budgetVariance"
+          variant="noResults"
           icon={BarChart3}
         />
       )}
@@ -153,6 +153,7 @@ export default async function BudgetVariancePage({ searchParams }: BudgetVarianc
       {data && data.rows.length > 0 && (
         <div className="rounded-md border">
           <Table>
+            <caption className="sr-only">Budget variance report</caption>
             <TableHeader>
               <TableRow>
                 <TableHead>Account</TableHead>

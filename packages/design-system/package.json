@@ -1,0 +1,27 @@
+{
+  "name": "@afenda/design-system",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Afenda EMS — Institutional Terminal Design System (7-Pillar CSS Architecture)",
+  "exports": {
+    "./styles": "./src/styles/index.css",
+    "./styles/*": "./src/styles/*"
+  },
+  "files": [
+    "src/styles",
+    "ARCHITECTURE.@afenda-design-system.md"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "scripts": {
+    "lint": "echo 'CSS-only package — no lint target'"
+  },
+  "peerDependencies": {
+    "tailwindcss": ">=4.0.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "catalog:"
+  }
+}

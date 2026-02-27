@@ -21,7 +21,8 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '../..');
-const SHELL_FINANCE = join(ROOT, 'apps', 'web', 'src', 'app', '(shell)', 'finance');
+const SHELL_DIR = join(ROOT, 'apps', 'web', 'src', 'app', '(shell)');
+const SHELL_FINANCE = join(SHELL_DIR, 'finance');
 const FEATURES_DIR = join(ROOT, 'apps', 'web', 'src', 'features', 'finance');
 const CONSTANTS_FILE = join(ROOT, 'apps', 'web', 'src', 'lib', 'constants.ts');
 
@@ -69,7 +70,16 @@ function checkShellRoutes(dir) {
   }
 }
 
-checkShellRoutes(SHELL_FINANCE);
+// Check all modules under (shell)/, not just finance
+if (existsSync(SHELL_DIR)) {
+  for (const entry of readdirSync(SHELL_DIR, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    if (entry.name.startsWith('_')) continue;
+    checkShellRoutes(join(SHELL_DIR, entry.name));
+  }
+} else {
+  violations.push({ file: 'apps/web/src/app/(shell)', issue: '(shell) directory missing' });
+}
 
 // Check G2: feature modules import from @afenda/contracts
 const CONTRACT_SUBDIRS = ['blocks', 'actions', 'forms', 'queries'];

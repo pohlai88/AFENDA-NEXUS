@@ -80,8 +80,8 @@ export default async function BalanceSheetPage({ searchParams }: BalanceSheetPag
       {/* No params */}
       {(!ledgerId || !periodId) && (
         <EmptyState
-          title="Select parameters"
-          description="Choose a ledger and period to generate the balance sheet."
+          contentKey="finance.reports.balanceSheet"
+          variant="firstRun"
           icon={BarChart3}
         />
       )}
@@ -114,6 +114,7 @@ function ReportSectionTable({ section }: { section: ReportSection }) {
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">Balance sheet section</caption>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[100px]">Code</TableHead>

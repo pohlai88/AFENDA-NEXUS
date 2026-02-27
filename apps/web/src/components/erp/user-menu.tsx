@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import { LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,15 +14,25 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+/** User identity displayed in the menu. */
+interface UserMenuUser {
+  name: string;
+  email: string;
+  image?: string | null;
+}
+
 interface UserMenuProps {
-  user?: {
-    name: string;
-    email: string;
-    image?: string | null;
-  };
+  /** Current authenticated user. */
+  user?: UserMenuUser;
+  /** Server action called on sign-out. */
   logoutAction?: () => Promise<void>;
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Extract up to two initials from a display name. */
 function getInitials(name: string): string {
   return name
     .split(' ')
@@ -32,7 +43,9 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-export function UserMenu({ user, logoutAction }: UserMenuProps) {
+// ─── Component ───────────────────────────────────────────────────────────────
+
+function UserMenu({ user, logoutAction }: UserMenuProps) {
   const displayName = user?.name ?? 'User';
   const displayEmail = user?.email ?? '';
   const initials = getInitials(displayName);
@@ -84,3 +97,7 @@ export function UserMenu({ user, logoutAction }: UserMenuProps) {
     </DropdownMenu>
   );
 }
+UserMenu.displayName = 'UserMenu';
+
+export { UserMenu };
+export type { UserMenuProps, UserMenuUser };

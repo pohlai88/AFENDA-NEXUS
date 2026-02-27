@@ -1,13 +1,11 @@
 /**
  * Analytics — PostHog event tracking.
  *
- * All call-sites import from this module so the vendor choice
- * stays in one place.
+ * PostHog is loaded via dynamic import to keep posthog-js out of the initial
+ * bundle; it loads on first analytics call (identify, track, pageView).
  *
  * @module use-analytics
  */
-
-import posthog from 'posthog-js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -23,28 +21,40 @@ export interface AnalyticsUser {
   tenantId?: string;
 }
 
-// ─── Singleton Init ─────────────────────────────────────────────────────────
+type PostHogModule = Awaited<typeof import('posthog-js')>;
+type PostHog = PostHogModule['default'];
 
-let _initialized = false;
+// ─── Singleton Init (dynamic import) ─────────────────────────────────────────
 
-function ensurePostHog(): boolean {
+let _posthog: PostHog | null = null;
+let _initPromise: Promise<boolean> | null = null;
+
+async function ensurePostHog(): Promise<boolean> {
   if (typeof window === 'undefined') return false;
-  if (_initialized) return true;
+  if (_posthog) return true;
 
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   if (!key) return false;
 
-  posthog.init(key, {
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
-    person_profiles: 'identified_only',
-    capture_pageview: false, // we call it manually
-    capture_pageleave: true,
-    loaded: () => {
-      if (process.env.NODE_ENV === 'development') posthog.debug(false);
-    },
-  });
-  _initialized = true;
-  return true;
+  if (!_initPromise) {
+    _initPromise = (async () => {
+      const posthog = (await import('posthog-js')).default;
+      posthog.init(key, {
+        api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
+        person_profiles: 'identified_only',
+        capture_pageview: false, // we call it manually
+        capture_pageleave: true,
+        loaded: () => {
+          if (process.env.NODE_ENV === 'development') posthog.debug(false);
+        },
+      });
+      _posthog = posthog;
+      return true;
+    })();
+  }
+
+  await _initPromise;
+  return _posthog !== null;
 }
 
 // ─── Core Functions ─────────────────────────────────────────────────────────
@@ -54,8 +64,9 @@ export function trackEvent(event: AnalyticsEvent): void {
     console.warn('[analytics]', event.name, event.properties);
     return;
   }
-  if (!ensurePostHog()) return;
-  posthog.capture(event.name, event.properties ?? {});
+  ensurePostHog().then((ok) => {
+    if (ok && _posthog) _posthog.capture(event.name, event.properties ?? {});
+  });
 }
 
 export function identifyUser(user: AnalyticsUser): void {
@@ -63,11 +74,14 @@ export function identifyUser(user: AnalyticsUser): void {
     console.warn('[analytics] identify', user.id);
     return;
   }
-  if (!ensurePostHog()) return;
-  posthog.identify(user.id, {
-    email: user.email,
-    name: user.name,
-    tenantId: user.tenantId,
+  ensurePostHog().then((ok) => {
+    if (ok && _posthog) {
+      _posthog.identify(user.id, {
+        email: user.email,
+        name: user.name,
+        tenantId: user.tenantId,
+      });
+    }
   });
 }
 
@@ -76,8 +90,9 @@ export function resetAnalytics(): void {
     console.warn('[analytics] reset');
     return;
   }
-  if (!ensurePostHog()) return;
-  posthog.reset();
+  ensurePostHog().then((ok) => {
+    if (ok && _posthog) _posthog.reset();
+  });
 }
 
 export function trackPageView(path: string): void {
@@ -85,8 +100,9 @@ export function trackPageView(path: string): void {
     console.warn('[analytics] pageview', path);
     return;
   }
-  if (!ensurePostHog()) return;
-  posthog.capture('$pageview', { $current_url: path });
+  ensurePostHog().then((ok) => {
+    if (ok && _posthog) _posthog.capture('$pageview', { $current_url: path });
+  });
 }
 
 // ─── React Hook ─────────────────────────────────────────────────────────────

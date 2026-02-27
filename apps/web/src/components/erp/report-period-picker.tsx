@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,7 +31,8 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type DateRangePreset =
+/** Preset date range keys. */
+type DateRangePreset =
   | 'this-month'
   | 'last-month'
   | 'this-quarter'
@@ -39,19 +41,22 @@ export type DateRangePreset =
   | 'last-year'
   | 'custom';
 
-export interface DateRange {
+/** Inclusive date range with `from` and `to` bounds. */
+interface DateRange {
   from: Date;
   to: Date;
 }
 
-export interface PeriodOption {
+/** An accounting period option. */
+interface PeriodOption {
   id: string;
   name: string;
   startDate?: string;
   endDate?: string;
 }
 
-export interface LedgerOption {
+/** A ledger option. */
+interface LedgerOption {
   id: string;
   name: string;
 }
@@ -282,3 +287,6 @@ export function ReportPeriodPicker({
     </div>
   );
 }
+ReportPeriodPicker.displayName = 'ReportPeriodPicker';
+
+export type { DateRangePreset, DateRange, PeriodOption, LedgerOption, ReportPeriodPickerProps };

@@ -312,6 +312,48 @@ export function registerFinanceHandlers(
     }
   });
 
+  // ─── Tier-0/1: AP OCR Pipeline ──────────────────────────────────────────────
+
+  registry.register('AP_OCR_REQUESTED', async (row) => {
+    const p = payload(row);
+    logger.info('AP OCR extraction requested', {
+      event: 'AP_OCR_REQUESTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      jobId: p.jobId,
+      storageKey: p.storageKey,
+      providerName: p.providerName,
+      confidence: p.confidence,
+    });
+  });
+
+  registry.register('AP_OCR_EXTRACTION_FAILED', async (row) => {
+    const p = payload(row);
+    logger.error('AP OCR extraction failed', {
+      event: 'AP_OCR_EXTRACTION_FAILED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      jobId: p.jobId,
+      reasonCode: p.reasonCode,
+      errorMessage: p.errorMessage,
+      providerName: p.providerName,
+      storageKey: p.storageKey,
+    });
+  });
+
+  registry.register('AP_OCR_INVOICE_RECEIVED', async (row) => {
+    const p = payload(row);
+    logger.info('AP OCR invoice received — triage review required', {
+      event: 'AP_OCR_INVOICE_RECEIVED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      jobId: p.jobId,
+      invoiceId: p.invoiceId,
+      confidence: p.confidence,
+      possibleDuplicate: p.possibleDuplicate,
+    });
+  });
+
   // ─── Tier-1: AP/Expense/Covenant notifications ─────────────────────────────
 
   registry.register('AP_PAYMENT_RUN_EXECUTED', async (row) => {

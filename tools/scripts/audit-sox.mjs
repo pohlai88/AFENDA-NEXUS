@@ -169,7 +169,9 @@ const controls = [
     category: 'Access Controls',
     desc: 'Rate limiting per tenant',
     check() {
-      const hasGuard = fe(`${FIN}/infra/routes/rate-limit-guard.ts`);
+      const hasGuard =
+        fe(`${FIN}/infra/routes/rate-limit-guard.ts`) ||
+        fe('packages/api-kit/src/rate-limit-guard.ts');
       const evidence = [];
       if (hasGuard) evidence.push('rate-limit-guard.ts: per-tenant sliding window');
       return { pass: hasGuard, evidence, confidence: hasGuard ? 80 : 0 };

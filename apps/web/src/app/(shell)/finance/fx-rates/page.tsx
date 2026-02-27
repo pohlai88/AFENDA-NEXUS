@@ -63,8 +63,7 @@ export default async function FxRatesPage({ searchParams }: FxRatesPageProps) {
       {/* Table */}
       {rates.length === 0 ? (
         <EmptyState
-          title="No FX rates"
-          description="Add exchange rates for multi-currency reporting and transactions."
+          contentKey="finance.fxRates"
           icon={ArrowRightLeft}
         />
       ) : (

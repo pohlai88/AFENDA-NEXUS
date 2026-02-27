@@ -79,8 +79,27 @@ export {
   scanStatusEnum,
   linkedEntityTypeEnum,
   documentCategoryEnum,
+  ocrJobStatusEnum,
+  ocrFailureReasonEnum,
+  ocrConfidenceLevelEnum,
+  supplierOnboardingStatusEnum,
+  supplierAccountGroupEnum,
+  supplierCategoryEnum,
+  supplierBlockTypeEnum,
+  supplierBlockScopeEnum,
+  supplierBlockActionEnum,
+  supplierTaxTypeEnum,
+  supplierLegalDocTypeEnum,
+  supplierLegalDocStatusEnum,
+  supplierEvalStatusEnum,
+  supplierRiskRatingEnum,
+  supplierRiskCategoryEnum,
+  supplierDiversityCodeEnum,
+  supplierContactRoleEnum,
+  supplierDuplicateMatchTypeEnum,
+  supplierDuplicateStatusEnum,
 } from './_enums';
-export { tenants, companies, users } from './platform';
+export { tenants, companies, users, userPreferences, systemConfig, adminUsers, adminActionLogs } from './platform';
 export {
   accounts,
   counterparties,
@@ -174,6 +193,23 @@ export {
   supplierDisputes,
   supplierNotificationPrefs,
   supplierComplianceItems,
+  ocrJobs,
+  supplierAccountGroupConfigs,
+  supplierCompanyOverrides,
+  supplierBlocks,
+  supplierBlockHistory,
+  supplierBlacklists,
+  supplierTaxRegistrations,
+  supplierLegalDocuments,
+  supplierDocRequirements,
+  supplierEvalTemplates,
+  supplierEvalCriteria,
+  supplierEvaluations,
+  supplierEvalScores,
+  supplierRiskIndicators,
+  supplierDiversities,
+  supplierContacts,
+  supplierDuplicateSuspects,
 } from './erp';
 export { documentAttachments, documentLinks } from './erp-document';
 export { auditLogs } from './audit';
@@ -182,4 +218,12 @@ export { approvalPolicies, approvalRequests, approvalSteps } from './erp-approva
 export { outbox } from './outbox-table';
 export { idempotencyStore } from './idempotency-store';
 export type { OutboxRow, OutboxWriter, OutboxDrainer } from './outbox';
+export {
+  notifications,
+  notificationPreferences,
+  notificationChannelEnum,
+  notificationSeverityEnum,
+  notificationStatusEnum,
+  notificationCategoryEnum,
+} from './notification';
 export * from './relations';

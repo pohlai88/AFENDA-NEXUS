@@ -16,6 +16,7 @@ import { join } from 'node:path';
 
 const ROOT = process.cwd();
 const MIGRATIONS_DIR = join(ROOT, 'packages', 'db', 'drizzle');
+const CUSTOM_DIR = join(MIGRATIONS_DIR, 'custom');
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -33,11 +34,24 @@ function isExcluded(table) {
   return EXCLUDED_PATTERNS.some((re) => re.test(table));
 }
 
-// ── Scan all migrations ─────────────────────────────────────────────────────
+// ── Scan all migrations (including drizzle/custom/) ─────────────────────────
 
-const migrationFiles = readdirSync(MIGRATIONS_DIR)
-  .filter((f) => f.endsWith('.sql') && !f.startsWith('_'))
-  .sort();
+function collectSqlFiles(dir) {
+  try {
+    return readdirSync(dir)
+      .filter((f) => f.endsWith('.sql') && !f.startsWith('_'))
+      .map((f) => join(dir, f));
+  } catch {
+    return [];
+  }
+}
+
+const migrationPaths = [
+  ...collectSqlFiles(MIGRATIONS_DIR),
+  ...collectSqlFiles(CUSTOM_DIR),
+].sort();
+
+const migrationFiles = migrationPaths.map((p) => p.split(/[\\/]/).pop());
 
 /** Set of all tables created across all migrations */
 const allTables = new Set();
@@ -46,8 +60,8 @@ const rlsEnabled = new Set();
 /** Set of tables that have at least one CREATE POLICY somewhere */
 const policyCreated = new Set();
 
-for (const file of migrationFiles) {
-  const content = readFileSync(join(MIGRATIONS_DIR, file), 'utf-8');
+for (const filePath of migrationPaths) {
+  const content = readFileSync(filePath, 'utf-8');
 
   // Collect CREATE TABLE
   const createRe = /CREATE TABLE\s+(?:IF NOT EXISTS\s+)?("[^"]+"\."[^"]+"|\S+)/gi;

@@ -66,8 +66,7 @@ export default async function AccountsPage({ searchParams }: AccountsPageProps) 
       {/* Empty state */}
       {result.ok && accounts.length === 0 && (
         <EmptyState
-          title="No accounts found"
-          description="No accounts match the current filters."
+          contentKey="finance.accounts"
           icon={List}
         />
       )}

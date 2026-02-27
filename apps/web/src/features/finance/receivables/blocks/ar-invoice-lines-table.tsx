@@ -26,6 +26,7 @@ export function ArInvoiceLinesTable({
   return (
     <div className="rounded-md border">
       <Table>
+        <caption className="sr-only">AR invoice line items</caption>
         <TableHeader>
           <TableRow>
             <TableHead>Account</TableHead>
