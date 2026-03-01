@@ -16,7 +16,7 @@ export default function BankingLoading() {
       {/* Stats Skeleton */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <Card key={i}>
+          <Card key={`skeleton-${i}`}>
             <CardHeader className="pb-2">
               <Skeleton className="h-4 w-20" />
             </CardHeader>

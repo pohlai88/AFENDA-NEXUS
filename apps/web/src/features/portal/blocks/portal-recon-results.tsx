@@ -42,6 +42,7 @@ function ReconLineTable({
         </TableHeader>
         <TableBody>
           {lines.map((line, i) => (
+            // eslint-disable-next-line react/no-array-index-key
             <TableRow key={`${line.statementRef}-${i}`}>
               <TableCell className="font-mono text-sm">{line.statementRef}</TableCell>
               <TableCell className="text-right">

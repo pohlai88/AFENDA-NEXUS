@@ -22,25 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { DocumentUpload, type UploadedFile } from '@/components/erp/document-upload';
-import { cn, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { routes } from '@/lib/constants';
 import { toast } from 'sonner';
-import { Plus, Trash2, Save, Send, Loader2, Receipt, Upload, CheckCircle } from 'lucide-react';
-import type { ExpenseLineItem, ExpenseCategory, ExpensePolicy } from '../types';
+import { Plus, Trash2, Save, Send, Loader2, CheckCircle } from 'lucide-react';
+import type { ExpenseCategory, ExpensePolicy } from '../types';
 import { expenseCategoryLabels } from '../types';
 import {
   createExpenseClaimAction,
   submitExpenseClaimAction,
-  addExpenseLineItemAction,
 } from '../actions/expenses.actions';
 
 // ─── Line Item Form ──────────────────────────────────────────────────────────
@@ -56,7 +47,7 @@ interface LineItemState {
 }
 
 const emptyLineItem = (): LineItemState => ({
-  id: `line-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  id: `line-${crypto.randomUUID()}`,
   expenseDate: new Date().toISOString().split('T')[0] ?? '',
   category: 'other',
   description: '',
@@ -75,8 +66,8 @@ interface ExpenseClaimFormProps {
 
 export function ExpenseClaimForm({
   policy,
-  employeeId = 'emp-1',
-  employeeName = 'Current User',
+  employeeId: _employeeId = 'emp-1',
+  employeeName: _employeeName = 'Current User',
 }: ExpenseClaimFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -148,8 +139,8 @@ export function ExpenseClaimForm({
       const result = await createExpenseClaimAction({
         title,
         description,
-        periodFrom: periodFrom!,
-        periodTo: periodTo!,
+        periodFrom: periodFrom ?? '',
+        periodTo: periodTo ?? '',
         currency: 'USD',
       });
 
@@ -173,8 +164,8 @@ export function ExpenseClaimForm({
       const createResult = await createExpenseClaimAction({
         title,
         description,
-        periodFrom: periodFrom!,
-        periodTo: periodTo!,
+        periodFrom: periodFrom ?? '',
+        periodTo: periodTo ?? '',
         currency: 'USD',
       });
 
@@ -374,7 +365,7 @@ export function ExpenseClaimForm({
                         const file = files[0];
                         if (!file) return [];
                         const uploaded: UploadedFile = {
-                          id: `upload-${Date.now()}`,
+                          id: `upload-${crypto.randomUUID()}`,
                           name: file.name,
                           size: file.size,
                           type: file.type,

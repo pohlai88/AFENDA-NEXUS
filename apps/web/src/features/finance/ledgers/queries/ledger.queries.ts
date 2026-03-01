@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -21,10 +22,10 @@ export interface LedgerDetail {
 
 // ─── Query Functions ────────────────────────────────────────────────────────
 
-export async function getLedgers(
+export const getLedgers = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { page?: string; limit?: string } = {}
-): Promise<ApiResult<PaginatedResponse<LedgerListItem>>> {
+): Promise<ApiResult<PaginatedResponse<LedgerListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
 
@@ -32,12 +33,12 @@ export async function getLedgers(
   if (params.limit) query.limit = params.limit;
 
   return client.get<PaginatedResponse<LedgerListItem>>('/ledgers', query);
-}
+});
 
-export async function getLedger(
+export const getLedger = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   id: string
-): Promise<ApiResult<LedgerDetail>> {
+): Promise<ApiResult<LedgerDetail>> => {
   const client = createApiClient(ctx);
   return client.get<LedgerDetail>(`/ledgers/${id}`);
-}
+});

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult } from '@/lib/types';
 import type { ToleranceScope } from '@afenda/contracts';
@@ -18,12 +19,12 @@ export interface MatchToleranceListItem {
 
 type Ctx = { tenantId: string; userId: string; token: string };
 
-export async function getMatchTolerances(
+export const getMatchTolerances = cache(async (
   ctx: Ctx
-): Promise<ApiResult<MatchToleranceListItem[]>> {
+): Promise<ApiResult<MatchToleranceListItem[]>> => {
   const client = createApiClient(ctx);
   return client.get<MatchToleranceListItem[]>('/ap/match-tolerances');
-}
+});
 
 export async function createMatchTolerance(
   ctx: Ctx,

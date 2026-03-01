@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,6 +19,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { routes } from '@/lib/constants';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
+import { useFormShortcut } from '@/hooks/use-form-shortcut';
 import Link from 'next/link';
 
 // ─── Validation Schema ──────────────────────────────────────────────────────
@@ -85,20 +86,25 @@ export function AccountForm({
     },
   });
 
-  async function handleSubmit(data: AccountFormValues) {
-    setSubmitting(true);
-    setError(null);
+  const handleSubmit = useCallback(
+    async (data: AccountFormValues) => {
+      setSubmitting(true);
+      setError(null);
+      const result = await onSubmit(data);
+      setSubmitting(false);
+      if (result.ok) {
+        showReceipt(result.value);
+      } else {
+        setError(result.error.message);
+      }
+    },
+    [onSubmit, showReceipt],
+  );
 
-    const result = await onSubmit(data);
-
-    setSubmitting(false);
-
-    if (result.ok) {
-      showReceipt(result.value);
-    } else {
-      setError(result.error.message);
-    }
-  }
+  useFormShortcut({
+    onSave: useCallback(() => form.handleSubmit(handleSubmit)(), [form, handleSubmit]),
+    scope: 'page',
+  });
 
   if (isOpen && receipt) {
     return (

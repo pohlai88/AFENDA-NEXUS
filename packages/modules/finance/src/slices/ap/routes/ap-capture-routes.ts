@@ -5,7 +5,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { createCreditMemo } from '../services/create-credit-memo.js';
-import { batchInvoiceImport } from '../services/batch-invoice-import.js';
+import { batchInvoiceImport, type BatchInvoiceRow } from '../services/batch-invoice-import.js';
 import { processBankRejection } from '../services/process-bank-rejection.js';
 import { generateRemittanceAdvice } from '../services/generate-remittance-advice.js';
 import { uploadOcrInvoice } from '../services/ap-ocr-pipeline.js';
@@ -55,7 +55,7 @@ export function registerApCaptureRoutes(
     async (req, reply) => {
       const { tenantId, userId } = extractIdentity(req);
       const body = req.body as {
-        rows: import('../services/batch-invoice-import.js').BatchInvoiceRow[];
+        rows: BatchInvoiceRow[];
         correlationId?: string;
       };
 

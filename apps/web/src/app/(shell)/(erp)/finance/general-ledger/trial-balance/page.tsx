@@ -17,8 +17,7 @@ export const metadata = { title: 'Trial Balance' };
 type Params = { ledgerId?: string; year?: string; period?: string };
 
 export default async function TrialBalancePage({ searchParams }: { searchParams: Promise<Params> }) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
 
   const year = params.year ?? new Date().getFullYear().toString();
   const ledgerId = params.ledgerId ?? '';

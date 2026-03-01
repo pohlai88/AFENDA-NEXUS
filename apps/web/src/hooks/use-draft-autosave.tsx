@@ -151,7 +151,8 @@ function loadDraft<T>(key: string): StoredDraft<T> | null {
 
 function isDraftExpired(metadata: DraftMetadata, maxAge: number): boolean {
   const savedAt = new Date(metadata.savedAt).getTime();
-  return Date.now() - savedAt > maxAge;
+  const now = new Date().getTime();
+  return now - savedAt > maxAge;
 }
 
 function hasSignificantContent(data: unknown): boolean {

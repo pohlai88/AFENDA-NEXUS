@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 
@@ -49,37 +50,37 @@ export interface MatchToleranceListItem {
 
 // ─── Payment Terms Queries ───────────────────────────────────────────────────
 
-export async function getPaymentTerms(
+export const getPaymentTerms = cache(async (
   ctx: Ctx,
   params: { page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<PaymentTermsListItem>>> {
+): Promise<ApiResult<PaginatedResponse<PaymentTermsListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<PaymentTermsListItem>>('/payment-terms', query);
-}
+});
 
-export async function getPaymentTermsById(
+export const getPaymentTermsById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<PaymentTermsDetail>> {
+): Promise<ApiResult<PaymentTermsDetail>> => {
   const client = createApiClient(ctx);
   return client.get<PaymentTermsDetail>(`/payment-terms/${id}`);
-}
+});
 
 // ─── Match Tolerance Queries ─────────────────────────────────────────────────
 
-export async function getMatchTolerances(
+export const getMatchTolerances = cache(async (
   ctx: Ctx,
   params: { page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<MatchToleranceListItem>>> {
+): Promise<ApiResult<PaginatedResponse<MatchToleranceListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<MatchToleranceListItem>>('/match-tolerances', query);
-}
+});
 
 // ─── Command Functions ───────────────────────────────────────────────────────
 

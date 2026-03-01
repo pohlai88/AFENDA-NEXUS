@@ -1,6 +1,6 @@
 {
   "$comment": "SINGLE SOURCE OF TRUTH for all skills. Edit this file, then run: node .agents/tools/agents-gen.mjs to regenerate INDEX.md + INSTALLED-SKILLS.md.",
-  "generatedAt": "2026-02-26T02:57:32.512Z",
+  "generatedAt": "2026-03-01T08:51:31.242Z",
   "skills": [
     {
       "name": "accessibility",
@@ -158,9 +158,19 @@
       "name": "shadcn-ui",
       "category": "ui",
       "priority": "high",
-      "description": "shadcn/ui components — Radix UI + Tailwind CSS, theming, forms, charts",
+      "description": "shadcn/ui components — Radix UI + Tailwind CSS, theming, forms, charts (developer-kit)",
       "path": "skills/shadcn-ui",
-      "source": "leonaaardob/lb-shadcn-ui-skill"
+      "source": "giuseppe-trisciuoglio/developer-kit@shadcn-ui",
+      "installed": true
+    },
+    {
+      "name": "shadcn-ui-stitch",
+      "category": "ui",
+      "priority": "high",
+      "description": "Google Labs shadcn/ui — MCP tools, component discovery, blocks, customization",
+      "path": "skills/shadcn-ui-stitch",
+      "source": "google-labs-code/stitch-skills@shadcn-ui",
+      "installed": true
     },
     {
       "name": "soul-guardian",
@@ -168,7 +178,8 @@
       "priority": "medium",
       "description": "Drift detection + baseline integrity guard for agent workspace files",
       "path": "skills/soul-guardian",
-      "source": "prompt-security/clawsec"
+      "source": "prompt-security/clawsec",
+      "installed": true
     },
     {
       "name": "typescript-advanced-types",
@@ -176,7 +187,8 @@
       "priority": "high",
       "description": "Advanced TypeScript type system — generics, conditional, mapped, template literals",
       "path": "skills/typescript-advanced-types",
-      "source": "local"
+      "source": "local",
+      "installed": true
     },
     {
       "name": "zod",
@@ -184,7 +196,8 @@
       "priority": "high",
       "description": "Zod validation — schema definition, type inference, transforms, error handling",
       "path": "skills/zod",
-      "source": "leonaaardob/lb-zod-skill"
+      "source": "leonaaardob/lb-zod-skill",
+      "installed": true
     },
     {
       "name": "nextjs-app-router-patterns",
@@ -192,7 +205,8 @@
       "priority": "high",
       "description": "Next.js App Router — Server Components, streaming, parallel routes, Server Actions, data fetching",
       "path": "skills/nextjs-app-router-patterns",
-      "source": "wshobson/agents@nextjs-app-router-patterns"
+      "source": "wshobson/agents@nextjs-app-router-patterns",
+      "installed": true
     },
     {
       "name": "tailwind-v4-shadcn",
@@ -200,7 +214,8 @@
       "priority": "high",
       "description": "Tailwind CSS v4 + shadcn/ui — @theme inline, CSS variables, dark mode, component composition",
       "path": "skills/tailwind-v4-shadcn",
-      "source": "secondsky/claude-skills@tailwind-v4-shadcn"
+      "source": "secondsky/claude-skills@tailwind-v4-shadcn",
+      "installed": true
     },
     {
       "name": "react-testing-patterns",
@@ -208,7 +223,8 @@
       "priority": "high",
       "description": "React component/hook testing — Testing Library, MSW, jest-axe, async patterns, Vitest",
       "path": "skills/react-testing-patterns",
-      "source": "hieutrtr/ai1-skills@react-testing-patterns"
+      "source": "hieutrtr/ai1-skills@react-testing-patterns",
+      "installed": true
     },
     {
       "name": "vitest",

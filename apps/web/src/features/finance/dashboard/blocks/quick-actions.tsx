@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/erp/empty-state';
 import { cn } from '@/lib/utils';
 import {
   FileText,
@@ -50,7 +51,7 @@ function QuickActionButton({ action }: { action: QuickAction }) {
         </div>
         <div className="space-y-0.5">
           <div className="font-medium text-sm">{action.title}</div>
-          <div className="text-xs opacity-70">{action.description}</div>
+          <div className="text-xs text-muted-foreground">{action.description}</div>
         </div>
       </Link>
     </Button>
@@ -65,16 +66,29 @@ interface QuickActionsProps {
 
 export function QuickActions({ actions }: QuickActionsProps) {
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">Quick Actions</CardTitle>
-        <CardDescription>Common tasks and shortcuts</CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-3">
-        {actions.map((action) => (
-          <QuickActionButton key={action.id} action={action} />
-        ))}
-      </CardContent>
-    </Card>
+    <section aria-labelledby="finance-quick-actions-title">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle id="finance-quick-actions-title" className="text-base">
+            Quick Actions
+          </CardTitle>
+          <CardDescription>Common tasks and shortcuts</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-3">
+          {actions.length === 0 ? (
+            <EmptyState
+              variant="firstRun"
+              size="sm"
+              title="No quick actions"
+              description="Configure quick actions for common tasks."
+            />
+          ) : (
+            actions.map((action) => (
+              <QuickActionButton key={action.id} action={action} />
+            ))
+          )}
+        </CardContent>
+      </Card>
+    </section>
   );
 }

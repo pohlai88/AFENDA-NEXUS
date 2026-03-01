@@ -53,7 +53,7 @@ export function TenantsTable({ tenants }: { tenants: Tenant[] }) {
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+      { error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
 
       <Table>
         <TableCaption className="sr-only">Platform tenants</TableCaption>

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
 
@@ -102,10 +103,10 @@ export interface CreditSummaryView {
 
 // ─── Customer Credit Queries ─────────────────────────────────────────────────
 
-export async function getCustomerCredits(
+export const getCustomerCredits = cache(async (
   ctx: Ctx,
   params?: { status?: string; riskRating?: string; onHold?: boolean; search?: string },
-): Promise<ApiResult<{ data: CustomerCreditView[] }>> {
+): Promise<ApiResult<{ data: CustomerCreditView[] }>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.status) query.status = params.status;
@@ -114,15 +115,15 @@ export async function getCustomerCredits(
   if (params?.search) query.search = params.search;
 
   return client.get<{ data: CustomerCreditView[] }>('/credit-limits', query);
-}
+});
 
-export async function getCustomerCreditById(
+export const getCustomerCreditById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<CustomerCreditView>> {
+): Promise<ApiResult<CustomerCreditView>> => {
   const client = createApiClient(ctx);
   return client.get<CustomerCreditView>(`/credit-limits/${id}`);
-}
+});
 
 export async function setCreditLimit(
   ctx: Ctx,
@@ -152,25 +153,25 @@ export async function recalculateInternalScore(
 
 // ─── Credit Review Queries ───────────────────────────────────────────────────
 
-export async function getCreditReviews(
+export const getCreditReviews = cache(async (
   ctx: Ctx,
   params?: { status?: string; reviewType?: string },
-): Promise<ApiResult<{ data: CreditReviewView[] }>> {
+): Promise<ApiResult<{ data: CreditReviewView[] }>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.status) query.status = params.status;
   if (params?.reviewType) query.reviewType = params.reviewType;
 
   return client.get<{ data: CreditReviewView[] }>('/credit-reviews', query);
-}
+});
 
-export async function getCreditReviewById(
+export const getCreditReviewById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<CreditReviewView>> {
+): Promise<ApiResult<CreditReviewView>> => {
   const client = createApiClient(ctx);
   return client.get<CreditReviewView>(`/credit-reviews/${id}`);
-}
+});
 
 export async function createCreditReview(
   ctx: Ctx,
@@ -219,17 +220,17 @@ export async function escalateCreditReview(
 
 // ─── Credit Hold Queries ─────────────────────────────────────────────────────
 
-export async function getCreditHolds(
+export const getCreditHolds = cache(async (
   ctx: Ctx,
   params?: { status?: string; holdType?: string },
-): Promise<ApiResult<{ data: CreditHoldView[] }>> {
+): Promise<ApiResult<{ data: CreditHoldView[] }>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.status) query.status = params.status;
   if (params?.holdType) query.holdType = params.holdType;
 
   return client.get<{ data: CreditHoldView[] }>('/credit-holds', query);
-}
+});
 
 export async function placeCreditHold(
   ctx: Ctx,
@@ -260,19 +261,19 @@ export async function escalateCreditHold(
 
 // ─── Summary ─────────────────────────────────────────────────────────────────
 
-export async function getCreditSummary(
+export const getCreditSummary = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<CreditSummaryView>> {
+): Promise<ApiResult<CreditSummaryView>> => {
   const client = createApiClient(ctx);
   return client.get<CreditSummaryView>('/credit-limits/summary');
-}
+});
 
 // ─── Audit ───────────────────────────────────────────────────────────────────
 
-export async function getCreditAudit(
+export const getCreditAudit = cache(async (
   ctx: Ctx,
   customerId: string,
-): Promise<ApiResult<{ data: Array<{ id: string; action: string; userId: string; userName?: string; timestamp: string; details?: string }> }>> {
+): Promise<ApiResult<{ data: Array<{ id: string; action: string; userId: string; userName?: string; timestamp: string; details?: string }> }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: Array<{ id: string; action: string; userId: string; userName?: string; timestamp: string; details?: string }> }>(`/credit-limits/${customerId}/audit`);
-}
+});

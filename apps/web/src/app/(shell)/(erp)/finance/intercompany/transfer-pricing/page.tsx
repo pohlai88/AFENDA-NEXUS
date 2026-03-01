@@ -42,6 +42,7 @@ export default function TransferPricingPage() {
         fallback={
           <div className="grid gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
+              // eslint-disable-next-line react/no-array-index-key -- Static skeleton fallback
               <Skeleton key={i} className="h-[100px]" />
             ))}
           </div>
@@ -54,6 +55,7 @@ export default function TransferPricingPage() {
         fallback={
           <div className="grid gap-4 md:grid-cols-2">
             {Array.from({ length: 2 }).map((_, i) => (
+              // eslint-disable-next-line react/no-array-index-key -- Static skeleton fallback
               <Skeleton key={i} className="h-[200px]" />
             ))}
           </div>

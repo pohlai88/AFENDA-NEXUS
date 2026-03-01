@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type {
   CashFlowDataPoint,
@@ -7,7 +8,12 @@ import type {
   AgingBucket,
 } from '@/features/finance/dashboard/types';
 
-type RequestCtx = { tenantId: string; userId?: string; token?: string };
+// Simple context type for chart data fetchers
+type ChartRequestContext = {
+  tenantId: string;
+  userId?: string;
+  token?: string;
+};
 
 // ─── Stub data (matches chart component expectations) ─────────────────────────
 // Used when API dashboard chart endpoints are not yet available.
@@ -49,8 +55,9 @@ const STUB_AP_AGING: AgingBucket[] = [
 ];
 
 // ─── Fetchers with API-first, stub fallback ─────────────────────────────────
+// Wrapped with React cache() for automatic request memoization (RBP-CACHE).
 
-export async function fetchCashFlowChart(ctx: RequestCtx): Promise<CashFlowDataPoint[]> {
+export const fetchCashFlowChart = cache(async (ctx: ChartRequestContext): Promise<CashFlowDataPoint[]> => {
   try {
     const api = createApiClient(ctx);
     const result = await api.get<CashFlowDataPoint[]>('/dashboard/cash-flow-chart');
@@ -61,24 +68,24 @@ export async function fetchCashFlowChart(ctx: RequestCtx): Promise<CashFlowDataP
     // Fall through to stub
   }
   return STUB_CASH_FLOW;
-}
+});
 
-export async function fetchRevenueExpenseChart(
-  ctx: RequestCtx
-): Promise<RevenueExpenseDataPoint[]> {
-  try {
-    const api = createApiClient(ctx);
-    const result = await api.get<RevenueExpenseDataPoint[]>('/dashboard/revenue-expense-chart');
-    if (result.ok && Array.isArray(result.value) && result.value.length > 0) {
-      return result.value;
+export const fetchRevenueExpenseChart = cache(
+  async (ctx: ChartRequestContext): Promise<RevenueExpenseDataPoint[]> => {
+    try {
+      const api = createApiClient(ctx);
+      const result = await api.get<RevenueExpenseDataPoint[]>('/dashboard/revenue-expense-chart');
+      if (result.ok && Array.isArray(result.value) && result.value.length > 0) {
+        return result.value;
+      }
+    } catch {
+      // Fall through to stub
     }
-  } catch {
-    // Fall through to stub
+    return STUB_REVENUE_EXPENSE;
   }
-  return STUB_REVENUE_EXPENSE;
-}
+);
 
-export async function fetchArAgingDiagram(ctx: RequestCtx): Promise<AgingBucket[]> {
+export const fetchArAgingDiagram = cache(async (ctx: ChartRequestContext): Promise<AgingBucket[]> => {
   try {
     const api = createApiClient(ctx);
     const result = await api.get<AgingBucket[]>('/dashboard/ar-aging-chart');
@@ -101,9 +108,9 @@ export async function fetchArAgingDiagram(ctx: RequestCtx): Promise<AgingBucket[
     // Fall through to stub
   }
   return STUB_AR_AGING;
-}
+});
 
-export async function fetchApAgingDiagram(ctx: RequestCtx): Promise<AgingBucket[]> {
+export const fetchApAgingDiagram = cache(async (ctx: ChartRequestContext): Promise<AgingBucket[]> => {
   try {
     const api = createApiClient(ctx);
     const result = await api.get<AgingBucket[]>('/dashboard/ap-aging-chart');
@@ -125,34 +132,35 @@ export async function fetchApAgingDiagram(ctx: RequestCtx): Promise<AgingBucket[
     // Fall through to stub
   }
   return STUB_AP_AGING;
-}
+});
 
 // ─── Unified fetcher for chart-registry compatibility ──────────────────────
 
-export async function fetchChartData(
-  chartId: string,
-  ctx: RequestCtx
-): Promise<CashFlowDataPoint[] | RevenueExpenseDataPoint[] | null> {
-  switch (chartId) {
-    case 'chart.cashflow':
-      return fetchCashFlowChart(ctx);
-    case 'chart.revenueExpense':
-      return fetchRevenueExpenseChart(ctx);
-    default:
-      return null;
+export const fetchChartData = cache(
+  async (
+    chartId: string,
+    ctx: ChartRequestContext
+  ): Promise<CashFlowDataPoint[] | RevenueExpenseDataPoint[] | null> => {
+    switch (chartId) {
+      case 'chart.cashflow':
+        return fetchCashFlowChart(ctx);
+      case 'chart.revenueExpense':
+        return fetchRevenueExpenseChart(ctx);
+      default:
+        return null;
+    }
   }
-}
+);
 
-export async function fetchDiagramData(
-  diagramId: string,
-  ctx: RequestCtx
-): Promise<AgingBucket[] | null> {
-  switch (diagramId) {
-    case 'diagram.arAging':
-      return fetchArAgingDiagram(ctx);
-    case 'diagram.apAging':
-      return fetchApAgingDiagram(ctx);
-    default:
-      return null;
+export const fetchDiagramData = cache(
+  async (diagramId: string, ctx: ChartRequestContext): Promise<AgingBucket[] | null> => {
+    switch (diagramId) {
+      case 'diagram.arAging':
+        return fetchArAgingDiagram(ctx);
+      case 'diagram.apAging':
+        return fetchApAgingDiagram(ctx);
+      default:
+        return null;
+    }
   }
-}
+);

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { requireAuth } from './auth';
 import type { OrgRole } from '@afenda/contracts';
@@ -19,14 +20,10 @@ export async function requireOrgRole(
     redirect('/onboarding');
   }
 
-  // Resolve the user's role in the active org from the session.
-  // Neon Auth stores member role in session metadata.
-  // In dev mode without Neon Auth, default to 'owner' for convenience.
   const neonAuthBaseUrl = process.env.NEON_AUTH_BASE_URL;
   let resolvedRole: OrgRole = 'member';
 
   if (!neonAuthBaseUrl) {
-    // Dev fallback — treat as owner
     resolvedRole = 'owner';
   } else {
     try {
@@ -69,7 +66,7 @@ export async function requireOrgRole(
  * Get the user's org role for dashboard personalization (role-based default KPIs).
  * Does NOT redirect — returns 'member' if role cannot be determined.
  */
-export async function getOrgRoleForDashboard(): Promise<OrgRole> {
+export const getOrgRoleForDashboard = cache(async (): Promise<OrgRole> => {
   const session = await requireAuth();
   const orgId = session.session.activeOrganizationId;
   if (!orgId) return 'member';
@@ -98,4 +95,4 @@ export async function getOrgRoleForDashboard(): Promise<OrgRole> {
   } catch {
     return 'member';
   }
-}
+});

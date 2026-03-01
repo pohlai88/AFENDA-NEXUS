@@ -39,6 +39,7 @@ function ShortcutCardComponent({ card }: { card: ShortcutCard }) {
         <div className="flex flex-col gap-1">
           {card.items.map((item, i) => (
             <Link
+              // eslint-disable-next-line react/no-array-index-key -- Items may share hrefs
               key={`${item.href}-${i}`}
               href={item.href}
               className={cn(

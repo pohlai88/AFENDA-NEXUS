@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { layoutTokens } from '@/lib/layout-tokens';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -46,7 +47,7 @@ export function JournalFilters({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap gap-2">
         <Select value={status} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className={layoutTokens.selectWidthSm}>
             <SelectValue placeholder="Filter status" />
           </SelectTrigger>
           <SelectContent>
@@ -62,7 +63,7 @@ export function JournalFilters({
           placeholder="Search journals…"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-[240px]"
+          className={layoutTokens.selectWidthMd}
         />
       </div>
 

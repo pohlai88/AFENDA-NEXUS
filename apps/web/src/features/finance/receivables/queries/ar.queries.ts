@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 import type { ArInvoiceStatus } from '@afenda/contracts';
@@ -77,10 +78,10 @@ export interface ArInvoiceDetail {
 
 // ─── Query Functions (server-side, called from RSC pages) ───────────────────
 
-export async function getArInvoices(
+export const getArInvoices = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { status?: string; customerId?: string; page?: string; limit?: string }
-): Promise<ApiResult<PaginatedResponse<ArInvoiceListItem>>> {
+): Promise<ApiResult<PaginatedResponse<ArInvoiceListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.status) query.status = params.status;
@@ -89,15 +90,15 @@ export async function getArInvoices(
   if (params.limit) query.limit = params.limit;
 
   return client.get<PaginatedResponse<ArInvoiceListItem>>('/ar/invoices', query);
-}
+});
 
-export async function getArInvoice(
+export const getArInvoice = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   id: string
-): Promise<ApiResult<ArInvoiceDetail>> {
+): Promise<ApiResult<ArInvoiceDetail>> => {
   const client = createApiClient(ctx);
   return client.get<ArInvoiceDetail>(`/ar/invoices/${id}`);
-}
+});
 
 export async function createArInvoice(
   ctx: { tenantId: string; userId: string; token: string },

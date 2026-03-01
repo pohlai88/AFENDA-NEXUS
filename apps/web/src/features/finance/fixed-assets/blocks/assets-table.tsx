@@ -10,7 +10,7 @@ import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { routes } from '@/lib/constants';
 import { Box, Plus, MapPin, Building2 } from 'lucide-react';
 import type { FixedAsset, AssetStatus } from '../types';
-import { assetStatusConfig, depreciationMethodLabels } from '../types';
+import { assetStatusConfig } from '../types';
 
 // ─── Status Badge ────────────────────────────────────────────────────────────
 

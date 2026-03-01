@@ -4,6 +4,7 @@
  * Uses @neondatabase/auth which wraps Better Auth as a managed service.
  * Auth data lives in the neon_auth schema, managed by Neon.
  */
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createNeonAuth } from '@neondatabase/auth/next/server';
 
@@ -56,13 +57,13 @@ interface NeonSession {
  *
  * Neon Auth's getSession() returns `{ data }` — we unwrap it here.
  */
-export async function getServerSession(): Promise<NeonSession | null> {
+export const getServerSession = cache(async (): Promise<NeonSession | null> => {
   const result = await auth.getSession();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Neon Auth Data wrapper
   const data = (result as any)?.data ?? result;
   if (!data?.user) return null;
   return data as NeonSession;
-}
+});
 
 /**
  * Require authentication. Redirects to /login if no valid session.
@@ -81,43 +82,56 @@ export async function requireAuth(): Promise<NeonSession> {
  * Get the session token string from the current session.
  * Useful for passing as Bearer token to the API server.
  */
-export async function getSessionToken(): Promise<string | undefined> {
+export const getSessionToken = cache(async (): Promise<string | undefined> => {
   const session = await getServerSession();
   return session?.session?.token;
-}
+});
 
 /**
  * Get the active organization (tenant) ID from the session.
  */
-export async function getActiveOrganizationId(): Promise<string | undefined> {
+export const getActiveOrganizationId = cache(async (): Promise<string | undefined> => {
   const session = await getServerSession();
   return session?.session?.activeOrganizationId ?? undefined;
-}
+});
 
-/**
- * Build a request context for API calls.
- * Combines session + active organization.
- * Accepts an optional pre-fetched session to avoid redundant getSession() calls.
- */
-export async function getRequestContext(existing?: NeonSession) {
-  const session = existing ?? (await requireAuth());
+/** Per-request deduplication: server-cache-react */
+const getRequestContextCached = cache(async () => {
+  const session = await requireAuth();
   const tenantId = session.session.activeOrganizationId;
-  if (!tenantId) {
-    redirect('/onboarding');
-  }
+  if (!tenantId) redirect('/onboarding');
   return {
     userId: session.user.id,
     tenantId,
     token: session.session.token,
   };
-}
+});
+
+/**
+ * Build a request context for API calls.
+ * Combines session + active organization.
+ * Accepts an optional pre-fetched session to avoid redundant getSession() calls.
+ * Uses React.cache() for per-request deduplication when called without args.
+ */
+export const getRequestContext = cache(async (existing?: NeonSession) => {
+  if (existing) {
+    const tenantId = existing.session.activeOrganizationId;
+    if (!tenantId) redirect('/onboarding');
+    return {
+      userId: existing.user.id,
+      tenantId,
+      token: existing.session.token,
+    };
+  }
+  return getRequestContextCached();
+});
 
 /**
  * I-KRN-08: Get the user's lastActiveOrgId from preferences.
  * Returns null if preferences are unavailable or lastActiveOrgId is not set.
  * Used by onboarding to auto-restore the last active org.
  */
-export async function getLastActiveOrgId(session: NeonSession): Promise<string | null> {
+export const getLastActiveOrgId = cache(async (session: NeonSession): Promise<string | null> => {
   const apiBase = process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL;
   if (!apiBase) return null;
 
@@ -135,4 +149,4 @@ export async function getLastActiveOrgId(session: NeonSession): Promise<string |
   } catch {
     return null;
   }
-}
+});

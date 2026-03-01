@@ -1,7 +1,10 @@
 import { PageHeader, PageHeaderHeading, PageHeaderDescription } from '@/components/erp/page-header';
-import { CardsSkeleton, DetailSkeleton, TableSkeleton } from '@/components/erp/loading-skeleton';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  CardsSkeleton,
+  ChartsSkeleton,
+  DetailSkeleton,
+  TableSkeleton,
+} from '@/components/erp/loading-skeleton';
 
 export default function FinanceDashboardLoading() {
   return (
@@ -17,25 +20,7 @@ export default function FinanceDashboardLoading() {
 
       <DetailSkeleton />
 
-      {/* Charts Skeleton */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <Skeleton className="h-5 w-32" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[300px] w-full" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-24" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[300px] w-full" />
-          </CardContent>
-        </Card>
-      </div>
+      <ChartsSkeleton />
 
       {/* Bottom Row Skeleton */}
       <div className="grid gap-4 lg:grid-cols-3">

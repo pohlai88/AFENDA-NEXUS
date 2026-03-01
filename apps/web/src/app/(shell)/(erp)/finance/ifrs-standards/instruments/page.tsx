@@ -42,7 +42,8 @@ export default function InstrumentsPage() {
         fallback={
           <div className="grid gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-[100px]" />
+              // eslint-disable-next-line react/no-array-index-key -- Static skeleton fallback
+              <Skeleton key={`skeleton-${i}`} className="h-[100px]" />
             ))}
           </div>
         }
@@ -54,7 +55,8 @@ export default function InstrumentsPage() {
         fallback={
           <div className="grid gap-4 md:grid-cols-2">
             {Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-[200px]" />
+              // eslint-disable-next-line react/no-array-index-key -- Static skeleton fallback
+              <Skeleton key={`skeleton-${i}`} className="h-[200px]" />
             ))}
           </div>
         }

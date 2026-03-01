@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 import type { ApInvoiceStatus } from '@afenda/contracts';
@@ -58,10 +59,10 @@ export interface ApInvoiceDetail {
 
 // ─── Query Functions (server-side, called from RSC pages) ───────────────────
 
-export async function getApInvoices(
+export const getApInvoices = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { status?: string; supplierId?: string; page?: string; limit?: string }
-): Promise<ApiResult<PaginatedResponse<ApInvoiceListItem>>> {
+): Promise<ApiResult<PaginatedResponse<ApInvoiceListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.status) query.status = params.status;
@@ -70,15 +71,15 @@ export async function getApInvoices(
   if (params.limit) query.limit = params.limit;
 
   return client.get<PaginatedResponse<ApInvoiceListItem>>('/ap/invoices', query);
-}
+});
 
-export async function getApInvoice(
+export const getApInvoice = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   id: string
-): Promise<ApiResult<ApInvoiceDetail>> {
+): Promise<ApiResult<ApInvoiceDetail>> => {
   const client = createApiClient(ctx);
   return client.get<ApInvoiceDetail>(`/ap/invoices/${id}`);
-}
+});
 
 export async function createApInvoice(
   ctx: { tenantId: string; userId: string; token: string },
@@ -151,13 +152,13 @@ export interface InvoiceEarlyDiscount {
   currencyCode: string;
 }
 
-export async function getInvoiceEarlyDiscount(
+export const getInvoiceEarlyDiscount = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   invoiceId: string
-): Promise<ApiResult<InvoiceEarlyDiscount | null>> {
+): Promise<ApiResult<InvoiceEarlyDiscount | null>> => {
   const client = createApiClient(ctx);
   return client.get<InvoiceEarlyDiscount | null>(`/ap/invoices/${invoiceId}/early-discount`);
-}
+});
 
 export interface ApDiscountSummary {
   totalDiscount: string;
@@ -165,13 +166,13 @@ export interface ApDiscountSummary {
   days: number;
 }
 
-export async function getApDiscountSummary(
+export const getApDiscountSummary = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   days = 30
-): Promise<ApiResult<ApDiscountSummary>> {
+): Promise<ApiResult<ApDiscountSummary>> => {
   const client = createApiClient(ctx);
   return client.get<ApDiscountSummary>('/ap/discount-summary', { days: String(days) });
-}
+});
 
 export async function recordApPayment(
   ctx: { tenantId: string; userId: string; token: string },

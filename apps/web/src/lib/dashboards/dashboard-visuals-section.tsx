@@ -84,16 +84,16 @@ export async function DashboardVisualsSection({
 
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      {ChartComponent && chartData && (
+      {ChartComponent && chartData ? (
         <div className="min-h-[360px] lg:col-span-2">
           <ChartComponent data={chartData} />
         </div>
-      )}
-      {DiagramComponent && diagramData && (
+      ) : null}
+      {DiagramComponent && diagramData ? (
         <div className="min-h-[360px]">
           <DiagramComponent data={diagramData} />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

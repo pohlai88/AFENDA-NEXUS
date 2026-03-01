@@ -30,7 +30,8 @@ function SummarySkeleton() {
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-[120px] rounded-lg" />
+          // eslint-disable-next-line react/no-array-index-key -- Static skeleton fallback
+          <Skeleton key={`skeleton-${i}`} className="h-[120px] rounded-lg" />
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
@@ -42,12 +43,16 @@ function SummarySkeleton() {
 }
 
 // ─── Async Summary (streams in after layout + KPIs) ───────────────────────────
+// async-parallel: fetch summary and attention in parallel to eliminate waterfall
 
 async function HomeSummary() {
   const ctx = await getRequestContext();
-  const result = await getDashboardSummary(ctx);
+  const [summaryResult, attentionResult] = await Promise.all([
+    getDashboardSummary(ctx),
+    resolveAttentionSummary(ctx).catch(() => null),
+  ]);
 
-  if (!result.ok) {
+  if (!summaryResult.ok) {
     return (
       <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
         <p className="text-sm text-destructive">
@@ -57,7 +62,14 @@ async function HomeSummary() {
     );
   }
 
-  const { cashBalance, openAr, openAp, currentPeriod, recentActivity } = result.value;
+  const { cashBalance, openAr, openAp, currentPeriod, recentActivity } = summaryResult.value;
+  const attentionSummary = attentionResult ?? {
+    items: [],
+    total: 0,
+    critical: 0,
+    warning: 0,
+    info: 0,
+  };
 
   return (
     <>
@@ -148,9 +160,7 @@ async function HomeSummary() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={<Skeleton className="h-[140px] rounded-md" />}>
-              <AttentionWidget />
-            </Suspense>
+            <NeedsAttention summary={attentionSummary} />
           </CardContent>
         </Card>
 
@@ -203,22 +213,6 @@ function formatEventType(eventType: string): string {
     .replace(/\s+/g, ' ')
     .trim()
     .replace(/^\w/, (c) => c.toUpperCase());
-}
-
-// ─── Attention Widget (async server component) ──────────────────────────────
-
-async function AttentionWidget() {
-  try {
-    const ctx = await getRequestContext();
-    const summary = await resolveAttentionSummary(ctx);
-    return <NeedsAttention summary={summary} />;
-  } catch {
-    return (
-      <p className="text-xs text-muted-foreground py-2">
-        Unable to load attention items.
-      </p>
-    );
-  }
 }
 
 // ─── Main Page (streams summary via Suspense) ──────────────────────────────────

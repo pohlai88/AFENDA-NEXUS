@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { cache } from 'react';
 import type {
   AttentionItem,
   AttentionSummary,
@@ -7,6 +8,7 @@ import type {
 import { SEVERITY_ORDER } from './attention.types';
 import { routes } from '@/lib/constants';
 import { getPendingApprovalCount } from '@/features/finance/approvals/queries/approvals.queries';
+import { toSorted } from '@/lib/utils/array';
 
 // ─── Attention Registry (Server-Only) ────────────────────────────────────────
 //
@@ -87,40 +89,41 @@ const ATTENTION_RESOLVERS: Record<string, AttentionResolver> = {
 /**
  * Resolve all attention items concurrently.
  * Uses `Promise.allSettled()` — a failing resolver never crashes navigation.
+ * Wrapped with React cache() for automatic request memoization (RBP-CACHE).
  */
-export async function resolveAttentionSummary(
-  ctx: RequestContextLike,
-): Promise<AttentionSummary> {
-  const resolvers = Object.entries(ATTENTION_RESOLVERS);
+export const resolveAttentionSummary = cache(
+  async (ctx: RequestContextLike): Promise<AttentionSummary> => {
+    const resolvers = Object.entries(ATTENTION_RESOLVERS);
 
-  const results = await Promise.allSettled(
-    resolvers.map(async ([name, resolver]) => {
-      try {
-        return await resolver(ctx);
-      } catch (err) {
-        console.error(`[attention] resolver "${name}" failed:`, err);
-        return null;
+    const results = await Promise.allSettled(
+      resolvers.map(async ([name, resolver]) => {
+        try {
+          return await resolver(ctx);
+        } catch (err) {
+          console.error(`[attention] resolver "${name}" failed:`, err);
+          return null;
+        }
+      }),
+    );
+
+    const items: AttentionItem[] = [];
+
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value) {
+        items.push(result.value);
       }
-    }),
-  );
-
-  const items: AttentionItem[] = [];
-
-  for (const result of results) {
-    if (result.status === 'fulfilled' && result.value) {
-      items.push(result.value);
+      // Rejected promises are already logged above
     }
-    // Rejected promises are already logged above
+
+    // Sort by severity (critical first) — browser-compatible immutability (RBP-03)
+    const sortedItems = toSorted(items, (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
+
+    return {
+      total: sortedItems.reduce((sum, item) => sum + item.count, 0),
+      critical: sortedItems.filter((i) => i.severity === 'critical').length,
+      warning: sortedItems.filter((i) => i.severity === 'warning').length,
+      info: sortedItems.filter((i) => i.severity === 'info').length,
+      items: sortedItems,
+    };
   }
-
-  // Sort by severity (critical first)
-  items.sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
-
-  return {
-    total: items.reduce((sum, item) => sum + item.count, 0),
-    critical: items.filter((i) => i.severity === 'critical').length,
-    warning: items.filter((i) => i.severity === 'warning').length,
-    info: items.filter((i) => i.severity === 'info').length,
-    items,
-  };
-}
+);

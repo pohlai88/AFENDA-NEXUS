@@ -20,8 +20,7 @@ interface CashFlowPageProps {
 }
 
 export default async function CashFlowPage({ searchParams }: CashFlowPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const { ledgerId = '', fromPeriodId = '', toPeriodId = '' } = params;
 
   const [filterData, result] = await Promise.all([
@@ -58,7 +57,7 @@ export default async function CashFlowPage({ searchParams }: CashFlowPageProps) 
         <EmptyState contentKey="finance.reports.cashFlow" variant="firstRun" icon={Banknote} />
       )}
 
-      {data && <CashFlowDisplay data={data} />}
+      { data ? <CashFlowDisplay data={data} /> : null}
     </div>
   );
 }

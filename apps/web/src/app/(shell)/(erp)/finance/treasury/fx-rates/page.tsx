@@ -18,8 +18,7 @@ interface FxRatesPageProps {
 }
 
 export default async function FxRatesPage({ searchParams }: FxRatesPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
 
   const result = await getFxRates(ctx, {
     from: params.from, to: params.to, date: params.date,

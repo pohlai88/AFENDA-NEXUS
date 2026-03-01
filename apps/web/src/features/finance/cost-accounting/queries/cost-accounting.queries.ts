@@ -1,4 +1,5 @@
-﻿import { createApiClient } from '@/lib/api-client';
+import { cache } from 'react';
+import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
 
 // â”€â”€â”€ View Models (what the UI receives from the API) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -134,10 +135,10 @@ type Ctx = { tenantId: string; userId: string; token: string };
 
 // â”€â”€â”€ Cost Center Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export async function getCostCenters(
+export const getCostCenters = cache(async (
   ctx: Ctx,
   params?: { status?: string; type?: string; parentId?: string; search?: string },
-): Promise<ApiResult<{ data: CostCenterListItem[] }>> {
+): Promise<ApiResult<{ data: CostCenterListItem[] }>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.status) query.status = params.status;
@@ -146,15 +147,15 @@ export async function getCostCenters(
   if (params?.search) query.search = params.search;
 
   return client.get<{ data: CostCenterListItem[] }>('/cost-accounting/cost-centers', query);
-}
+});
 
-export async function getCostCenterById(
+export const getCostCenterById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<CostCenterDetail>> {
+): Promise<ApiResult<CostCenterDetail>> => {
   const client = createApiClient(ctx);
   return client.get<CostCenterDetail>(`/cost-accounting/cost-centers/${id}`);
-}
+});
 
 export async function createCostCenter(
   ctx: Ctx,
@@ -193,12 +194,12 @@ export async function moveCostCenter(
 
 // â”€â”€â”€ Cost Driver Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export async function getCostDrivers(
+export const getCostDrivers = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<{ data: CostDriverListItem[] }>> {
+): Promise<ApiResult<{ data: CostDriverListItem[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: CostDriverListItem[] }>('/cost-accounting/cost-drivers');
-}
+});
 
 export async function createCostDriver(
   ctx: Ctx,
@@ -208,17 +209,17 @@ export async function createCostDriver(
   return client.post<CommandReceipt>('/cost-accounting/cost-drivers', body);
 }
 
-export async function getCostDriverValues(
+export const getCostDriverValues = cache(async (
   ctx: Ctx,
   driverId: string,
   period: string,
-): Promise<ApiResult<{ data: CostDriverValueView[] }>> {
+): Promise<ApiResult<{ data: CostDriverValueView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: CostDriverValueView[] }>(
     `/cost-accounting/cost-drivers/${driverId}/values`,
     { period },
   );
-}
+});
 
 export async function updateDriverValues(
   ctx: Ctx,
@@ -244,12 +245,12 @@ export async function deactivateDriver(
 
 // â”€â”€â”€ Allocation Rule Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export async function getAllocationRules(
+export const getAllocationRules = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<{ data: AllocationRuleView[] }>> {
+): Promise<ApiResult<{ data: AllocationRuleView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: AllocationRuleView[] }>('/cost-accounting/allocation-rules');
-}
+});
 
 export async function createAllocationRule(
   ctx: Ctx,
@@ -279,25 +280,25 @@ export async function toggleRuleActive(
 
 // â”€â”€â”€ Allocation Run Queries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export async function getAllocationRuns(
+export const getAllocationRuns = cache(async (
   ctx: Ctx,
   params?: { status?: string; period?: string },
-): Promise<ApiResult<{ data: AllocationRunView[] }>> {
+): Promise<ApiResult<{ data: AllocationRunView[] }>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.status) query.status = params.status;
   if (params?.period) query.period = params.period;
 
   return client.get<{ data: AllocationRunView[] }>('/cost-accounting/cost-allocation-runs', query);
-}
+});
 
-export async function getAllocationRunById(
+export const getAllocationRunById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<AllocationRunDetailView>> {
+): Promise<ApiResult<AllocationRunDetailView>> => {
   const client = createApiClient(ctx);
   return client.get<AllocationRunDetailView>(`/cost-accounting/cost-allocation-runs/${id}`);
-}
+});
 
 export async function executeAllocationRun(
   ctx: Ctx,
@@ -326,12 +327,12 @@ export async function deleteAllocationRun(
 
 // â”€â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-export async function getCostAccountingSummary(
+export const getCostAccountingSummary = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<CostAccountingSummaryView>> {
+): Promise<ApiResult<CostAccountingSummaryView>> => {
   const client = createApiClient(ctx);
   return client.get<CostAccountingSummaryView>('/cost-accounting/summary');
-}
+});
 
 // ─── Posting Preview Types ──────────────────────────────────────────────────
 

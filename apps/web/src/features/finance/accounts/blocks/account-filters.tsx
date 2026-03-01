@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { routes } from '@/lib/constants';
 import type { AccountType } from '../queries/account.queries';
 

@@ -1,0 +1,52 @@
+---
+description: Core tech stack and project setup
+alwaysApply: true
+---
+
+# Tech Stack — Afenda
+
+## Monorepo Setup
+- **Build System**: Turborepo + pnpm workspaces
+- **Framework**: Next.js 16 (App Router, React Server Components)
+- **UI**: shadcn/ui + Tailwind CSS v4
+- **Database**: Neon Postgres + Drizzle ORM
+- **Auth**: Better Auth
+- **Testing**: Vitest (unit) + Playwright (e2e)
+
+## Project Structure
+```
+apps/
+  web/          # Next.js app
+  api/          # Backend API
+  e2e/          # E2E tests
+packages/
+  db/           # Drizzle schemas
+  contracts/    # Shared types
+  core/         # Business logic
+```
+
+## Module Boundaries
+- Web app imports from `packages/*` (never reverse)
+- Each package has clear responsibility
+- Check `architecture.*.md` before major changes
+
+## Next.js MCP Workflow
+
+**Before starting**:
+1. Start dev server: `pnpm dev` or `pnpm --filter @afenda/web dev`
+2. Call `init` tool (next-devtools-mcp) with `project_path: "apps/web"`
+3. Use `nextjs_index` to inspect routes/components/errors
+
+See `AGENTS.md` for full MCP conventions.
+
+## Skills Reference
+
+Available in `.agents/skills/`:
+- `vercel-react-best-practices` — Performance patterns
+- `vercel-composition-patterns` — Component architecture
+- `next-best-practices` — Next.js conventions
+- `shadcn-ui` — UI component patterns
+- `drizzle` — Database ORM patterns
+- `react-testing-patterns` — Test patterns
+
+Use skills proactively when relevant.

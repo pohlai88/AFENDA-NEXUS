@@ -39,7 +39,7 @@ interface ApDuplicateReviewTableProps {
 function parseDuplicateIds(holdReason: string): string[] {
   const match = holdReason.match(/Potential duplicate of invoice\(s\):\s*(.+)/);
   if (!match) return [];
-  return match[1]
+  return (match[1] ?? '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
@@ -243,7 +243,7 @@ export function ApDuplicateReviewTable({ data }: ApDuplicateReviewTableProps) {
               onClick={handleRelease}
               disabled={isPending || !releaseReason.trim()}
             >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Release Hold
             </Button>
           </DialogFooter>

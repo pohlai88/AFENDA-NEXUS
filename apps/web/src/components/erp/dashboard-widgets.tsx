@@ -27,7 +27,7 @@ const FEATURE_DASHBOARD_CHARTS =
 // TODO: Replace stub data with server-fetched chart data via props or RSC.
 
 if (process.env.NODE_ENV === 'development') {
-  // eslint-disable-next-line no-console
+   
   console.warn('[DashboardWidgets] Using STUB chart data — replace with real API calls.');
 }
 
@@ -118,8 +118,8 @@ export function DashboardWidgets() {
         </CardContent>
       </Card>
 
-      {/* Charts Section */}
-      {FEATURE_DASHBOARD_CHARTS && (
+      {/* Charts Section — rendering-conditional-render: use ternary for explicit conditional */}
+      {FEATURE_DASHBOARD_CHARTS ? (
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Cash Flow Trend */}
           <Card>
@@ -198,7 +198,7 @@ export function DashboardWidgets() {
             </CardContent>
           </Card>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

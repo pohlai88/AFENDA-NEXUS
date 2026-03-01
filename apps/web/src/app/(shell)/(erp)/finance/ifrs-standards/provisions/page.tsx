@@ -47,7 +47,8 @@ export default function ProvisionsPage() {
         fallback={
           <div className="grid gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-[100px]" />
+              // eslint-disable-next-line react/no-array-index-key -- Static skeleton fallback
+              <Skeleton key={`skeleton-${i}`} className="h-[100px]" />
             ))}
           </div>
         }
@@ -59,7 +60,8 @@ export default function ProvisionsPage() {
         fallback={
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-[180px]" />
+              // eslint-disable-next-line react/no-array-index-key -- Static skeleton fallback
+              <Skeleton key={`skeleton-${i}`} className="h-[180px]" />
             ))}
           </div>
         }

@@ -4,10 +4,7 @@ import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
-  updateRiskRatingAction,
   recalculateInternalScoreAction,
-  placeCreditHoldAction,
-  releaseCreditHoldAction,
 } from '../actions/credit.actions';
 import { routes } from '@/lib/constants';
 import type { CustomerCreditView } from '../queries/credit.queries';

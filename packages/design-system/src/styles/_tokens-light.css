@@ -150,15 +150,40 @@
   /* ═══════════════════════════════════════════════════════════════════════
      CHART PALETTE — Data Visualization (8-stop)
      ═══════════════════════════════════════════════════════════════════════
-     Each hue ≥60° apart on OKLCH wheel for colorblind safety */
-  --chart-1: oklch(0.7 0.15 40);   /* warm orange — primary metric */
-  --chart-2: oklch(0.6 0.12 175);  /* teal — secondary metric */
-  --chart-3: oklch(0.4 0.08 250);  /* navy — tertiary context */
+     Each hue ≥60° apart on OKLCH wheel for colorblind safety.
+     Optimized for financial dashboards with distinct, accessible colors. */
+  --chart-1: oklch(0.55 0.18 250); /* vivid blue — primary metric */
+  --chart-2: oklch(0.6 0.14 175);  /* teal — secondary metric */
+  --chart-3: oklch(0.7 0.16 40);   /* warm orange — outflows/expenses */
   --chart-4: oklch(0.78 0.12 80);  /* gold — variance / budget */
-  --chart-5: oklch(0.72 0.14 45);  /* coral — comparative */
+  --chart-5: oklch(0.62 0.18 145); /* green — inflows/revenue/positive */
   --chart-6: oklch(0.58 0.14 285); /* purple — provisions/accruals */
   --chart-7: oklch(0.65 0.10 195); /* cyan — cash/treasury */
-  --chart-8: oklch(0.55 0.12 320); /* magenta — taxes */
+  --chart-8: oklch(0.55 0.14 320); /* magenta — taxes */
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     SEMANTIC VISUALIZATION TOKENS
+     ═══════════════════════════════════════════════════════════════════════
+     Charts reference these semantic tokens for consistent meaning across
+     all visualizations. Aliased from --chart-* palette. */
+  --viz-positive: var(--chart-5);      /* Green - inflows, favorable variance */
+  --viz-negative: var(--chart-3);      /* Orange - outflows, unfavorable variance */
+  --viz-neutral: var(--chart-1);       /* Blue - totals, baselines */
+  --viz-accent-1: var(--chart-2);      /* Teal - secondary series */
+  --viz-accent-2: var(--chart-4);      /* Gold - budget/plan */
+  --viz-accent-3: var(--chart-6);      /* Purple - provisions */
+  --viz-threshold: var(--chart-8);     /* Magenta - targets/thresholds */
+  --viz-target: var(--chart-7);        /* Cyan - goals */
+
+  /* Gauge zones (mapped from semantic roles) */
+  --gauge-danger: var(--viz-negative);    /* Red zone for ratios < threshold */
+  --gauge-warning: var(--chart-4);        /* Yellow zone for ratios near threshold */
+  --gauge-success: var(--viz-positive);   /* Green zone for ratios > threshold */
+
+  /* Waterfall (mapped from semantic roles) */
+  --waterfall-positive: var(--viz-positive);  /* Inflows, increases */
+  --waterfall-negative: var(--viz-negative);  /* Outflows, decreases */
+  --waterfall-total: var(--viz-neutral);      /* Opening/closing balances */
 
   /* ═══════════════════════════════════════════════════════════════════════
      FINANCE DOCUMENT STATUS PALETTE

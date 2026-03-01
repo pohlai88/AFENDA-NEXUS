@@ -21,8 +21,7 @@ interface IncomeStatementPageProps {
 }
 
 export default async function IncomeStatementPage({ searchParams }: IncomeStatementPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const ledgerId = params.ledgerId ?? '';
   const fromPeriodId = params.fromPeriodId ?? '';
   const toPeriodId = params.toPeriodId ?? '';

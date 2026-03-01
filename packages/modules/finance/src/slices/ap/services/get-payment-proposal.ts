@@ -6,6 +6,7 @@ import type { IPaymentTermsRepo } from '../ports/payment-terms-repo.js';
 import { computePaymentProposal } from '../calculators/payment-proposal.js';
 import type { PaymentProposal, ProposableSupplier } from '../calculators/payment-proposal.js';
 import type { FinanceContext } from '../../../shared/finance-context.js';
+import type { PaymentTerms } from '../entities/payment-terms.js';
 
 /**
  * W3-1: Payment proposal service.
@@ -75,7 +76,7 @@ export async function getPaymentProposal(
         .filter((id): id is string => id != null)
     ),
   ];
-  const paymentTerms = new Map<string, import('../entities/payment-terms.js').PaymentTerms>();
+  const paymentTerms = new Map<string, PaymentTerms>();
   for (const tid of termsIds) {
     const t = await deps.paymentTermsRepo.findById(tid);
     if (t.ok) paymentTerms.set(tid, t.value);

@@ -14,8 +14,7 @@ import { getRequestContext } from '@/lib/auth';
 export const metadata = { title: 'Reconciliation | Banking | Afenda', description: 'Reconcile bank statement transactions' };
 
 export default async function ReconcilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
 
   const [statementResult, sessionResult, transactionsResult, glResult, suggestionsResult] = await Promise.all([
     getBankStatementById(ctx, id), getReconciliationSession(ctx, id),

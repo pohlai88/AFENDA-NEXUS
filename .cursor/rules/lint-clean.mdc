@@ -1,0 +1,51 @@
+---
+description: Enforce lint-clean code in apps/web to prevent regressions
+globs: apps/web/src/**/*.{ts,tsx}
+---
+
+# Lint-Clean Code Standards
+
+All code in `apps/web/` must pass `pnpm --filter @afenda/web lint` with **0 errors and 0 warnings**.
+
+## Quick Fix
+
+Run auto-fix first for mechanical issues:
+```bash
+pnpm --filter @afenda/web lint -- --fix
+```
+
+## Patterns to Follow
+
+### Server Data Fetchers
+Exported async functions starting with `get`, `fetch`, `resolve`, or `build` must use React `cache()`:
+```typescript
+import { cache } from 'react';
+export const getAccounts = cache(async (ctx: FinanceContext) => { ... });
+```
+
+### Array Keys
+- Dynamic data: use `item.id` or compound keys like `${item.type}-${item.id}`
+- Static skeletons: `eslint-disable-next-line react/no-array-index-key` with justification
+
+### Accessibility
+- No `<a href="#">` -- use `<button type="button">` instead
+- Click handlers on non-interactive elements need `role="button"`, `tabIndex={0}`, and `onKeyDown`
+- Headings must render `children` explicitly
+
+### Type Safety
+- No `any` -- use `unknown`, generics, or specific types
+- No `!` non-null assertions -- use optional chaining, nullish coalescing, or guards
+- Use `import type` for type-only imports
+
+### Hydration Safety
+- No `Date.now()` or `Math.random()` in render paths
+- Use `useId()` for stable IDs, `useEffect` + `useState` for timestamps
+
+### Hooks
+- All hooks at component top level (never in conditionals)
+- All effect dependencies must be stable (wrap in `useMemo` if needed)
+
+## Skills Reference
+- `.agents/skills/vercel-react-best-practices/` -- React cache, hydration, performance
+- `.agents/skills/accessibility/` -- WCAG patterns
+- `.agents/skills/react-patterns/` -- Hook rules, React 19 patterns

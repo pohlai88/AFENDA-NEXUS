@@ -18,8 +18,7 @@ interface Props {
 }
 
 export default async function PortalWhtDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
 
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {

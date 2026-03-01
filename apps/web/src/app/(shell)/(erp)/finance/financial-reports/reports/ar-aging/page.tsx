@@ -23,8 +23,7 @@ interface ArAgingPageProps {
 }
 
 export default async function ArAgingPage({ searchParams }: ArAgingPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
 
   const asOfDate = params.asOfDate ?? '';
   const currency = params.currency ?? '';
@@ -72,7 +71,7 @@ export default async function ArAgingPage({ searchParams }: ArAgingPageProps) {
 
       {!asOfDate && <EmptyState contentKey="finance.reports.arAging" variant="firstRun" icon={BarChart3} />}
 
-      {data && <ArAgingTable data={data} />}
+      { data ? <ArAgingTable data={data} /> : null}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult } from '@/lib/types';
 import type {
@@ -32,16 +33,16 @@ export interface PostingPreviewResult {
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getAssetCategories(
+export const getAssetCategories = cache(async (
   ctx: RequestCtx
-): Promise<{ ok: true; data: AssetCategory[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: AssetCategory[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<AssetCategory[]>('/fixed-assets/categories');
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getFixedAssets(
+export const getFixedAssets = cache(async (
   ctx: RequestCtx,
   params?: {
     categoryId?: string;
@@ -57,7 +58,7 @@ export async function getFixedAssets(
       pagination: { page: number; perPage: number; total: number; totalPages: number };
     }
   | { ok: false; error: string }
-> {
+> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.categoryId) query.categoryId = params.categoryId;
@@ -82,37 +83,37 @@ export async function getFixedAssets(
     data: items,
     pagination: { page, perPage, total, totalPages },
   };
-}
+});
 
-export async function getFixedAssetById(
+export const getFixedAssetById = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<{ ok: true; data: FixedAsset } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: FixedAsset } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<FixedAsset>(`/fixed-assets/${id}`);
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getDepreciationSchedule(
+export const getDepreciationSchedule = cache(async (
   ctx: RequestCtx,
   assetId: string
-): Promise<{ ok: true; data: DepreciationScheduleEntry[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: DepreciationScheduleEntry[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<DepreciationScheduleEntry[]>(
     `/fixed-assets/${assetId}/depreciation-schedule`
   );
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getDepreciationRuns(
+export const getDepreciationRuns = cache(async (
   ctx: RequestCtx,
   params?: {
     status?: string;
     year?: number;
   }
-): Promise<{ ok: true; data: DepreciationRun[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: DepreciationRun[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.status) query.status = params.status;
@@ -121,23 +122,23 @@ export async function getDepreciationRuns(
   const result = await client.get<DepreciationRun[]>('/fixed-assets/depreciation-runs', query);
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getAssetSummary(
+export const getAssetSummary = cache(async (
   ctx: RequestCtx
-): Promise<{ ok: true; data: AssetSummary } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: AssetSummary } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<AssetSummary>('/fixed-assets/summary');
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getDisposalRequests(
+export const getDisposalRequests = cache(async (
   ctx: RequestCtx,
   params?: {
     status?: string;
   }
-): Promise<{ ok: true; data: DisposalRequest[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: DisposalRequest[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.status) query.status = params.status;
@@ -145,7 +146,7 @@ export async function getDisposalRequests(
   const result = await client.get<DisposalRequest[]>('/fixed-assets/disposal-requests', query);
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
 // ─── Preview Query ───────────────────────────────────────────────────────────
 

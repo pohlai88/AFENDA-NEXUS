@@ -11,7 +11,6 @@
  * @module report-export-builders
  */
 
-import type { Pagination } from '@afenda/contracts';
 import type { ExportPayload, ExportSection } from '@/lib/report-export';
 import type {
   TrialBalanceResult,

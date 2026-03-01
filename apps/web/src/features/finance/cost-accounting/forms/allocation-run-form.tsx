@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CreateAllocationRunInputSchema,
   type CreateAllocationRunInput,
-  AllocationMethodEnum,
 } from '@afenda/contracts';
 import { useReceipt } from '@/hooks/use-receipt';
 import { ReceiptPanel } from '@/components/erp/receipt-panel';

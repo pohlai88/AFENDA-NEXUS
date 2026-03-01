@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { DataTable, type Column } from '@/components/erp/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/utils';
+import { layoutTokens } from '@/lib/layout-tokens';
 import { Plus, Gauge, Activity } from 'lucide-react';
 import type { CostDriver, DriverType } from '../types';
 import { driverTypeLabels } from '../types';
@@ -52,7 +54,7 @@ export function CostDriversTable({ drivers }: CostDriversTableProps) {
       render: (driver) => (
         <div>
           <div className="font-medium">{driver.name}</div>
-          <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+          <div className={cn('text-xs text-muted-foreground', layoutTokens.truncateLayoutMd)}>
             {driver.description}
           </div>
         </div>

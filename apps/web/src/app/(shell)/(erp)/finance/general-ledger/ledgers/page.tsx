@@ -13,8 +13,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 export const metadata = { title: 'Ledgers' };
 
 export default async function LedgersPage({ searchParams }: { searchParams: Promise<{ page?: string; limit?: string }> }) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const result = await getLedgers(ctx, { page: params.page ?? '1', limit: params.limit ?? '25' });
   if (!result.ok) handleApiError(result, 'Failed to load ledgers');
   const { data: ledgers, total, page, limit } = result.value;

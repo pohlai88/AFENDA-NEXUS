@@ -1,7 +1,6 @@
 import type { Result } from '@afenda/core';
 import { ok, err, formatMinorUnits } from '@afenda/core';
 import { ValidationError } from '@afenda/core';
-import type { ICostAllocationRunRepo } from '../ports/cost-allocation-run-repo.js';
 import type { ICostCenterRepo } from '../ports/cost-center-repo.js';
 import type { ICostDriverRepo } from '../ports/cost-driver-repo.js';
 import { computeDirectAllocation } from '../calculators/direct-allocation.js';

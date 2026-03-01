@@ -1,5 +1,5 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
-import type { ApiResult } from '@/lib/types';
 import type { ApprovalItem, ApprovalStats, ApprovalPolicy } from '../types';
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
@@ -14,7 +14,7 @@ export interface GetApprovalsParams {
   limit?: number;
 }
 
-export async function getApprovals(ctx: RequestCtx, params: GetApprovalsParams = {}) {
+export const getApprovals = cache(async (ctx: RequestCtx, params: GetApprovalsParams = {}) => {
   const { status = 'PENDING', documentType, slaStatus, page = 1, limit = 20 } = params;
   const client = createApiClient(ctx);
 
@@ -47,9 +47,9 @@ export async function getApprovals(ctx: RequestCtx, params: GetApprovalsParams =
       totalPages,
     },
   };
-}
+});
 
-export async function getApprovalStats(ctx: RequestCtx) {
+export const getApprovalStats = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   const result = await client.get<ApprovalItem[]>('/approvals/pending');
 
@@ -58,7 +58,6 @@ export async function getApprovalStats(ctx: RequestCtx) {
   }
 
   const items = result.value;
-  const now = Date.now();
 
   const stats: ApprovalStats = {
     pending: items.filter((i) => i.status === 'PENDING').length,
@@ -72,9 +71,9 @@ export async function getApprovalStats(ctx: RequestCtx) {
   };
 
   return { ok: true as const, data: stats };
-}
+});
 
-export async function getApprovalPolicies(ctx: RequestCtx) {
+export const getApprovalPolicies = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   // The backend endpoint accepts entityType as a path param, but listing all requires iterating
   // We fetch a common entity type to get policies
@@ -85,9 +84,9 @@ export async function getApprovalPolicies(ctx: RequestCtx) {
   }
 
   return { ok: true as const, data: result.value };
-}
+});
 
-export async function getApprovalById(ctx: RequestCtx, id: string) {
+export const getApprovalById = cache(async (ctx: RequestCtx, id: string) => {
   const client = createApiClient(ctx);
   const result = await client.get<ApprovalItem[]>('/approvals/pending');
 
@@ -102,9 +101,9 @@ export async function getApprovalById(ctx: RequestCtx, id: string) {
   }
 
   return { ok: true as const, data: item };
-}
+});
 
-export async function getPendingApprovalCount(ctx: RequestCtx) {
+export const getPendingApprovalCount = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   const result = await client.get<ApprovalItem[]>('/approvals/pending');
 
@@ -116,4 +115,4 @@ export async function getPendingApprovalCount(ctx: RequestCtx) {
     ok: true as const,
     data: result.value.filter((a) => a.status === 'PENDING').length,
   };
-}
+});

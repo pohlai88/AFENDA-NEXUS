@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { ArrowDown, ArrowUp, ChevronRight, Minus, MoreHorizontal } from 'lucide-react';
+import { cva } from 'class-variance-authority';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,15 +12,31 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { toSorted } from '@/lib/utils/array';
 import type { KPICatalogEntry, KPITemplate } from '@/lib/kpis/kpi-catalog';
 import { getQuickActions } from '@/lib/kpis/kpi-catalog';
 import type { KPIResolverResult, KpiIndicator } from '@/lib/kpis/kpi-registry.server';
+
+// ─── KPI Card Variants (cva) ─────────────────────────────────────────────────
+// Explicit variants per benchmark spec; no layout-heuristic styling.
+
+const kpiCardVariants = cva(
+  'flex min-h-0 flex-col overflow-hidden transition-colors h-full gap-0! p-0!',
+  {
+    variants: {
+      variant: {
+        compact: 'min-h-[100px]',
+        default: 'min-h-[130px]',
+      },
+    },
+    defaultVariants: {
+      variant: 'compact',
+    },
+  },
+);
 
 const GROUP_LABELS: Record<NonNullable<KPICatalogEntry['group']>, string> = {
   cash: 'Cash & Liquidity',
@@ -34,13 +51,15 @@ const INDICATOR_LABELS: Record<KpiIndicator, string> = {
   overdue: 'Overdue',
 };
 
-const INDICATOR_VARIANTS: Record<KpiIndicator, string> = {
+const _INDICATOR_VARIANTS: Record<KpiIndicator, string> = {
   on_track: 'bg-success/15 text-success border-success/30',
   at_risk: 'bg-warning/15 text-warning border-warning/30',
   overdue: 'bg-destructive/15 text-destructive border-destructive/30',
 };
 
 // ─── KPI Card Props ─────────────────────────────────────────────────────────
+
+export type KPICardVariant = 'compact' | 'default';
 
 interface KPICardProps {
   /** Catalog entry defining the KPI's title, template, and optional link. */
@@ -49,22 +68,33 @@ interface KPICardProps {
   data: KPIResolverResult;
   /** Use plain language title when available (e.g. "Money owed" vs "Total Payables"). */
   plainLanguage?: boolean;
-  /** Grid width in units (1 or 2). Enables compact layout when 1. */
+  /** Explicit variant: compact (1x1), default (larger). Bento best practice: content designed for 1x1. */
+  variant?: KPICardVariant;
+  /** Fallback: grid width in units. Used only when variant not set. */
   gridW?: number;
-  /** Grid height in units (1 or 2). Enables compact layout when 1. */
+  /** Fallback: grid height in units. Used only when variant not set. */
   gridH?: number;
   /** Called when user chooses "Refresh" for error-state cards. */
   onRefresh?: () => void;
 }
 
-/** Compact when 1x1; full layout when 2x1, 1x2, or 2x2. */
-const isCompact = (w?: number, h?: number) =>
-  (w ?? 1) === 1 && (h ?? 1) === 1;
+/** Infer compact from variant or grid size (fallback). */
+const isCompact = (variant?: KPICardVariant, gridW?: number, gridH?: number) =>
+  variant === 'compact' || ((variant == null) && (gridW ?? 1) === 1 && (gridH ?? 1) === 1);
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-function KPICard({ catalog, data, plainLanguage, gridW, gridH, onRefresh }: KPICardProps) {
-  const compact = isCompact(gridW, gridH);
+function KPICard({
+  catalog,
+  data,
+  plainLanguage,
+  variant: variantProp,
+  gridW,
+  gridH,
+  onRefresh,
+}: KPICardProps) {
+  const variant = variantProp ?? ((gridW === 1 && gridH === 1) ? 'compact' : 'default');
+  const compact = isCompact(variant, gridW, gridH);
   const displayTitle =
     plainLanguage && catalog.plainTitle ? catalog.plainTitle : catalog.title;
   const quickActions = getQuickActions(catalog);
@@ -105,10 +135,7 @@ function KPICard({ catalog, data, plainLanguage, gridW, gridH, onRefresh }: KPIC
     <TooltipProvider delayDuration={300}>
       <Card
         className={cn(
-          'flex min-h-0 flex-col overflow-hidden transition-colors',
-          'h-full gap-0! p-0!',
-          compact && 'min-h-[100px]',
-          !compact && 'min-h-[130px]',
+          kpiCardVariants({ variant }),
           catalog.href && 'hover:border-primary/50',
           isError && 'opacity-75 ring-1 ring-destructive/20',
         )}
@@ -322,14 +349,14 @@ function ValueTrendTemplate({
   data: KPIResolverResult;
   compact?: boolean;
 }) {
-  const comparison = data.comparison;
+  const { comparison, trend, trendValue, sparklineData, formattedValue } = data;
   return (
     <div className={cn('space-y-1', compact && 'space-y-0.5')}>
       <div className={cn('font-semibold tabular-nums tracking-tight', compact ? 'text-lg' : 'text-2xl')}>
-        {data.formattedValue}
+        {formattedValue}
       </div>
-      {!compact && data.sparklineData && data.sparklineData.length > 0 && (
-        <MiniSparkline points={data.sparklineData} />
+      {!compact && sparklineData != null && sparklineData.length > 0 && (
+        <MiniSparkline points={sparklineData} />
       )}
       {comparison ? (
         <div className="flex items-center gap-1 text-xs">
@@ -346,18 +373,18 @@ function ValueTrendTemplate({
           <span className="text-muted-foreground">{comparison.label}</span>
         </div>
       ) : (
-        data.trend &&
-        data.trendValue && (
+        trend &&
+        trendValue && (
           <div className="flex items-center gap-1 text-xs">
-            <TrendIcon trend={data.trend} />
+            <TrendIcon trend={trend} />
             <span
               className={cn(
-                data.trend === 'up' && 'text-trade-up',
-                data.trend === 'down' && 'text-trade-down',
-                data.trend === 'flat' && 'text-trade-flat',
+                trend === 'up' && 'text-trade-up',
+                trend === 'down' && 'text-trade-down',
+                trend === 'flat' && 'text-trade-flat',
               )}
             >
-              {data.trendValue}
+              {trendValue}
             </span>
             <span className="text-muted-foreground">vs last period</span>
           </div>
@@ -376,28 +403,28 @@ function ValueSparklineTemplate({
   data: KPIResolverResult;
   compact?: boolean;
 }) {
-  const comparison = data.comparison;
+  const { comparison, trend, trendValue, sparklineData, formattedValue } = data;
   return (
     <div className={cn(compact ? 'space-y-0.5' : 'space-y-2')}>
       <div className={cn('font-semibold tabular-nums tracking-tight', compact ? 'text-lg' : 'text-2xl')}>
-        {data.formattedValue}
+        {formattedValue}
       </div>
-      {!compact && data.sparklineData && data.sparklineData.length > 0 && (
-        <MiniSparkline points={data.sparklineData} />
+      {!compact && sparklineData != null && sparklineData.length > 0 && (
+        <MiniSparkline points={sparklineData} />
       )}
-      {(comparison || (data.trend && data.trendValue)) && (
+      {(comparison || (trend && trendValue)) && (
         <div className="flex items-center gap-1 text-xs">
           <TrendIcon
-            trend={comparison?.trend ?? data.trend ?? 'flat'}
+            trend={comparison?.trend ?? trend ?? 'flat'}
           />
           <span
             className={cn(
-              (comparison?.trend ?? data.trend) === 'up' && 'text-trade-up',
-              (comparison?.trend ?? data.trend) === 'down' && 'text-trade-down',
-              (comparison?.trend ?? data.trend) === 'flat' && 'text-trade-flat',
+              (comparison?.trend ?? trend) === 'up' && 'text-trade-up',
+              (comparison?.trend ?? trend) === 'down' && 'text-trade-down',
+              (comparison?.trend ?? trend) === 'flat' && 'text-trade-flat',
             )}
           >
-            {comparison ? comparison.value : data.trendValue}
+            {comparison ? comparison.value : trendValue}
           </span>
           {comparison && (
             <span className="text-muted-foreground">{comparison.label}</span>
@@ -417,7 +444,7 @@ function AgingTemplate({
   data: KPIResolverResult;
   compact?: boolean;
 }) {
-  const buckets = data.buckets ?? [];
+  const { buckets = [] } = data;
   const total = buckets.reduce((sum, b) => sum + b.value, 0);
 
   return (
@@ -466,15 +493,16 @@ function CountStatusTemplate({
   data: KPIResolverResult;
   compact?: boolean;
 }) {
+  const { trend, trendValue, formattedValue } = data;
   return (
     <div className={cn(compact ? 'space-y-0' : 'space-y-1')}>
       <div className={cn('font-semibold tabular-nums tracking-tight', compact ? 'text-lg' : 'text-2xl')}>
-        {data.formattedValue}
+        {formattedValue}
       </div>
-      {data.trend && data.trendValue && (
+      {trend && trendValue && (
         <div className="flex items-center gap-1 text-xs">
-          <TrendIcon trend={data.trend} />
-          <span className="text-muted-foreground">{data.trendValue}</span>
+          <TrendIcon trend={trend} />
+          <span className="text-muted-foreground">{trendValue}</span>
         </div>
       )}
     </div>
@@ -497,12 +525,13 @@ function BulletTemplate({
   const maxVal = Math.max(raw, target, 1);
   const pct = maxVal > 0 ? Math.min((raw / maxVal) * 100, 100) : 0;
   const targetPct = maxVal > 0 ? Math.min((target / maxVal) * 100, 100) : 0;
-  const thresholds = catalog.thresholds ?? [];
+  const { thresholds = [] } = catalog;
   const valueVsTargetPct = target > 0 ? (raw / target) * 100 : pct;
   const colorForPct = (p: number) => {
-    const t = [...thresholds].sort((a, b) => a.value - b.value);
+    const t = toSorted(thresholds, (a, b) => a.value - b.value);
     for (let i = t.length - 1; i >= 0; i--) {
-      if (p >= t[i]!.value) return t[i]!.color;
+      const threshold = t[i];
+      if (threshold && p >= threshold.value) return threshold.color;
     }
     return 'success';
   };
@@ -565,15 +594,16 @@ function DialTemplate({
   const max = catalog.maxValue ?? 100;
   const raw = parseFloat(data.value) || 0;
   const pct = max > min ? Math.min(Math.max((raw - min) / (max - min), 0), 1) * 100 : 0;
-  const thresholds = catalog.thresholds ?? [
+  const { thresholds = [
     { value: 33, color: 'success' as const },
     { value: 66, color: 'warning' as const },
     { value: 100, color: 'destructive' as const },
-  ];
+  ] } = catalog;
   const colorForPct = (p: number) => {
-    const t = [...thresholds].sort((a, b) => a.value - b.value);
+    const t = toSorted(thresholds, (a, b) => a.value - b.value);
     for (let i = t.length - 1; i >= 0; i--) {
-      if (p >= t[i]!.value) return t[i]!.color;
+      const threshold = t[i];
+      if (threshold && p >= threshold.value) return threshold.color;
     }
     return 'success';
   };
@@ -652,15 +682,16 @@ function SpeedometerTemplate({
   const max = catalog.maxValue ?? 100;
   const raw = parseFloat(data.value) || 0;
   const pct = max > min ? Math.min(Math.max((raw - min) / (max - min), 0), 1) * 100 : 0;
-  const thresholds = catalog.thresholds ?? [
+  const { thresholds = [
     { value: 33, color: 'success' as const },
     { value: 66, color: 'warning' as const },
     { value: 100, color: 'destructive' as const },
-  ];
+  ] } = catalog;
   const colorForPct = (p: number) => {
-    const t = [...thresholds].sort((a, b) => a.value - b.value);
+    const t = toSorted(thresholds, (a, b) => a.value - b.value);
     for (let i = t.length - 1; i >= 0; i--) {
-      if (p >= t[i]!.value) return t[i]!.color;
+      const threshold = t[i];
+      if (threshold && p >= threshold.value) return threshold.color;
     }
     return 'success';
   };

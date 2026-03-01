@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Download, Loader2, Play, RotateCcw, XCircle } from 'lucide-react';
 import {
+  downloadPaymentRunReportAction,
   executePaymentRunAction,
   reversePaymentRunAction,
 } from '../actions/ap-payment-run.actions';
@@ -165,7 +166,7 @@ export function ApPaymentRunActions({ runId, status }: ApPaymentRunActionsProps)
               onClick={handleReverse}
               disabled={isPending || !reverseReason.trim()}
             >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Confirm Reversal
             </Button>
           </DialogFooter>

@@ -18,8 +18,7 @@ interface ProjectDetailPageProps {
 }
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
 
   const [projectResult, costsResult, billingsResult, milestonesResult, wipResult] =
     await Promise.all([

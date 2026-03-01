@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult } from '@/lib/types';
 
@@ -209,10 +210,10 @@ export interface CashFlowResult {
 
 // ─── Query Functions ────────────────────────────────────────────────────────
 
-export async function getTrialBalance(
+export const getTrialBalance = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { ledgerId: string; year: string; period?: string }
-): Promise<ApiResult<TrialBalanceResult>> {
+): Promise<ApiResult<TrialBalanceResult>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {
     ledgerId: params.ledgerId,
@@ -221,125 +222,125 @@ export async function getTrialBalance(
   if (params.period) query.period = params.period;
 
   return client.get<TrialBalanceResult>('/trial-balance', query);
-}
+});
 
-export async function getBalanceSheet(
+export const getBalanceSheet = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { ledgerId: string; periodId: string }
-): Promise<ApiResult<BalanceSheetResult>> {
+): Promise<ApiResult<BalanceSheetResult>> => {
   const client = createApiClient(ctx);
   return client.get<BalanceSheetResult>('/reports/balance-sheet', {
     ledgerId: params.ledgerId,
     periodId: params.periodId,
   });
-}
+});
 
-export async function getIncomeStatement(
+export const getIncomeStatement = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { ledgerId: string; fromPeriodId: string; toPeriodId: string }
-): Promise<ApiResult<IncomeStatementResult>> {
+): Promise<ApiResult<IncomeStatementResult>> => {
   const client = createApiClient(ctx);
   return client.get<IncomeStatementResult>('/reports/income-statement', {
     ledgerId: params.ledgerId,
     fromPeriodId: params.fromPeriodId,
     toPeriodId: params.toPeriodId,
   });
-}
+});
 
-export async function getCashFlow(
+export const getCashFlow = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { ledgerId: string; fromPeriodId: string; toPeriodId: string }
-): Promise<ApiResult<CashFlowResult>> {
+): Promise<ApiResult<CashFlowResult>> => {
   const client = createApiClient(ctx);
   return client.get<CashFlowResult>('/reports/cash-flow', {
     ledgerId: params.ledgerId,
     fromPeriodId: params.fromPeriodId,
     toPeriodId: params.toPeriodId,
   });
-}
+});
 
 // ─── Aging Queries ──────────────────────────────────────────────────────────
 
-export async function getApAging(
+export const getApAging = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { asOfDate?: string }
-): Promise<ApiResult<ApAgingResult>> {
+): Promise<ApiResult<ApAgingResult>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.asOfDate) query.asOfDate = params.asOfDate;
   return client.get<ApAgingResult>('/ap/aging', query);
-}
+});
 
-export async function getArAging(
+export const getArAging = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { asOfDate?: string }
-): Promise<ApiResult<ArAgingResult>> {
+): Promise<ApiResult<ArAgingResult>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.asOfDate) query.asOfDate = params.asOfDate;
   return client.get<ArAgingResult>('/ar/aging', query);
-}
+});
 
 // ─── Asset Register Query ───────────────────────────────────────────────────
 
-export async function getAssetRegister(
+export const getAssetRegister = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { asOfDate?: string }
-): Promise<ApiResult<AssetRegisterResult>> {
+): Promise<ApiResult<AssetRegisterResult>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.asOfDate) query.asOfDate = params.asOfDate;
   return client.get<AssetRegisterResult>('/reports/asset-register', query);
-}
+});
 
 // ─── Consolidation Report Query ─────────────────────────────────────────────
 
-export async function getConsolidationReport(
+export const getConsolidationReport = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { periodId: string }
-): Promise<ApiResult<ConsolidationReportResult>> {
+): Promise<ApiResult<ConsolidationReportResult>> => {
   const client = createApiClient(ctx);
   return client.get<ConsolidationReportResult>('/reports/consolidation', {
     periodId: params.periodId,
   });
-}
+});
 
 // ─── Cost Allocation Report Query ───────────────────────────────────────────
 
-export async function getCostAllocationReport(
+export const getCostAllocationReport = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { fromPeriodId: string; toPeriodId: string }
-): Promise<ApiResult<CostAllocationResult>> {
+): Promise<ApiResult<CostAllocationResult>> => {
   const client = createApiClient(ctx);
   return client.get<CostAllocationResult>('/reports/cost-allocation', {
     fromPeriodId: params.fromPeriodId,
     toPeriodId: params.toPeriodId,
   });
-}
+});
 
 // ─── Equity Statement Query ─────────────────────────────────────────────────
 
-export async function getEquityStatement(
+export const getEquityStatement = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { ledgerId: string; fromPeriodId: string; toPeriodId: string }
-): Promise<ApiResult<EquityStatementResult>> {
+): Promise<ApiResult<EquityStatementResult>> => {
   const client = createApiClient(ctx);
   return client.get<EquityStatementResult>('/reports/equity-statement', {
     ledgerId: params.ledgerId,
     fromPeriodId: params.fromPeriodId,
     toPeriodId: params.toPeriodId,
   });
-}
+});
 
 // ─── Tax Summary Query ──────────────────────────────────────────────────────
 
-export async function getTaxSummary(
+export const getTaxSummary = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { fromPeriodId: string; toPeriodId: string }
-): Promise<ApiResult<TaxSummaryResult>> {
+): Promise<ApiResult<TaxSummaryResult>> => {
   const client = createApiClient(ctx);
   return client.get<TaxSummaryResult>('/reports/tax-summary', {
     fromPeriodId: params.fromPeriodId,
     toPeriodId: params.toPeriodId,
   });
-}
+});

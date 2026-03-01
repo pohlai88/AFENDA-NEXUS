@@ -108,7 +108,7 @@ function Field({ label, value, sub }: { label: string; value: string; sub?: stri
     <div>
       <h3 className="text-sm font-medium text-muted-foreground">{label}</h3>
       <p className="mt-1 text-sm">{value}</p>
-      {sub && <p className="text-xs text-muted-foreground font-mono">{sub}</p>}
+      { sub ? <p className="text-xs text-muted-foreground font-mono">{sub}</p> : null}
     </div>
   );
 }

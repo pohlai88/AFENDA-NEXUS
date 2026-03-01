@@ -4,6 +4,7 @@ import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import { UserPreferencesSchema } from '@afenda/contracts';
 import { PreferencesForm } from './_components/preferences-form';
+import { ShortcutPreferencesCard } from './_components/shortcut-preferences-card';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Preferences' };
@@ -27,8 +28,13 @@ export default async function PreferencesPage() {
         ]}
       />
 
-      <div className="max-w-2xl rounded-lg border p-6">
-        <PreferencesForm preferences={preferences} />
+      <div className="max-w-2xl space-y-6">
+        <div className="rounded-lg border p-6">
+          <PreferencesForm preferences={preferences} />
+        </div>
+        <div className="rounded-lg border p-6">
+          <ShortcutPreferencesCard />
+        </div>
       </div>
     </div>
   </Suspense>

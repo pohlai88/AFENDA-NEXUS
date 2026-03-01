@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, Search } from 'lucide-react';
+import { Navigation2, Search } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -86,9 +86,11 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
     [pathname, modules],
   );
 
-  const allNavGroups = currentModule?.navGroups ?? [];
+  const allNavGroups = React.useMemo(
+    () => currentModule?.navGroups ?? [],
+    [currentModule?.navGroups],
+  );
 
-  // Filter groups and items by fuzzy search
   const navGroups = React.useMemo(() => {
     const q = searchQuery.trim();
     if (!q) return allNavGroups;
@@ -116,13 +118,15 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
               variant="ghost"
               size="icon"
               className={ACTION_BTN}
-              aria-label="Module navigation"
+              aria-label={`Open ${currentModule?.label ?? 'module'} navigation`}
             >
-              <Menu className={ICON} />
+              <Navigation2 className={ICON} />
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
-        <TooltipContent side="bottom">Module navigation</TooltipContent>
+        <TooltipContent side="bottom">
+          {currentModule ? `${currentModule.label} navigation` : 'Module navigation'}
+        </TooltipContent>
       </Tooltip>
       <PopoverContent align="end" side="bottom" className={cn(POPOVER_DOMAIN_W, 'p-0')}>
         <PopoverHeader className="border-b px-4 py-3">
@@ -150,7 +154,7 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
                 ? 'Try a different search term.'
                 : 'No navigation items for this module.'
             }
-            icon={Menu}
+            icon={Navigation2}
             variant="noResults"
             size="sm"
             animate={false}

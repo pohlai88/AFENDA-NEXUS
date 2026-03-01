@@ -87,7 +87,7 @@ export function ConfigEditor({ entries }: { entries: ConfigEntry[] }) {
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+      { error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
 
       <Table>
         <TableCaption className="sr-only">System configuration entries</TableCaption>
@@ -167,7 +167,7 @@ export function ConfigEditor({ entries }: { entries: ConfigEntry[] }) {
           </div>
           <div className="flex gap-2">
             <Button size="sm" onClick={handleAdd} disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Save
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Button>

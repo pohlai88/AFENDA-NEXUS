@@ -8,10 +8,10 @@ import {
   documentUploadRateLimitGuard,
   documentPresignRateLimitGuard,
 } from '../../../shared/routes/document-rate-limit.js';
-import { DocumentAttachmentService } from '../services/document-attachment-service.js';
+import { type DocumentAttachmentService } from '../services/document-attachment-service.js';
 import { z } from 'zod';
 import { extractIdentity } from '@afenda/api-kit';
-import { LinkedEntityTypeSchema } from '@afenda/contracts';
+import { type LinkedEntityTypeSchema } from '@afenda/contracts';
 
 type LinkedEntityType = z.infer<typeof LinkedEntityTypeSchema>;
 

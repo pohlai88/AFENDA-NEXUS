@@ -1,0 +1,117 @@
+---
+description: Next.js 16 conventions and enterprise patterns
+globs: ["apps/web/**/*.{ts,tsx}"]
+alwaysApply: false
+---
+
+# Next.js Patterns
+
+## Agent Behavior
+
+- **Never create reports >50 lines** without user explicitly saying "detailed" or "comprehensive"
+- Focus on code changes only
+- Conserve tokens by avoiding verbose explanations
+
+## Proxy vs Middleware
+
+Use `src/proxy.ts` (Next.js 16) instead of middleware:
+
+```typescript
+// src/proxy.ts
+export default async function proxy(req: NextRequest) {
+  // Proxy logic
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};
+```
+
+## Async Params/SearchParams (Next.js 15+)
+
+```typescript
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { id } = await params;
+  const { q } = await searchParams;
+}
+```
+
+## Client with useSearchParams
+
+```typescript
+'use client';
+import { Suspense } from 'react';
+
+// ✅ Wrap in Suspense to avoid CSR bailout
+export function SearchBar() {
+  return (
+    <Suspense fallback={<Skeleton />}>
+      <SearchBarInner />
+    </Suspense>
+  );
+}
+```
+
+## Hydration Safety
+
+```typescript
+// ❌ Wrong: Different on server vs client
+<time>{new Date().toLocaleString()}</time>
+
+// ✅ Correct: Client-only
+'use client';
+export function CurrentTime() {
+  const [time, setTime] = useState<string>();
+  useEffect(() => setTime(new Date().toLocaleString()), []);
+  return <time suppressHydrationWarning>{time}</time>;
+}
+```
+
+## Layout Tokens
+
+Use design tokens from `globals.css`:
+
+- **Page min-height**: `page-min-h` or `layoutTokens.pageMinH`
+- **Auth form**: `auth-max-w`
+- **Table columns**: `col-account`, `col-amount`, `col-actions`
+- **Truncate**: `truncate-layout-sm`, `truncate-layout-md`
+- **Skeletons**: `skeleton-row`, `skeleton-table`
+
+## Metadata
+
+```typescript
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Page Title',
+  description: 'Description',
+};
+
+// Dynamic
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const { id } = await params;
+  const entity = await getEntity(id);
+  return { title: `${entity.name} | Module` };
+}
+```
+
+## Error Handling Structure
+
+```
+app/
+  error.tsx           # Segment errors
+  global-error.tsx    # Root errors
+  not-found.tsx       # 404
+```
+
+## Data Flow
+
+- **Reads**: Server Components fetch via API client
+- **Writes**: Server Actions with `'use server'`
+- **Client state**: Minimize `'use client'` — forms/toggles only

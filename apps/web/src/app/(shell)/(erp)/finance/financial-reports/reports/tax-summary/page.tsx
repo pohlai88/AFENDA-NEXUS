@@ -24,8 +24,7 @@ interface TaxSummaryPageProps {
 }
 
 export default async function TaxSummaryPage({ searchParams }: TaxSummaryPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const ledgerId = params.ledgerId ?? '';
   const fromPeriodId = params.fromPeriodId ?? '';
   const toPeriodId = params.toPeriodId ?? '';
@@ -73,7 +72,7 @@ export default async function TaxSummaryPage({ searchParams }: TaxSummaryPagePro
 
       {(!fromPeriodId || !toPeriodId) && <EmptyState contentKey="finance.reports.taxSummary" variant="firstRun" icon={BarChart3} />}
 
-      {data && <TaxSummaryTable data={data} />}
+      { data ? <TaxSummaryTable data={data} /> : null}
     </div>
   );
 }

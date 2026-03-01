@@ -1,4 +1,5 @@
 import type { NavGroup } from '@/lib/constants';
+import type { BuildFeatureMetrics, BuildAttentionItems } from './module-map.types';
 
 // ─── Domain Dashboard Types ─────────────────────────────────────────────────
 // Headless types powering the two-panel domain dashboard system.
@@ -7,6 +8,8 @@ import type { NavGroup } from '@/lib/constants';
 export interface SavedViewPreset {
   id: string;
   label: string;
+  /** Short description shown in dropdown (e.g. "All key metrics"). */
+  description?: string;
   /** KPI IDs for this preset. */
   widgetIds: string[];
   /** Chart ID (optional). */
@@ -42,6 +45,10 @@ export interface DomainDashboardConfig {
   navGroups: NavGroup[];
   /** Saved view presets (e.g. "Overview", "Cash focus", "Executive"). */
   savedViewPresets?: SavedViewPreset[];
+  /** Optional: Builder for feature-scoped metrics (Module Map). */
+  buildFeatureMetrics?: BuildFeatureMetrics;
+  /** Optional: Builder for feature-scoped attention items (Module Map). */
+  buildAttentionItems?: BuildAttentionItems;
 }
 
 /**

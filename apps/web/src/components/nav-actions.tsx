@@ -129,12 +129,14 @@ export function NavActions() {
         >
           <Sidebar collapsible="none" className="bg-transparent">
             <SidebarContent>
-              {data.map((group, index) => (
-                <SidebarGroup key={index} className="border-b last:border-none">
+              {data.map((group, groupIndex) => (
+                // eslint-disable-next-line react/no-array-index-key -- Static menu groups, never reorder
+                <SidebarGroup key={`group-${groupIndex}`} className="border-b last:border-none">
                   <SidebarGroupContent className="gap-0">
                     <SidebarMenu>
-                      {group.map((item, index) => (
-                        <SidebarMenuItem key={index}>
+                      {group.map((item, itemIndex) => (
+                        // eslint-disable-next-line react/no-array-index-key -- Static menu items
+                        <SidebarMenuItem key={`${item.label}-${itemIndex}`}>
                           <SidebarMenuButton>
                             <item.icon /> <span>{item.label}</span>
                           </SidebarMenuButton>

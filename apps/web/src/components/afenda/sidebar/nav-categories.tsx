@@ -81,7 +81,7 @@ export function NavCategories({ categories }: { categories: SidebarCategory[] })
                       <span className="shrink-0 text-base leading-none" role="img" aria-hidden>
                         {category.emoji}
                       </span>
-                      <span className="flex-1 text-left">{category.label}</span>
+                      <span className="min-w-0 flex-1 truncate text-left">{category.label}</span>
                       <ChevronRight className="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </CollapsibleTrigger>
                   </SidebarMenuButton>
@@ -98,7 +98,7 @@ export function NavCategories({ categories }: { categories: SidebarCategory[] })
                             <SidebarMenuSubButton asChild isActive={isActive}>
                               <Link href={mod.href}>
                                 <ModIcon className="size-4 shrink-0" />
-                                <span>{mod.label}</span>
+                                <span className="min-w-0 flex-1 truncate">{mod.label}</span>
                               </Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>

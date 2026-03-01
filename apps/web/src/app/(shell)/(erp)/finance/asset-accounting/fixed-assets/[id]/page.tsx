@@ -18,8 +18,7 @@ interface AssetDetailPageProps {
 }
 
 export default async function AssetDetailPage({ params }: AssetDetailPageProps) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
 
   const [assetResult, scheduleResult] = await Promise.all([
     getFixedAssetById(ctx, id),

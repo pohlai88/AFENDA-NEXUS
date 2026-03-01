@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { POPOVER_NOTIFICATION_W, SCROLL_MAX_H } from '@/components/afenda/shell.tokens';
-import { getIcon } from '@/lib/modules/icon-map';
 import {
   Bell,
   BellOff,
@@ -160,9 +159,9 @@ export function NotificationPopover({
 
     for (const n of visibleNotifications) {
       const ts = new Date(n.createdAt).getTime();
-      if (ts >= todayStart) groups[0]!.items.push(n);
-      else if (ts >= yesterdayStart) groups[1]!.items.push(n);
-      else groups[2]!.items.push(n);
+      if (ts >= todayStart) groups[0].items.push(n);
+      else if (ts >= yesterdayStart) groups[1].items.push(n);
+      else groups[2].items.push(n);
     }
 
     return groups.filter((g) => g.items.length > 0);

@@ -112,3 +112,25 @@ export const adminActionLogs = platformSchema.table('admin_action_log', {
   index('idx_admin_action_user').on(t.adminUserId, t.occurredAt),
   index('idx_admin_action_tenant').on(t.targetTenantId, t.occurredAt),
 ]).enableRLS();
+
+// ─── platform.seed_run (Seed Registry for Idempotency) ─────────────────────
+
+export const seedRun = platformSchema.table('seed_run', {
+  id: uuid('id').primaryKey().default(sql`uuid_generate_v7()`),
+  seedKey: text('seed_key').notNull(),
+  branchName: text('branch_name').notNull().default('main'),
+  tenantId: uuid('tenant_id').references(() => tenants.id, { onDelete: 'cascade' }),
+  seedHash: text('seed_hash').notNull(),
+  seedVersion: text('seed_version').notNull(),
+  depth: text('depth').notNull(),
+  months: integer('months').notNull(),
+  scenarios: jsonb('scenarios').$type<string[]>().notNull(),
+  createdBy: text('created_by'),
+  seededAt: timestamp('seeded_at', { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex('uq_seed_run_key_branch_tenant').on(table.seedKey, table.branchName, table.tenantId),
+  index('idx_seed_run_branch').on(table.branchName),
+  index('idx_seed_run_tenant').on(table.tenantId).where(sql`${table.tenantId} IS NOT NULL`),
+  index('idx_seed_run_seeded_at').on(table.seededAt),
+]);
+

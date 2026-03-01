@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type {
   KPICard,
   CashFlowDataPoint,
@@ -23,44 +24,44 @@ export interface DashboardSummary {
 
 type RequestCtx = { tenantId: IdParam['id']; userId?: string; token?: string };
 
-export async function getDashboardSummary(ctx: RequestCtx): Promise<ApiResult<DashboardSummary>> {
+export const getDashboardSummary = cache(async (ctx: RequestCtx): Promise<ApiResult<DashboardSummary>> => {
   const client = createApiClient(ctx);
   return client.get<DashboardSummary>('/dashboard/summary');
-}
+});
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getDashboardKPIs(ctx: RequestCtx) {
+export const getDashboardKPIs = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   return client.get<KPICard[]>('/dashboard/kpis');
-}
+});
 
-export async function getCashFlowChart(ctx: RequestCtx) {
+export const getCashFlowChart = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   return client.get<CashFlowDataPoint[]>('/dashboard/cash-flow-chart');
-}
+});
 
-export async function getRevenueExpenseChart(ctx: RequestCtx) {
+export const getRevenueExpenseChart = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   return client.get<RevenueExpenseDataPoint[]>('/dashboard/revenue-expense-chart');
-}
+});
 
-export async function getARAgingChart(ctx: RequestCtx) {
+export const getARAgingChart = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   return client.get<AgingBucket[]>('/dashboard/ar-aging-chart');
-}
+});
 
-export async function getRecentActivity(ctx: RequestCtx) {
+export const getRecentActivity = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   return client.get<ActivityItem[]>('/dashboard/recent-activity');
-}
+});
 
-export async function getAttentionItems(ctx: RequestCtx) {
+export const getAttentionItems = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   return client.get<AttentionItem[]>('/dashboard/attention-items');
-}
+});
 
-export async function getQuickActions(ctx: RequestCtx) {
+export const getQuickActions = cache(async (ctx: RequestCtx) => {
   const client = createApiClient(ctx);
   return client.get<QuickAction[]>('/dashboard/quick-actions');
-}
+});

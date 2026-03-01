@@ -12,8 +12,7 @@ declare module 'jest-axe' {
 // Augment vitest matchers so `expect(results).toHaveNoViolations()` compiles
 import 'vitest';
 declare module 'vitest' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface Assertion<T = {}> {
+  interface Assertion {
     toHaveNoViolations(): void;
   }
 }

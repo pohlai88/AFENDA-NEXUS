@@ -46,9 +46,9 @@ export function IcAgingTable({ rows, currency, grandTotal }: IcAgingTableProps) 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((row, i) => (
+          {rows.map((row) => (
             <DrilldownRow
-              key={`${row.companyId}-${row.counterpartyId}-${i}`}
+              key={`${row.companyId}-${row.counterpartyId}`}
               href={`${routes.finance.icTransactions}?companyId=${row.companyId}&counterpartyId=${row.counterpartyId}`}
             >
               <TableCell className="font-medium">{row.companyName}</TableCell>

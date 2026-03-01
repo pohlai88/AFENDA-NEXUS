@@ -1,5 +1,19 @@
 {
+  // ── Vitest (monorepo): single root config; root must have vitest in devDependencies so the extension can load it.
+  "vitest.rootConfig": "vitest.config.ts",
+  "vitest.maximumConfigs": 15,
+
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "[yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true

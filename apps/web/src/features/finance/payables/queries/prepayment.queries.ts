@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 
@@ -35,25 +36,25 @@ export interface PrepaymentDetail extends PrepaymentListItem {
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getPrepayments(
+export const getPrepayments = cache(async (
   ctx: Ctx,
   params: { page?: string; limit?: string; status?: string },
-): Promise<ApiResult<PaginatedResponse<PrepaymentListItem>>> {
+): Promise<ApiResult<PaginatedResponse<PrepaymentListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = { type: 'PREPAYMENT' };
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   if (params.status) query.status = params.status;
   return client.get<PaginatedResponse<PrepaymentListItem>>('/ap/prepayments', query);
-}
+});
 
-export async function getPrepayment(
+export const getPrepayment = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<PrepaymentDetail>> {
+): Promise<ApiResult<PrepaymentDetail>> => {
   const client = createApiClient(ctx);
   return client.get<PrepaymentDetail>(`/ap/prepayments/${id}`);
-}
+});
 
 // ─── Command Functions ───────────────────────────────────────────────────────
 

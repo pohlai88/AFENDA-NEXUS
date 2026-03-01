@@ -217,7 +217,7 @@ function ContextSwitcher({ className, onSwitchCompany }: ContextSwitcherProps) {
             {/* ─── Organizations ────────────────────────────────────── */}
             {hasMultipleOrgs && (
               <>
-                {hasMultipleCompanies && <DropdownMenuSeparator />}
+                { hasMultipleCompanies ? <DropdownMenuSeparator /> : null}
                 <DropdownMenuLabel className="text-muted-foreground text-xs">
                   Organizations
                 </DropdownMenuLabel>

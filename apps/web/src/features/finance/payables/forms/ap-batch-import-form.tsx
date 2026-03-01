@@ -37,7 +37,7 @@ export function ApBatchImportForm() {
       return;
     }
 
-    const headerLine = lines[0]!;
+    const headerLine = lines[0] ?? '';
     const headers = headerLine.split(',').map((h) => h.trim());
     const rows = lines.slice(1).map((line) => {
       const values = line.split(',').map((v) => v.trim());

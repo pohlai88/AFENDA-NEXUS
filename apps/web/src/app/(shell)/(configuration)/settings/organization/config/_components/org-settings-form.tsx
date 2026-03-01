@@ -166,11 +166,11 @@ export function OrgSettingsForm({ settings, onSave }: OrgSettingsFormProps) {
         </div>
       </fieldset>
 
-      {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-      {success && <p className="text-sm text-green-600" role="status">Settings saved successfully.</p>}
+      { error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
+      { success ? <p className="text-sm text-green-600" role="status">Settings saved successfully.</p> : null}
 
       <Button type="submit" disabled={isPending}>
-        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         Save Settings
       </Button>
     </form>

@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   createJournal,
@@ -44,8 +45,8 @@ export async function voidJournalAction(
 
 // ─── Queries (called from server components) ───────────────────────────────
 
-export async function getJournalAuditAction(journalId: string): Promise<ApiResult<AuditEntry[]>> {
+export const getJournalAuditAction = cache(async (journalId: string): Promise<ApiResult<AuditEntry[]>> => {
   const ctx = await getRequestContext();
   const client = createApiClient(ctx);
   return client.get<AuditEntry[]>(`/journals/${journalId}/audit`);
-}
+});

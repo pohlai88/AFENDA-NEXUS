@@ -47,17 +47,29 @@ export const UTILITY_MODULE_IDS = new Set(['settings', 'admin']);
 
 /**
  * Canonical shell shortcuts — single source of truth.
+ * Aligned with Zoho Books benchmark (Go To + Create patterns).
  * Label is explicit: no heuristics, no guessing from route segments.
  */
 export const SHELL_SHORTCUTS: ShellShortcut[] = [
+  // ─── Go To (g prefix) ─────────────────────────────────────────────────────
   { id: 'nav-home', keys: 'g d', href: routes.home, label: 'Dashboard', scope: 'global' },
   { id: 'nav-journals', keys: 'g j', href: routes.finance.journals, label: 'Journals', scope: 'global' },
-  { id: 'nav-accounts', keys: 'g a', href: routes.finance.accounts, label: 'Accounts', scope: 'global' },
+  { id: 'nav-accounts', keys: 'g a', href: routes.finance.accounts, label: 'Chart of Accounts', scope: 'global' },
   { id: 'nav-periods', keys: 'g p', href: routes.finance.periods, label: 'Periods', scope: 'global' },
   { id: 'nav-ledgers', keys: 'g l', href: routes.finance.ledgers, label: 'Ledgers', scope: 'global' },
   { id: 'nav-banking', keys: 'g b', href: routes.finance.banking, label: 'Banking', scope: 'global' },
   { id: 'nav-expenses', keys: 'g x', href: routes.finance.expenses, label: 'Expenses', scope: 'global' },
   { id: 'nav-settings', keys: 'g s', href: routes.settings, label: 'Settings', scope: 'global' },
+  { id: 'nav-invoices', keys: 'g i', href: routes.finance.receivables, label: 'Invoices (AR)', scope: 'global' },
+  { id: 'nav-bills', keys: 'g v', href: routes.finance.payables, label: 'Bills (AP)', scope: 'global' },
+  { id: 'nav-reports', keys: 'g r', href: routes.finance.reports, label: 'Reports', scope: 'global' },
+  { id: 'nav-home-alt', keys: 'g h', href: routes.home, label: 'Home', scope: 'global' },
+  // ─── Create (c prefix, Zoho-style) ─────────────────────────────────────────
+  { id: 'create-journal', keys: 'c j', href: routes.finance.journalNew, label: 'New Journal Entry', scope: 'global' },
+  { id: 'create-invoice', keys: 'c i', href: routes.finance.receivableNew, label: 'New Invoice (AR)', scope: 'global' },
+  { id: 'create-bill', keys: 'c b', href: routes.finance.payableNew, label: 'New Bill (AP)', scope: 'global' },
+  { id: 'create-expense', keys: 'c x', href: routes.finance.expenseNew, label: 'New Expense Claim', scope: 'global' },
+  { id: 'create-account', keys: 'c a', href: routes.finance.accountNew, label: 'New Account', scope: 'global' },
 ];
 
 /**

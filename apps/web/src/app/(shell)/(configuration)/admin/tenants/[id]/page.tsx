@@ -11,8 +11,7 @@ export default async function AdminTenantDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const session = await requireAuth();
+  const [{ id }, session] = await Promise.all([params, requireAuth()]);
   const ctx = await getRequestContext(session);
   const api = createApiClient(ctx);
 

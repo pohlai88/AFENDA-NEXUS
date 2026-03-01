@@ -161,11 +161,11 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
               autoHold={formAutoHold}
               setAutoHold={setFormAutoHold}
             />
-            {error && <p className="text-xs text-destructive" role="alert">{error}</p>}
+            { error ? <p className="text-xs text-destructive" role="alert">{error}</p> : null}
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={isPending}>Cancel</Button>
               <Button onClick={handleCreate} disabled={isPending}>
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Create
               </Button>
             </DialogFooter>
@@ -244,11 +244,11 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
             autoHold={formAutoHold}
             setAutoHold={setFormAutoHold}
           />
-          {error && <p className="text-xs text-destructive" role="alert">{error}</p>}
+          { error ? <p className="text-xs text-destructive" role="alert">{error}</p> : null}
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={isPending}>Cancel</Button>
             <Button onClick={handleCreate} disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Create
             </Button>
           </DialogFooter>
@@ -275,11 +275,11 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
             setAutoHold={setFormAutoHold}
             scopeDisabled
           />
-          {error && <p className="text-xs text-destructive" role="alert">{error}</p>}
+          { error ? <p className="text-xs text-destructive" role="alert">{error}</p> : null}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditTarget(null)} disabled={isPending}>Cancel</Button>
             <Button onClick={handleUpdate} disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Save
             </Button>
           </DialogFooter>

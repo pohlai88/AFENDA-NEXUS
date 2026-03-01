@@ -174,7 +174,8 @@ export function PortalInvoiceSubmitForm({ supplierId }: PortalInvoiceSubmitFormP
         <CardContent>
           <div className="space-y-3">
             {lines.map((line, index) => (
-              <div key={index} className="flex items-end gap-3">
+              // eslint-disable-next-line react/no-array-index-key
+              <div key={`line-${index}`} className="flex items-end gap-3">
                 <div className="flex-1 space-y-1">
                   <Label className="text-xs">Description</Label>
                   <Input
@@ -233,7 +234,7 @@ export function PortalInvoiceSubmitForm({ supplierId }: PortalInvoiceSubmitFormP
           Cancel
         </Button>
         <Button onClick={handleSubmit} disabled={isPending}>
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Submit Invoice
         </Button>
       </div>

@@ -7,6 +7,7 @@
  * Authentication is handled by Neon Auth (@neondatabase/auth).
  */
 import type { TenantId, UserId } from '@afenda/core';
+import type { Action, RoleDefinition as Role } from './permissions.js';
 
 // ─── Permissions (ERP RBAC) ─────────────────────────────────────────────────
 
@@ -27,7 +28,7 @@ export {
 
 // ─── Role (re-export for backward compat) ───────────────────────────────────
 
-export type Role = import('./permissions.js').RoleDefinition;
+export type { RoleDefinition as Role } from './permissions.js';
 export type Resource = string;
 
 // Re-export branded ID types for consumers
@@ -44,7 +45,7 @@ export interface PolicyContext {
 export function can(
   ctx: PolicyContext,
   resource: Resource,
-  action: import('./permissions.js').Action
+  action: Action
 ): boolean {
   return ctx.roles.some((role) =>
     role.permissions.some((p) => p.resource === resource && p.action === action)
@@ -54,7 +55,7 @@ export function can(
 export function assertCan(
   ctx: PolicyContext,
   resource: Resource,
-  action: import('./permissions.js').Action
+  action: Action
 ): void {
   if (!can(ctx, resource, action)) {
     throw new Error(`Forbidden: ${action} on ${resource}`);

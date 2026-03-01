@@ -1,5 +1,6 @@
-﻿'use server';
+'use server';
 
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -54,10 +55,10 @@ export interface DeferredTaxSummaryView {
 
 /* ── queries ────────────────────────────────────────────── */
 
-export async function getDeferredTaxItems(
+export const getDeferredTaxItems = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   params?: { type?: string; originType?: string; status?: string },
-): Promise<ApiResult<PaginatedResponse<DeferredTaxItemView>>> {
+): Promise<ApiResult<PaginatedResponse<DeferredTaxItemView>>> => {
   const api = createApiClient(ctx);
   const qs = new URLSearchParams();
   if (params?.type) qs.set('type', params.type);
@@ -65,30 +66,30 @@ export async function getDeferredTaxItems(
   if (params?.status) qs.set('status', params.status);
   const path = qs.toString() ? `/deferred-tax-items?${qs}` : '/deferred-tax-items';
   return api.get<PaginatedResponse<DeferredTaxItemView>>(path);
-}
+});
 
-export async function getDeferredTaxItemById(
+export const getDeferredTaxItemById = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   id: string,
-): Promise<ApiResult<DeferredTaxItemView>> {
+): Promise<ApiResult<DeferredTaxItemView>> => {
   const api = createApiClient(ctx);
   return api.get<DeferredTaxItemView>(`/deferred-tax-items/${id}`);
-}
+});
 
-export async function getDeferredTaxSummary(
+export const getDeferredTaxSummary = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
-): Promise<ApiResult<DeferredTaxSummaryView>> {
+): Promise<ApiResult<DeferredTaxSummaryView>> => {
   const api = createApiClient(ctx);
   return api.get<DeferredTaxSummaryView>('/deferred-tax-items/summary');
-}
+});
 
-export async function getDeferredTaxMovements(
+export const getDeferredTaxMovements = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   itemId: string,
-): Promise<ApiResult<PaginatedResponse<DeferredTaxMovementView>>> {
+): Promise<ApiResult<PaginatedResponse<DeferredTaxMovementView>>> => {
   const api = createApiClient(ctx);
   return api.get<PaginatedResponse<DeferredTaxMovementView>>(`/deferred-tax-items/${itemId}/movements`);
-}
+});
 
 /* ── commands ───────────────────────────────────────────── */
 

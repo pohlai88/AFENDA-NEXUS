@@ -13,6 +13,6 @@ interface SessionLike {
 }
 
 export function isAdmin(session: SessionLike): boolean {
-  const role = (session.user as Record<string, unknown>).role;
+  const {role} = (session.user as Record<string, unknown>);
   return role === 'admin';
 }

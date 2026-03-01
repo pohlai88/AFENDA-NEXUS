@@ -9,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Plus, FileText, Building2, Car, Monitor, Package, HelpCircle } from 'lucide-react';
 import type { LeaseContract, LeaseStatus, LeaseType, AssetClass } from '../types';
-import { leaseStatusConfig, leaseTypeLabels, assetClassLabels } from '../types';
+import { leaseStatusConfig, leaseTypeLabels } from '../types';
 import { routes } from '@/lib/constants';
 
 function StatusBadge({ status }: { status: LeaseStatus }) {
@@ -45,7 +45,7 @@ function AssetClassIcon({ assetClass }: { assetClass: AssetClass }) {
 function LeaseTermProgress({ lease }: { lease: LeaseContract }) {
   const start = new Date(lease.commencementDate).getTime();
   const end = new Date(lease.endDate).getTime();
-  const now = Date.now();
+  const now = new Date().getTime();
   const elapsed = now - start;
   const total = end - start;
   const percent = Math.min(Math.max((elapsed / total) * 100, 0), 100);

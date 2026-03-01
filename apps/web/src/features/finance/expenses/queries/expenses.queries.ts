@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 
@@ -78,17 +79,17 @@ export interface ExpensePolicyView {
 
 // --- Query Functions ---------------------------------------------------------
 
-export async function getExpenseClaims(
+export const getExpenseClaims = cache(async (
   ctx: Ctx,
   params: { status?: string; page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<ExpenseClaimListItem>>> {
+): Promise<ApiResult<PaginatedResponse<ExpenseClaimListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.status) query.status = params.status;
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<ExpenseClaimListItem>>('/expense-claims', query);
-}
+});
 
 export interface ExpenseSummary {
   totalClaims: number;
@@ -101,47 +102,47 @@ export interface ExpenseSummary {
   averageProcessingDays: number;
 }
 
-export async function getExpenseSummary(
+export const getExpenseSummary = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<ExpenseSummary>> {
+): Promise<ApiResult<ExpenseSummary>> => {
   const client = createApiClient(ctx);
   return client.get<ExpenseSummary>('/expense-claims/summary');
-}
+});
 
-export async function getExpenseClaim(
+export const getExpenseClaim = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<ExpenseClaimDetail>> {
+): Promise<ApiResult<ExpenseClaimDetail>> => {
   const client = createApiClient(ctx);
   return client.get<ExpenseClaimDetail>(`/expense-claims/${id}`);
-}
+});
 
-export async function getExpenseLines(
+export const getExpenseLines = cache(async (
   ctx: Ctx,
   claimId: string,
-): Promise<ApiResult<{ data: ExpenseLineView[] }>> {
+): Promise<ApiResult<{ data: ExpenseLineView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: ExpenseLineView[] }>(`/expense-claims/${claimId}/lines`);
-}
+});
 
-export async function getExpensePolicies(
+export const getExpensePolicies = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<{ data: ExpensePolicyView[] }>> {
+): Promise<ApiResult<{ data: ExpensePolicyView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: ExpensePolicyView[] }>('/expense-policies');
-}
+});
 
 /** Get the default (or first available) expense policy for new claims. */
-export async function getExpensePolicy(
+export const getExpensePolicy = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<ExpensePolicyView>> {
+): Promise<ApiResult<ExpensePolicyView>> => {
   const client = createApiClient(ctx);
   const result = await client.get<{ data: ExpensePolicyView[] }>('/expense-policies');
   if (!result.ok) return result;
   const defaultPolicy = result.value.data.find((p) => p.isDefault) ?? result.value.data[0];
   if (!defaultPolicy) return { ok: false, error: { code: 'NOT_FOUND', message: 'No expense policy configured', statusCode: 404 } };
   return { ok: true, value: defaultPolicy };
-}
+});
 
 // --- Command Functions -------------------------------------------------------
 

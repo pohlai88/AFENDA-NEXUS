@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { routes } from '@/lib/constants';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,

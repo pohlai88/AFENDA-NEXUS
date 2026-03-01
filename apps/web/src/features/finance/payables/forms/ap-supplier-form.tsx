@@ -181,7 +181,7 @@ export function ApSupplierForm({ defaultCompanyId }: ApSupplierFormProps) {
 
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={isPending}>
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Create Supplier
         </Button>
       </div>

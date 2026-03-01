@@ -25,6 +25,7 @@ export type { AfendaCommandPaletteProps } from './afenda-command-palette';
 
 export { AfendaShortcutDialog } from './afenda-shortcut-dialog';
 export type { AfendaShortcutDialogProps } from './afenda-shortcut-dialog';
+export { ShortcutPopover } from './shortcut-popover';
 
 export { SHELL } from './shell.tokens';
 export type * from './shell.tokens';

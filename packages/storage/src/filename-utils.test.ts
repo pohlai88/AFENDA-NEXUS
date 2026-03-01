@@ -39,7 +39,7 @@ describe('sanitizeFilenameForStorage', () => {
   });
 
   it('truncates to 255 preserving extension', () => {
-    const long = 'a'.repeat(300) + '.pdf';
+    const long = `${'a'.repeat(300)}.pdf`;
     const result = sanitizeFilenameForStorage(long);
     expect(result.safe.length).toBeLessThanOrEqual(255);
     expect(result.safe).toMatch(/\.pdf$/);
@@ -78,7 +78,7 @@ describe('buildContentDisposition', () => {
   });
 
   it('truncates long names preserving extension', () => {
-    const long = 'a'.repeat(300) + '.pdf';
+    const long = `${'a'.repeat(300)}.pdf`;
     const result = buildContentDisposition(long);
     expect(result.length).toBeLessThan(400);
     expect(result).toContain('.pdf');

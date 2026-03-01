@@ -1,9 +1,10 @@
+import { cache } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getLedgers } from '@/features/finance/ledgers/queries/ledger.queries';
 import { getPeriods } from '@/features/finance/periods/queries/period.queries';
 import { currencyConfig } from '@/lib/constants';
 
-export async function getReportFilterData() {
+export const getReportFilterData = cache(async () => {
   const ctx = await getRequestContext();
 
   const [ledgersResult, periodsResult] = await Promise.all([
@@ -22,4 +23,4 @@ export async function getReportFilterData() {
   const currencies = Object.keys(currencyConfig);
 
   return { ledgers, periods, currencies };
-}
+});

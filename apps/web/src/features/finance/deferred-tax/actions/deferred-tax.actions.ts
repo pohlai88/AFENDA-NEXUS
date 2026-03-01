@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/lib/constants';
 import { getRequestContext } from '@/lib/auth';
-import type { CommandReceipt } from '@/lib/types';
 import {
   createDeferredTaxItemCmd,
   recalculateDeferredTaxCmd,

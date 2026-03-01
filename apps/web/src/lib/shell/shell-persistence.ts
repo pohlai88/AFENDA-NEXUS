@@ -55,6 +55,11 @@ export function parseShellCookie(raw: string | undefined | null): ShellPreferenc
   try {
     const parsed = JSON.parse(raw) as Partial<ShellPreferences>;
     if (parsed.v !== 1) return { ...SHELL_PREFS_DEFAULTS };
+    const shortcutOverrides =
+      parsed.shortcutOverrides && typeof parsed.shortcutOverrides === 'object'
+        ? (parsed.shortcutOverrides as Record<string, string>)
+        : SHELL_PREFS_DEFAULTS.shortcutOverrides ?? {};
+
     return {
       v: 1,
       density: isValidDensity(parsed.density) ? parsed.density : SHELL_PREFS_DEFAULTS.density,
@@ -66,6 +71,7 @@ export function parseShellCookie(raw: string | undefined | null): ShellPreferenc
         typeof parsed.rightOpen === 'boolean'
           ? parsed.rightOpen
           : SHELL_PREFS_DEFAULTS.rightOpen,
+      shortcutOverrides,
     };
   } catch {
     return { ...SHELL_PREFS_DEFAULTS };

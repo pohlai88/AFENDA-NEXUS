@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useCallback, useContext, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { TenantProvider } from '@/providers/tenant-provider';
 import { PageBreadcrumbProvider } from '@/providers/page-breadcrumb-provider';
@@ -12,24 +12,22 @@ import {
   useRegisterShortcut,
   ShortcutContext,
 } from '@/providers/shortcut-provider';
+import { useShellPreferences } from '@/providers/shell-preferences-provider';
 import { ShellPreferencesProvider } from '@/providers/shell-preferences-provider';
 import { useRecentItems } from '@/hooks/use-recent-items';
+import { useDateFieldShortcuts } from '@/hooks/use-date-field-shortcuts';
 import { SHELL_SHORTCUTS } from '@/lib/sidebar';
+import { resolveNewHref } from '@/lib/shortcuts/page-context-actions';
 import { registerAction, unregisterAction } from '@/lib/search/action-registry';
 import { AfendaSidebar } from './sidebar/afenda-sidebar';
 import { AfendaShellHeader } from './afenda-shell-header';
 import { AfendaStatusCluster } from './afenda-status-cluster';
-import { AfendaShortcutDialog } from './afenda-shortcut-dialog';
+import { ShortcutPopover } from './shortcut-popover';
+import { QuickActionShortcuts } from './quick-action-shortcuts';
+import { SidebarShortcutRegister } from './sidebar-shortcut-register';
 import { CalculatorPopover } from './calculator-popover';
-import { CONTENT_MAX_W, CONTENT_PADDING, ACTION_BTN, ICON } from './shell.tokens';
-import { Button } from '@/components/ui/button';
-import { Kbd } from '@/components/ui/kbd';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Keyboard } from 'lucide-react';
+import { CONTENT_MAX_W, CONTENT_PADDING } from './shell.tokens';
+import { resolveShortcutKeys } from '@/lib/shortcuts/resolve-shortcut';
 import type { ShellShortcut } from './shell.tokens';
 import type { TenantContext } from '@/lib/types';
 import type { ClientModuleWithNav } from '@/lib/modules/types';
@@ -52,11 +50,12 @@ const AfendaCommandPaletteLazy = dynamic(
 
 /**
  * Register navigation shortcuts from explicit ShellShortcut[] config.
- * No heuristics — every shortcut carries its own label.
+ * Applies user overrides from shell preferences when present.
  */
 function useAfendaNavigationShortcuts(
   shortcuts: ShellShortcut[],
   router: ReturnType<typeof useRouter>,
+  overrides?: Record<string, string> | null,
 ): void {
   const ctx = useContext(ShortcutContext);
   const routerRef = useRef(router);
@@ -69,10 +68,11 @@ function useAfendaNavigationShortcuts(
 
     for (const shortcut of shortcuts) {
       ids.push(shortcut.id);
+      const keys = resolveShortcutKeys(shortcut.id, shortcut.keys, overrides);
 
       ctx.engine.register({
         id: shortcut.id,
-        keys: shortcut.keys,
+        keys,
         description: `Go to ${shortcut.label}`,
         handler: () => routerRef.current.push(shortcut.href),
         scope: shortcut.scope ?? 'global',
@@ -82,8 +82,7 @@ function useAfendaNavigationShortcuts(
     return () => {
       for (const id of ids) ctx.engine.unregister(id);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctx, shortcuts]);
+  }, [ctx, shortcuts, overrides]);
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -176,8 +175,11 @@ function AfendaAppShellInner({
   'children' | 'user' | 'logoutAction' | 'modules' | 'onSwitchCompany' | 'attentionSummary' | 'shortcuts'
 >) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { prefs } = useShellPreferences();
+  const overrides = prefs.shortcutOverrides ?? null;
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-  const [shortcutDialogOpen, setShortcutDialogOpen] = useState(false);
+  const [shortcutPopoverOpen, setShortcutPopoverOpen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const openCommandPalette = useCallback(() => setCommandPaletteOpen(true), []);
 
@@ -198,25 +200,28 @@ function AfendaAppShellInner({
   // Track recently visited pages
   useRecentItems();
 
-  // ─── Global Shortcuts ────────────────────────────────────────────────
+  // Date field shortcuts (t=Today, y=Yesterday, m=Month-end) — focus-bound
+  useDateFieldShortcuts();
+
+  // ─── Global Shortcuts (with user overrides) ────────────────────────────
 
   useRegisterShortcut(
     'afenda-shortcut-dialog',
-    '?',
+    resolveShortcutKeys('afenda-shortcut-dialog', 'ctrl+shift+?', overrides),
     'Show keyboard shortcuts',
-    useCallback(() => setShortcutDialogOpen(true), []),
+    useCallback(() => setShortcutPopoverOpen(true), []),
   );
 
   useRegisterShortcut(
     'afenda-command-palette',
-    'mod+k',
+    resolveShortcutKeys('afenda-command-palette', 'mod+k', overrides),
     'Open command palette',
     useCallback(() => setCommandPaletteOpen((o) => !o), []),
   );
 
   useRegisterShortcut(
     'afenda-calculator',
-    'mod+=',
+    resolveShortcutKeys('afenda-calculator', 'mod+=', overrides),
     'Open calculator',
     useCallback(() => setCalculatorOpen((o) => !o), []),
   );
@@ -234,13 +239,29 @@ function AfendaAppShellInner({
     return () => unregisterAction('open-calculator');
   }, []);
 
-  // Navigation shortcuts — config-driven from ShellShortcut[]
-  useAfendaNavigationShortcuts(shortcuts, router);
+  // Navigation shortcuts — config-driven from ShellShortcut[] (with overrides)
+  useAfendaNavigationShortcuts(shortcuts, router, overrides);
+
+  // Contextual "n" (New) — navigate to create page based on current route
+  useRegisterShortcut(
+    'page-new',
+    'n',
+    'New (contextual)',
+    useCallback(() => {
+      const href = resolveNewHref(pathname ?? '');
+      if (href) router.push(href);
+    }, [pathname, router]),
+    'global',
+  );
 
   return (
     <>
+      {/* Quick Action shortcuts (Ctrl+Q, Ctrl+1…9) — registered with engine for shortcut dialog */}
+      <QuickActionShortcuts />
+
       {/* SidebarProvider controls the sidebar-10 sidebar */}
-      <SidebarProvider>
+      <SidebarProvider keyboardShortcut="external">
+        <SidebarShortcutRegister />
         {/* Skip link for keyboard / screen-reader accessibility */}
         <a
           href="#afenda-main-content"
@@ -256,12 +277,13 @@ function AfendaAppShellInner({
           attentionSummary={attentionSummary}
         />
 
-        {/* Content area (SidebarInset per shadcn sidebar-10) */}
-        <SidebarInset>
+        {/* Content area (SidebarInset per shadcn sidebar-10) — flex vertical, vertical scroll only */}
+        <SidebarInset className="flex min-h-0 flex-1 flex-col overflow-x-hidden">
           <AfendaShellHeader
             user={user}
             logoutAction={logoutAction}
             onOpenCommandPalette={openCommandPalette}
+            commandPaletteShortcutKeys={resolveShortcutKeys('afenda-command-palette', 'mod+k', overrides)}
             modules={modules}
             statusCluster={<AfendaStatusCluster attentionSummary={attentionSummary} />}
             calculatorSlot={
@@ -271,30 +293,21 @@ function AfendaAppShellInner({
               />
             }
             shortcutSlot={
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 gap-1.5 px-2"
-                    onClick={() => setShortcutDialogOpen(true)}
-                    aria-label="Keyboard shortcuts"
-                  >
-                    <Keyboard className={ICON} aria-hidden />
-                    <Kbd className="text-[10px]">?</Kbd>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  Keyboard shortcuts <Kbd>?</Kbd>
-                </TooltipContent>
-              </Tooltip>
+              <ShortcutPopover
+                open={shortcutPopoverOpen}
+                onOpenChange={setShortcutPopoverOpen}
+                shortcutTriggerKeys={resolveShortcutKeys('afenda-shortcut-dialog', 'ctrl+shift+?', overrides)}
+              />
             }
           />
-          <div className={`flex flex-1 flex-col ${CONTENT_PADDING}`}>
+          <div
+            className={`flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden ${CONTENT_PADDING}`}
+            style={{ overscrollBehavior: 'y contain' }}
+          >
             <div
               id="afenda-main-content"
               tabIndex={-1}
-              className={`mx-auto w-full ${CONTENT_MAX_W}`}
+              className={`mx-auto min-w-0 w-full ${CONTENT_MAX_W}`}
             >
               {children}
             </div>
@@ -307,13 +320,9 @@ function AfendaAppShellInner({
         modules={modules}
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
+        onOpenShortcuts={() => setShortcutPopoverOpen(true)}
       />
 
-      {/* Shortcut Reference Dialog */}
-      <AfendaShortcutDialog
-        open={shortcutDialogOpen}
-        onOpenChange={setShortcutDialogOpen}
-      />
     </>
   );
 }

@@ -20,8 +20,7 @@ interface IcAgingPageProps {
 }
 
 export default async function IcAgingPage({ searchParams }: IcAgingPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const currency = params.currency ?? '';
   const asOfDate = params.asOfDate ?? '';
 

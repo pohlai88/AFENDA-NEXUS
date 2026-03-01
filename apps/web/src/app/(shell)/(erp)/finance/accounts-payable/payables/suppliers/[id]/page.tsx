@@ -17,16 +17,14 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getSupplier(ctx, id);
   if (!result.ok) return { title: 'Supplier | Payables' };
   return { title: `${result.value.name} | Suppliers | Payables` };
 }
 
 export default async function SupplierDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getSupplier(ctx, id);
   if (!result.ok) notFound();
   const s = result.value;

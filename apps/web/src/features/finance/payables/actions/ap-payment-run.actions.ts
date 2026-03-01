@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   createPaymentRun,
@@ -10,6 +11,7 @@ import {
   getPaymentRunReport,
   getPaymentProposal,
 } from '../queries/ap-payment-run.queries';
+import type { PaymentProposalResponse } from '../queries/ap-payment-run.queries';
 import type { CreatePaymentRun, AddPaymentRunItem } from '@afenda/contracts';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
 
@@ -51,12 +53,12 @@ export async function processBankRejectionAction(
   return processBankRejection(ctx, runId, body);
 }
 
-export async function getPaymentProposalAction(
+export const getPaymentProposalAction = cache(async (
   params: { companyId: string; runDate: string; cutoffDate: string; currencyCode: string; includeDiscountOpportunities?: boolean },
-): Promise<ApiResult<import('../queries/ap-payment-run.queries').PaymentProposalResponse>> {
+): Promise<ApiResult<PaymentProposalResponse>> => {
   const ctx = await getRequestContext();
   return getPaymentProposal(ctx, params);
-}
+});
 
 /** Fetches payment run report and returns JSON for client-side download. */
 export async function downloadPaymentRunReportAction(

@@ -23,8 +23,7 @@ interface ConsolidationPageProps {
 }
 
 export default async function ConsolidationReportPage({ searchParams }: ConsolidationPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
 
   const ledgerId = params.ledgerId ?? '';
   const periodId = params.periodId ?? '';
@@ -73,7 +72,7 @@ export default async function ConsolidationReportPage({ searchParams }: Consolid
 
       {!periodId && <EmptyState contentKey="finance.reports.consolidation" variant="firstRun" icon={BarChart3} />}
 
-      {data && <ConsolidationReportTable data={data} />}
+      { data ? <ConsolidationReportTable data={data} /> : null}
     </div>
   );
 }

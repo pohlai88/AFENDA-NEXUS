@@ -416,6 +416,8 @@ export interface NavItem {
 }
 
 export interface NavGroup {
+  /** Stable feature ID for module map matching (e.g., 'gl', 'ap', 'ar') */
+  featureId?: string;
   title: string;
   icon: string;
   items: NavItem[];
@@ -450,6 +452,7 @@ export interface NavGroup {
 export const financeNavigationGroups: NavGroup[] = [
   // ── Overview (cross-functional) ───────────────────────────────────────
   {
+    featureId: 'overview',
     title: 'Overview',
     icon: 'LayoutDashboard',
     items: [
@@ -460,6 +463,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-GL: General Ledger ─────────────────────────────────────────────
   {
+    featureId: 'gl',
     title: 'General Ledger (FI-GL)',
     icon: 'BookOpen',
     collapsible: true,
@@ -477,6 +481,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-AP: Accounts Payable ───────────────────────────────────────────
   {
+    featureId: 'ap',
     title: 'Accounts Payable (FI-AP)',
     icon: 'Receipt',
     collapsible: true,
@@ -498,6 +503,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-AR: Accounts Receivable ────────────────────────────────────────
   {
+    featureId: 'ar',
     title: 'Accounts Receivable (FI-AR)',
     icon: 'HandCoins',
     collapsible: true,
@@ -513,6 +519,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-AA: Asset Accounting ───────────────────────────────────────────
   {
+    featureId: 'assets',
     title: 'Asset Accounting (FI-AA)',
     icon: 'Building',
     collapsible: true,
@@ -528,6 +535,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-TV: Travel & Expenses ──────────────────────────────────────────
   {
+    featureId: 'travel',
     title: 'Travel & Expenses (FI-TV)',
     icon: 'Wallet',
     collapsible: true,
@@ -541,6 +549,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-BL: Banking & Liquidity ────────────────────────────────────────
   {
+    featureId: 'banking',
     title: 'Banking & Liquidity (FI-BL)',
     icon: 'Landmark',
     collapsible: true,
@@ -554,6 +563,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── TR: Treasury ──────────────────────────────────────────────────────
   {
+    featureId: 'treasury',
     title: 'Treasury (TR)',
     icon: 'Vault',
     collapsible: true,
@@ -568,6 +578,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── CO: Controlling / Cost Accounting ─────────────────────────────────
   {
+    featureId: 'controlling',
     title: 'Controlling (CO)',
     icon: 'PieChart',
     collapsible: true,
@@ -582,6 +593,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-TX: Tax & Compliance ───────────────────────────────────────────
   {
+    featureId: 'tax',
     title: 'Tax & Compliance (FI-TX)',
     icon: 'FileCheck',
     collapsible: true,
@@ -596,6 +608,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── IC: Intercompany ──────────────────────────────────────────────────
   {
+    featureId: 'intercompany',
     title: 'Intercompany (IC)',
     icon: 'Network',
     collapsible: true,
@@ -609,6 +622,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── EC-CS: IFRS Compliance ────────────────────────────────────────────
   {
+    featureId: 'ifrs',
     title: 'IFRS & Standards (EC-CS)',
     icon: 'ShieldCheck',
     collapsible: true,
@@ -625,6 +639,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-LC: Consolidation ──────────────────────────────────────────────
   {
+    featureId: 'consolidation',
     title: 'Consolidation (FI-LC)',
     icon: 'GitBranch',
     collapsible: true,
@@ -640,6 +655,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-CFG: Finance Settings ────────────────────────────────────────────
   {
+    featureId: 'settings',
     title: 'Finance Settings (FI-CFG)',
     icon: 'Settings',
     collapsible: true,
@@ -653,6 +669,7 @@ export const financeNavigationGroups: NavGroup[] = [
 
   // ── FI-RP: Financial Reports ──────────────────────────────────────────
   {
+    featureId: 'reports',
     title: 'Financial Reports (FI-RP)',
     icon: 'BarChart3',
     collapsible: true,

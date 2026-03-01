@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   createArInvoice,
@@ -85,8 +86,8 @@ export async function allocateArPaymentAction(
 
 // ─── Queries (called from server components) ───────────────────────────────
 
-export async function getArInvoiceAuditAction(invoiceId: string): Promise<ApiResult<AuditEntry[]>> {
+export const getArInvoiceAuditAction = cache(async (invoiceId: string): Promise<ApiResult<AuditEntry[]>> => {
   const ctx = await getRequestContext();
   const client = createApiClient(ctx);
   return client.get<AuditEntry[]>(`/ar/invoices/${invoiceId}/audit`);
-}
+});

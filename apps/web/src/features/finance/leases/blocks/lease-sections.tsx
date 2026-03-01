@@ -1,4 +1,6 @@
+import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { layoutTokens } from '@/lib/layout-tokens';
 import { getRequestContext } from '@/lib/auth';
 import {
   getLeases,
@@ -14,7 +16,8 @@ export function LeaseSummarySkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
       {Array.from({ length: 6 }).map((_, i) => (
-        <Skeleton key={i} className="h-[100px]" />
+        // eslint-disable-next-line react/no-array-index-key -- Static skeleton fallback
+        <Skeleton key={`skeleton-${i}`} className={layoutTokens.skeletonRow} />
       ))}
     </div>
   );
@@ -24,10 +27,10 @@ export function LeaseTableSkeleton() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between">
-        <Skeleton className="h-10 w-[300px]" />
-        <Skeleton className="h-10 w-[120px]" />
+        <Skeleton className={cn('h-10', layoutTokens.selectWidthLg)} />
+        <Skeleton className={cn('h-10', layoutTokens.colActions)} />
       </div>
-      <Skeleton className="h-[350px]" />
+      <Skeleton className={layoutTokens.skeletonTable} />
     </div>
   );
 }

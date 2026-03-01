@@ -1,13 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
 import {
   readConveniencePrefs,
   writeConveniencePrefs,
 } from '@/lib/shell/shell-persistence';
 import type { QuickActionItem } from '@/lib/shell/shell-preferences.types';
-import { routes } from '@/lib/constants';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -15,53 +13,24 @@ import { routes } from '@/lib/constants';
 const MAX_QUICK_ACTIONS = 9;
 const STORAGE_KEY = 'quick-actions';
 
-// ─── Default quick actions ──────────────────────────────────────────────────
-
-const DEFAULT_QUICK_ACTIONS: QuickActionItem[] = [
-  {
-    actionId: routes.finance.journalNew,
-    title: 'New Journal Entry',
-    icon: 'FilePlus2',
-    href: routes.finance.journalNew,
-    slot: 1,
-    addedAt: 0,
-  },
-  {
-    actionId: routes.finance.payableNew,
-    title: 'New Invoice',
-    icon: 'FileText',
-    href: routes.finance.payableNew,
-    slot: 2,
-    addedAt: 0,
-  },
-  {
-    actionId: routes.finance.expenseNew,
-    title: 'New Expense Claim',
-    icon: 'Receipt',
-    href: routes.finance.expenseNew,
-    slot: 3,
-    addedAt: 0,
-  },
-];
-
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 /**
  * CRUD hook for user-configured quick-action shortcuts, persisted in localStorage.
  *
  * Mirrors the Favorites pattern:
+ * - Starts empty by default (no hardcoded actions)
  * - `toggle()` adds/removes an action
  * - Each action occupies a numbered slot (1-9) → Ctrl+1 … Ctrl+9
  * - Ctrl+Q opens/closes the quick-action picker
  *
- * The hook also registers global keyboard listeners for Ctrl+1 … Ctrl+9
- * to directly navigate to the corresponding action's href.
+ * Keyboard handling (Ctrl+Q, Ctrl+1…9) is registered by QuickActionShortcuts
+ * with the ShortcutEngine so shortcuts appear in the keyboard shortcut dialog.
  */
 export function useQuickActions() {
-  const router = useRouter();
   const [actions, setActions] = useState<QuickActionItem[]>(() => {
     const stored = readConveniencePrefs<QuickActionItem[]>(STORAGE_KEY, []);
-    return stored.length > 0 ? stored : DEFAULT_QUICK_ACTIONS;
+    return stored ?? [];
   });
 
   /** Add or remove a quick action. Returns `true` if added. */
@@ -87,6 +56,7 @@ export function useQuickActions() {
           const newItem: QuickActionItem = {
             ...item,
             slot: prev.length + 1,
+            // eslint-disable-next-line no-restricted-syntax
             addedAt: Date.now(),
           };
           next = [...prev, newItem];
@@ -108,28 +78,6 @@ export function useQuickActions() {
     },
     [actions],
   );
-
-  // ─── Global Ctrl+1…9 keyboard listener ──────────────────────────────────
-
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      // Only Ctrl+digit (no meta, no alt, no shift)
-      if (!e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-
-      const digit = parseInt(e.key, 10);
-      if (isNaN(digit) || digit < 1 || digit > 9) return;
-
-      const action = actions.find((a) => a.slot === digit);
-      if (!action) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      router.push(action.href);
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [actions, router]);
 
   return { actions, toggle, isQuickAction };
 }

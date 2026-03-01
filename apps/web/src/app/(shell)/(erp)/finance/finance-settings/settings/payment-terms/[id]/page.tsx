@@ -14,16 +14,14 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getPaymentTermsById(ctx, id);
   if (!result.ok) return { title: 'Payment Terms | Finance Settings' };
   return { title: `${result.value.code} — ${result.value.name} | Payment Terms` };
 }
 
 export default async function PaymentTermsDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getPaymentTermsById(ctx, id);
 
   if (!result.ok) {

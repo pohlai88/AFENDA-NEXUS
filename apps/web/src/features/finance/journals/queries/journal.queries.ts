@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 import type { JournalStatus } from '@afenda/contracts';
@@ -47,10 +48,10 @@ export interface JournalLineView {
 
 // ─── Query Functions (server-side, called from RSC pages) ───────────────────
 
-export async function getJournals(
+export const getJournals = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { periodId?: string; status?: string; page?: string; limit?: string }
-): Promise<ApiResult<PaginatedResponse<JournalListItem>>> {
+): Promise<ApiResult<PaginatedResponse<JournalListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.periodId) query.periodId = params.periodId;
@@ -59,15 +60,15 @@ export async function getJournals(
   if (params.limit) query.limit = params.limit;
 
   return client.get<PaginatedResponse<JournalListItem>>('/journals', query);
-}
+});
 
-export async function getJournal(
+export const getJournal = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   id: string
-): Promise<ApiResult<JournalDetail>> {
+): Promise<ApiResult<JournalDetail>> => {
   const client = createApiClient(ctx);
   return client.get<JournalDetail>(`/journals/${id}`);
-}
+});
 
 export async function createJournal(
   ctx: { tenantId: string; userId: string; token: string },

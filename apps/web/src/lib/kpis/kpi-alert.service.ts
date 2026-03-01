@@ -77,7 +77,7 @@ export async function processKpiAlerts(
     if (result) {
       results.push(result);
       if (process.env.NODE_ENV === 'development') {
-        console.info(
+        console.warn(
           `[KPI Alert] ${catalog.id} breached threshold: ${result.formattedValue} ${result.operator} ${result.threshold}`,
         );
       }

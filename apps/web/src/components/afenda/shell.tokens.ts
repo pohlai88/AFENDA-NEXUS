@@ -108,8 +108,23 @@ export const DROPDOWN_DISPLAY_W = 'w-48' as const;
 /** Display settings popover (improved readability). */
 export const POPOVER_DISPLAY_W = 'w-56' as const;
 
-/** Desktop search input bar. */
+/** Desktop search input bar (Command K) and tool bars (Shortcuts, etc.) — standardized width. */
 export const SEARCH_BAR_W = 'w-64' as const;
+
+/** Tool bar width for shortcuts, etc. — matches SEARCH_BAR_W for consistency. */
+export const TOOL_BAR_W = 'w-44' as const;
+
+// ─── Command palette (single source of truth — avoids hydration mismatch) ─────
+
+/** aria-label for the header trigger that opens the command palette (Cmd/Ctrl+K). */
+export const COMMAND_PALETTE_ARIA_LABEL = 'Open command palette' as const;
+
+/** Placeholder text in the desktop search bar (same semantics as palette). */
+export const COMMAND_PALETTE_TRIGGER_PLACEHOLDER = 'Search or run command...' as const;
+
+/** Inline shortcut chip (icon + ⌘ ?): same spacing as Kbd/KbdGroup — gap-1, px-1, h-5, icon size-3. */
+export const SHORTCUT_CHIP =
+  'inline-flex h-5 items-center gap-1 rounded-sm border border-transparent bg-muted px-1 font-sans text-xs font-medium text-muted-foreground [&_svg]:size-3' as const;
 
 // ─── Badge Helpers ──────────────────────────────────────────────────────────
 
@@ -150,6 +165,10 @@ export const SHELL = {
   DROPDOWN_DISPLAY_W,
   POPOVER_DISPLAY_W,
   SEARCH_BAR_W,
+  TOOL_BAR_W,
+  COMMAND_PALETTE_ARIA_LABEL,
+  COMMAND_PALETTE_TRIGGER_PLACEHOLDER,
+  SHORTCUT_CHIP,
   NOTIFICATION_COUNTER,
   BADGE_WARNING,
 } as const;

@@ -13,8 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getProvisionById(ctx, id);
   if (!result.ok) return { title: 'Provision | Finance' };
   return { title: `${result.value.provisionNumber} | Provisions` };
@@ -28,8 +27,7 @@ async function MovementsSection({ provisionId }: { provisionId: string }) {
 }
 
 export default async function ProvisionDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getProvisionById(ctx, id);
 
   if (!result.ok) {

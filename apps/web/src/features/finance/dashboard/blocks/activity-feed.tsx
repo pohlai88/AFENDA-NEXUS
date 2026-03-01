@@ -5,12 +5,13 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { EmptyState } from '@/components/erp/empty-state';
 import { formatRelativeTime, formatCurrency } from '@/lib/utils';
+import { layoutTokens } from '@/lib/layout-tokens';
 import {
   FileText,
   Receipt,
   Banknote,
-  CheckCircle,
   GitMerge,
   Calendar,
   BarChart3,
@@ -24,7 +25,7 @@ import type { ActivityItem, ActivityType } from '../types';
 const activityConfig: Record<ActivityType, { icon: LucideIcon; color: string; label: string }> = {
   journal_posted: {
     icon: FileText,
-    color: 'text-blue-500 bg-info/10 dark:bg-blue-950',
+    color: 'text-info bg-info/10 dark:bg-info/20',
     label: 'Journal',
   },
   invoice_created: {
@@ -34,7 +35,7 @@ const activityConfig: Record<ActivityType, { icon: LucideIcon; color: string; la
   },
   payment_received: {
     icon: Banknote,
-    color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950',
+    color: 'text-success bg-success/10 dark:bg-success/20',
     label: 'Payment',
   },
   payment_sent: {
@@ -84,7 +85,7 @@ function ActivityItemRow({ item }: { item: ActivityItem }) {
         </div>
         <p className="text-xs text-muted-foreground truncate">{item.description}</p>
         <div className="flex items-center gap-2">
-          {item.amount && item.currency && (
+          {item.amount != null && item.currency != null && (
             <Badge variant="secondary" className="text-xs font-mono">
               {formatCurrency(item.amount, item.currency)}
             </Badge>
@@ -109,22 +110,40 @@ interface ActivityFeedProps {
   maxHeight?: number;
 }
 
-export function ActivityFeed({ activities, maxHeight = 400 }: ActivityFeedProps) {
+export function ActivityFeed({ activities, maxHeight }: ActivityFeedProps) {
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">Recent Activity</CardTitle>
-        <CardDescription>Latest transactions and updates</CardDescription>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea style={{ height: maxHeight }}>
-          <div className="px-6 pb-4 divide-y">
-            {activities.map((item) => (
-              <ActivityItemRow key={item.id} item={item} />
-            ))}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+    <section aria-labelledby="finance-activity-title">
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle id="finance-activity-title" className="text-base">
+            Recent Activity
+          </CardTitle>
+          <CardDescription>Latest transactions and updates</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {activities.length === 0 ? (
+            <div className="px-6 py-6">
+              <EmptyState
+                variant="noResults"
+                size="sm"
+                title="No recent activity"
+                description="Transactions and updates will appear here."
+              />
+            </div>
+          ) : (
+            <ScrollArea
+              className={maxHeight != null ? undefined : layoutTokens.scrollAreaH}
+              style={maxHeight != null ? { height: maxHeight } : undefined}
+            >
+              <div className="px-6 pb-4 divide-y">
+                {activities.map((item) => (
+                  <ActivityItemRow key={item.id} item={item} />
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </CardContent>
+      </Card>
+    </section>
   );
 }

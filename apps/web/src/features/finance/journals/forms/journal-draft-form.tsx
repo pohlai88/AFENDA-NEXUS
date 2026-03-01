@@ -1,11 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CreateJournalSchema, type CreateJournal } from '@afenda/contracts';
 import { JournalLinesEditor } from '../blocks/journal-lines-editor';
 import { useReceipt } from '@/hooks/use-receipt';
+import { useFormShortcut } from '@/hooks/use-form-shortcut';
 import { ReceiptPanel } from '@/components/erp/receipt-panel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,30 +47,32 @@ export function JournalDraftForm({
     },
   });
 
-  async function handleSubmit(data: CreateJournal) {
-    // Client-side balance check before sending
-    const totalDebit = data.lines.reduce((s, l) => s + (l.debit || 0), 0);
-    const totalCredit = data.lines.reduce((s, l) => s + (l.credit || 0), 0);
-    if (totalDebit !== totalCredit) {
-      setError('Debits must equal credits before submitting.');
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (data: CreateJournal) => {
+      const totalDebit = data.lines.reduce((s, l) => s + (l.debit || 0), 0);
+      const totalCredit = data.lines.reduce((s, l) => s + (l.credit || 0), 0);
+      if (totalDebit !== totalCredit) {
+        setError('Debits must equal credits before submitting.');
+        return;
+      }
+      setSubmitting(true);
+      setError(null);
+      const result = await onSubmit(data);
+      setSubmitting(false);
+      if (result.ok) {
+        showReceipt(result.value);
+        idempotencyKeyRef.current = crypto.randomUUID();
+      } else {
+        setError(result.error.message);
+      }
+    },
+    [onSubmit, showReceipt],
+  );
 
-    setSubmitting(true);
-    setError(null);
-
-    const result = await onSubmit(data);
-
-    setSubmitting(false);
-
-    if (result.ok) {
-      showReceipt(result.value);
-      // Reset idempotency key for next submission
-      idempotencyKeyRef.current = crypto.randomUUID();
-    } else {
-      setError(result.error.message);
-    }
-  }
+  useFormShortcut({
+    onSave: useCallback(() => form.handleSubmit(handleSubmit)(), [form, handleSubmit]),
+    scope: 'page',
+  });
 
   if (isOpen && receipt) {
     return (

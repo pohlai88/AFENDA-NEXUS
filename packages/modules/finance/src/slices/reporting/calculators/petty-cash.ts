@@ -136,8 +136,8 @@ export function reconcilePettyCash(input: PettyCashInput): CalculatorResult<Pett
     explanation:
       `Petty cash '${input.fundName}': opening=${input.openingBalance}, ` +
       `disbursements=${totalDisbursements}, balance=${calculatedBalance}, ` +
-      `replenishment=${replenishmentRequired}` +
-      (shortage > 0n ? `, SHORTAGE=${shortage}` : '') +
-      (overage > 0n ? `, OVERAGE=${overage}` : ''),
+      `replenishment=${replenishmentRequired}${ 
+      shortage > 0n ? `, SHORTAGE=${shortage}` : '' 
+      }${overage > 0n ? `, OVERAGE=${overage}` : ''}`,
   };
 }

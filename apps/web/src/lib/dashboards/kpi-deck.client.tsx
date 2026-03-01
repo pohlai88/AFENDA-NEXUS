@@ -91,7 +91,7 @@ function KpiDeck({
       <CollapsibleContent className="mt-3">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {resolvedKpis.map((data, i) => (
-            <KPICard key={data.id} catalog={catalog[i]!} data={data} />
+            <KPICard key={data.id} catalog={catalog[i] ?? catalog[0]} data={data} />
           ))}
         </div>
       </CollapsibleContent>

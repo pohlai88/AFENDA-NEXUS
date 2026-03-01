@@ -37,7 +37,6 @@ export async function previewDepreciationRun(
   }
 
   const lines: PostingLinePreview[] = [];
-  let totalDepreciation = 0n;
 
   for (const asset of assets) {
     const result = computeDepreciation({
@@ -72,8 +71,6 @@ export async function previewDepreciationRun(
       credit: formatMinorUnits(result.depreciationAmount),
       description: `Accum. depreciation — ${asset.assetNumber} ${asset.name}`,
     });
-
-    totalDepreciation += result.depreciationAmount;
 
     if (result.isFullyDepreciated) {
       warnings.push(`Asset ${asset.assetNumber} will be fully depreciated after this run`);

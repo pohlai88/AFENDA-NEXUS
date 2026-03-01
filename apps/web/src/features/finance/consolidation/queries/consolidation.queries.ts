@@ -1,5 +1,6 @@
-﻿'use server';
+'use server';
 
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -64,49 +65,49 @@ export interface ConsolidationSummaryView {
 
 /* ── queries ────────────────────────────────────────────── */
 
-export async function getGroupEntities(
+export const getGroupEntities = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
-): Promise<ApiResult<PaginatedResponse<GroupEntityView>>> {
+): Promise<ApiResult<PaginatedResponse<GroupEntityView>>> => {
   const api = createApiClient(ctx);
   return api.get<PaginatedResponse<GroupEntityView>>('/group-entities');
-}
+});
 
-export async function getGroupEntityById(
+export const getGroupEntityById = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   id: string,
-): Promise<ApiResult<GroupEntityView>> {
+): Promise<ApiResult<GroupEntityView>> => {
   const api = createApiClient(ctx);
   return api.get<GroupEntityView>(`/group-entities/${id}`);
-}
+});
 
-export async function getGoodwillAllocations(
+export const getGoodwillAllocations = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
-): Promise<ApiResult<PaginatedResponse<GoodwillAllocationView>>> {
+): Promise<ApiResult<PaginatedResponse<GoodwillAllocationView>>> => {
   const api = createApiClient(ctx);
   return api.get<PaginatedResponse<GoodwillAllocationView>>('/goodwills');
-}
+});
 
-export async function getGoodwillById(
+export const getGoodwillById = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   id: string,
-): Promise<ApiResult<GoodwillAllocationView>> {
+): Promise<ApiResult<GoodwillAllocationView>> => {
   const api = createApiClient(ctx);
   return api.get<GoodwillAllocationView>(`/goodwills/${id}`);
-}
+});
 
-export async function getOwnershipRecords(
+export const getOwnershipRecords = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
-): Promise<ApiResult<PaginatedResponse<OwnershipRecordView>>> {
+): Promise<ApiResult<PaginatedResponse<OwnershipRecordView>>> => {
   const api = createApiClient(ctx);
   return api.get<PaginatedResponse<OwnershipRecordView>>('/ownership-records');
-}
+});
 
-export async function getConsolidationSummary(
+export const getConsolidationSummary = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
-): Promise<ApiResult<ConsolidationSummaryView>> {
+): Promise<ApiResult<ConsolidationSummaryView>> => {
   const api = createApiClient(ctx);
   return api.get<ConsolidationSummaryView>('/group-entities/summary');
-}
+});
 
 /* ── commands ───────────────────────────────────────────── */
 

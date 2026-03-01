@@ -68,9 +68,9 @@ export function AllocationPreviewButton({
     startTransition(async () => {
       const result = await previewCostAllocationAction({
         companyId,
-        periodId: selectedPeriod!.id,
+        periodId: selectedPeriod.id,
         method: method.toUpperCase() as 'DIRECT' | 'STEP_DOWN' | 'RECIPROCAL',
-        driverId: selectedDriver!.id,
+        driverId: selectedDriver.id,
         currencyCode: currency,
       });
       if (result.ok) {
@@ -95,8 +95,9 @@ export function AllocationPreviewButton({
   };
 
   const handleExecute = async () => {
+    if (!selectedPeriod) return;
     const result = await executeAllocationRunAction({
-      period: selectedPeriod!.id,
+      period: selectedPeriod.id,
       method,
     });
     if (result.ok) {
@@ -189,7 +190,7 @@ export function AllocationPreviewButton({
                 onClick={handlePreview}
                 disabled={!selectedPeriod || !selectedDriver || isPending}
               >
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Preview Posting
               </Button>
             </DialogFooter>

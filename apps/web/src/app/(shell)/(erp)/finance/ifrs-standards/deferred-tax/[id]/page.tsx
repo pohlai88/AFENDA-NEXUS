@@ -13,8 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getDeferredTaxItemById(ctx, id);
   if (!result.ok) return { title: 'Deferred Tax | Finance' };
   return { title: `${result.value.itemNumber} | Deferred Tax` };
@@ -28,8 +27,7 @@ async function MovementsSection({ itemId }: { itemId: string }) {
 }
 
 export default async function DeferredTaxDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getDeferredTaxItemById(ctx, id);
 
   if (!result.ok) {

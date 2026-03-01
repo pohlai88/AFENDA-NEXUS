@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,7 +33,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import type { FixedAsset, DepreciationScheduleEntry, AssetStatus } from '../types';
-import { assetStatusConfig, depreciationMethodLabels, disposalTypeLabels } from '../types';
+import { assetStatusConfig, depreciationMethodLabels } from '../types';
 import { createDisposalRequest } from '../actions/assets.actions';
 
 // ─── Status Badge ────────────────────────────────────────────────────────────

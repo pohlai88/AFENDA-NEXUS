@@ -109,7 +109,7 @@ const DEFAULT_ACTIONS: SearchAction[] = [
     icon: 'PiggyBank',
     category: 'create',
     scope: 'finance',
-    href: routes.finance.budgetEntries + '/new',
+    href: `${routes.finance.budgetEntries  }/new`,
   },
   {
     id: 'create-account',

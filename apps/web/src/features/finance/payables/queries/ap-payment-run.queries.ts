@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 import type { PaymentRunStatus } from '@afenda/contracts';
@@ -70,33 +71,33 @@ export interface RemittanceAdviceView {
 
 type Ctx = { tenantId: string; userId: string; token: string };
 
-export async function getPaymentRuns(
+export const getPaymentRuns = cache(async (
   ctx: Ctx,
   params: { status?: string; page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<PaymentRunListItem>>> {
+): Promise<ApiResult<PaginatedResponse<PaymentRunListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.status) query.status = params.status;
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<PaymentRunListItem>>('/ap/payment-runs', query);
-}
+});
 
-export async function getPaymentRun(
+export const getPaymentRun = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<PaymentRunDetail>> {
+): Promise<ApiResult<PaymentRunDetail>> => {
   const client = createApiClient(ctx);
   return client.get<PaymentRunDetail>(`/ap/payment-runs/${id}`);
-}
+});
 
-export async function getRemittanceAdvice(
+export const getRemittanceAdvice = cache(async (
   ctx: Ctx,
   runId: string,
-): Promise<ApiResult<RemittanceAdviceView>> {
+): Promise<ApiResult<RemittanceAdviceView>> => {
   const client = createApiClient(ctx);
   return client.get<RemittanceAdviceView>(`/ap/payment-runs/${runId}/remittance-advice`);
-}
+});
 
 export async function createPaymentRun(
   ctx: Ctx,
@@ -143,13 +144,13 @@ export async function processBankRejection(
   return client.post<CommandReceipt>(`/ap/payment-runs/${runId}/bank-rejection`, body);
 }
 
-export async function getPaymentRunReport(
+export const getPaymentRunReport = cache(async (
   ctx: Ctx,
   runId: string,
-): Promise<ApiResult<{ summary: string; details: string }>> {
+): Promise<ApiResult<{ summary: string; details: string }>> => {
   const client = createApiClient(ctx);
   return client.get<{ summary: string; details: string }>(`/ap/payment-runs/${runId}/report`);
-}
+});
 
 export interface PaymentProposalGroup {
   groupKey: string;
@@ -188,10 +189,10 @@ export interface PaymentProposalResponse {
   };
 }
 
-export async function getPaymentProposal(
+export const getPaymentProposal = cache(async (
   ctx: Ctx,
   params: { companyId: string; runDate: string; cutoffDate: string; currencyCode: string; includeDiscountOpportunities?: boolean },
-): Promise<ApiResult<PaymentProposalResponse>> {
+): Promise<ApiResult<PaymentProposalResponse>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {
     companyId: params.companyId,
@@ -203,12 +204,12 @@ export async function getPaymentProposal(
     query.includeDiscountOpportunities = String(params.includeDiscountOpportunities);
   }
   return client.get<PaymentProposalResponse>('/ap/payment-proposal', query);
-}
+});
 
-export async function getUnpaidInvoicesForRun(
+export const getUnpaidInvoicesForRun = cache(async (
   ctx: Ctx,
   params: { companyId: string; currencyCode: string; cutoffDate: string; page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<PaymentRunItemView>>> {
+): Promise<ApiResult<PaginatedResponse<PaymentRunItemView>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {
     companyId: params.companyId,
@@ -218,4 +219,4 @@ export async function getUnpaidInvoicesForRun(
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<PaymentRunItemView>>('/ap/invoices/unpaid', query);
-}
+});

@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/erp/empty-state';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { toSorted } from '@/lib/utils/array';
 import { AlertCircle, AlertTriangle, Info, ChevronRight } from 'lucide-react';
 import type { AttentionItem, AttentionPriority } from '../types';
 
@@ -40,8 +42,8 @@ const priorityConfig: Record<
   low: {
     icon: Info,
     badgeVariant: 'secondary',
-    bgColor: 'bg-info/10 dark:bg-blue-950',
-    iconColor: 'text-blue-500',
+    bgColor: 'bg-info/10 dark:bg-info/20',
+    iconColor: 'text-info',
   },
 };
 
@@ -88,9 +90,9 @@ interface AttentionPanelProps {
 }
 
 export function AttentionPanel({ items }: AttentionPanelProps) {
-  // Sort by priority
-  const sortedItems = [...items].sort((a, b) => {
-    const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+  // Sort by priority (RBP-03: browser-compatible immutability)
+  const sortedItems = toSorted(items, (a, b) => {
+    const priorityOrder: Record<AttentionPriority, number> = { critical: 0, high: 1, medium: 2, low: 3 };
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
 
@@ -99,27 +101,34 @@ export function AttentionPanel({ items }: AttentionPanelProps) {
   ).length;
 
   return (
-    <Card className={criticalCount > 0 ? 'border-destructive/50' : undefined}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">Needs Attention</CardTitle>
-            <CardDescription>Items requiring your action</CardDescription>
+    <section aria-labelledby="finance-attention-title">
+      <Card className={criticalCount > 0 ? 'border-destructive/50' : undefined}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle id="finance-attention-title" className="text-base">
+                Needs Attention
+              </CardTitle>
+              <CardDescription>Items requiring your action</CardDescription>
+            </div>
+            {criticalCount > 0 && <Badge variant="destructive">{criticalCount} urgent</Badge>}
           </div>
-          {criticalCount > 0 && <Badge variant="destructive">{criticalCount} urgent</Badge>}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {sortedItems.map((item) => (
-          <AttentionItemRow key={item.id} item={item} />
-        ))}
-        {items.length === 0 && (
-          <div className="text-center py-6 text-muted-foreground">
-            <Info className="mx-auto h-8 w-8 mb-2 opacity-50" />
-            <p className="text-sm">All caught up! No items need attention.</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {sortedItems.map((item) => (
+            <AttentionItemRow key={item.id} item={item} />
+          ))}
+          {items.length === 0 && (
+            <EmptyState
+              variant="firstRun"
+              size="sm"
+              title="All caught up!"
+              description="No items need attention."
+              icon={Info}
+            />
+          )}
+        </CardContent>
+      </Card>
+    </section>
   );
 }

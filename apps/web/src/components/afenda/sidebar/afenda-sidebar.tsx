@@ -38,12 +38,12 @@ function buildCategories(modules: ClientModuleWithNav[]): SidebarCategory[] {
     .map((def) => {
       const mods = def.moduleIds
         .map((id) => moduleMap.get(id))
-        .filter(Boolean)
+        .filter((m): m is ClientModuleWithNav => m != null)
         .map((m) => ({
-          id: m!.id,
-          label: m!.label,
-          href: m!.href,
-          icon: m!.iconName,
+          id: m.id,
+          label: m.label,
+          href: m.href,
+          icon: m.iconName,
         }));
 
       return {

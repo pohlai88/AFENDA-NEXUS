@@ -19,6 +19,7 @@ import { Settings2, Search } from 'lucide-react';
 import type { KPICatalogEntry } from '@/lib/kpis/kpi-catalog';
 import type { DashboardPrefs } from '@afenda/contracts';
 import { CHART_META, DIAGRAM_META, CHART_DIAGRAM_NONE } from './chart-registry';
+import { toSorted } from '@/lib/utils/array';
 
 const NONE_VALUE = CHART_DIAGRAM_NONE;
 
@@ -31,7 +32,7 @@ interface WidgetConfigDialogProps {
   chartSlotIds?: string[];
   diagramSlotIds?: string[];
   prefs: DashboardPrefs;
-  onSavePrefs: (domainId: string, prefs: DashboardPrefs) => Promise<void>;
+  onSavePrefs: (domainId: string, prefs: DashboardPrefs) => Promise<{ ok?: boolean; error?: string } | void>;
 }
 
 function WidgetConfigDialog({
@@ -95,7 +96,12 @@ function WidgetConfigDialog({
 
   const saveToPrefs = React.useCallback(
     async (prefsToSave: DashboardPrefs) => {
-      await onSavePrefs(domainId, prefsToSave);
+      const result = await onSavePrefs(domainId, prefsToSave);
+      if (result && 'ok' in result && !result.ok) {
+        const { toast } = await import('sonner');
+        toast.error(result.error ?? 'Failed to save preferences');
+        return;
+      }
       // Use reload instead of router.refresh() to avoid "unexpected response" RSC fetch race
       window.location.reload();
     },
@@ -142,8 +148,8 @@ function WidgetConfigDialog({
         ...prefs,
         selectedWidgetIds: ordered,
         widgetOrder: ordered,
-        selectedChartId: chartSlotIds[0],
-        selectedDiagramId: diagramSlotIds[0],
+        selectedChartId: hasCharts ? (chartSlotIds[0] ?? NONE_VALUE) : undefined,
+        selectedDiagramId: hasDiagrams ? (diagramSlotIds[0] ?? NONE_VALUE) : undefined,
         savedViewId: 'custom',
         widgetLayout: undefined,
       });
@@ -188,8 +194,7 @@ function WidgetConfigDialog({
               />
             </div>
             <div className="max-h-40 space-y-2 overflow-y-auto rounded-md border p-4">
-              {[...filteredCatalog]
-                .sort((a, b) => {
+              {toSorted(filteredCatalog, (a, b) => {
                   const pa = a.displayPriority ?? 999;
                   const pb = b.displayPriority ?? 999;
                   return pa - pb || a.title.localeCompare(b.title);

@@ -68,7 +68,7 @@ export function RecurringTemplateActions({
   return (
     <>
       <div className="flex items-center gap-2">
-        {error && <span className="text-xs text-destructive">{error}</span>}
+        { error ? <span className="text-xs text-destructive">{error}</span> : null}
 
         {isActive && (
           <Button variant="outline" size="sm" disabled={isPending} onClick={() => setConfirmProcess(true)}>

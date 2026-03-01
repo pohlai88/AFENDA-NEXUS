@@ -1,4 +1,5 @@
 import { financeNavigationGroups } from '@/lib/constants';
+import { buildFinanceFeatureMetrics } from '@/lib/finance/build-feature-metrics';
 import type { DomainDashboardConfig } from './types';
 
 // ─── Finance Overview KPI Derivation ───────────────────────────────────────────
@@ -35,7 +36,8 @@ function deriveFinanceOverviewKpiIds(
   for (const domainId of FINANCE_SUB_DOMAIN_IDS) {
     const cfg = configs[domainId];
     if (!cfg?.defaultKpiIds?.length) continue;
-    ids.push(cfg.defaultKpiIds[0]!);
+    const firstKpiId = cfg.defaultKpiIds[0];
+    if (firstKpiId) ids.push(firstKpiId);
     if (ids.length >= 8) break;
   }
   return ids;
@@ -260,30 +262,50 @@ export const FINANCE_OVERVIEW_CONFIG: DomainDashboardConfig = {
   },
   availableKpiIds: getFinanceOverviewAvailableKpiIds(DOMAIN_DASHBOARD_CONFIGS),
   maxWidgets: 8,
-  chartSlotIds: ['chart.cashflow', 'chart.revenueExpense'],
+  chartSlotIds: [
+    'chart.cashflow',
+    'chart.revenueExpense',
+    'chart.liquidity-waterfall',
+    'chart.financial-ratios',
+    'chart.dso-trend',
+    'chart.budget-variance',
+    'chart.asset-portfolio',
+  ],
   diagramSlotIds: ['diagram.arAging', 'diagram.apAging'],
   navGroups: financeNavigationGroups,
+  buildFeatureMetrics: buildFinanceFeatureMetrics,
   savedViewPresets: [
     {
       id: 'overview',
       label: 'Overview',
+      description: 'All key metrics across finance',
       widgetIds: deriveFinanceOverviewKpiIds(DOMAIN_DASHBOARD_CONFIGS),
-      chartId: 'chart.cashflow',
+      chartId: 'chart.liquidity-waterfall',
       diagramId: 'diagram.arAging',
     },
     {
       id: 'cash-focus',
       label: 'Cash focus',
+      description: 'Liquidity and cash flow metrics',
       widgetIds: ['fin.cash', 'fin.bank.balance', 'fin.tr.cashForecast', 'fin.tr.activeLoans', 'fin.ap.total', 'fin.ar.total'],
-      chartId: 'chart.cashflow',
+      chartId: 'chart.liquidity-waterfall',
       diagramId: 'diagram.arAging',
     },
     {
       id: 'executive',
       label: 'Executive',
+      description: 'High-level P&L and balance',
       widgetIds: ['fin.cash', 'fin.ap', 'fin.ar', 'fin.pnl', 'fin.bank.balance', 'fin.gl.journals'],
-      chartId: 'chart.revenueExpense',
+      chartId: 'chart.financial-ratios',
       diagramId: 'diagram.arAging',
+    },
+    {
+      id: 'performance',
+      label: 'Performance',
+      description: 'Budget variance and KPIs',
+      widgetIds: ['fin.cash', 'fin.ar.dso', 'fin.pnl', 'fin.co.variance'],
+      chartId: 'chart.budget-variance',
+      diagramId: 'diagram.apAging',
     },
   ],
 };

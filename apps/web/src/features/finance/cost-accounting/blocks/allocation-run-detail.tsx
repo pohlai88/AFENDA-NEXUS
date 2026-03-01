@@ -11,12 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { DataTable } from '@/components/erp/data-table';
 import type {
   AllocationRunDetailView,
-  AllocationLineView,
 } from '../queries/cost-accounting.queries';
-import { allocationMethodLabels, allocationStatusConfig } from '../types';
+import { allocationMethodLabels } from '../types';
 
 interface AllocationRunDetailProps {
   run: AllocationRunDetailView;

@@ -16,8 +16,7 @@ interface LedgerDetailPageProps {
 }
 
 export default async function LedgerDetailPage({ params }: LedgerDetailPageProps) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
 
   const result = await getLedger(ctx, id);
 

@@ -84,13 +84,13 @@ jobs:
       - uses: ./.github/actions/setup
 
       - name: Build
-        run: pnpm turbo build
+        run: pnpm turbo build --affected
 
       - name: Typecheck
-        run: pnpm turbo typecheck
+        run: pnpm turbo typecheck --affected
 
       - name: Lint
-        run: pnpm turbo lint
+        run: pnpm turbo lint --affected
 
       - name: Format check
         run: pnpm format:check
@@ -108,15 +108,15 @@ jobs:
 
       # Build first — tests may depend on built packages
       - name: Build
-        run: pnpm turbo build
+        run: pnpm turbo build --affected
 
       - name: Unit & Integration tests (with coverage)
-        run: pnpm turbo test:coverage
+        run: pnpm turbo test:coverage --affected
         env:
           CI: true
 
       - name: Property-based tests
-        run: pnpm turbo test:property
+        run: pnpm turbo test:property --affected
         env:
           CI: true
 
@@ -155,7 +155,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
 
-      - name: Run all gates in parallel (30 gates)
+      - name: Run all gates in parallel (35 gates)
         run: node tools/scripts/run-gates-parallel.mjs
         env:
           CI: true

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
 
@@ -109,117 +110,117 @@ export interface SupplierActivationReadiness {
 
 // ─── Query Functions — Blocks ───────────────────────────────────────────────
 
-export async function getSupplierBlocks(
+export const getSupplierBlocks = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierBlockView[] }>> {
+): Promise<ApiResult<{ data: SupplierBlockView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierBlockView[] }>(`/ap/suppliers/${supplierId}/blocks`);
-}
+});
 
-export async function getSupplierBlockHistory(
+export const getSupplierBlockHistory = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierBlockView[] }>> {
+): Promise<ApiResult<{ data: SupplierBlockView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierBlockView[] }>(`/ap/suppliers/${supplierId}/block-history`);
-}
+});
 
 // ─── Query Functions — Tax Registrations ────────────────────────────────────
 
-export async function getSupplierTaxRegistrations(
+export const getSupplierTaxRegistrations = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierTaxRegistrationView[] }>> {
+): Promise<ApiResult<{ data: SupplierTaxRegistrationView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierTaxRegistrationView[] }>(
     `/ap/suppliers/${supplierId}/tax-registrations`,
   );
-}
+});
 
 // ─── Query Functions — Legal Documents ──────────────────────────────────────
 
-export async function getSupplierLegalDocs(
+export const getSupplierLegalDocs = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierLegalDocView[] }>> {
+): Promise<ApiResult<{ data: SupplierLegalDocView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierLegalDocView[] }>(
     `/ap/suppliers/${supplierId}/legal-docs`,
   );
-}
+});
 
 // ─── Query Functions — Evaluations ──────────────────────────────────────────
 
-export async function getSupplierEvaluations(
+export const getSupplierEvaluations = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierEvaluationView[] }>> {
+): Promise<ApiResult<{ data: SupplierEvaluationView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierEvaluationView[] }>(
     `/ap/suppliers/${supplierId}/evaluations`,
   );
-}
+});
 
 // ─── Query Functions — Risk Indicators ──────────────────────────────────────
 
-export async function getSupplierRiskIndicators(
+export const getSupplierRiskIndicators = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierRiskIndicatorView[] }>> {
+): Promise<ApiResult<{ data: SupplierRiskIndicatorView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierRiskIndicatorView[] }>(
     `/ap/suppliers/${supplierId}/risk-indicators`,
   );
-}
+});
 
 // ─── Query Functions — Diversity ────────────────────────────────────────────
 
-export async function getSupplierDiversity(
+export const getSupplierDiversity = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierDiversityView[] }>> {
+): Promise<ApiResult<{ data: SupplierDiversityView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierDiversityView[] }>(
     `/ap/suppliers/${supplierId}/diversity`,
   );
-}
+});
 
 // ─── Query Functions — Contacts ─────────────────────────────────────────────
 
-export async function getSupplierContacts(
+export const getSupplierContacts = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierContactView[] }>> {
+): Promise<ApiResult<{ data: SupplierContactView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierContactView[] }>(
     `/ap/suppliers/${supplierId}/contacts`,
   );
-}
+});
 
 // ─── Query Functions — Company Overrides ────────────────────────────────────
 
-export async function getSupplierCompanyOverrides(
+export const getSupplierCompanyOverrides = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<{ data: SupplierCompanyOverrideView[] }>> {
+): Promise<ApiResult<{ data: SupplierCompanyOverrideView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: SupplierCompanyOverrideView[] }>(
     `/ap/suppliers/${supplierId}/company-overrides`,
   );
-}
+});
 
 // ─── Query Functions — Activation Readiness ─────────────────────────────────
 
-export async function getSupplierActivationReadiness(
+export const getSupplierActivationReadiness = cache(async (
   ctx: Ctx,
   supplierId: string,
-): Promise<ApiResult<SupplierActivationReadiness>> {
+): Promise<ApiResult<SupplierActivationReadiness>> => {
   const client = createApiClient(ctx);
   return client.get<SupplierActivationReadiness>(
     `/ap/suppliers/${supplierId}/activation-readiness`,
   );
-}
+});
 
 // ─── Command Functions ──────────────────────────────────────────────────────
 
@@ -331,17 +332,17 @@ export async function createRiskIndicator(
   return client.post<CommandReceipt>(`/ap/suppliers/${supplierId}/risk-indicators`, body);
 }
 
-export async function resolveRiskIndicator(
+export const resolveRiskIndicator = cache(async (
   ctx: Ctx,
   supplierId: string,
   indicatorId: string,
-): Promise<ApiResult<CommandReceipt>> {
+): Promise<ApiResult<CommandReceipt>> => {
   const client = createApiClient(ctx);
   return client.post<CommandReceipt>(
     `/ap/suppliers/${supplierId}/risk-indicators/${indicatorId}/resolve`,
     {},
   );
-}
+});
 
 export async function addDiversityCertification(
   ctx: Ctx,

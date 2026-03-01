@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 
@@ -44,24 +45,24 @@ export interface DunningRunDetail {
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getDunningRuns(
+export const getDunningRuns = cache(async (
   ctx: Ctx,
   params: { page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<DunningRunListItem>>> {
+): Promise<ApiResult<PaginatedResponse<DunningRunListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<DunningRunListItem>>('/ar/dunning', query);
-}
+});
 
-export async function getDunningRun(
+export const getDunningRun = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<DunningRunDetail>> {
+): Promise<ApiResult<DunningRunDetail>> => {
   const client = createApiClient(ctx);
   return client.get<DunningRunDetail>(`/ar/dunning/${id}`);
-}
+});
 
 // ─── Command Functions ───────────────────────────────────────────────────────
 

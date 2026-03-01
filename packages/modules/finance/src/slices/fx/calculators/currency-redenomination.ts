@@ -135,7 +135,7 @@ export function redenominateCurrency(
     explanation:
       `Currency redenomination: ${input.originalCurrencyCode} → ${input.newCurrencyCode}, ` +
       `factor=${input.conversionFactorBps}/10000, ${balances.length} balances, ` +
-      `total rounding diff=${totalRounding}` +
-      (isDualCurrencyPeriod ? `, dual-currency until ${input.transitionEndDate}` : ''),
+      `total rounding diff=${totalRounding}${ 
+      isDualCurrencyPeriod ? `, dual-currency until ${input.transitionEndDate}` : ''}`,
   };
 }

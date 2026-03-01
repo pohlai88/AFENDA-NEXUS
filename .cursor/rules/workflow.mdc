@@ -1,0 +1,76 @@
+---
+description: Development workflow and quality standards  
+alwaysApply: true
+---
+
+# Workflow
+
+## Quality Gates
+
+CI on every PR:
+- Build → Typecheck → Lint → Format
+- 34 parallel governance gates
+- Unit + E2E tests
+
+**Key gates**: `gate:react-cache`, `gate:hydration`, `gate:turbo-config`, `gate:dependency-graph`
+
+**Run locally**: `pnpm ci:gates:parallel`
+
+## Pre-commit Hooks
+
+Lint-staged auto-runs:
+- Prettier `--write`
+- ESLint `--fix`
+- No warnings allowed
+
+## Code Style
+
+### Comments
+
+**DO NOT** add obvious comments:
+
+```typescript
+// ❌ Bad
+// Import React
+import React from 'react';
+
+// ✅ Good  
+// Use debounce to prevent excessive API calls during rapid input
+const debouncedSearch = useDebouncedCallback(search, 300);
+```
+
+**Only comment**: Non-obvious intent, trade-offs, constraints
+
+### File Creation
+
+**DO NOT** create files unless necessary:
+- Prefer editing existing files
+- Check for similar patterns first
+- Ask if uncertain
+
+## Reports
+
+**DO NOT** create reports >50 lines without approval:
+- User saying "combine analysis" ≠ approval for 500-line report
+- User saying "write detailed report" = approval
+- **ALWAYS confirm length** before writing long docs
+- Default to concise summaries
+
+### Rule Precedence
+
+When user requests conflict with rules:
+1. Ask for clarification
+2. If user confirms, explain which rule you're breaking
+3. Never assume implicit permission
+
+## Error Handling
+
+- Use Result types from `@afenda/core`
+- Server errors in `*.server.ts`
+- Client errors show user-friendly messages
+
+## Testing
+
+- **Unit**: Co-locate `*.test.ts`
+- **E2E**: `apps/e2e/tests/`
+- Test business logic, not trivial code

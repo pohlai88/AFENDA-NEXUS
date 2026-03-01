@@ -7,6 +7,8 @@
  * @module use-analytics
  */
 
+import type PostHog from 'posthog-js';
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface AnalyticsEvent {
@@ -20,9 +22,6 @@ export interface AnalyticsUser {
   name?: string;
   tenantId?: string;
 }
-
-type PostHogModule = Awaited<typeof import('posthog-js')>;
-type PostHog = PostHogModule['default'];
 
 // ─── Singleton Init (dynamic import) ─────────────────────────────────────────
 

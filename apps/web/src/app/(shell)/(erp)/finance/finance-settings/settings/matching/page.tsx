@@ -18,8 +18,7 @@ interface Props {
 }
 
 export default async function MatchTolerancePage({ searchParams }: Props) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const result = await getMatchTolerances(ctx, {
     page: params.page ?? '1',
     limit: params.limit ?? '50',

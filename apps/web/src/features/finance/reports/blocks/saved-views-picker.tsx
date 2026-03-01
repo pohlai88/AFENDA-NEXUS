@@ -37,7 +37,6 @@ export function SavedViewsPicker({ moduleKey, currentFilters, onApply }: SavedVi
   const {
     views,
     activeView,
-    defaultView,
     createView,
     deleteView,
     duplicateView,
@@ -51,7 +50,7 @@ export function SavedViewsPicker({ moduleKey, currentFilters, onApply }: SavedVi
 
   const handleSave = () => {
     if (!newViewName.trim()) return;
-    const view = createView(newViewName.trim(), currentFilters, { setAsActive: true });
+    createView(newViewName.trim(), currentFilters, { setAsActive: true });
     setNewViewName('');
     setSaveDialogOpen(false);
   };

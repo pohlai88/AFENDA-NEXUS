@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
 
@@ -64,39 +65,39 @@ export interface ProvisionSummaryView {
 
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
-export async function getProvisions(
+export const getProvisions = cache(async (
   ctx: Ctx,
   params?: { status?: string; type?: string },
-): Promise<ApiResult<{ data: ProvisionView[] }>> {
+): Promise<ApiResult<{ data: ProvisionView[] }>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.status) query.status = params.status;
   if (params?.type) query.type = params.type;
   return client.get<{ data: ProvisionView[] }>('/provisions', query);
-}
+});
 
-export async function getProvisionById(
+export const getProvisionById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<ProvisionView>> {
+): Promise<ApiResult<ProvisionView>> => {
   const client = createApiClient(ctx);
   return client.get<ProvisionView>(`/provisions/${id}`);
-}
+});
 
-export async function getProvisionMovements(
+export const getProvisionMovements = cache(async (
   ctx: Ctx,
   provisionId: string,
-): Promise<ApiResult<{ data: ProvisionMovementView[] }>> {
+): Promise<ApiResult<{ data: ProvisionMovementView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: ProvisionMovementView[] }>(`/provisions/${provisionId}/movements`);
-}
+});
 
-export async function getProvisionSummary(
+export const getProvisionSummary = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<ProvisionSummaryView>> {
+): Promise<ApiResult<ProvisionSummaryView>> => {
   const client = createApiClient(ctx);
   return client.get<ProvisionSummaryView>('/provisions/summary');
-}
+});
 
 // ─── Commands ────────────────────────────────────────────────────────────────
 

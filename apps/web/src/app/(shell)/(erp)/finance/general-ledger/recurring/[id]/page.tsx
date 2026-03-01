@@ -16,8 +16,7 @@ interface RecurringDetailPageProps {
 }
 
 export default async function RecurringDetailPage({ params }: RecurringDetailPageProps) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getRecurringTemplate(ctx, id);
 
   if (!result.ok) {

@@ -9,14 +9,6 @@ import {
   getSupplierEvaluations,
   getSupplierDiversity,
   getSupplierCompanyOverrides,
-  type SupplierContactView,
-  type SupplierTaxRegistrationView,
-  type SupplierLegalDocView,
-  type SupplierBlockView,
-  type SupplierRiskIndicatorView,
-  type SupplierEvaluationView,
-  type SupplierDiversityView,
-  type SupplierCompanyOverrideView,
 } from '@/features/finance/payables/queries/supplier-mdm.queries';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -30,8 +22,8 @@ import {
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import { formatDate } from '@/lib/utils';
 import {
-  Phone, Mail, User, ShieldCheck, ShieldAlert, FileText, Ban,
-  AlertTriangle, Star, Heart, Building2, CheckCircle, XCircle,
+  Mail, User, ShieldCheck, FileText, Ban,
+  Star, Heart, Building2, CheckCircle,
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════

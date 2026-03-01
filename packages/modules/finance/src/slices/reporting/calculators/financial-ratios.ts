@@ -170,7 +170,7 @@ export function computeFinancialRatios(input: RatioInput): CalculatorResult<Rati
       daysInPeriod: input.daysInPeriod ?? 365,
     },
     explanation:
-      `Financial ratios: current=${currentRatio}, ROE=${returnOnEquity}, D/E=${debtToEquity}, CCC=${cashConversionCycle}d` +
-      (altmanZScore !== null ? `, Z-score=${altmanZScore}` : ''),
+      `Financial ratios: current=${currentRatio}, ROE=${returnOnEquity}, D/E=${debtToEquity}, CCC=${cashConversionCycle}d${ 
+      altmanZScore !== null ? `, Z-score=${altmanZScore}` : ''}`,
   };
 }

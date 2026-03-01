@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { cn, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { routes } from '@/lib/constants';
-import { Lightbulb, TrendingDown, Banknote, AlertTriangle, Calculator, Search } from 'lucide-react';
+import { Lightbulb, TrendingDown, Banknote, Calculator, Search } from 'lucide-react';
 import type { IntangibleSummary } from '../types';
 
 interface IntangibleSummaryCardsProps {

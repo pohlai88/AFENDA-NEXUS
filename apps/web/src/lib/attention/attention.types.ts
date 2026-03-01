@@ -20,6 +20,8 @@ export type AttentionSeverity = 'critical' | 'warning' | 'info';
 export interface AttentionItem {
   /** Unique identifier (e.g. "overdue-payables"). */
   id: string;
+  /** Feature/module ID for grouping (e.g. 'ap', 'banking', 'tax'). */
+  featureId?: string;
   /** Visual severity — drives icon color and sort order. */
   severity: AttentionSeverity;
   /** Short title (e.g. "Overdue Payables"). */

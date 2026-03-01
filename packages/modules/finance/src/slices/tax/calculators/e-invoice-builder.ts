@@ -361,8 +361,8 @@ export function buildEInvoice(input: EInvoiceInput): CalculatorResult<EInvoiceRe
     },
     explanation:
       `E-invoice ${input.format}: ${input.documentType} ${input.invoiceNumber}, ` +
-      `${input.lineItems.length} lines, total ${formatMinor(input.totalIncludingTax)} ${input.currencyCode}` +
-      (errors.length > 0 ? `, ${errors.length} validation errors` : ', valid') +
-      (warnings.length > 0 ? `, ${warnings.length} warnings` : ''),
+      `${input.lineItems.length} lines, total ${formatMinor(input.totalIncludingTax)} ${input.currencyCode}${ 
+      errors.length > 0 ? `, ${errors.length} validation errors` : ', valid' 
+      }${warnings.length > 0 ? `, ${warnings.length} warnings` : ''}`,
   };
 }

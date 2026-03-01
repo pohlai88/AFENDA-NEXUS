@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import type { CreateIcTransaction } from '@afenda/contracts';
@@ -39,13 +40,13 @@ export async function settleIcTransactionAction(
 
 // ─── Queries (callable from server components via action) ───────────────────
 
-export async function getIcTransactionAuditAction(
+export const getIcTransactionAuditAction = cache(async (
   transactionId: string
-): Promise<ApiResult<AuditEntry[]>> {
+): Promise<ApiResult<AuditEntry[]>> => {
   const ctx = await getRequestContext();
   const client = createApiClient(ctx);
   return client.get<AuditEntry[]>(`/ic-transactions/${transactionId}/audit`);
-}
+});
 
 // ─── Preview Action ─────────────────────────────────────────────────────────
 

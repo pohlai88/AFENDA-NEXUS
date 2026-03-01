@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { getRequestContext } from '@/lib/auth';
 import { routes } from '@/lib/constants';
-import type { CreateRevenueContract, RecognizeRevenue } from '@afenda/contracts';
+import type { CreateRevenueContract } from '@afenda/contracts';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
 import {
   createRevenueContract as createQ,

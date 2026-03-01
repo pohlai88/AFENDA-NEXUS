@@ -125,12 +125,14 @@ PageHeader.displayName = 'PageHeader';
 const PageHeaderHeading = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <h1
     ref={ref}
     className={cn('text-2xl font-bold tracking-tight', className)}
     {...props}
-  />
+  >
+    {children}
+  </h1>
 ));
 PageHeaderHeading.displayName = 'PageHeaderHeading';
 

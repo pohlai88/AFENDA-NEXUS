@@ -249,6 +249,24 @@ async function loginAndSaveState(_config: FullConfig): Promise<void> {
     await page.goto(`${WEB_URL}/`, { waitUntil: 'load', timeout: 30_000 });
     console.log(`[globalSetup] Injected session — URL after navigation: ${page.url()}`);
 
+    // If redirected to onboarding (no org), create one so shell routes work
+    if (page.url().includes('/onboarding')) {
+      const orgSlug = `e2e-${Date.now().toString(36)}`;
+      await page.getByLabel(/organization name/i).waitFor({ state: 'visible', timeout: 10_000 });
+      await page.getByLabel(/organization name/i).fill('E2E Test Org');
+      await page.locator('#orgSlug').fill(orgSlug);
+      await page.getByRole('button', { name: /create organization|creating/i }).click();
+      await page.waitForURL((u) => !u.pathname.includes('onboarding'), { timeout: 20_000 });
+      console.log(`[globalSetup] Created org (slug: ${orgSlug}) — now on: ${page.url()}`);
+    }
+
+    // Navigate to /finance to ensure shell + tenant context are ready before saving
+    await page.goto(`${WEB_URL}/finance`, { waitUntil: 'load', timeout: 15_000 });
+    if (page.url().includes('/onboarding')) {
+      throw new Error('[globalSetup] Still on onboarding after org creation — session may not have active org.');
+    }
+    console.log(`[globalSetup] Finance route OK — URL: ${page.url()}`);
+
     // Save storage state
     await context.storageState({ path: AUTH_FILE });
     console.log(`[globalSetup] Storage state saved → ${AUTH_FILE}`);

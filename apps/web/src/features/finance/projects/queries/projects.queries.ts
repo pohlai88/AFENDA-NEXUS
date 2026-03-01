@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type {
   Project,
@@ -12,7 +13,7 @@ type RequestCtx = { tenantId: string; userId: string; token: string };
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getProjects(
+export const getProjects = cache(async (
   ctx: RequestCtx,
   params?: {
     status?: string;
@@ -29,7 +30,7 @@ export async function getProjects(
       pagination: { page: number; perPage: number; total: number; totalPages: number };
     }
   | { ok: false; error: string }
-> {
+> => {
   const api = createApiClient(ctx);
   const qp = new URLSearchParams();
   if (params?.status) qp.set('status', params.status);
@@ -55,63 +56,63 @@ export async function getProjects(
       totalPages: 1,
     },
   };
-}
+});
 
-export async function getProjectById(
+export const getProjectById = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<{ ok: true; data: Project } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: Project } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/projects/${id}`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as Project };
-}
+});
 
-export async function getProjectCosts(
+export const getProjectCosts = cache(async (
   ctx: RequestCtx,
   projectId: string
-): Promise<{ ok: true; data: ProjectCost[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: ProjectCost[] } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/projects/${projectId}/costs`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as ProjectCost[] };
-}
+});
 
-export async function getProjectBillings(
+export const getProjectBillings = cache(async (
   ctx: RequestCtx,
   projectId: string
-): Promise<{ ok: true; data: ProjectBilling[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: ProjectBilling[] } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/projects/${projectId}/billings`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as ProjectBilling[] };
-}
+});
 
-export async function getProjectMilestones(
+export const getProjectMilestones = cache(async (
   ctx: RequestCtx,
   projectId: string
-): Promise<{ ok: true; data: ProjectMilestone[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: ProjectMilestone[] } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/projects/${projectId}/milestones`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as ProjectMilestone[] };
-}
+});
 
-export async function getWIPCalculation(
+export const getWIPCalculation = cache(async (
   ctx: RequestCtx,
   projectId: string
-): Promise<{ ok: true; data: WIPCalculation } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: WIPCalculation } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/projects/${projectId}/wip`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as WIPCalculation };
-}
+});
 
-export async function getProjectSummary(
+export const getProjectSummary = cache(async (
   ctx: RequestCtx
-): Promise<{ ok: true; data: ProjectSummary } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: ProjectSummary } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get('/projects/summary');
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as ProjectSummary };
-}
+});

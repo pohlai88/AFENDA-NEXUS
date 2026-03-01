@@ -98,7 +98,8 @@ export function RecurringLinesTable({ lines }: { lines: TemplateLine[] }) {
           </TableHeader>
           <TableBody>
             {lines.map((line, i) => (
-              <TableRow key={i}>
+              // eslint-disable-next-line react/no-array-index-key -- Lines may share accountCode
+              <TableRow key={`${line.accountCode}-${i}`}>
                 <TableCell className="font-mono text-xs">{line.accountCode}</TableCell>
                 <TableCell className="text-muted-foreground">{line.description ?? '—'}</TableCell>
                 <TableCell className="text-right font-mono text-sm tabular-nums">

@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { cache } from 'react';
+
 // ─── Chart Resolvers (Server-Only) ──────────────────────────────────────────
 //
 // Async resolvers for dashboard chart data. Currently return stub data
@@ -80,34 +82,35 @@ const STUB_AR_AGING: AgingBucket[] = [
  * Resolve chart data for the dashboard.
  * Returns stub/preview data until wired to real DB queries.
  * Error-isolated: never throws — returns empty data on failure.
+ * Wrapped with React cache() for automatic request memoization (RBP-CACHE).
  */
-export async function resolveChartData(
-  _ctx?: RequestContextLike,
-): Promise<ChartData> {
-  try {
-    // Simulate network latency
-    await new Promise((r) => setTimeout(r, 80));
+export const resolveChartData = cache(
+  async (_ctx?: RequestContextLike): Promise<ChartData> => {
+    try {
+      // Simulate network latency
+      await new Promise((r) => setTimeout(r, 80));
 
-    // TODO: Replace with real queries:
-    // const [cashFlow, expenses, arAging] = await Promise.all([
-    //   client.get('/reports/cash-flow', { months: 6 }),
-    //   client.get('/reports/expense-breakdown'),
-    //   client.get('/reports/ar-aging'),
-    // ]);
+      // TODO: Replace with real queries:
+      // const [cashFlow, expenses, arAging] = await Promise.all([
+      //   client.get('/reports/cash-flow', { months: 6 }),
+      //   client.get('/reports/expense-breakdown'),
+      //   client.get('/reports/ar-aging'),
+      // ]);
 
-    return {
-      cashFlow: STUB_CASH_FLOW,
-      expenses: STUB_EXPENSES,
-      arAging: STUB_AR_AGING,
-      isPreview: true,
-    };
-  } catch {
-    // Error-isolated: return empty data
-    return {
-      cashFlow: [],
-      expenses: [],
-      arAging: [],
-      isPreview: true,
-    };
+      return {
+        cashFlow: STUB_CASH_FLOW,
+        expenses: STUB_EXPENSES,
+        arAging: STUB_AR_AGING,
+        isPreview: true,
+      };
+    } catch {
+      // Error-isolated: return empty data
+      return {
+        cashFlow: [],
+        expenses: [],
+        arAging: [],
+        isPreview: true,
+      };
+    }
   }
-}
+);

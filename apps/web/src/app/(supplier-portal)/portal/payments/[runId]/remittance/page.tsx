@@ -13,8 +13,7 @@ interface Props {
 }
 
 export default async function PortalRemittancePage({ params }: Props) {
-  const { runId } = await params;
-  const ctx = await getRequestContext();
+  const [{ runId }, ctx] = await Promise.all([params, getRequestContext()]);
 
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {

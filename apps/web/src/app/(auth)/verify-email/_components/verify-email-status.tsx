@@ -85,7 +85,7 @@ export function VerifyEmailStatus() {
     try {
       const { error: resendError } = await authClient.sendVerificationEmail({
         email: emailParam,
-        callbackURL: window.location.origin + '/verify-email',
+        callbackURL: `${window.location.origin  }/verify-email`,
       });
 
       if (resendError) {
@@ -159,7 +159,7 @@ export function VerifyEmailStatus() {
               )}
             </Button>
           )}
-          {message && <p className="text-center text-sm text-muted-foreground">{message}</p>}
+          { message ? <p className="text-center text-sm text-muted-foreground">{message}</p> : null}
           <Button asChild variant="ghost" className="w-full">
             <Link href={routes.login}>Back to Sign In</Link>
           </Button>
@@ -200,7 +200,7 @@ export function VerifyEmailStatus() {
               />
             </div>
 
-            {message && <p className="text-center text-sm text-destructive">{message}</p>}
+            { message ? <p className="text-center text-sm text-destructive">{message}</p> : null}
 
             <Button type="submit" className="w-full" disabled={isPending || !code}>
               {isPending ? (
@@ -295,7 +295,7 @@ export function VerifyEmailStatus() {
                 </>
               )}
             </Button>
-            {message && <p className="text-sm text-muted-foreground">{message}</p>}
+            { message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
           </>
         )}
         <Button asChild variant="ghost" className="w-full">

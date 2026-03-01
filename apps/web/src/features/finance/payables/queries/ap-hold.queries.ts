@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 import type { ApHoldType, ApHoldStatus } from '@afenda/contracts';
@@ -31,7 +32,7 @@ export interface InvoiceTimelineEntry {
 
 type Ctx = { tenantId: string; userId: string; token: string };
 
-export async function getHolds(
+export const getHolds = cache(async (
   ctx: Ctx,
   params: {
     status?: string;
@@ -42,7 +43,7 @@ export async function getHolds(
     page?: string;
     limit?: string;
   },
-): Promise<ApiResult<PaginatedResponse<ApHoldListItem>>> {
+): Promise<ApiResult<PaginatedResponse<ApHoldListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.status) query.status = params.status;
@@ -53,7 +54,7 @@ export async function getHolds(
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<ApHoldListItem>>('/ap/holds', query);
-}
+});
 
 export async function releaseHold(
   ctx: Ctx,
@@ -64,18 +65,18 @@ export async function releaseHold(
   return client.post<CommandReceipt>(`/ap/holds/${holdId}/release`, { releaseReason: reason });
 }
 
-export async function getInvoiceTimeline(
+export const getInvoiceTimeline = cache(async (
   ctx: Ctx,
   invoiceId: string,
-): Promise<ApiResult<InvoiceTimelineEntry[]>> {
+): Promise<ApiResult<InvoiceTimelineEntry[]>> => {
   const client = createApiClient(ctx);
   return client.get<InvoiceTimelineEntry[]>(`/ap/invoices/${invoiceId}/timeline`);
-}
+});
 
-export async function getInvoiceHolds(
+export const getInvoiceHolds = cache(async (
   ctx: Ctx,
   invoiceId: string,
-): Promise<ApiResult<ApHoldListItem[]>> {
+): Promise<ApiResult<ApHoldListItem[]>> => {
   const client = createApiClient(ctx);
   return client.get<ApHoldListItem[]>(`/ap/invoices/${invoiceId}/holds`);
-}
+});

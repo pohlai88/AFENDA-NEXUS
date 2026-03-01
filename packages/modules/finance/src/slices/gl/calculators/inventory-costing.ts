@@ -372,9 +372,9 @@ export function computeInventoryValuation(
     },
     explanation:
       `Inventory valuation: ${input.items.length} items, total cost ${totalClosingCost}, ` +
-      `NRV write-down ${totalNrvWriteDown}, carrying ${totalCarrying}, COGS ${totalCogs}` +
-      (stockLines.length > 0
+      `NRV write-down ${totalNrvWriteDown}, carrying ${totalCarrying}, COGS ${totalCogs}${ 
+      stockLines.length > 0
         ? `, ${stockLines.filter((s) => s.isDiscrepancy).length} stock discrepancies`
-        : ''),
+        : ''}`,
   };
 }

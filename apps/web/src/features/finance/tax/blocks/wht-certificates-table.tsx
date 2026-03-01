@@ -164,6 +164,51 @@ function BulkActions({ selectedIds, onClearSelection }: BulkActionsProps) {
   );
 }
 
+// ─── Action Cell ──────────────────────────────────────────────────────────────
+
+function ActionCell({ cert }: { cert: WHTCertificate }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleIssue = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    startTransition(async () => {
+      const result = await issueWHTCertificate(cert.id);
+      if (result.ok) {
+        toast.success('Certificate issued');
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+    });
+  };
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const result = await downloadWHTCertificatePDF(cert.id);
+    if (result.ok) {
+      window.open(result.data.url, '_blank');
+    } else {
+      toast.error(result.error);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-end gap-1">
+      {cert.status === 'draft' ? (
+        <Button size="sm" variant="outline" onClick={handleIssue} disabled={isPending}>
+          <Send className="mr-1 h-3 w-3" />
+          Issue
+        </Button>
+      ) : (
+        <Button size="sm" variant="ghost" onClick={handleDownload}>
+          <Download className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  );
+}
+
 // ─── WHT Certificates Table ──────────────────────────────────────────────────
 
 interface WHTCertificatesTableProps {
@@ -182,47 +227,7 @@ export function WHTCertificatesTable({ certificates }: WHTCertificatesTableProps
     key: 'actions',
     header: '',
     className: 'w-[120px]',
-    render: (cert) => {
-      const [isPending, startTransition] = useTransition();
-
-      const handleIssue = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        startTransition(async () => {
-          const result = await issueWHTCertificate(cert.id);
-          if (result.ok) {
-            toast.success('Certificate issued');
-            router.refresh();
-          } else {
-            toast.error(result.error);
-          }
-        });
-      };
-
-      const handleDownload = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const result = await downloadWHTCertificatePDF(cert.id);
-        if (result.ok) {
-          window.open(result.data.url, '_blank');
-        } else {
-          toast.error(result.error);
-        }
-      };
-
-      return (
-        <div className="flex items-center justify-end gap-1">
-          {cert.status === 'draft' ? (
-            <Button size="sm" variant="outline" onClick={handleIssue} disabled={isPending}>
-              <Send className="mr-1 h-3 w-3" />
-              Issue
-            </Button>
-          ) : (
-            <Button size="sm" variant="ghost" onClick={handleDownload}>
-              <Download className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      );
-    },
+    render: (cert) => <ActionCell cert={cert} />,
   };
 
   const allColumns = [...columns, actionsColumn];

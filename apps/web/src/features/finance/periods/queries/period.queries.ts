@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -28,10 +29,10 @@ export interface PeriodDetail {
 
 // ─── Query Functions ────────────────────────────────────────────────────────
 
-export async function getPeriods(
+export const getPeriods = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { year?: string; status?: string; page?: string; limit?: string }
-): Promise<ApiResult<PaginatedResponse<PeriodListItem>>> {
+): Promise<ApiResult<PaginatedResponse<PeriodListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.year) query.year = params.year;
@@ -40,12 +41,12 @@ export async function getPeriods(
   if (params.limit) query.limit = params.limit;
 
   return client.get<PaginatedResponse<PeriodListItem>>('/periods', query);
-}
+});
 
-export async function getPeriod(
+export const getPeriod = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   id: string
-): Promise<ApiResult<PeriodDetail>> {
+): Promise<ApiResult<PeriodDetail>> => {
   const client = createApiClient(ctx);
   return client.get<PeriodDetail>(`/periods/${id}`);
-}
+});

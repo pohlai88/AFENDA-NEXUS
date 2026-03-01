@@ -11,8 +11,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 export const metadata = { title: 'Record Payment' };
 
 export default async function PayablePayPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getApInvoice(ctx, id);
 
   if (!result.ok) {

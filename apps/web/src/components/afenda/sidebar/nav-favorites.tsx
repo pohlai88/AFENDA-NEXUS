@@ -52,7 +52,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import type { ClientModuleWithNav } from '@/lib/modules/types';
-import type { NavGroup, NavItem } from '@/lib/constants';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -163,8 +162,8 @@ export function NavFavorites({ modules }: { modules: ClientModuleWithNav[] }) {
                   <SidebarMenuItem key={fav.href}>
                     <SidebarMenuButton asChild isActive={pathname === fav.href}>
                       <Link href={fav.href}>
-                        {FavIcon ? <FavIcon className="size-4 shrink-0" /> : <span>⭐</span>}
-                        <span>{fav.title}</span>
+                        {FavIcon ? <FavIcon className="size-4 shrink-0" /> : <span className="shrink-0">⭐</span>}
+                        <span className="min-w-0 flex-1 truncate">{fav.title}</span>
                       </Link>
                     </SidebarMenuButton>
                     <DropdownMenu>

@@ -1,5 +1,6 @@
-﻿'use server';
+'use server';
 
+import { cache } from 'react';
 import { revalidatePath } from 'next/cache';
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
@@ -169,13 +170,13 @@ export async function deleteAllocationRunAction(
 
 // ─── Queries (called from server components via actions) ─────────────────────
 
-export async function getCostCenterAuditAction(
+export const getCostCenterAuditAction = cache(async (
   costCenterId: string,
-): Promise<ApiResult<AuditEntry[]>> {
+): Promise<ApiResult<AuditEntry[]>> => {
   const ctx = await getRequestContext();
   const client = createApiClient(ctx);
   return client.get<AuditEntry[]>(`/cost-accounting/cost-centers/${costCenterId}/audit`);
-}
+});
 
 // ─── Preview Action ─────────────────────────────────────────────────────────
 

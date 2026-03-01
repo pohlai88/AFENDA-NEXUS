@@ -48,7 +48,7 @@ export function NavMain({ items }: { items: NavMainItem[] }) {
                 <span className="shrink-0 text-base leading-none" role="img" aria-hidden>
                   {item.emoji}
                 </span>
-                <span>{item.title}</span>
+                <span className="min-w-0 flex-1 truncate">{item.title}</span>
               </Link>
             </SidebarMenuButton>
             {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}

@@ -23,8 +23,7 @@ interface ApAgingPageProps {
 }
 
 export default async function ApAgingPage({ searchParams }: ApAgingPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
 
   const asOfDate = params.asOfDate ?? '';
   const currency = params.currency ?? '';
@@ -72,7 +71,7 @@ export default async function ApAgingPage({ searchParams }: ApAgingPageProps) {
 
       {!asOfDate && <EmptyState contentKey="finance.reports.apAging" variant="firstRun" icon={BarChart3} />}
 
-      {data && <ApAgingTable data={data} />}
+      { data ? <ApAgingTable data={data} /> : null}
     </div>
   );
 }

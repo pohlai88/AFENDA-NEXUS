@@ -39,6 +39,9 @@ export { migrate } from './migrate.js';
 // ─── Seed ───────────────────────────────────────────────────────────────────
 
 export { seed } from './seed.js';
+export { detectNeonBranch } from './utils/neon-branch-detector.js';
+export { shouldRunSeed, recordSeedRun, type SeedRunConfig } from './utils/idempotency.js';
+export { createSeedClient } from './utils/seed-client.js';
 
 // ─── Prepared Queries ───────────────────────────────────────────────────────
 

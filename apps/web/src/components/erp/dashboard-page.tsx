@@ -8,7 +8,6 @@ import { deriveShortcuts } from '@/lib/modules/derive-shortcuts';
 import { KPICard } from './kpi-card';
 import { ShortcutGrid } from './shortcut-grid';
 import type { DashboardScope } from '@/lib/modules/types';
-import type { ModuleId } from '@/lib/modules/types';
 import type { NavGroup } from '@/lib/constants';
 
 // ─── Dashboard Config ───────────────────────────────────────────────────────
@@ -99,7 +98,7 @@ async function DashboardKPIs({ kpiIds }: { kpiIds: string[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {kpiData.map((data, i) => (
-        <KPICard key={data.id} catalog={catalog[i]!} data={data} />
+        <KPICard key={data.id} catalog={catalog[i] ?? catalog[0]} data={data} />
       ))}
     </div>
   );
@@ -129,7 +128,7 @@ function KPICardsSkeleton({ count }: { count: number }) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: Math.min(count, 4) }, (_, i) => (
         <div
-          key={i}
+          key={`skeleton-${i}`}
           className="h-[120px] animate-pulse rounded-lg border bg-card"
         />
       ))}

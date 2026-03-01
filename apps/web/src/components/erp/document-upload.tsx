@@ -96,7 +96,7 @@ function DocumentUpload({
 
       // Create placeholders for uploading files
       const uploadingFiles: UploadedFile[] = acceptedFiles.map((file) => ({
-        id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: `temp-${crypto.randomUUID()}`,
         name: file.name,
         size: file.size,
         type: file.type,

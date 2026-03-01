@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useMemo, useCallback, useRef, useEffect, useContext } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { ShortcutContext } from '@/providers/shortcut-provider';
 import {
   Table,
@@ -29,6 +29,7 @@ import { EmptyState } from '@/components/erp/empty-state';
 import type { EmptyStateKey, EmptyStateVariant, EmptyStateSize } from '@/components/erp/empty-state.types';
 import { ExportMenu, type ExportPayload } from '@/components/erp/export-menu';
 import { cn } from '@/lib/utils';
+import { toSorted, toReversed } from '@/lib/utils/array';
 import {
   ArrowUpDown,
   ArrowUp,
@@ -97,8 +98,8 @@ function toColumnDefs<T>(columns: Column<T>[]): ColumnDef<T>[] {
 
 function normalizeColumns<T>(columns: (Column<T> | ColumnDef<T>)[]): ColumnDef<T>[] {
   if (columns.length === 0) return [];
-  const first = columns[0]!;
-  return isColumnDef(first) ? (columns as ColumnDef<T>[]) : toColumnDefs(columns as Column<T>[]);
+  const first = columns[0];
+  return first && isColumnDef(first) ? (columns as ColumnDef<T>[]) : toColumnDefs(columns as Column<T>[]);
 }
 
 // ─── Pagination Types ────────────────────────────────────────────────────────
@@ -278,11 +279,12 @@ function SkeletonRows({
   rowCount: number;
   selectable?: boolean;
 }) {
-  const totalColumns = selectable ? columnCount + 1 : columnCount;
+  const _totalColumns = selectable ? columnCount + 1 : columnCount;
 
   return (
     <>
       {Array.from({ length: rowCount }).map((_, rowIdx) => (
+        // eslint-disable-next-line react/no-array-index-key -- Static skeleton rows
         <TableRow key={rowIdx}>
           {selectable && (
             <TableCell className="w-12">
@@ -290,6 +292,7 @@ function SkeletonRows({
             </TableCell>
           )}
           {Array.from({ length: columnCount }).map((_, colIdx) => (
+            // eslint-disable-next-line react/no-array-index-key -- Static skeleton columns
             <TableCell key={colIdx}>
               <Skeleton className="h-4 w-full max-w-[200px]" />
             </TableCell>
@@ -416,16 +419,19 @@ function isLegacyPagination(
  * - k / ArrowUp: Move focus up
  * - Enter: Navigate to focused row (using onRowClick)
  * - /: Focus search input
+ * - mod+A: Select all rows (when selectable, not in search input)
  * - Escape: Blur search / clear focus
  */
 function useTableKeyboard<T>({
   rowCount,
-  onRowClick,
+  onRowClick: _onRowClick,
+  onSelectAll,
   searchInputRef,
   tableRef,
 }: {
   rowCount: number;
   onRowClick?: (row: T) => void;
+  onSelectAll?: () => void;
   searchInputRef: React.RefObject<HTMLInputElement | null>;
   tableRef: React.RefObject<HTMLDivElement | null>;
 }) {
@@ -454,6 +460,15 @@ function useTableKeyboard<T>({
           (target as HTMLInputElement).blur();
         }
         setFocusedRowIndex(-1);
+        return;
+      }
+
+      // mod+A: Select all rows (only when not in input — in input, browser selects text)
+      if (!isInput && (e.metaKey || e.ctrlKey) && e.key === 'a') {
+        if (onSelectAll) {
+          e.preventDefault();
+          onSelectAll();
+        }
         return;
       }
 
@@ -487,7 +502,7 @@ function useTableKeyboard<T>({
         return;
       }
     },
-    [rowCount, focusedRowIndex, searchInputRef],
+    [rowCount, focusedRowIndex, searchInputRef, onSelectAll],
   );
 
   // Scroll focused row into view
@@ -531,11 +546,14 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const pathname = usePathname();
   const columns = useMemo(() => normalizeColumns(rawColumns), [rawColumns]);
-  const keyFn =
-    keyFnProp ??
-    (keyField
-      ? (row: T) => String((row as Record<string, unknown>)[keyField as string] ?? '')
-      : (row: T) => String((row as { id?: string }).id ?? ''));
+  const keyFn = useMemo(
+    () =>
+      keyFnProp ??
+      (keyField
+        ? (row: T) => String((row as Record<string, unknown>)[keyField as string] ?? '')
+        : (row: T) => String((row as { id?: string }).id ?? '')),
+    [keyFnProp, keyField],
+  );
 
   const paginationProps: PaginationProps | undefined = useMemo(() => {
     if (!pagination) return undefined;
@@ -652,14 +670,27 @@ export function DataTable<T>({
     if (!sortColumn || !sortDirection) return filteredData;
     const col = columns.find((c) => c.id === sortColumn);
     if (!col?.sortFn) return filteredData;
-    const sorted = [...filteredData].sort(col.sortFn);
-    return sortDirection === 'desc' ? sorted.reverse() : sorted;
+    const sorted = toSorted(filteredData, col.sortFn);
+    return sortDirection === 'desc' ? toReversed(sorted) : sorted;
   }, [filteredData, sortColumn, sortDirection, columns]);
+
+  // Selection handlers (must be defined before useTableKeyboard which uses handleSelectAll)
+  const allRowIds = useMemo(() => new Set(sortedData.map(keyFn)), [sortedData, keyFn]);
+  const allSelected =
+    allRowIds.size > 0 && [...allRowIds].every((id) => effectiveSelectedIds.has(id));
+  const handleSelectAll = useCallback(() => {
+    if (allSelected) {
+      effectiveOnSelectionChange(new Set());
+    } else {
+      effectiveOnSelectionChange(new Set(allRowIds));
+    }
+  }, [allSelected, allRowIds, effectiveOnSelectionChange]);
 
   // ─── Table Keyboard Navigation ─────────────────────────────────────────
   const { focusedRowIndex, handleTableKeyDown } = useTableKeyboard<T>({
     rowCount: sortedData.length,
     onRowClick,
+    onSelectAll: selectable ? handleSelectAll : undefined,
     searchInputRef,
     tableRef: tableContainerRef,
   });
@@ -683,9 +714,10 @@ export function DataTable<T>({
   // and onRowClick is invoked through the onKeyDown handler below.
   const handleRowEnter = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' && focusedRowIndex >= 0 && sortedData[focusedRowIndex] != null && onRowClick) {
+      const focusedRow = sortedData[focusedRowIndex];
+      if (e.key === 'Enter' && focusedRowIndex >= 0 && focusedRow != null && onRowClick) {
         e.preventDefault();
-        onRowClick(sortedData[focusedRowIndex]!);
+        onRowClick(focusedRow);
       }
     },
     [focusedRowIndex, sortedData, onRowClick],
@@ -716,20 +748,8 @@ export function DataTable<T>({
     return <ArrowDown className="ml-1 h-3 w-3" />;
   }
 
-  // Selection handlers
-  const allRowIds = useMemo(() => new Set(sortedData.map(keyFn)), [sortedData, keyFn]);
-  const allSelected =
-    allRowIds.size > 0 && [...allRowIds].every((id) => effectiveSelectedIds.has(id));
   const someSelected = [...allRowIds].some((id) => effectiveSelectedIds.has(id));
   const selectionCount = effectiveSelectedIds.size;
-
-  function handleSelectAll() {
-    if (allSelected) {
-      effectiveOnSelectionChange(new Set());
-    } else {
-      effectiveOnSelectionChange(new Set(allRowIds));
-    }
-  }
 
   function handleSelectRow(id: string) {
     const next = new Set(effectiveSelectedIds);
@@ -808,7 +828,7 @@ export function DataTable<T>({
             )}
 
             {/* Export */}
-            {exportPayload && <ExportMenu payload={exportPayload} />}
+            { exportPayload ? <ExportMenu payload={exportPayload} /> : null}
           </div>
         </div>
       )}
@@ -817,8 +837,6 @@ export function DataTable<T>({
       <div
         ref={tableContainerRef}
         className="overflow-x-auto rounded-md border focus-visible:outline-none"
-        tabIndex={0}
-        onKeyDown={(e) => { handleTableKeyDown(e); handleRowEnter(e); }}
         onFocus={handleTableFocus}
         onBlur={handleTableBlur}
         role="region"
@@ -829,6 +847,8 @@ export function DataTable<T>({
           aria-rowcount={rowCount}
           aria-colcount={columnCount}
           aria-label="Data table"
+          tabIndex={0}
+          onKeyDown={(e) => { handleTableKeyDown(e); handleRowEnter(e); }}
         >
           <TableHeader>
             <TableRow>

@@ -102,14 +102,14 @@ export function toCSV(payload: ExportPayload): string {
 
     // Footer row (totals)
     if (section.footer) {
-      lines.push(section.columns.map((c) => csvEscape(section.footer![c.key])).join(','));
+      lines.push(section.columns.map((c) => csvEscape(section.footer?.[c.key])).join(','));
     }
 
     lines.push(''); // blank line between sections
   }
 
   // UTF-8 BOM + content
-  return '\uFEFF' + lines.join('\r\n');
+  return `\uFEFF${  lines.join('\r\n')}`;
 }
 
 // ─── JSON Export ────────────────────────────────────────────────────────────

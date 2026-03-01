@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Command, Search } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -31,26 +31,13 @@ import {
   ACTION_BTN,
   ICON,
   SEARCH_BAR_W,
+  COMMAND_PALETTE_ARIA_LABEL,
+  COMMAND_PALETTE_TRIGGER_PLACEHOLDER,
 } from './shell.tokens';
 import { deriveBreadcrumbs } from '@/lib/breadcrumbs/auto-breadcrumbs';
 import { usePageBreadcrumb } from '@/providers/page-breadcrumb-provider';
 import type { ClientModuleWithNav } from '@/lib/modules/types';
 import type { ShellUser } from '@/lib/shell/shell-user';
-
-// ─── Platform shortcut label ─────────────────────────────────────────────────
-
-/** Returns "⌘K" on macOS, "Ctrl K" on Windows/Linux. */
-function useModKey(): string {
-  const [label, setLabel] = React.useState('⌘K');
-
-  React.useEffect(() => {
-    if (typeof navigator !== 'undefined' && !/Mac|iPod|iPhone|iPad/.test(navigator.userAgent)) {
-      setLabel('Ctrl K');
-    }
-  }, []);
-
-  return label;
-}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -59,15 +46,17 @@ interface AfendaShellHeaderProps {
   user?: ShellUser;
   /** Server action called on sign-out. */
   logoutAction?: () => Promise<void>;
-  /** Callback to open the command palette (Cmd/Ctrl+K). */
+  /** Callback to open the command palette. */
   onOpenCommandPalette: () => void;
+  /** Resolved shortcut keys for command palette (e.g. "mod+k"). When set, shown in search bar and tooltip; no hardcoded hint when unset. */
+  commandPaletteShortcutKeys?: string;
   /** Visible modules for breadcrumb derivation. */
   modules?: ClientModuleWithNav[];
   /** Slot for status cluster (attention + notifications badge). */
   statusCluster?: React.ReactNode;
   /** Optional calculator slot (e.g. CalculatorPopover with mod+= shortcut). */
   calculatorSlot?: React.ReactNode;
-  /** Optional shortcut reference slot (e.g. Keyboard icon + ? to open shortcut list). */
+  /** Optional shortcut reference slot (e.g. Keyboard icon + Ctrl+? to open shortcut list). */
   shortcutSlot?: React.ReactNode;
 }
 
@@ -80,13 +69,14 @@ interface AfendaShellHeaderProps {
  *   [Breadcrumbs] ──── [Search] [Status] [Display] [User] | [☰ SidebarTrigger]
  *
  * - Sticky with `top-0 z-50` for scroll persistence
- * - Platform-aware shortcut hint (⌘K / Ctrl K)
+ * - Universal shortcut hint: ⌘ K (command palette)
  * - Single responsive search button (collapses to icon on mobile)
  */
 function AfendaShellHeader({
   user,
   logoutAction,
   onOpenCommandPalette,
+  commandPaletteShortcutKeys,
   modules,
   statusCluster,
   calculatorSlot,
@@ -94,7 +84,6 @@ function AfendaShellHeader({
 }: AfendaShellHeaderProps) {
   const pathname = usePathname();
   const { pageBreadcrumb } = usePageBreadcrumb();
-  const modKey = useModKey();
 
   const crumbs = React.useMemo(
     () => deriveBreadcrumbs(pathname, modules, { pageBreadcrumb: pageBreadcrumb ?? undefined }),
@@ -102,7 +91,7 @@ function AfendaShellHeader({
   );
 
   // Last crumb label used as page title on mobile
-  const pageTitle = crumbs.length > 0 ? crumbs[crumbs.length - 1]!.label : '';
+  const pageTitle = crumbs.length > 0 ? crumbs.at(-1)?.label ?? '' : '';
 
   return (
     <header
@@ -123,6 +112,7 @@ function AfendaShellHeader({
               {crumbs.map((crumb, i) => {
                 const isLast = i === crumbs.length - 1;
                 return (
+                  // eslint-disable-next-line react/no-array-index-key -- Breadcrumb labels may duplicate
                   <React.Fragment key={`${crumb.label}-${i}`}>
                     {i > 0 && <BreadcrumbSeparator />}
                     <BreadcrumbItem>
@@ -153,7 +143,7 @@ function AfendaShellHeader({
 
       {/* Right — Actions */}
       <div className={cn('ml-auto flex items-center px-4', ACTION_GAP)}>
-        {/* Search — wide on desktop, icon-only on mobile */}
+        {/* Command palette — show ⌘ K (universal); shortcut hint only when keys provided */}
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -161,15 +151,29 @@ function AfendaShellHeader({
               size="sm"
               className={cn('hidden justify-start text-sm text-muted-foreground lg:flex', SEARCH_BAR_W)}
               onClick={onOpenCommandPalette}
-              aria-label="Search"
+              aria-label={COMMAND_PALETTE_ARIA_LABEL}
             >
               <Search className={ICON} aria-hidden />
-              <span className="ml-2">Search...</span>
-              <Kbd className="ml-auto">{modKey}</Kbd>
+              <span className="ml-2 flex-1 truncate">{COMMAND_PALETTE_TRIGGER_PLACEHOLDER}</span>
+              {commandPaletteShortcutKeys ? (
+                <Kbd className="ml-auto shrink-0" suppressHydrationWarning>
+                  <Command className="size-3" aria-hidden />
+                  <span>K</span>
+                </Kbd>
+              ) : null}
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            Search <span className="text-muted-foreground">({modKey})</span>
+            Command palette
+            {commandPaletteShortcutKeys ? (
+              <>
+                {' '}
+                <Kbd className="ml-1.5" suppressHydrationWarning>
+                  <Command className="size-3" aria-hidden />
+                  <span>K</span>
+                </Kbd>
+              </>
+            ) : null}
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -179,13 +183,30 @@ function AfendaShellHeader({
               size="icon-sm"
               className={cn(ACTION_BTN, 'lg:hidden')}
               onClick={onOpenCommandPalette}
-              aria-label="Search"
+              aria-label={COMMAND_PALETTE_ARIA_LABEL}
             >
               <Search className={ICON} aria-hidden />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Search</TooltipContent>
+          <TooltipContent side="bottom">
+            Command palette
+            {commandPaletteShortcutKeys ? (
+              <>
+                {' '}
+                <Kbd className="ml-1.5" suppressHydrationWarning>
+                  <Command className="size-3" aria-hidden />
+                  <span>K</span>
+                </Kbd>
+              </>
+            ) : null}
+          </TooltipContent>
         </Tooltip>
+
+        {/* Keyboard shortcuts — small bar (similar to Command K), desktop only */}
+        {shortcutSlot}
+
+        {/* Separator: Search tools → System/context tools */}
+        <Separator orientation="vertical" className="h-4" aria-hidden />
 
         {/* Calculator (mod+=) */}
         {calculatorSlot}
@@ -196,13 +217,13 @@ function AfendaShellHeader({
         {/* Display cluster (density + theme) */}
         <AfendaDisplayCluster />
 
-        {/* Shortcut reference (? key) */}
-        {shortcutSlot}
+        {/* Separator: System/context → User + Navigation */}
+        <Separator orientation="vertical" className="h-4" aria-hidden />
 
         {/* User menu */}
         <UserMenu user={user} logoutAction={logoutAction} />
 
-        {/* Module nav popover (burger) — rightmost */}
+        {/* Module nav popover — navigation compass (rightmost) */}
         <ModuleNavPopover modules={modules ?? []} />
       </div>
     </header>

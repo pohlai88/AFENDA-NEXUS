@@ -29,6 +29,16 @@ export const layoutTokens = {
   colKey: 'col-key',
   /** Table column: date / updated */
   colDate: 'col-date',
+  /** Table column: currency code */
+  colCurrency: 'col-currency',
+  /** Table column: rate / percentage */
+  colRate: 'col-rate',
+  /** Table column: reference / document number */
+  colReference: 'col-reference',
+  /** Table column: description */
+  colDescription: 'col-description',
+  /** Table column: status */
+  colStatus: 'col-status',
   /** Select trigger width — small */
   selectWidthSm: 'select-width-sm',
   /** Select trigger width — medium */

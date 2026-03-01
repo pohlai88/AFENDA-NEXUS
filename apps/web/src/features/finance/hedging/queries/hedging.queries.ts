@@ -1,5 +1,6 @@
-﻿'use server';
+'use server';
 
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -56,40 +57,40 @@ export interface HedgingSummaryView {
 
 /* ── queries ────────────────────────────────────────────── */
 
-export async function getHedgeRelationships(
+export const getHedgeRelationships = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   params?: { status?: string; hedgeType?: string },
-): Promise<ApiResult<PaginatedResponse<HedgeRelationshipView>>> {
+): Promise<ApiResult<PaginatedResponse<HedgeRelationshipView>>> => {
   const api = createApiClient(ctx);
   const qs = new URLSearchParams();
   if (params?.status) qs.set('status', params.status);
   if (params?.hedgeType) qs.set('hedgeType', params.hedgeType);
   const path = qs.toString() ? `/hedge-relationships?${qs}` : '/hedge-relationships';
   return api.get<PaginatedResponse<HedgeRelationshipView>>(path);
-}
+});
 
-export async function getHedgeRelationshipById(
+export const getHedgeRelationshipById = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   id: string,
-): Promise<ApiResult<HedgeRelationshipView>> {
+): Promise<ApiResult<HedgeRelationshipView>> => {
   const api = createApiClient(ctx);
   return api.get<HedgeRelationshipView>(`/hedge-relationships/${id}`);
-}
+});
 
-export async function getEffectivenessTests(
+export const getEffectivenessTests = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   relationshipId: string,
-): Promise<ApiResult<PaginatedResponse<EffectivenessTestView>>> {
+): Promise<ApiResult<PaginatedResponse<EffectivenessTestView>>> => {
   const api = createApiClient(ctx);
   return api.get<PaginatedResponse<EffectivenessTestView>>(`/hedge-relationships/${relationshipId}/effectiveness-tests`);
-}
+});
 
-export async function getHedgingSummary(
+export const getHedgingSummary = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
-): Promise<ApiResult<HedgingSummaryView>> {
+): Promise<ApiResult<HedgingSummaryView>> => {
   const api = createApiClient(ctx);
   return api.get<HedgingSummaryView>('/hedge-relationships/summary');
-}
+});
 
 /* ── commands ───────────────────────────────────────────── */
 

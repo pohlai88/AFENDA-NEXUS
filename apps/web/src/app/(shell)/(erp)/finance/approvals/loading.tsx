@@ -15,7 +15,7 @@ export default function ApprovalsLoading() {
       <div className="space-y-4">
         <div className="flex gap-2">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-9 w-24" />
+            <Skeleton key={`skeleton-${i}`} className="h-9 w-24" />
           ))}
         </div>
         <TableSkeleton />

@@ -76,6 +76,8 @@ const nextConfig: NextConfig = {
   experimental: {
     // Turbopack: faster production builds via filesystem cache
     turbopackFileSystemCacheForBuild: true,
+    // Turbopack: persist dev cache between restarts (faster proxy/page recompile)
+    turbopackFileSystemCacheForDev: true,
     // Client router cache: ERP dashboards refresh within 30s, static pages cache 180s
     staleTimes: { dynamic: 30, static: 180 },
     // Smooth View Transitions API for page navigations

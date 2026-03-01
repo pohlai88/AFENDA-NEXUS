@@ -61,7 +61,8 @@ function CustomTooltip({
     <div className="rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-md">
       <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>
       {payload.map((entry, i) => (
-        <div key={i} className="flex items-center gap-2 text-sm">
+        // eslint-disable-next-line react/no-array-index-key -- Tooltip entries may share names
+        <div key={`entry-${entry.name}-${i}`} className="flex items-center gap-2 text-sm">
           <div
             className="h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: entry.color }}
@@ -90,11 +91,11 @@ interface AreaChartProps {
 }
 
 const DEFAULT_COLORS = [
-  'hsl(var(--chart-1, 220 70% 50%))',
-  'hsl(var(--chart-2, 160 60% 45%))',
-  'hsl(var(--chart-3, 30 80% 55%))',
-  'hsl(var(--chart-4, 280 65% 60%))',
-  'hsl(var(--chart-5, 340 75% 55%))',
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
 ];
 
 export function AreaChartWidget({

@@ -1,5 +1,6 @@
-﻿'use server';
+'use server';
 
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -53,40 +54,40 @@ export interface TransferPricingSummaryView {
 
 /* ── queries ────────────────────────────────────────────── */
 
-export async function getTransferPricingPolicies(
+export const getTransferPricingPolicies = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   params?: { status?: string; transactionType?: string },
-): Promise<ApiResult<PaginatedResponse<TransferPricingPolicyView>>> {
+): Promise<ApiResult<PaginatedResponse<TransferPricingPolicyView>>> => {
   const api = createApiClient(ctx);
   const qs = new URLSearchParams();
   if (params?.status) qs.set('status', params.status);
   if (params?.transactionType) qs.set('transactionType', params.transactionType);
   const path = qs.toString() ? `/tp-policies?${qs}` : '/tp-policies';
   return api.get<PaginatedResponse<TransferPricingPolicyView>>(path);
-}
+});
 
-export async function getTransferPricingPolicyById(
+export const getTransferPricingPolicyById = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   id: string,
-): Promise<ApiResult<TransferPricingPolicyView>> {
+): Promise<ApiResult<TransferPricingPolicyView>> => {
   const api = createApiClient(ctx);
   return api.get<TransferPricingPolicyView>(`/tp-policies/${id}`);
-}
+});
 
-export async function getBenchmarkStudies(
+export const getBenchmarkStudies = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
   policyId: string,
-): Promise<ApiResult<PaginatedResponse<BenchmarkStudyView>>> {
+): Promise<ApiResult<PaginatedResponse<BenchmarkStudyView>>> => {
   const api = createApiClient(ctx);
   return api.get<PaginatedResponse<BenchmarkStudyView>>(`/tp-policies/${policyId}/benchmarks`);
-}
+});
 
-export async function getTransferPricingSummary(
+export const getTransferPricingSummary = cache(async (
   ctx: { userId: string; tenantId: string; token: string },
-): Promise<ApiResult<TransferPricingSummaryView>> {
+): Promise<ApiResult<TransferPricingSummaryView>> => {
   const api = createApiClient(ctx);
   return api.get<TransferPricingSummaryView>('/tp-policies/summary');
-}
+});
 
 /* ── commands ───────────────────────────────────────────── */
 

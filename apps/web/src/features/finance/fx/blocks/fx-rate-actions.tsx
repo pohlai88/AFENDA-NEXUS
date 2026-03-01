@@ -47,7 +47,7 @@ export function FxRateActions({ rateId, displayLabel }: FxRateActionsProps) {
   return (
     <>
       <div className="flex items-center gap-2">
-        {error && <span className="text-xs text-destructive">{error}</span>}
+        { error ? <span className="text-xs text-destructive">{error}</span> : null}
         <Button variant="outline" size="sm" disabled={isPending} onClick={() => setConfirmOpen(true)}>
           <CheckCircle className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           Approve

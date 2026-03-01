@@ -17,8 +17,7 @@ export default async function PaymentRunItemsPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getPaymentRun(ctx, id);
 
   if (!result.ok) notFound();

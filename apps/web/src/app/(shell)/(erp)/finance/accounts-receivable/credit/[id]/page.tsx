@@ -16,8 +16,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getCustomerCreditById(ctx, id);
   if (!result.ok) return { title: 'Credit Limit | Finance' };
   const c = result.value;
@@ -25,8 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CreditDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getCustomerCreditById(ctx, id);
 
   if (!result.ok) {
@@ -57,12 +55,12 @@ export default async function CreditDetailPage({ params }: Props) {
             {
               value: 'overview',
               label: 'Overview',
-              content: <CreditOverviewTab credit={credit as any} />,
+              content: <CreditOverviewTab credit={credit} />,
             },
             {
               value: 'hold',
               label: 'Hold Info',
-              content: <CreditHoldTab credit={credit as any} />,
+              content: <CreditHoldTab credit={credit} />,
             },
             {
               value: 'audit',
@@ -70,7 +68,7 @@ export default async function CreditDetailPage({ params }: Props) {
               content: <AuditPanel entries={auditEntries} />,
             },
           ]}
-          rightRail={<CreditActions credit={credit as any} />}
+          rightRail={<CreditActions credit={credit} />}
         />
       </div>
     </Suspense>

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type {
   TaxCode,
@@ -11,10 +12,10 @@ type RequestCtx = { tenantId: string; userId: string; token: string };
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getTaxCodes(
+export const getTaxCodes = cache(async (
   ctx: RequestCtx,
   params?: { taxType?: string; status?: string; search?: string }
-): Promise<{ ok: true; data: TaxCode[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: TaxCode[] } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const qp = new URLSearchParams();
   if (params?.taxType) qp.set('taxType', params.taxType);
@@ -24,32 +25,32 @@ export async function getTaxCodes(
   const res = await api.get(`/tax/codes${qs ? `?${qs}` : ''}`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as TaxCode[] };
-}
+});
 
-export async function getTaxCodeById(
+export const getTaxCodeById = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<{ ok: true; data: TaxCode } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: TaxCode } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/tax/codes/${id}`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as TaxCode };
-}
+});
 
-export async function getTaxRateHistory(
+export const getTaxRateHistory = cache(async (
   ctx: RequestCtx,
   taxCodeId: string
-): Promise<{ ok: true; data: TaxRateHistory[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: TaxRateHistory[] } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/tax/rates?taxCodeId=${taxCodeId}`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as TaxRateHistory[] };
-}
+});
 
-export async function getTaxReturnPeriods(
+export const getTaxReturnPeriods = cache(async (
   ctx: RequestCtx,
   params?: { taxType?: string; status?: string; year?: number }
-): Promise<{ ok: true; data: TaxReturnPeriod[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: TaxReturnPeriod[] } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const qp = new URLSearchParams();
   if (params?.taxType) qp.set('taxType', params.taxType);
@@ -59,22 +60,22 @@ export async function getTaxReturnPeriods(
   const res = await api.get(`/tax/returns${qs ? `?${qs}` : ''}`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as TaxReturnPeriod[] };
-}
+});
 
-export async function getTaxReturnPeriodById(
+export const getTaxReturnPeriodById = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<{ ok: true; data: TaxReturnPeriod } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: TaxReturnPeriod } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/tax/returns/${id}`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as TaxReturnPeriod };
-}
+});
 
-export async function getWHTCertificates(
+export const getWHTCertificates = cache(async (
   ctx: RequestCtx,
   params?: { type?: string; status?: string; search?: string; periodFrom?: Date; periodTo?: Date }
-): Promise<{ ok: true; data: WHTCertificate[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: WHTCertificate[] } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const qp = new URLSearchParams();
   if (params?.type) qp.set('type', params.type);
@@ -86,23 +87,23 @@ export async function getWHTCertificates(
   const res = await api.get(`/tax/wht-certificates${qs ? `?${qs}` : ''}`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as WHTCertificate[] };
-}
+});
 
-export async function getWHTCertificateById(
+export const getWHTCertificateById = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<{ ok: true; data: WHTCertificate } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: WHTCertificate } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get(`/tax/wht-certificates/${id}`);
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as WHTCertificate };
-}
+});
 
-export async function getTaxSummary(
+export const getTaxSummary = cache(async (
   ctx: RequestCtx
-): Promise<{ ok: true; data: TaxSummary } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: TaxSummary } | { ok: false; error: string }> => {
   const api = createApiClient(ctx);
   const res = await api.get('/tax/summary');
   if (!res.ok) return { ok: false, error: res.error.message };
   return { ok: true, data: res.value as TaxSummary };
-}
+});

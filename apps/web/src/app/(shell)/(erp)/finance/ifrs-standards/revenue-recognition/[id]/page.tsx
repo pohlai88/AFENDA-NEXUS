@@ -13,16 +13,14 @@ import { routes } from '@/lib/constants';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getRevenueContract(ctx, id);
   if (!result.ok) return { title: 'Revenue Contract | Finance' };
   return { title: `${result.value.contractNumber} | Revenue Recognition` };
 }
 
 export default async function RevenueContractDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getRevenueContract(ctx, id);
 
   if (!result.ok) {

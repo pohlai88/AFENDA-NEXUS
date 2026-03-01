@@ -1,4 +1,4 @@
-import { PageHeader, PageHeaderHeading, PageHeaderDescription } from '@/components/erp/page-header';
+import { PageHeader } from '@/components/erp/page-header';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';

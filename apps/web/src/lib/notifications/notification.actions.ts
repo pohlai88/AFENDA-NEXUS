@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import type {
   Notification,
   NotificationSummary,
@@ -16,12 +17,12 @@ import type {
  * Fetch notification summary (unread count + recent notifications).
  * Returns empty stack until real API is available.
  */
-export async function getNotificationSummary(): Promise<NotificationSummary> {
+export const getNotificationSummary = cache(async (): Promise<NotificationSummary> => {
   return {
     unreadCount: 0,
     notifications: [] as Notification[],
   };
-}
+});
 
 /**
  * Mark a notification as read.

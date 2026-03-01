@@ -39,16 +39,16 @@ export function PeriodActions({ periodId, periodName, status }: PeriodActionsPro
 
   function doAction() {
     if (!confirmState.action) return;
-    const action = confirmState.action;
+    const {action} = confirmState;
 
     startTransition(async () => {
       setError(null);
-      const result = await action(periodId);
-      if (result.ok && result.value) {
-        setReceipt(result.value as CommandReceipt);
+      const { ok, value, error: actionError } = await action(periodId);
+      if (ok && value) {
+        setReceipt(value as CommandReceipt);
         router.refresh();
-      } else if (!result.ok && result.error) {
-        setError(result.error.message);
+      } else if (!ok && actionError) {
+        setError(actionError.message);
       }
     });
   }
@@ -66,7 +66,7 @@ export function PeriodActions({ periodId, periodName, status }: PeriodActionsPro
   return (
     <>
       <div className="flex items-center gap-2">
-        {error && <span className="text-xs text-destructive">{error}</span>}
+        { error ? <span className="text-xs text-destructive">{error}</span> : null}
 
         {status === 'OPEN' && (
           <Button

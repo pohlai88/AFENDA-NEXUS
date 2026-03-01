@@ -1,35 +1,58 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["NODE_ENV", "CI"],
+  "globalDependencies": ["tsconfig.json", ".env"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", "package.json", "tsconfig.json"]
     },
     "typecheck": {
       "dependsOn": ["^build"],
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", "tsconfig.json"],
       "outputs": []
     },
     "lint": {
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", ".eslintrc*", "eslint.config.*"],
       "outputs": []
     },
+    "lint:fix": {
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", ".eslintrc*", "eslint.config.*"],
+      "outputs": [],
+      "cache": false
+    },
     "test": {
+      "dependsOn": ["build"],
       "outputs": ["coverage/**"]
     },
     "test:coverage": {
+      "dependsOn": ["build"],
       "outputs": ["coverage/**"]
     },
     "test:property": {
+      "dependsOn": ["build"],
       "outputs": []
     },
     "dev": {
-      "dependsOn": ["^dev"],
       "cache": false,
-      "persistent": false
+      "persistent": true
     },
     "test:e2e": {
       "dependsOn": ["@afenda/web#build", "@afenda/api#build"],
       "outputs": ["playwright-report/**", "test-results/**"],
       "cache": false
+    },
+    "format": {
+      "cache": false,
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
     }
+  },
+  "remoteCache": {
+    "signature": true,
+    "enabled": false
   }
 }

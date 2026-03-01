@@ -30,8 +30,8 @@ function getRetryDelay(attempt: number, retryAfterHeader?: string | null): numbe
     }
   }
 
-  // Exponential backoff with jitter: base * 2^attempt + random jitter.
   const delay = Math.min(BASE_DELAY_MS * 2 ** attempt, MAX_DELAY_MS);
+  // eslint-disable-next-line no-restricted-syntax -- backoff jitter, not a render path
   const jitter = delay * 0.2 * Math.random();
   return delay + jitter;
 }
@@ -132,7 +132,7 @@ async function apiFetch<T>(
     }
   }
 
-  return lastError!;
+  return lastError as ApiResult<T>;
 }
 
 // ─── Typed HTTP Methods ─────────────────────────────────────────────────────

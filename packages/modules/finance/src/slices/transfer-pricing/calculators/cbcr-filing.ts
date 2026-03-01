@@ -193,8 +193,8 @@ export function generateCbcrFiling(input: CbcrFilingInput): CalculatorResult<Cbc
     explanation:
       `CbCR filing: ${input.reportingEntityName} v${input.version}, ` +
       `${cbcrData.totalJurisdictions} jurisdictions, ${cbcrData.totalEntities} entities, ` +
-      `status=${status}, filing ${isFilingRequired ? 'REQUIRED' : 'NOT required'}` +
-      (errors.length > 0 ? `, ${errors.length} errors` : '') +
-      (warnings.length > 0 ? `, ${warnings.length} warnings` : ''),
+      `status=${status}, filing ${isFilingRequired ? 'REQUIRED' : 'NOT required'}${ 
+      errors.length > 0 ? `, ${errors.length} errors` : '' 
+      }${warnings.length > 0 ? `, ${warnings.length} warnings` : ''}`,
   };
 }

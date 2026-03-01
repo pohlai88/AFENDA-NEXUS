@@ -11,6 +11,8 @@
 //
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { toSorted } from '@/lib/utils/array';
+
 /** Scope priority — higher wins. */
 export type ShortcutScope = 'dialog' | 'cmdk' | 'sheet' | 'table' | 'page' | 'global';
 
@@ -35,14 +37,6 @@ export interface ShortcutRegistration {
   handler: () => void;
   /** Scope this shortcut is active in. Defaults to "global". */
   scope: ShortcutScope;
-}
-
-/** Parsed key representation. */
-interface ParsedKey {
-  key: string;
-  ctrlOrMeta: boolean;
-  shift: boolean;
-  alt: boolean;
 }
 
 // ─── ShortcutEngine ──────────────────────────────────────────────────────────
@@ -172,13 +166,13 @@ export class ShortcutEngine {
       // We cannot use the original KeyboardEvent `e` because by the
       // time the timeout fires the event lifecycle is complete and
       // `preventDefault()` / `stopPropagation()` would be no-ops.
-      const pendingKey = this.buffer[0]!;
+      const pendingKey = this.buffer[0];
 
       // Set timer to reset buffer if no second key arrives
       this.bufferTimer = setTimeout(() => {
         // If buffer has only one key and it didn't match a sequence,
         // try matching it as a single key shortcut
-        if (this.buffer.length === 1) {
+        if (this.buffer.length === 1 && pendingKey) {
           this.dispatchMatchesByKey(pendingKey, hasOpenDialog);
         }
         this.resetBuffer();
@@ -210,9 +204,10 @@ export class ShortcutEngine {
 
     if (matches.length === 0) return false;
 
-    // Execute highest-priority match only
-    matches.sort((a, b) => SCOPE_PRIORITY[b.scope] - SCOPE_PRIORITY[a.scope]);
-    const winner = matches[0]!;
+    // Execute highest-priority match only (RBP-03: toSorted for immutability)
+    const sorted = toSorted(matches, (a, b) => SCOPE_PRIORITY[b.scope] - SCOPE_PRIORITY[a.scope]);
+    const winner = sorted[0];
+    if (!winner) return false;
 
     e.preventDefault();
     e.stopPropagation();
@@ -239,8 +234,10 @@ export class ShortcutEngine {
 
     if (matches.length === 0) return false;
 
-    matches.sort((a, b) => SCOPE_PRIORITY[b.scope] - SCOPE_PRIORITY[a.scope]);
-    matches[0]!.handler();
+    const sorted = toSorted(matches, (a, b) => SCOPE_PRIORITY[b.scope] - SCOPE_PRIORITY[a.scope]);
+    const winner = sorted[0];
+    if (!winner) return false;
+    winner.handler();
     return true;
   }
 
@@ -263,7 +260,12 @@ export class ShortcutEngine {
 
   private normalizeKey(e: KeyboardEvent): string {
     const parts: string[] = [];
-    if (e.ctrlKey || e.metaKey) parts.push('mod');
+    // Distinguish Ctrl-only (e.g. Ctrl+Q for Quick Actions) from Cmd/Ctrl (mod)
+    if (e.ctrlKey && !e.metaKey) {
+      parts.push('ctrl');
+    } else if (e.metaKey || e.ctrlKey) {
+      parts.push('mod');
+    }
     if (e.altKey) parts.push('alt');
     if (e.shiftKey) parts.push('shift');
     parts.push(e.key.toLowerCase());
@@ -271,7 +273,12 @@ export class ShortcutEngine {
   }
 
   private isModifierCombo(keyStr: string): boolean {
-    return keyStr.includes('mod+') || keyStr.includes('alt+') || keyStr.includes('shift+');
+    return (
+      keyStr.includes('mod+') ||
+      keyStr.includes('ctrl+') ||
+      keyStr.includes('alt+') ||
+      keyStr.includes('shift+')
+    );
   }
 
   private resetBuffer(): void {

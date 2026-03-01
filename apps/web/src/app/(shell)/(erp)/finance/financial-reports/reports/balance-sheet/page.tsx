@@ -20,8 +20,7 @@ interface BalanceSheetPageProps {
 }
 
 export default async function BalanceSheetPage({ searchParams }: BalanceSheetPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const ledgerId = params.ledgerId ?? '';
   const periodId = params.periodId ?? '';
 

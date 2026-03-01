@@ -13,8 +13,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getAllocationRunById(ctx, id);
   if (!result.ok) return { title: 'Allocation Run | Finance' };
   const run = result.value;
@@ -25,8 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function AllocationDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getAllocationRunById(ctx, id);
 
   if (!result.ok) {

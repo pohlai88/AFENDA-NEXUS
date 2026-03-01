@@ -47,7 +47,7 @@ export function ApSupplierReconForm() {
     const statementLines = lines.map((line) => {
       const [lineRef, date, description, amount, currencyCode] = line.split(',').map((v) => v.trim());
       return { lineRef, date, description, amount: Number(amount), currencyCode: currencyCode ?? '' };
-    }).filter((l) => l.lineRef && l.date);
+    }).filter(({ lineRef, date }) => lineRef && date);
 
     if (statementLines.length === 0) {
       setError('No valid statement lines found.');

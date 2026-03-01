@@ -20,8 +20,7 @@ const breadcrumbs = [
 interface Props { searchParams: Promise<{ ledgerId?: string; periodId?: string; page?: string; limit?: string }> }
 
 export default async function BudgetEntriesPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
 
   // Require ledgerId and periodId filters
   if (!params.ledgerId || !params.periodId) {

@@ -23,8 +23,7 @@ interface AssetRegisterPageProps {
 }
 
 export default async function AssetRegisterPage({ searchParams }: AssetRegisterPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
 
   const asOfDate = params.asOfDate ?? '';
   const currency = params.currency ?? '';
@@ -72,7 +71,7 @@ export default async function AssetRegisterPage({ searchParams }: AssetRegisterP
 
       {!asOfDate && <EmptyState contentKey="finance.reports.assetRegister" variant="firstRun" icon={BarChart3} />}
 
-      {data && <AssetRegisterTable data={data} />}
+      { data ? <AssetRegisterTable data={data} /> : null}
     </div>
   );
 }

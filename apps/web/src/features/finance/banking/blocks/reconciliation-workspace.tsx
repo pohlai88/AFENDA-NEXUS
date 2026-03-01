@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,13 +18,10 @@ import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { routes } from '@/lib/constants';
 import { toast } from 'sonner';
 import {
-  ArrowLeftRight,
   Check,
   ChevronDown,
-  FileText,
   Link2,
   Link2Off,
-  MoreHorizontal,
   Sparkles,
   X,
 } from 'lucide-react';
@@ -173,7 +170,10 @@ function BankTransactionRow({
         isSelected && 'border-primary bg-accent',
         !isSelected && 'hover:bg-accent/50'
       )}
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(transaction.id)}
+      onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(transaction.id); } }}
     >
       <Checkbox
         checked={isSelected}
@@ -206,7 +206,7 @@ function BankTransactionRow({
         </div>
         <div className="flex items-center gap-2">
           <MatchStatusBadge status={transaction.matchStatus} />
-          {suggestion && <ConfidenceBadge confidence={suggestion.confidence} />}
+          { suggestion ? <ConfidenceBadge confidence={suggestion.confidence} /> : null}
         </div>
       </div>
     </div>
@@ -229,7 +229,10 @@ function GLTransactionRow({ transaction, isSelected, onSelect }: GLTransactionRo
         isSelected && 'border-primary bg-accent',
         !isSelected && 'hover:bg-accent/50'
       )}
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(transaction.id)}
+      onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(transaction.id); } }}
     >
       <Checkbox
         checked={isSelected}
@@ -581,9 +584,18 @@ export function ReconciliationWorkspace({
                     <div
                       key={suggestion.id}
                       className="p-2 rounded border text-xs space-y-1 cursor-pointer hover:bg-accent"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => {
                         setSelectedBankTxns(new Set([suggestion.bankTransactionId]));
                         setSelectedGLTxns(new Set(suggestion.glTransactionIds));
+                      }}
+                      onKeyDown={(e: React.KeyboardEvent) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedBankTxns(new Set([suggestion.bankTransactionId]));
+                          setSelectedGLTxns(new Set(suggestion.glTransactionIds));
+                        }
                       }}
                     >
                       <div className="flex items-center justify-between">

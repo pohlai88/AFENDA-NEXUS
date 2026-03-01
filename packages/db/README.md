@@ -247,5 +247,110 @@ import { createPooledClient } from '@afenda/db/client';
   capabilities
 - [`docs/NEON-DRIZZLE-BEST-PRACTICES.md`](./docs/NEON-DRIZZLE-BEST-PRACTICES.md)
   — Industry-benchmarked patterns
+- [`docs/SEEDING-GUIDE.md`](./docs/SEEDING-GUIDE.md) — Database seeding user
+  guide
+- [`docs/SEEDING-ARCHITECTURE.md`](./docs/SEEDING-ARCHITECTURE.md) — Seeding
+  system architecture
 - [`drizzle/_archive/`](./drizzle/_archive/) — Legacy hand-written migrations
   (pre-Drizzle Kit)
+
+## Database Seeding
+
+Production-grade seeding system with Neon branch integration, idempotency, RLS safety, and dashboard verification.
+
+### Quick Start
+
+```bash
+# Seed with auto-detected Neon branch and depth
+pnpm db:seed
+
+# Deterministic seeding (reproducible data)
+pnpm db:seed -- --seed=1337
+
+# Comprehensive data for demos
+pnpm db:seed -- --depth=comprehensive --months=12
+
+# Force reseed (ignores hash check)
+pnpm db:seed -- --reset
+
+# Multiple scenarios
+pnpm db:seed -- --scenarios=baseline --scenarios=late-payments
+```
+
+### Features
+
+- **Deterministic**: Same `--seed` = same data every time
+- **Idempotent**: Safe to run multiple times (hash-based registry)
+- **RLS-Safe**: All tenant-scoped data properly isolated
+- **Branch-Aware**: Auto-adjusts depth for Neon branches (minimal for dev/preview, comprehensive for main)
+- **Dashboard-Verified**: Guarantees all 8 dashboard charts will populate
+- **Fast**: Standard depth seeds in ~10 seconds
+
+### Seeding Depth
+
+| Depth | Companies | Customers | Suppliers | Months | Time | Use |
+|-------|-----------|-----------|-----------|--------|------|-----|
+| **minimal** | 1 | 20 | 10 | 1 | ~5s | Dev, preview branches, CI |
+| **standard** | 2 | 50 | 30 | 6 | ~10s | Test branches, QA |
+| **comprehensive** | 2 | 80 | 50 | 12 | ~30s | Main branch, demos |
+
+### Auto-Seeding (Development Only)
+
+The API server can auto-seed on startup when all guards pass:
+
+```bash
+# .env.local
+NODE_ENV=development
+AFENDA_AUTO_SEED=1
+DATABASE_URL_DIRECT=postgresql://localhost:5432/afenda
+```
+
+**Guards**:
+1. ✅ `NODE_ENV=development`
+2. ✅ `AFENDA_AUTO_SEED=1` (explicit opt-in)
+3. ✅ Non-production database (localhost OR Neon non-main branch)
+4. ✅ No existing `seed_run` record
+
+Start API: `pnpm --filter @afenda/api dev` — database seeds automatically on first run.
+
+### Environment Variables
+
+```bash
+# Required
+DATABASE_URL_DIRECT=postgresql://user:pass@ep-xyz.neon.tech/dbname?sslmode=require
+
+# Optional: Neon Branch Detection (set by Vercel, GitHub Actions)
+NEON_BRANCH_NAME=preview-pr-123
+NEON_BRANCH_TYPE=preview          # main|dev|preview|test
+GIT_BRANCH=$GITHUB_HEAD_REF
+```
+
+### CLI Options
+
+```bash
+--seed=1337                      # Deterministic seed number
+--depth=minimal                  # minimal|standard|comprehensive
+--months=6                       # Transaction history months
+--scenarios=baseline             # baseline|late-payments|fx-volatility|growth
+--reset                          # Force reseed (ignores hash check)
+--verify                         # Run dashboard contract (default: true)
+```
+
+### Dashboard Contract
+
+Post-seeding verification ensures all charts have data:
+
+- ✅ **DSO Trend**: ≥30 AR invoices, ≥20 receipts
+- ✅ **Liquidity Waterfall**: ≥10 cash movements, 6+ months
+- ✅ **Financial Ratios**: ≥3 asset accounts, ≥2 liability accounts
+- ✅ **Time Coverage**: Data in ≥6 fiscal periods
+- ✅ **Aging Distribution**: Realistic bucket spread (current, 30, 60, 90+)
+
+If any check fails, seeding throws with specific error messages.
+
+### Documentation
+
+- **[SEEDING-GUIDE.md](./docs/SEEDING-GUIDE.md)** — Full usage guide with examples
+- **[SEEDING-ARCHITECTURE.md](./docs/SEEDING-ARCHITECTURE.md)** — System architecture and design
+- **[SEEDING-IMPLEMENTATION-REFERENCE.md](./SEEDING-IMPLEMENTATION-REFERENCE.md)** — Implementation checklist
+

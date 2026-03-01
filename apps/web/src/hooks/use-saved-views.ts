@@ -58,6 +58,7 @@ function saveToStorage(moduleKey: string, store: SavedViewsStore): void {
 // ─── Generate View ID ────────────────────────────────────────────────────────
 
 function generateId(): string {
+  // eslint-disable-next-line no-restricted-syntax -- ID generator, not a render path
   return `view-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
@@ -71,8 +72,7 @@ export function useSavedViews({ moduleKey }: UseSavedViewsOptions) {
     saveToStorage(moduleKey, store);
   }, [moduleKey, store]);
 
-  const views = store.views;
-  const activeViewId = store.activeViewId;
+  const { views, activeViewId } = store;
 
   const activeView = useMemo(
     () => views.find((v) => v.id === activeViewId) ?? null,

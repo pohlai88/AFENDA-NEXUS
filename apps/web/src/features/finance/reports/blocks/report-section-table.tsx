@@ -1,4 +1,6 @@
 import { MoneyCell } from '@/components/erp/money-cell';
+import { cn } from '@/lib/utils';
+import { layoutTokens } from '@/lib/layout-tokens';
 import type { ReportSection } from '../queries/report.queries';
 import {
   Table,
@@ -19,9 +21,9 @@ export function ReportSectionTable({ section }: { section: ReportSection }) {
         <caption className="sr-only">{section.label} section</caption>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Code</TableHead>
+            <TableHead className={layoutTokens.colAccount}>Code</TableHead>
             <TableHead>{section.label}</TableHead>
-            <TableHead className="text-right w-[160px]">Balance</TableHead>
+            <TableHead className={cn(layoutTokens.colReference, 'text-right')}>Balance</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

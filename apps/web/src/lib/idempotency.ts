@@ -15,6 +15,7 @@ export function isKeyProcessed(key: string): boolean {
   const entry = processedKeys.get(key);
   if (!entry) return false;
 
+  // eslint-disable-next-line no-restricted-syntax
   if (Date.now() - entry.timestamp > KEY_TTL_MS) {
     processedKeys.delete(key);
     return false;
@@ -24,10 +25,12 @@ export function isKeyProcessed(key: string): boolean {
 }
 
 export function markKeyProcessed<T>(key: string, result: T): void {
+  // eslint-disable-next-line no-restricted-syntax
   processedKeys.set(key, { timestamp: Date.now(), result });
 
   // Cleanup old keys periodically
   if (processedKeys.size > 1000) {
+    // eslint-disable-next-line no-restricted-syntax
     const now = Date.now();
     for (const [k, v] of processedKeys) {
       if (now - v.timestamp > KEY_TTL_MS) {
@@ -39,6 +42,7 @@ export function markKeyProcessed<T>(key: string, result: T): void {
 
 export function getProcessedResult<T>(key: string): T | null {
   const entry = processedKeys.get(key);
+  // eslint-disable-next-line no-restricted-syntax
   if (!entry || Date.now() - entry.timestamp > KEY_TTL_MS) {
     return null;
   }

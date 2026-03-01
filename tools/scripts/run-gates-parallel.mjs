@@ -35,6 +35,18 @@ const ROOT = resolve(import.meta.dirname, '../..');
 const GATES = [
   // ── Architecture & Drift (group: arch) ──────────────────────────────────
   {
+    id: 'turbo-config',
+    name: 'Turbo.json configuration (TURBO-01–07)',
+    cmd: ['node', 'tools/scripts/gate-turbo-config.mjs'],
+    group: 'arch',
+  },
+  {
+    id: 'dependency-graph',
+    name: 'Dependency graph (DEP-01–03)',
+    cmd: ['node', 'tools/scripts/gate-dependency-graph.mjs'],
+    group: 'arch',
+  },
+  {
     id: 'arch-guard',
     name: 'Architecture guard (E1–E16)',
     cmd: ['node', 'tools/drift-check/src/arch-guard.mjs'],
@@ -173,9 +185,39 @@ const GATES = [
 
   // ── Domain Invariants (group: domain) ───────────────────────────────────
   {
+    id: 'react-keys',
+    name: 'React key props (REACT-KEY-01–02)',
+    cmd: ['node', 'tools/scripts/gate-react-keys.mjs'],
+    group: 'domain',
+  },
+  {
+    id: 'a11y',
+    name: 'Accessibility (A11Y-01–06)',
+    cmd: ['node', 'tools/scripts/gate-a11y.mjs'],
+    group: 'domain',
+  },
+  {
+    id: 'hydration',
+    name: 'Hydration safety (HYDRO-01–03)',
+    cmd: ['node', 'tools/scripts/gate-hydration.mjs'],
+    group: 'domain',
+  },
+  {
     id: 'frontend-quality',
     name: 'Frontend quality (FE-01–05)',
     cmd: ['node', 'tools/scripts/gate-frontend-quality.mjs'],
+    group: 'domain',
+  },
+  {
+    id: 'react-best-practices',
+    name: 'React best practices (RBP-01–04)',
+    cmd: ['node', 'tools/scripts/gate-react-best-practices.mjs'],
+    group: 'domain',
+  },
+  {
+    id: 'react-cache',
+    name: 'React cache() enforcement (RBP-CACHE)',
+    cmd: ['node', 'tools/scripts/gate-react-cache.mjs'],
     group: 'domain',
   },
   {
@@ -226,12 +268,26 @@ const GATES = [
     cmd: ['node', 'tools/scripts/gate-e2e-coverage-map.mjs'],
     group: 'domain',
   },
+
+  // ── Security & Performance (group: security) ────────────────────────────
+  {
+    id: 'security-headers',
+    name: 'Security headers (SEC-01–06)',
+    cmd: ['node', 'tools/scripts/gate-security-headers.mjs'],
+    group: 'security',
+  },
+  {
+    id: 'performance-budget',
+    name: 'Performance budget (PERF-01–05)',
+    cmd: ['node', 'tools/scripts/gate-performance-budget.mjs'],
+    group: 'security',
+  },
 ];
 
 // ── CLI Parsing ─────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
-const VALID_GROUPS = ['arch', 'compliance', 'module', 'domain'];
+const VALID_GROUPS = ['arch', 'compliance', 'module', 'domain', 'security'];
 const isCI = !!process.env.CI;
 
 function getFlag(flag) {
@@ -262,10 +318,11 @@ if (args.includes('--help') || args.includes('-h')) {
     --help, -h           Show this help
 
   Groups:
-    arch        Architecture & drift checks (5 gates)
+    arch        Architecture & drift checks (7 gates)
     compliance  Audit, security & convention checks (6 gates)
     module      Module boundary enforcement (10 gates)
-    domain      Domain invariant enforcement (9 gates)
+    domain      Domain invariant enforcement (14 gates)
+    security    Security & performance checks (2 gates)
 
   Total: ${GATES.length} gates
   `);

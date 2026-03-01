@@ -17,16 +17,14 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const r = await getJournal(ctx, id);
   if (!r.ok) return { title: 'Journal | Finance' };
   return { title: `${r.value.documentNumber} | Journals | Finance` };
 }
 
 export default async function JournalDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getJournal(ctx, id);
   if (!result.ok) { if (result.error.statusCode === 404) notFound(); handleApiError(result, 'Failed to load journal'); }
   const j = result.value;

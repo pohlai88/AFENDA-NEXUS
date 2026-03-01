@@ -16,8 +16,7 @@ interface BillingPageProps {
 }
 
 export default async function BillingPage({ params }: BillingPageProps) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
 
   const [projectResult, milestonesResult, wipResult] = await Promise.all([
     getProjectById(ctx, id),

@@ -9,11 +9,6 @@
 export const CHART_DIAGRAM_NONE = '__none__';
 
 import type { ApiResult } from '@/lib/types';
-import type {
-  CashFlowDataPoint,
-  RevenueExpenseDataPoint,
-  AgingBucket,
-} from '@/features/finance/dashboard/types';
 import {
   getCashFlowChart,
   getRevenueExpenseChart,

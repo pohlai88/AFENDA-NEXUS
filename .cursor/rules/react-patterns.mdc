@@ -1,0 +1,90 @@
+---
+description: React and Next.js performance patterns
+globs: ["apps/web/**/*.{ts,tsx}"]
+alwaysApply: false
+---
+
+# React Performance
+
+## RBP-CACHE: Server Data Fetchers MUST Use cache()
+
+**CRITICAL**: All server fetchers with API/DB calls must use React `cache()`:
+
+```typescript
+import { cache } from 'react';
+
+// ✅ Correct
+export const fetchData = cache(async (ctx: RequestContext) => {
+  const api = createApiClient(ctx);
+  return await api.get('/data');
+});
+
+// ❌ Wrong - missing cache()
+export async function fetchData(ctx: RequestContext) {
+  return await createApiClient(ctx).get('/data');
+}
+```
+
+### When Required
+
+**MUST use**:
+- `*.server.ts` with async exports
+- `Promise.all` / `Promise.allSettled`
+- Files: `build-*.ts`, `resolve-*.ts`, `fetch-*.ts`, `get-*.ts`
+
+**NOT needed**:
+- Client components (`'use client'`)
+- Server Actions (`'use server'`)
+- Mutations (POST/PUT/DELETE)
+
+### Escape Hatch
+
+```typescript
+// rbp-allow:no-cache — Real-time data must be fresh
+export async function fetchLivePrice(symbol: string) { ... }
+```
+
+**Enforcement**: ESLint (pre-commit) + `gate:react-cache` (CI)
+
+## RBP-01: Server Actions Auth
+
+```typescript
+'use server';
+export async function updateUser(data: FormData) {
+  const ctx = await getRequestContext(); // Required
+}
+```
+
+## RBP-02: Parallel Operations
+
+```typescript
+// ✅ Parallel
+const [users, posts] = await Promise.all([
+  fetchUsers(),
+  fetchPosts()
+]);
+
+// ❌ Sequential
+const users = await fetchUsers();
+const posts = await fetchPosts();
+```
+
+## RBP-03: Immutable Sort
+
+```typescript
+// ✅ Immutable
+const sorted = items.toSorted((a, b) => a.id - b.id);
+
+// ❌ Mutates
+items.sort((a, b) => a.id - b.id);
+```
+
+## RBP-04: Ternary for Numbers
+
+```typescript
+// ✅ Prevents rendering "0"
+{count > 0 ? <Badge>{count}</Badge> : null}
+
+// ❌ Renders "0" when count is 0
+{count && <Badge>{count}</Badge>}
+```

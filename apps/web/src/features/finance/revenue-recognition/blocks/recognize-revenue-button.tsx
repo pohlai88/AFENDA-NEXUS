@@ -85,7 +85,8 @@ export function RecognizeRevenueButton({
   };
 
   const handlePost = async () => {
-    const result = await recognizeRevenueAction(contractId, selectedPeriod!.id, selectedLedger!.id);
+    if (!selectedPeriod || !selectedLedger) return;
+    const result = await recognizeRevenueAction(contractId, selectedPeriod.id, selectedLedger.id);
     if (result.ok) {
       setPreviewData(null);
       setOpen(false);
@@ -154,7 +155,7 @@ export function RecognizeRevenueButton({
                 onClick={handlePreview}
                 disabled={!selectedPeriod || !selectedLedger || isPending}
               >
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Preview Posting
               </Button>
             </DialogFooter>

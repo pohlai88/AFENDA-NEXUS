@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PageHeader } from '@/components/erp/page-header';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, CreditCard, Scale } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { CreditCard, Scale } from 'lucide-react';
 import { routes } from '@/lib/constants';
 
 export const metadata = { title: 'Finance Settings' };

@@ -1,5 +1,6 @@
-﻿'use server';
+'use server';
 
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -118,69 +119,69 @@ export interface TreasurySummaryView {
 
 type Ctx = { tenantId: string; userId?: string; token?: string };
 
-export async function getCashForecasts(
+export const getCashForecasts = cache(async (
   ctx: Ctx,
   params?: { status?: string },
-): Promise<ApiResult<PaginatedResponse<CashForecastView>>> {
+): Promise<ApiResult<PaginatedResponse<CashForecastView>>> => {
   const api = createApiClient(ctx);
   const qs = params?.status ? `?status=${params.status}` : '';
   return api.get(`/cash-forecasts${qs}`);
-}
+});
 
-export async function getCashForecastById(
+export const getCashForecastById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<CashForecastView>> {
+): Promise<ApiResult<CashForecastView>> => {
   const api = createApiClient(ctx);
   return api.get(`/cash-forecasts/${id}`);
-}
+});
 
-export async function getCovenants(
+export const getCovenants = cache(async (
   ctx: Ctx,
   params?: { status?: string; facilityId?: string },
-): Promise<ApiResult<PaginatedResponse<CovenantView>>> {
+): Promise<ApiResult<PaginatedResponse<CovenantView>>> => {
   const api = createApiClient(ctx);
   const qp = new URLSearchParams();
   if (params?.status) qp.set('status', params.status);
   if (params?.facilityId) qp.set('facilityId', params.facilityId);
   const qs = qp.toString() ? `?${qp.toString()}` : '';
   return api.get(`/covenants${qs}`);
-}
+});
 
-export async function getCovenantById(
+export const getCovenantById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<CovenantView & { tests: CovenantTestView[] }>> {
+): Promise<ApiResult<CovenantView & { tests: CovenantTestView[] }>> => {
   const api = createApiClient(ctx);
   return api.get(`/covenants/${id}`);
-}
+});
 
-export async function getIntercompanyLoans(
+export const getIntercompanyLoans = cache(async (
   ctx: Ctx,
   params?: { status?: string; entityId?: string },
-): Promise<ApiResult<PaginatedResponse<IntercompanyLoanView>>> {
+): Promise<ApiResult<PaginatedResponse<IntercompanyLoanView>>> => {
   const api = createApiClient(ctx);
   const qp = new URLSearchParams();
   if (params?.status) qp.set('status', params.status);
   if (params?.entityId) qp.set('entityId', params.entityId);
   const qs = qp.toString() ? `?${qp.toString()}` : '';
   return api.get(`/ic-loans${qs}`);
-}
+});
 
-export async function getICLoanById(
+export const getICLoanById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<IntercompanyLoanView & { schedule: ICLoanScheduleEntryView[] }>> {
+): Promise<ApiResult<IntercompanyLoanView & { schedule: ICLoanScheduleEntryView[] }>> => {
   const api = createApiClient(ctx);
   return api.get(`/ic-loans/${id}`);
-}
+});
 
-export async function getTreasurySummary(
+export const getTreasurySummary = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<TreasurySummaryView>> {
+): Promise<ApiResult<TreasurySummaryView>> => {
   const api = createApiClient(ctx);
   return api.get('/treasury/summary');
-}
+});
 
 // ─── Commands ────────────────────────────────────────────────────
 

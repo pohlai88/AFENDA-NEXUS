@@ -125,7 +125,8 @@ export function PostingPreview({
             <div className="space-y-1">
               {data.warnings.map((warning, i) => (
                 <div
-                  key={i}
+                  // eslint-disable-next-line react/no-array-index-key -- Warning strings may duplicate
+                  key={`warning-${i}`}
                   className="flex items-center gap-2 text-sm text-warning bg-warning/10 rounded-md px-3 py-2"
                   role="alert"
                 >
@@ -150,7 +151,8 @@ export function PostingPreview({
             </TableHeader>
             <TableBody>
               {data.lines.map((line, index) => (
-                <TableRow key={index} className="text-sm">
+                // eslint-disable-next-line react/no-array-index-key -- Lines may share accountCode
+                <TableRow key={`${line.accountCode}-${index}`} className="text-sm">
                   <TableCell>
                     <div>
                       <span className="font-mono font-medium">{line.accountCode}</span>
@@ -207,7 +209,7 @@ export function PostingPreview({
             onClick={() => setDialogOpen(true)}
             disabled={!isBalanced || isLoading}
           >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            { isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {confirmLabel}
           </Button>
         </CardFooter>
@@ -226,7 +228,7 @@ export function PostingPreview({
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isLoading}>{cancelLabel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirm} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {confirmLabel}
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -36,10 +37,10 @@ export interface WhtReportSummary {
 
 type Ctx = { tenantId: string; userId: string; token: string };
 
-export async function getWhtCertificates(
+export const getWhtCertificates = cache(async (
   ctx: Ctx,
   params: { taxYear?: string; supplierId?: string; page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<WhtCertificateListItem>>> {
+): Promise<ApiResult<PaginatedResponse<WhtCertificateListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.taxYear) query.taxYear = params.taxYear;
@@ -47,14 +48,14 @@ export async function getWhtCertificates(
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<WhtCertificateListItem>>('/ap/wht-certificates', query);
-}
+});
 
-export async function getWhtReportSummary(
+export const getWhtReportSummary = cache(async (
   ctx: Ctx,
   params: { taxYear?: string },
-): Promise<ApiResult<WhtReportSummary>> {
+): Promise<ApiResult<WhtReportSummary>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.taxYear) query.taxYear = params.taxYear;
   return client.get<WhtReportSummary>('/ap/wht-certificates/summary', query);
-}
+});

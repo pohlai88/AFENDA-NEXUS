@@ -5,7 +5,7 @@ import type { ApproveItemsInput, RejectItemsInput, DelegateItemsInput } from '@a
 import { revalidatePath } from 'next/cache';
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
-import type { ApiResult, CommandReceipt } from '@/lib/types';
+import type { CommandReceipt } from '@/lib/types';
 import { routes } from '@/lib/constants';
 
 // ─── Server Actions ──────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ export async function rejectItems(input: RejectItemsInput) {
 }
 
 export async function delegateItems(input: DelegateItemsInput) {
-  const { itemIds, delegateTo, comment } = input;
+  const { itemIds, delegateTo, comment: _comment } = input;
 
   if (!delegateTo || delegateTo.trim().length === 0) {
     return {

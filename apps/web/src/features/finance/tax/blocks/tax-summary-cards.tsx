@@ -5,7 +5,6 @@ import { cn, formatCurrency } from '@/lib/utils';
 import {
   ArrowUpRight,
   ArrowDownLeft,
-  TrendingUp,
   Receipt,
   Banknote,
   AlertTriangle,

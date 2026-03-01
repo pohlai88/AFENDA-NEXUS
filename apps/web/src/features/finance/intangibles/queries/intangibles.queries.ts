@@ -1,5 +1,6 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
-import type { ApiResult, PaginatedResponse } from '@/lib/types';
+import type { ApiResult } from '@/lib/types';
 import type {
   IntangibleAsset,
   IntangibleCategory,
@@ -31,16 +32,16 @@ export interface PostingPreviewResult {
 
 type RequestCtx = { tenantId: string; userId: string; token: string };
 
-export async function getIntangibleCategories(ctx: RequestCtx): Promise<
+export const getIntangibleCategories = cache(async (ctx: RequestCtx): Promise<
   { ok: true; data: IntangibleCategory[] } | { ok: false; error: string }
-> {
+> => {
   const client = createApiClient(ctx);
   const result = await client.get<IntangibleCategory[]>('/intangible-assets/categories');
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getIntangibleAssets(ctx: RequestCtx, params?: {
+export const getIntangibleAssets = cache(async (ctx: RequestCtx, params?: {
   categoryId?: string;
   intangibleType?: string;
   status?: string;
@@ -54,7 +55,7 @@ export async function getIntangibleAssets(ctx: RequestCtx, params?: {
       pagination: { page: number; perPage: number; total: number; totalPages: number };
     }
   | { ok: false; error: string }
-> {
+> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.categoryId) query.categoryId = params.categoryId;
@@ -67,9 +68,8 @@ export async function getIntangibleAssets(ctx: RequestCtx, params?: {
   const result = await client.get<{ data: IntangibleAsset[] }>('/intangible-assets', query);
   if (!result.ok) return { ok: false, error: result.error.message };
 
-  const data = result.value.data;
-  const page = params?.page ?? 1;
-  const perPage = params?.perPage ?? 20;
+  const { data } = result.value;
+  const { page = 1, perPage = 20 } = params ?? {};
   const total = data.length;
   const totalPages = Math.ceil(total / perPage);
 
@@ -78,50 +78,50 @@ export async function getIntangibleAssets(ctx: RequestCtx, params?: {
     data,
     pagination: { page, perPage, total, totalPages },
   };
-}
+});
 
-export async function getIntangibleAssetById(
+export const getIntangibleAssetById = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<{ ok: true; data: IntangibleAsset } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: IntangibleAsset } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<IntangibleAsset>(`/intangible-assets/${id}`);
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getAmortizationSchedule(
+export const getAmortizationSchedule = cache(async (
   ctx: RequestCtx,
   assetId: string
-): Promise<{ ok: true; data: AmortizationScheduleEntry[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: AmortizationScheduleEntry[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<AmortizationScheduleEntry[]>(
     `/intangible-assets/${assetId}/amortization-schedule`
   );
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getImpairmentTests(
+export const getImpairmentTests = cache(async (
   ctx: RequestCtx,
   assetId: string
-): Promise<{ ok: true; data: ImpairmentTest[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: ImpairmentTest[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<ImpairmentTest[]>(
     `/intangible-assets/${assetId}/impairment-tests`
   );
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getIntangibleSummary(ctx: RequestCtx): Promise<
+export const getIntangibleSummary = cache(async (ctx: RequestCtx): Promise<
   { ok: true; data: IntangibleSummary } | { ok: false; error: string }
-> {
+> => {
   const client = createApiClient(ctx);
   const result = await client.get<IntangibleSummary>('/intangible-assets/summary');
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
 // ─── Preview Query ───────────────────────────────────────────────────────────
 

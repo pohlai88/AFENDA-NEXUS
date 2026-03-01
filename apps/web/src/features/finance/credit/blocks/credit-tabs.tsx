@@ -8,9 +8,9 @@ interface CreditLimit {
   reviewFrequency: string;
   nextReviewDate: string;
   isOnHold: boolean;
-  holdReason?: string;
-  holdDate?: string;
-  holdBy?: string;
+  holdReason?: string | null;
+  holdDate?: string | null;
+  holdBy?: string | null;
 }
 
 export function CreditOverviewTab({ credit }: { credit: CreditLimit }) {

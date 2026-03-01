@@ -14,8 +14,7 @@ interface Props {
 }
 
 export default async function PortalInvoicesPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
 
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {

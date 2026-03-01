@@ -13,7 +13,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
-import { Kbd } from '@/components/ui/kbd';
+import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { cn } from '@/lib/utils';
 import { ICON, ICON_XS, ICON_SM } from './shell.tokens';
 import { getIcon } from '@/lib/modules/icon-map';
@@ -24,6 +24,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { getActiveModule } from '@/lib/modules/get-active-module';
 import { searchGlobal } from '@/features/platform/search/actions/global-search.action';
 import {
+  Command,
   Star,
   Clock,
   Compass,
@@ -44,6 +45,42 @@ export interface EntityTypeConfig {
 /** Zap icon from canonical registry — avoids HMR module factory issues. */
 const ZapIcon = getIcon('Zap');
 
+const MOD_KEY_MAP: Record<string, (isMac: boolean) => string> = {
+  mod: (isMac) => (isMac ? '⌘' : 'Ctrl'),
+  ctrl: () => 'Ctrl',
+  alt: (isMac) => (isMac ? '⌥' : 'Alt'),
+  shift: () => '⇧',
+  escape: () => 'Esc',
+  enter: () => '↵',
+  ' ': () => 'Space',
+};
+function formatKeyPart(part: string, isMac: boolean): string {
+  const fn = MOD_KEY_MAP[part.toLowerCase()];
+  return fn ? fn(isMac) : part.toUpperCase();
+}
+
+function ActionShortcutKbd({ keys }: { keys: string }) {
+  const [isMac, setIsMac] = React.useState(true);
+  React.useEffect(() => {
+    setIsMac(/Mac|iPod|iPhone|iPad/.test(navigator.userAgent));
+  }, []);
+  const parts = keys.split(/(?<=\+)|(?=\+)|\s+/).filter((p) => p !== '+');
+  return (
+    <KbdGroup className="ml-auto">
+      {parts.map((part, i) => (
+        // eslint-disable-next-line react/no-array-index-key -- Key parts may duplicate; index disambiguates
+        <Kbd key={`${part}-${i}`}>
+          {part.toLowerCase() === 'mod' && isMac ? (
+            <Command className={ICON} aria-hidden />
+          ) : (
+            formatKeyPart(part, isMac)
+          )}
+        </Kbd>
+      ))}
+    </KbdGroup>
+  );
+}
+
 /** Default entity type display config — override via props to extend. */
 const DEFAULT_ENTITY_TYPE_CONFIG: Record<string, EntityTypeConfig> = {
   journal: { label: 'Journal', color: 'bg-info/10 text-info' },
@@ -61,6 +98,8 @@ interface AfendaCommandPaletteProps {
   open: boolean;
   /** Controlled open-change handler. */
   onOpenChange: (open: boolean) => void;
+  /** Called when user selects "Open Keyboard Shortcuts" action. */
+  onOpenShortcuts?: () => void;
   /**
    * Entity type display config — merged with defaults.
    * Add new entity types here instead of editing this component.
@@ -76,7 +115,7 @@ interface AfendaCommandPaletteProps {
  * Empty state: Favorites → Recent → Quick Actions → Module Navigation
  * With query: Entity search results + filtered actions + filtered navigation
  */
-function AfendaCommandPalette({ modules, open, onOpenChange, entityTypeConfig }: AfendaCommandPaletteProps) {
+function AfendaCommandPalette({ modules, open, onOpenChange, onOpenShortcuts, entityTypeConfig }: AfendaCommandPaletteProps) {
   const entityConfig = useMemo(
     () => ({ ...DEFAULT_ENTITY_TYPE_CONFIG, ...entityTypeConfig }),
     [entityTypeConfig],
@@ -135,13 +174,15 @@ function AfendaCommandPalette({ modules, open, onOpenChange, entityTypeConfig }:
   const handleAction = useCallback(
     (action: SearchAction) => {
       onOpenChange(false);
-      if (action.handler) {
+      if (action.id === 'open-keyboard-shortcuts' && onOpenShortcuts) {
+        onOpenShortcuts();
+      } else if (action.handler) {
         action.handler();
       } else if (action.href) {
         router.push(action.href);
       }
     },
-    [router, onOpenChange],
+    [router, onOpenChange, onOpenShortcuts],
   );
 
   const hasQuery = query.length > 0;
@@ -310,9 +351,7 @@ function AfendaCommandPalette({ modules, open, onOpenChange, entityTypeConfig }:
                   >
                     <Icon className={cn(ICON, 'mr-2')} />
                     <span>{action.title}</span>
-                    {action.shortcut && (
-                      <Kbd className="ml-auto">{action.shortcut}</Kbd>
-                    )}
+                    {action.shortcut && <ActionShortcutKbd keys={action.shortcut} />}
                   </CommandItem>
                 );
               })}

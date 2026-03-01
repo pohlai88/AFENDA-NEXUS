@@ -171,8 +171,8 @@ export function validateOpeningBalances(
       sourceSystem: input.sourceSystem ?? 'manual',
     },
     explanation:
-      `Opening balance: ${journalLines.length} lines, debits=${totalDebits}, credits=${totalCredits}` +
-      (autoBalanceAmount > 0n ? `, auto-balanced ${autoBalanceAmount} to retained earnings` : '') +
-      (warnings.length > 0 ? `, ${warnings.length} warnings` : ''),
+      `Opening balance: ${journalLines.length} lines, debits=${totalDebits}, credits=${totalCredits}${ 
+      autoBalanceAmount > 0n ? `, auto-balanced ${autoBalanceAmount} to retained earnings` : '' 
+      }${warnings.length > 0 ? `, ${warnings.length} warnings` : ''}`,
   };
 }

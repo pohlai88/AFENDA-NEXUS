@@ -14,8 +14,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 export const metadata = { title: 'Account Detail' };
 
 export default async function AccountDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getAccount(ctx, id);
   if (!result.ok) { if (result.error.statusCode === 404) notFound(); handleApiError(result, 'Failed to load account'); }
   const a = result.value;

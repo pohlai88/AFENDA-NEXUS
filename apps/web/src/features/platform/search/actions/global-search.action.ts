@@ -1,4 +1,5 @@
 'use server';
+// rbp-allow:no-auth — stub returns static data; will add getRequestContext when wired to API
 
 import type { EntitySearchResult } from '@/lib/search/search.types';
 import { routes } from '@/lib/constants';

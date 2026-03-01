@@ -15,8 +15,7 @@ export default async function ReceivableAllocatePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getArInvoice(ctx, id);
 
   if (!result.ok) {

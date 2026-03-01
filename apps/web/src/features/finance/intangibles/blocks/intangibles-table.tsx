@@ -150,8 +150,9 @@ const columns: Column<IntangibleAsset>[] = [
       if (!asset.expiryDate) {
         return <span className="text-muted-foreground">-</span>;
       }
-      const isExpiringSoon =
-        new Date(asset.expiryDate) < new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+      const oneYearFromNow = new Date();
+      oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+      const isExpiringSoon = new Date(asset.expiryDate) < oneYearFromNow;
       return (
         <span className={cn(isExpiringSoon && 'text-warning dark:text-warning')}>
           {formatDate(asset.expiryDate)}

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -83,10 +84,10 @@ export interface IcAgingResult {
 
 type RequestCtx = { tenantId: string; userId: string; token: string };
 
-export async function getIcTransactions(
+export const getIcTransactions = cache(async (
   ctx: RequestCtx,
   params: { status?: string; page?: string; limit?: string }
-): Promise<ApiResult<PaginatedResponse<IcTransactionListItem>>> {
+): Promise<ApiResult<PaginatedResponse<IcTransactionListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.status) query.status = params.status;
@@ -94,39 +95,39 @@ export async function getIcTransactions(
   if (params.limit) query.limit = params.limit;
 
   return client.get<PaginatedResponse<IcTransactionListItem>>('/ic-transactions', query);
-}
+});
 
-export async function getIcTransaction(
+export const getIcTransaction = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<ApiResult<IcTransactionDetail>> {
+): Promise<ApiResult<IcTransactionDetail>> => {
   const client = createApiClient(ctx);
   return client.get<IcTransactionDetail>(`/ic-transactions/${id}`);
-}
+});
 
-export async function getIcAgreements(
+export const getIcAgreements = cache(async (
   ctx: RequestCtx,
   params: { page?: string; limit?: string } = {}
-): Promise<ApiResult<PaginatedResponse<IcAgreementListItem>>> {
+): Promise<ApiResult<PaginatedResponse<IcAgreementListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
 
   return client.get<PaginatedResponse<IcAgreementListItem>>('/ic-agreements', query);
-}
+});
 
-export async function getIcAging(
+export const getIcAging = cache(async (
   ctx: RequestCtx,
   params: { currency?: string; asOfDate?: string }
-): Promise<ApiResult<IcAgingResult>> {
+): Promise<ApiResult<IcAgingResult>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.currency) query.currency = params.currency;
   if (params.asOfDate) query.asOfDate = params.asOfDate;
 
   return client.get<IcAgingResult>('/reports/ic-aging', query);
-}
+});
 
 // ─── Posting Preview Types ──────────────────────────────────────────────────
 

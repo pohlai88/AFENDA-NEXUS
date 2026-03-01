@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DataTable, type Column } from '@/components/erp/data-table';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { routes } from '@/lib/constants';
-import { Receipt, Plus, Calendar, User, Building2 } from 'lucide-react';
+import { Receipt, Plus, Calendar, Building2 } from 'lucide-react';
 import type { ClaimStatus } from '../types';
 import type { ExpenseClaimListItem } from '../queries/expenses.queries';
 import { claimStatusConfig } from '../types';

@@ -20,7 +20,7 @@ export function PortalReconciliationPageClient({
     <div className="space-y-6">
       <PortalStatementUploadForm supplierId={supplierId} onResult={setReconResult} />
 
-      {reconResult && <PortalReconResults result={reconResult} currencyCode={currencyCode} />}
+      { reconResult ? <PortalReconResults result={reconResult} currencyCode={currencyCode} /> : null}
     </div>
   );
 }

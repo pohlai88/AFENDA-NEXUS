@@ -37,7 +37,7 @@ function HedgeCard({ hedge }: { hedge: HedgeRelationship }) {
           </div>
           <div className="flex flex-col items-end gap-1">
             <Badge className={config.color}>{config.label}</Badge>
-            {effConfig && <Badge className={effConfig.color}>{effConfig.label}</Badge>}
+            { effConfig ? <Badge className={effConfig.color}>{effConfig.label}</Badge> : null}
           </div>
         </div>
         <div className="mt-4 space-y-2 text-sm">

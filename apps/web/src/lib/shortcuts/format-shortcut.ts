@@ -24,9 +24,11 @@ const KEY_MAP: Record<string, (isMac: boolean) => string> = {
 /**
  * Format a shortcut key string for display.
  * e.g. "mod+k" → "⌘K" (Mac) or "Ctrl+K" (Win)
+ * Special: "ctrl+shift+?" (physical key for ?) → "Ctrl+?"
  */
 export function formatShortcutKey(keys: string, isMac?: boolean): string {
   const mac = isMac ?? (typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent));
+  if (keys === 'ctrl+shift+?' || keys === 'ctrl+?') return 'Ctrl+?';
   const parts = keys.split(/(?<=\+)|(?=\+)|\s+/).filter((p) => p !== '+');
   return parts
     .map((part) => {

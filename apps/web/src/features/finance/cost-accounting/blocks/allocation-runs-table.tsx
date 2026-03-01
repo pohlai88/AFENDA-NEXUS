@@ -87,7 +87,7 @@ export function AllocationRunsTable({ runs }: AllocationRunsTableProps) {
       render: (run) =>
         run.journalEntryNumber ? (
           <Link
-            href={routes.finance.journalDetail(run.journalEntryId!)}
+            href={routes.finance.journalDetail(run.journalEntryId ?? '')}
             className="flex items-center gap-1 text-primary hover:underline"
           >
             <FileText className="h-3.5 w-3.5" />

@@ -41,6 +41,7 @@ export function useFavorites() {
           added = false;
         } else {
           // Add to favorites (capped)
+          // eslint-disable-next-line no-restricted-syntax
           const newItem: FavoriteItem = { ...item, addedAt: Date.now() };
           next = [newItem, ...prev].slice(0, MAX_FAVORITES);
           added = true;

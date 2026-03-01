@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult } from '@/lib/types';
 
@@ -26,12 +27,12 @@ export interface ApCloseChecklist {
 
 type Ctx = { tenantId: string; userId: string; token: string };
 
-export async function getApCloseChecklist(
+export const getApCloseChecklist = cache(async (
   ctx: Ctx,
   params: { periodId?: string },
-): Promise<ApiResult<ApCloseChecklist>> {
+): Promise<ApiResult<ApCloseChecklist>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.periodId) query.periodId = params.periodId;
   return client.get<ApCloseChecklist>('/ap/period-close-checklist', query);
-}
+});

@@ -189,7 +189,7 @@ export function ApHoldTable({ data }: ApHoldTableProps) {
               onClick={handleRelease}
               disabled={isPending || !releaseReason.trim()}
             >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Release Hold
             </Button>
           </DialogFooter>

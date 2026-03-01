@@ -18,8 +18,7 @@ interface Props {
 }
 
 export default async function DunningPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const result = await getDunningRuns(ctx, {
     page: params.page ?? '1',
     limit: params.limit ?? '20',

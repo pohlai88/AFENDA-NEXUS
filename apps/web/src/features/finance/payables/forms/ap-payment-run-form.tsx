@@ -156,7 +156,7 @@ export function ApPaymentRunForm({ defaultCompanyId }: ApPaymentRunFormProps) {
                 if (result.ok) setProposal(result.value);
               }}
             >
-              {proposalLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { proposalLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Get suggestion
             </Button>
             {proposal && (
@@ -184,7 +184,7 @@ export function ApPaymentRunForm({ defaultCompanyId }: ApPaymentRunFormProps) {
 
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={isPending}>
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
           Create Payment Run
         </Button>
       </div>

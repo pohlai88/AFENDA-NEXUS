@@ -18,8 +18,8 @@ import {
 import { useQuickActions } from '@/hooks/use-quick-actions';
 import { getActions } from '@/lib/search/action-registry';
 import { getIcon } from '@/lib/modules/icon-map';
-import { Kbd } from '@/components/ui/kbd';
 import { formatShortcutKey } from '@/lib/shortcuts/format-shortcut';
+import { toSorted } from '@/lib/utils/array';
 import type { ActionCategory } from '@/lib/search/search.types';
 import {
   Command,
@@ -59,6 +59,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { QUICK_ACTION_PICKER_EVENT } from '../quick-action-shortcuts';
 
 // ─── CRUD Category Metadata ──────────────────────────────────────────────────
 
@@ -106,37 +107,27 @@ export function NavQuickActions() {
     for (const action of all) {
       const cat: ActionCategory = action.category ?? 'utility';
       if (!grouped.has(cat)) grouped.set(cat, []);
-      grouped.get(cat)!.push(action);
+      grouped.get(cat)?.push(action);
     }
-    // Return entries sorted by category order
-    return Array.from(grouped.entries()).sort(
+    // Return entries sorted by category order (RBP-03: toSorted for immutability)
+    return toSorted(
+      Array.from(grouped.entries()),
       ([a], [b]) => (CATEGORY_META[a]?.order ?? 99) - (CATEGORY_META[b]?.order ?? 99),
     );
   }, []);
 
-  // ─── Ctrl+Q global shortcut (explicit Ctrl to avoid Cmd+Q quit on Mac)
+  // ─── Listen for Ctrl+Q (dispatched by QuickActionShortcuts via ShortcutEngine)
   React.useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (
-        e.ctrlKey &&
-        !e.metaKey &&
-        !e.altKey &&
-        !e.shiftKey &&
-        e.key.toLowerCase() === 'q'
-      ) {
-        e.preventDefault();
-        setPickerOpen((prev) => !prev);
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const handler = () => setPickerOpen((prev) => !prev);
+    window.addEventListener(QUICK_ACTION_PICKER_EVENT, handler);
+    return () => window.removeEventListener(QUICK_ACTION_PICKER_EVENT, handler);
   }, []);
 
   return (
     <>
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
         <SidebarGroupLabel>
-          Quick Actions <Kbd className="text-[10px]">{formatShortcutKey('ctrl+q', isMac)}</Kbd>
+          Quick Actions
         </SidebarGroupLabel>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -168,14 +159,11 @@ export function NavQuickActions() {
                     <SidebarMenuButton
                       asChild
                       isActive={pathname === action.href}
-                      tooltip={`${action.title} (${formatShortcutKey(`ctrl+${action.slot}`, isMac)})`}
+                      tooltip={action.title}
                     >
                       <Link href={action.href}>
                         <ActionIcon className="size-4 shrink-0" />
-                        <span>{action.title}</span>
-                        <Kbd className="ml-auto shrink-0 text-[10px]">
-                          {formatShortcutKey(`ctrl+${action.slot}`, isMac)}
-                        </Kbd>
+                        <span className="min-w-0 flex-1 truncate">{action.title}</span>
                       </Link>
                     </SidebarMenuButton>
                     <DropdownMenu>
@@ -264,7 +252,7 @@ export function NavQuickActions() {
                     >
                       {catActions.map((regAction) => {
                         const RegIcon = getIcon(regAction.icon);
-                        const pinned = isQuickAction(regAction.href!);
+                        const pinned = regAction.href ? isQuickAction(regAction.href) : false;
                         const slot = actions.find(
                           (a) => a.href === regAction.href,
                         )?.slot;
@@ -274,12 +262,14 @@ export function NavQuickActions() {
                             key={regAction.id}
                             value={`${category}:${regAction.title} ${regAction.id}`}
                             onSelect={() => {
-                              toggle({
-                                actionId: regAction.href!,
-                                title: regAction.title,
-                                icon: regAction.icon,
-                                href: regAction.href!,
-                              });
+                              if (regAction.href) {
+                                toggle({
+                                  actionId: regAction.href,
+                                  title: regAction.title,
+                                  icon: regAction.icon,
+                                  href: regAction.href,
+                                });
+                              }
                             }}
                             className="flex items-center gap-2"
                           >
@@ -287,10 +277,10 @@ export function NavQuickActions() {
                             <span className="flex-1 truncate">
                               {regAction.title}
                             </span>
-                            {pinned && slot && (
-                              <Kbd className="shrink-0 text-[10px]">
-                                {formatShortcutKey(`ctrl+${slot}`, isMac)}
-                              </Kbd>
+                            {pinned && (
+                              <span className="shrink-0 text-xs text-amber-500" aria-label={slot ? `Shortcut: ${formatShortcutKey(`ctrl+${slot}`, isMac)}` : undefined}>
+                                ★
+                              </span>
                             )}
                           </CommandItem>
                         );

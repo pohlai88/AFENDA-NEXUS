@@ -10,13 +10,11 @@ import { ApprovalsTable } from '@/features/finance/approvals/blocks/approvals-ta
 export const metadata = { title: 'Approval Inbox | Finance', description: 'Review and approve pending financial documents' };
 
 export default async function ApprovalsPage({ searchParams }: { searchParams: Promise<{ status?: string; documentType?: string; slaStatus?: string; page?: string; limit?: string }> }) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const page = parseInt(params.page ?? '1', 10);
   const limit = parseInt(params.limit ?? '20', 10);
   const status = (params.status ?? 'PENDING') as 'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL';
-  const documentType = params.documentType;
-  const slaStatus = params.slaStatus as 'ON_TRACK' | 'AT_RISK' | 'BREACHED' | undefined;
+  const { documentType, slaStatus } = params;
 
   const [approvalsResult, statsResult] = await Promise.all([getApprovals(ctx, { status, documentType, slaStatus, page, limit }), getApprovalStats(ctx)]);
   if (!approvalsResult.ok || !statsResult.ok) throw new Error('Failed to load approvals');

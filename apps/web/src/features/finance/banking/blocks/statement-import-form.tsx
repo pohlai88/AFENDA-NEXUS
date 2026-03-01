@@ -117,7 +117,10 @@ export function StatementImportForm({ bankAccounts }: StatementImportFormProps) 
                     ? 'border-primary bg-accent'
                     : 'hover:bg-accent/50'
                 )}
+                role="button"
+                tabIndex={0}
                 onClick={() => setSelectedFormat(format.value)}
+                onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedFormat(format.value); } }}
               >
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -135,8 +138,8 @@ export function StatementImportForm({ bankAccounts }: StatementImportFormProps) 
             <Label>Statement File</Label>
             <DocumentUpload
               onUpload={async (inputFiles: File[]) => {
-                const uploaded: UploadedFile[] = inputFiles.map((f, i) => ({
-                  id: `temp-${Date.now()}-${i}`,
+                const uploaded: UploadedFile[] = inputFiles.map((f) => ({
+                  id: `temp-${crypto.randomUUID()}`,
                   name: f.name,
                   size: f.size,
                   type: f.type,

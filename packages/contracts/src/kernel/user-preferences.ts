@@ -20,6 +20,8 @@ export type TimeRange = z.infer<typeof TimeRangeSchema>;
 export const DashboardPrefsSchema = z.object({
   /** KPI widget IDs the user has enabled (subset of the domain's catalog). */
   selectedWidgetIds: z.array(z.string()).optional(),
+  /** KPI ID in the isolated hero slot (2×2). User drags a KPI into this slot to promote it. */
+  heroWidgetId: z.string().optional(),
   /** Display ordering of widgets (KPI IDs). */
   widgetOrder: z.array(z.string()).optional(),
   /** Bento grid layout: position and size per widget (w,h in grid units). */

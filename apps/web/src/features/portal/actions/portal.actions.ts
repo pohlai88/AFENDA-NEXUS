@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   getPortalSupplier,
@@ -28,81 +29,81 @@ import {
 
 // ─── Read Actions ──────────────────────────────────────────────────────────
 
-export async function getSupplierAction() {
+export const getSupplierAction = cache(async () => {
   const ctx = await getRequestContext();
   return getPortalSupplier(ctx);
-}
+});
 
-export async function getDashboardAction(supplierId: string) {
+export const getDashboardAction = cache(async (supplierId: string) => {
   const ctx = await getRequestContext();
   return getPortalDashboard(ctx, supplierId);
-}
+});
 
-export async function getInvoicesAction(
+export const getInvoicesAction = cache(async (
   supplierId: string,
   params?: { page?: string; limit?: string; status?: string }
-) {
+) => {
   const ctx = await getRequestContext();
   return getPortalInvoices(ctx, supplierId, params);
-}
+});
 
-export async function getInvoiceDetailAction(supplierId: string, invoiceId: string) {
+export const getInvoiceDetailAction = cache(async (supplierId: string, invoiceId: string) => {
   const ctx = await getRequestContext();
   return getPortalInvoiceDetail(ctx, supplierId, invoiceId);
-}
+});
 
-export async function getPaymentRunsAction(
+export const getPaymentRunsAction = cache(async (
   supplierId: string,
   params?: { page?: string; limit?: string }
-) {
+) => {
   const ctx = await getRequestContext();
   return getPortalPaymentRuns(ctx, supplierId, params);
-}
+});
 
-export async function getRemittanceAction(supplierId: string, runId: string) {
+export const getRemittanceAction = cache(async (supplierId: string, runId: string) => {
   const ctx = await getRequestContext();
   return getPortalRemittance(ctx, supplierId, runId);
-}
+});
 
-export async function getBankAccountsAction(supplierId: string) {
+export const getBankAccountsAction = cache(async (supplierId: string) => {
   const ctx = await getRequestContext();
   return getPortalBankAccounts(ctx, supplierId);
-}
+});
 
-export async function getWhtCertificatesAction(supplierId: string) {
+export const getWhtCertificatesAction = cache(async (supplierId: string) => {
   const ctx = await getRequestContext();
   return getPortalWhtCertificates(ctx, supplierId);
-}
+});
 
-export async function getWhtCertificateDetailAction(supplierId: string, certId: string) {
+export const getWhtCertificateDetailAction = cache(async (supplierId: string, certId: string) => {
   const ctx = await getRequestContext();
   return getPortalWhtCertificateDetail(ctx, supplierId, certId);
-}
+});
 
-export async function getDocumentsAction(supplierId: string) {
+export const getDocumentsAction = cache(async (supplierId: string) => {
   const ctx = await getRequestContext();
   return getPortalDocuments(ctx, supplierId);
-}
+});
 
-export async function getDisputesAction(supplierId: string) {
+export const getDisputesAction = cache(async (supplierId: string) => {
   const ctx = await getRequestContext();
   return getPortalDisputes(ctx, supplierId);
-}
+});
 
-export async function getDisputeDetailAction(supplierId: string, disputeId: string) {
+export const getDisputeDetailAction = cache(async (supplierId: string, disputeId: string) => {
   const ctx = await getRequestContext();
   return getPortalDisputeDetail(ctx, supplierId, disputeId);
-}
+});
 
-export async function getComplianceAction(supplierId: string) {
+export const getComplianceAction = cache(async (supplierId: string) => {
   const ctx = await getRequestContext();
   return getPortalCompliance(ctx, supplierId);
-}
+});
 
-export async function getNotificationPrefsAction(supplierId: string) {
+export const getNotificationPrefsAction = cache(async (supplierId: string) => {
   const ctx = await getRequestContext();
   return getPortalNotificationPrefs(ctx, supplierId);
-}
+});
 
 // ─── Mutation Actions ──────────────────────────────────────────────────────
 

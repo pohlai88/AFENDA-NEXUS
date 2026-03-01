@@ -6,8 +6,9 @@
  *
  * Handlers are registered at startup and looked up by eventType string.
  */
-import type { OutboxRow } from '@afenda/db';
+import type { OutboxRow, DbSession } from '@afenda/db';
 import type { Logger } from '@afenda/platform';
+import type { IObjectStore } from '@afenda/storage';
 import type Redis from 'ioredis';
 
 export type EventHandler = (row: OutboxRow) => Promise<void>;
@@ -56,8 +57,8 @@ export function registerFinanceHandlers(
   registry: EventHandlerRegistry,
   logger: Logger,
   deps?: {
-    objectStore?: import('@afenda/storage').IObjectStore;
-    session?: import('@afenda/db').DbSession;
+    objectStore?: IObjectStore;
+    session?: DbSession;
     redis?: Redis | null;
     resendApiKey?: string;
   }

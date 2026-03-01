@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { routes } from '@/lib/constants';
 import { toast } from 'sonner';
 import {
@@ -34,8 +33,6 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { PostingPreview, type PostingPreviewData } from '@/components/erp/posting-preview';
-import type { DepreciationRun } from '../types';
-import { depRunStatusConfig } from '../types';
 import {
   calculateDepreciation,
   postDepreciationRun,

@@ -63,7 +63,7 @@ export function ResetPasswordForm() {
       try {
         const { error: resetError } = await authClient.resetPassword({
           newPassword,
-          token: token!,
+          token,
         });
 
         if (resetError) {

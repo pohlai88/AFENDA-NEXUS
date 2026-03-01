@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { routes } from '@/lib/constants';
 import {
@@ -32,21 +31,21 @@ interface DrilldownRowProps extends Omit<React.HTMLAttributes<HTMLTableRowElemen
   children: React.ReactNode;
 }
 
-function resolveHref(props: DrilldownRowProps): string | undefined {
-  if (props.href) return props.href;
-  if (props.journalId) return routes.finance.journalDetail(props.journalId);
-  if (props.documentId && props.documentType) {
-    switch (props.documentType) {
+function resolveHref({ href, journalId, documentId, documentType }: DrilldownRowProps): string | undefined {
+  if (href) return href;
+  if (journalId) return routes.finance.journalDetail(journalId);
+  if (documentId && documentType) {
+    switch (documentType) {
       case 'ap-invoice':
-        return routes.finance.payableDetail(props.documentId);
+        return routes.finance.payableDetail(documentId);
       case 'ar-invoice':
-        return routes.finance.receivableDetail(props.documentId);
+        return routes.finance.receivableDetail(documentId);
       case 'journal':
-        return routes.finance.journalDetail(props.documentId);
+        return routes.finance.journalDetail(documentId);
       case 'expense-claim':
-        return routes.finance.expenseDetail(props.documentId);
+        return routes.finance.expenseDetail(documentId);
       case 'payment-run':
-        return routes.finance.paymentRunDetail(props.documentId);
+        return routes.finance.paymentRunDetail(documentId);
     }
   }
   return undefined;
@@ -121,7 +120,7 @@ export function DrilldownLink({
       onClick={(e) => e.stopPropagation()}
     >
       {label}
-      {showIcon && <ExternalLink className="h-3 w-3" />}
+      { showIcon ? <ExternalLink className="h-3 w-3" /> : null}
     </Link>
   );
 }
@@ -160,7 +159,8 @@ export function DrilldownBreadcrumb({ items, className }: DrilldownBreadcrumbPro
       {items.map((item, index) => {
         const Icon = (item.icon ? iconMap[item.icon] : undefined) ?? FileText;
         return (
-          <span key={index} className="flex items-center gap-1">
+          // eslint-disable-next-line react/no-array-index-key
+          <span key={`breadcrumb-${index}`} className="flex items-center gap-1">
             {index > 0 && <ChevronRight className="h-3 w-3" />}
             {item.href ? (
               <Link

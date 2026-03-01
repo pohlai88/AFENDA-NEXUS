@@ -15,16 +15,14 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getPrepayment(ctx, id);
   if (!result.ok) return { title: 'Prepayment | Finance' };
   return { title: `${result.value.invoiceNumber} | Prepayments` };
 }
 
 export default async function PrepaymentDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getPrepayment(ctx, id);
 
   if (!result.ok) {

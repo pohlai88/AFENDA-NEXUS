@@ -60,7 +60,7 @@ export function OrgDangerZone({ orgName }: { orgName: string }) {
         disabled={!canDelete || isPending}
         onClick={handleDelete}
       >
-        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         Delete Organization
       </Button>
     </div>

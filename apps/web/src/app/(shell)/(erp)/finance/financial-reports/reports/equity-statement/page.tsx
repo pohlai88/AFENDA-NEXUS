@@ -24,8 +24,7 @@ interface EquityStatementPageProps {
 }
 
 export default async function EquityStatementPage({ searchParams }: EquityStatementPageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const ledgerId = params.ledgerId ?? '';
   const fromPeriodId = params.fromPeriodId ?? '';
   const toPeriodId = params.toPeriodId ?? '';
@@ -73,7 +72,7 @@ export default async function EquityStatementPage({ searchParams }: EquityStatem
 
       {(!ledgerId || !fromPeriodId || !toPeriodId) && <EmptyState contentKey="finance.reports.equityStatement" variant="firstRun" icon={BarChart3} />}
 
-      {data && <EquityStatementTable data={data} />}
+      { data ? <EquityStatementTable data={data} /> : null}
     </div>
   );
 }

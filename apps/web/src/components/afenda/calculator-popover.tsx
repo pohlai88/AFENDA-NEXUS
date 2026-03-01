@@ -102,7 +102,7 @@ export function CalculatorPopover({
       }
       if (key === '.') {
         if (display.includes('.')) return;
-        setDisplay((d) => (d === '0' ? '0.' : d + '.'));
+        setDisplay((d) => (d === '0' ? '0.' : `${d  }.`));
         return;
       }
       if (/\d/.test(key)) {
@@ -139,6 +139,7 @@ export function CalculatorPopover({
           {CALC_BUTTONS.flatMap((row, ri) =>
             row.map(({ key, span }, ci) => (
               <Button
+                // eslint-disable-next-line react/no-array-index-key -- Static calculator grid, never reorders
                 key={`${ri}-${ci}-${key}`}
                 variant={['=', 'C', '±', '%', '÷', '×', '-', '+'].includes(key) ? 'secondary' : 'outline'}
                 size="sm"

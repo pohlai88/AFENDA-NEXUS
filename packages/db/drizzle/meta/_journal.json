@@ -15,6 +15,27 @@
       "when": 1772209608815,
       "tag": "0001_0001_performance_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772387792482,
+      "tag": "0002_ci_check",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772392374187,
+      "tag": "0003_ci_check",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1772392906041,
+      "tag": "0004_workable_payback",
+      "breakpoints": true
     }
   ]
 }

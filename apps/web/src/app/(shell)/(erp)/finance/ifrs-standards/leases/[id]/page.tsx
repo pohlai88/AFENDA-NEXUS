@@ -13,16 +13,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getLeaseById(ctx, id);
   if (!result.ok) return { title: 'Lease | Finance' };
   return { title: `${result.data.leaseNumber} | Leases` };
 }
 
 export default async function LeaseDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getLeaseById(ctx, id);
 
   if (!result.ok) {

@@ -13,8 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getHedgeRelationshipById(ctx, id);
   if (!result.ok) return { title: 'Hedge | Finance' };
   return { title: `${result.value.relationshipNumber} | Hedging` };
@@ -28,8 +27,7 @@ async function EffectivenessSection({ relationshipId }: { relationshipId: string
 }
 
 export default async function HedgeDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getHedgeRelationshipById(ctx, id);
 
   if (!result.ok) {

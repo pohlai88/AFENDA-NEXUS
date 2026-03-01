@@ -13,8 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getInstrumentById(ctx, id);
   if (!result.ok) return { title: 'Instrument | Finance' };
   return { title: `${result.value.instrumentNumber} | Instruments` };
@@ -28,8 +27,7 @@ async function ValuationsSection({ instrumentId }: { instrumentId: string }) {
 }
 
 export default async function InstrumentDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getInstrumentById(ctx, id);
 
   if (!result.ok) {

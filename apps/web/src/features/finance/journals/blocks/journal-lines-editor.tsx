@@ -1,11 +1,13 @@
 'use client';
 
+import { useCallback, useContext, useEffect, useRef } from 'react';
 import { useFieldArray, type UseFormReturn } from 'react-hook-form';
 import type { CreateJournal } from '@afenda/contracts';
 import { cn } from '@/lib/utils';
 import { MoneyCell } from '@/components/erp/money-cell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ShortcutContext } from '@/providers/shortcut-provider';
 import {
   Table,
   TableBody,
@@ -21,6 +23,15 @@ interface JournalLinesEditorProps {
   form: UseFormReturn<CreateJournal>;
 }
 
+function getFocusedRowIndex(container: HTMLElement | null): number | null {
+  const el = typeof document !== 'undefined' ? document.activeElement : null;
+  if (!el || !container?.contains(el as Node)) return null;
+  const row = (el as HTMLElement).closest?.('tr[data-row-index]');
+  if (!row) return null;
+  const idx = row.getAttribute('data-row-index');
+  return idx != null ? parseInt(idx, 10) : null;
+}
+
 export function JournalLinesEditor({ form }: JournalLinesEditorProps) {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -28,6 +39,59 @@ export function JournalLinesEditor({ form }: JournalLinesEditorProps) {
   });
 
   const lines = form.watch('lines');
+  const gridRef = useRef<HTMLDivElement>(null);
+  const shortcutCtx = useContext(ShortcutContext);
+  const tableScopePushedRef = useRef(false);
+
+  // Push table scope when grid gains focus, pop when focus leaves
+  useEffect(() => {
+    const container = gridRef.current;
+    if (!container || !shortcutCtx) return;
+
+    const handleFocusIn = (e: FocusEvent) => {
+      if (!container.contains(e.relatedTarget as Node)) {
+        shortcutCtx.engine.pushScope('table');
+        tableScopePushedRef.current = true;
+      }
+    };
+    const handleFocusOut = (e: FocusEvent) => {
+      if (!container.contains(e.relatedTarget as Node)) {
+        shortcutCtx.engine.popScope('table');
+        tableScopePushedRef.current = false;
+      }
+    };
+
+    container.addEventListener('focusin', handleFocusIn);
+    container.addEventListener('focusout', handleFocusOut);
+    return () => {
+      container.removeEventListener('focusin', handleFocusIn);
+      container.removeEventListener('focusout', handleFocusOut);
+      if (tableScopePushedRef.current) {
+        shortcutCtx.engine.popScope('table');
+      }
+    };
+  }, [shortcutCtx]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key !== 'F8') return;
+      const rowIndex = getFocusedRowIndex(gridRef.current);
+      if (rowIndex == null || rowIndex < 1 || !lines?.[rowIndex - 1]) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      const prevLine = lines[rowIndex - 1];
+      if (!prevLine) return;
+      form.setValue(`lines.${rowIndex}`, {
+        accountCode: prevLine.accountCode ?? '',
+        description: prevLine.description ?? '',
+        debit: prevLine.debit ?? 0,
+        credit: prevLine.credit ?? 0,
+        currency: prevLine.currency ?? 'USD',
+      });
+    },
+    [lines, form],
+  );
   const totalDebit = lines?.reduce((sum, l) => sum + (l.debit || 0), 0) ?? 0;
   const totalCredit = lines?.reduce((sum, l) => sum + (l.credit || 0), 0) ?? 0;
   const isBalanced = totalDebit === totalCredit && totalDebit > 0;
@@ -59,7 +123,14 @@ export function JournalLinesEditor({ form }: JournalLinesEditorProps) {
         </Button>
       </div>
 
-      <div className="rounded-md border">
+      <div
+        ref={gridRef}
+        className="rounded-md border"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        role="grid"
+        aria-label="Journal lines"
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -76,6 +147,7 @@ export function JournalLinesEditor({ form }: JournalLinesEditorProps) {
               return (
                 <TableRow
                   key={field.id}
+                  data-row-index={index}
                   className={errors.length > 0 ? 'bg-destructive/5' : undefined}
                 >
                   <TableCell>

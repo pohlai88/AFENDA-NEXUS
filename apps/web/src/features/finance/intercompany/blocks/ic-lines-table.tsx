@@ -1,4 +1,5 @@
-import { MoneyCell } from '@/components/erp/money-cell';
+import { cn } from '@/lib/utils';
+import { layoutTokens } from '@/lib/layout-tokens';
 import type { IcJournalLineView } from '../queries/ic.queries';
 import {
   Table,
@@ -24,15 +25,16 @@ export function IcLinesTable({ lines, title }: { lines: IcJournalLineView[]; tit
           <caption className="sr-only">Intercompany transaction lines</caption>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Code</TableHead>
+              <TableHead className={layoutTokens.colAccount}>Code</TableHead>
               <TableHead>Account</TableHead>
-              <TableHead className="w-[140px] text-right">Debit</TableHead>
-              <TableHead className="w-[140px] text-right">Credit</TableHead>
+              <TableHead className={cn(layoutTokens.colAmount, 'text-right')}>Debit</TableHead>
+              <TableHead className={cn(layoutTokens.colAmount, 'text-right')}>Credit</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {lines.map((line, i) => (
-              <TableRow key={i}>
+              // eslint-disable-next-line react/no-array-index-key -- Lines may share accountCode
+              <TableRow key={`${line.accountCode}-${i}`}>
                 <TableCell className="font-mono text-xs">{line.accountCode}</TableCell>
                 <TableCell>{line.accountName ?? '—'}</TableCell>
                 <TableCell className="text-right font-mono text-sm tabular-nums">

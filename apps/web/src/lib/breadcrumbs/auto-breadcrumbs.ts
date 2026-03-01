@@ -274,7 +274,7 @@ export function deriveBreadcrumbs(
   let hrefAccumulator = '';
 
   for (let i = 0; i < segments.length; i++) {
-    const seg = segments[i]!;
+    const seg = segments[i];
 
     // Always include every segment in the href to maintain correct paths,
     // even for dynamic [id] segments we don't render as visible crumbs.
@@ -291,7 +291,7 @@ export function deriveBreadcrumbs(
 
   // Mark the last crumb as the current page (no href) and apply pageBreadcrumb override
   if (crumbs.length > 0) {
-    const last = crumbs[crumbs.length - 1]!;
+    const last = crumbs[crumbs.length - 1];
     last.href = undefined;
     if (pageBreadcrumb) last.label = pageBreadcrumb;
   }
@@ -300,7 +300,7 @@ export function deriveBreadcrumbs(
 
   // Trim to maxVisible — keep first + last, ellipsis in between
   if (crumbs.length > maxVisible) {
-    const first = crumbs[0]!;
+    const first = crumbs[0];
     const last = crumbs.slice(-(maxVisible - 1));
     return [first, ...last];
   }

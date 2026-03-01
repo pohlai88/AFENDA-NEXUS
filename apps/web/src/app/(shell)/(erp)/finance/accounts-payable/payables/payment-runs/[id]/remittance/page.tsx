@@ -17,8 +17,7 @@ export default async function PaymentRunRemittancePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getRemittanceAdvice(ctx, id);
 
   if (!result.ok) notFound();

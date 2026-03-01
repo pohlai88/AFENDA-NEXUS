@@ -5,6 +5,8 @@ import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import type { UserPreferences, DashboardPrefs } from '@afenda/contracts';
 
+export type SaveDashboardPrefsResult = { ok: true } | { ok: false; error: string };
+
 /**
  * Save dashboard preferences for a specific domain.
  * Deep-merges the domain key into the existing `dashboards` map,
@@ -13,7 +15,7 @@ import type { UserPreferences, DashboardPrefs } from '@afenda/contracts';
 export async function saveDashboardPrefs(
   domainId: string,
   prefs: DashboardPrefs,
-): Promise<void> {
+): Promise<SaveDashboardPrefsResult> {
   try {
     const ctx = await getRequestContext();
     const api = createApiClient(ctx);
@@ -36,8 +38,10 @@ export async function saveDashboardPrefs(
 
     // 4. Revalidate finance dashboard so comparison mode / role defaults update
     revalidatePath('/finance');
+    return { ok: true };
   } catch (err) {
-    // Dashboard pref persistence is best-effort — never break the shell
     console.error('[DashboardPrefs] Failed to save:', domainId, err);
+    const message = err instanceof Error ? err.message : 'Failed to save preferences';
+    return { ok: false, error: message };
   }
 }

@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   createApInvoice,
@@ -70,13 +71,13 @@ export async function recordApPaymentAction(
 
 // ─── Queries (called from client or server) ─────────────────────────────────
 
-export async function getApInvoiceDetailAction(invoiceId: string): Promise<ApiResult<ApInvoiceDetail>> {
+export const getApInvoiceDetailAction = cache(async (invoiceId: string): Promise<ApiResult<ApInvoiceDetail>> => {
   const ctx = await getRequestContext();
   return getApInvoice(ctx, invoiceId);
-}
+});
 
-export async function getApInvoiceAuditAction(invoiceId: string): Promise<ApiResult<AuditEntry[]>> {
+export const getApInvoiceAuditAction = cache(async (invoiceId: string): Promise<ApiResult<AuditEntry[]>> => {
   const ctx = await getRequestContext();
   const client = createApiClient(ctx);
   return client.get<AuditEntry[]>(`/ap/invoices/${invoiceId}/audit`);
-}
+});

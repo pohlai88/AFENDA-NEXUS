@@ -47,6 +47,7 @@ export function VarianceAlertsPanel({ alerts }: { alerts: VarianceAlert[] }) {
       <div className="grid gap-2">
         {alerts.map((a, i) => (
           <div
+            // eslint-disable-next-line react/no-array-index-key -- Alerts may share accountCode
             key={`${a.accountCode}-${i}`}
             className="flex items-center justify-between rounded border bg-background p-2 text-sm"
           >

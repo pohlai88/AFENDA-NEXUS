@@ -47,11 +47,12 @@ export function useRecentItems() {
       const segments = pathname.split('/').filter(Boolean);
       const moduleId = segments[0] ?? 'home';
       const title = segments.length > 0
-        ? segments[segments.length - 1]!
+        ? (segments[segments.length - 1] ?? '')
             .replace(/-/g, ' ')
             .replace(/\b\w/g, (c) => c.toUpperCase())
         : 'Home';
 
+      // eslint-disable-next-line no-restricted-syntax
       addRecent({ href: pathname, title, moduleId, ts: Date.now() });
     }, DEBOUNCE_MS);
 
@@ -64,7 +65,7 @@ export function useRecentItems() {
   const addRecent = useCallback((item: RecentItem) => {
     setRecents((prev) => {
       // Dedupe: skip if href matches the most recent entry
-      if (prev.length > 0 && prev[0]!.href === item.href) return prev;
+      if (prev.length > 0 && prev[0]?.href === item.href) return prev;
 
       // Remove any existing entry for this href
       const filtered = prev.filter((r) => r.href !== item.href);

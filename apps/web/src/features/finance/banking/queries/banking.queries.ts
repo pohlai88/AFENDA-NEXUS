@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type {
   BankAccount,
@@ -12,26 +13,26 @@ type RequestCtx = { tenantId: string; userId: string; token: string };
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getBankAccounts(
+export const getBankAccounts = cache(async (
   ctx: RequestCtx
-): Promise<{ ok: true; data: BankAccount[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: BankAccount[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<BankAccount[]>('/bank-accounts');
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getBankAccountById(
+export const getBankAccountById = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<{ ok: true; data: BankAccount } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: BankAccount } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<BankAccount>(`/bank-accounts/${id}`);
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getBankStatements(
+export const getBankStatements = cache(async (
   ctx: RequestCtx,
   params?: {
     bankAccountId?: string;
@@ -46,7 +47,7 @@ export async function getBankStatements(
       pagination: { page: number; perPage: number; total: number; totalPages: number };
     }
   | { ok: false; error: string }
-> {
+> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.bankAccountId) query.bankAccountId = params.bankAccountId;
@@ -70,19 +71,19 @@ export async function getBankStatements(
     data: items,
     pagination: { page, perPage, total, totalPages },
   };
-}
+});
 
-export async function getBankStatementById(
+export const getBankStatementById = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<{ ok: true; data: BankStatement } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: BankStatement } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<BankStatement>(`/bank-statements/${id}`);
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getBankTransactions(
+export const getBankTransactions = cache(async (
   ctx: RequestCtx,
   params: {
     statementId: string;
@@ -90,7 +91,7 @@ export async function getBankTransactions(
     type?: string;
     search?: string;
   }
-): Promise<{ ok: true; data: BankTransaction[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: BankTransaction[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.matchStatus) query.matchStatus = params.matchStatus;
@@ -103,9 +104,9 @@ export async function getBankTransactions(
   );
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getGLTransactions(
+export const getGLTransactions = cache(async (
   ctx: RequestCtx,
   params: {
     bankAccountId: string;
@@ -113,7 +114,7 @@ export async function getGLTransactions(
     toDate?: Date;
     unreconciledOnly?: boolean;
   }
-): Promise<{ ok: true; data: GLTransaction[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: GLTransaction[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.fromDate) query.fromDate = params.fromDate.toISOString();
@@ -126,15 +127,15 @@ export async function getGLTransactions(
   );
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getMatchSuggestions(
+export const getMatchSuggestions = cache(async (
   ctx: RequestCtx,
   params: {
     statementId: string;
     bankTransactionId?: string;
   }
-): Promise<{ ok: true; data: MatchSuggestion[] } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: MatchSuggestion[] } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.bankTransactionId) query.bankTransactionId = params.bankTransactionId;
@@ -145,12 +146,12 @@ export async function getMatchSuggestions(
   );
   if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true, data: result.value };
-}
+});
 
-export async function getReconciliationSession(
+export const getReconciliationSession = cache(async (
   ctx: RequestCtx,
   statementId: string
-): Promise<{ ok: true; data: ReconciliationSession } | { ok: false; error: string }> {
+): Promise<{ ok: true; data: ReconciliationSession } | { ok: false; error: string }> => {
   const client = createApiClient(ctx);
   const result = await client.get<ReconciliationSession[]>('/bank-reconciliations', {
     statementId,
@@ -160,10 +161,10 @@ export async function getReconciliationSession(
 
   const sessions = result.value;
   if (!sessions.length) return { ok: false, error: 'No reconciliation session found for this statement' };
-  return { ok: true, data: sessions[0]! };
-}
+  return { ok: true, data: sessions[0] };
+});
 
-export async function getReconciliationStats(
+export const getReconciliationStats = cache(async (
   ctx: RequestCtx,
   bankAccountId?: string
 ): Promise<
@@ -178,7 +179,7 @@ export async function getReconciliationStats(
       };
     }
   | { ok: false; error: string }
-> {
+> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (bankAccountId) query.bankAccountId = bankAccountId;
@@ -202,4 +203,4 @@ export async function getReconciliationStats(
         : null,
     },
   };
-}
+});

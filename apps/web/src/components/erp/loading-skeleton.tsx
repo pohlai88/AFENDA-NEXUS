@@ -1,6 +1,8 @@
+/* eslint-disable react/no-array-index-key -- Static skeleton placeholders, never reorder */
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { layoutTokens } from '@/lib/layout-tokens';
 
 /* ─── Shared ERP Loading Skeletons ────────────────────────────────────────── */
 /* Centralized loading UI for Next.js loading.tsx and Suspense fallbacks.     */
@@ -51,7 +53,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
  */
 /* ────────────────────────────────────────────────────────────────────────── */
 
-const SKELETON_VARIANTS = [
+const _SKELETON_VARIANTS = [
   'table',
   'detail',
   'form',
@@ -65,7 +67,7 @@ const SKELETON_VARIANTS = [
   'split-pane',
 ] as const;
 
-type SkeletonVariant = (typeof SKELETON_VARIANTS)[number];
+type SkeletonVariant = (typeof _SKELETON_VARIANTS)[number];
 
 // ─── Primitive Helpers ───────────────────────────────────────────────────────
 
@@ -336,7 +338,7 @@ export function KpiDeckSkeleton({
       </div>
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: n }, (_, i) => (
-          <Skeleton key={i} className="h-[130px] rounded-lg" />
+          <Skeleton key={`skeleton-${i}`} className="h-[130px] rounded-lg" />
         ))}
       </div>
       <span className="sr-only">Loading…</span>
@@ -356,20 +358,20 @@ export function ChartsSkeleton({ className }: { className?: string }) {
       aria-label="Loading charts"
     >
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="sm:col-span-2 min-h-[360px]">
+        <Card className="sm:col-span-2 min-h-(--layout-skeleton-chart)">
           <CardHeader>
             <Skeleton className="h-5 w-32" />
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className={cn('w-full', layoutTokens.skeletonChart)} />
           </CardContent>
         </Card>
-        <Card className="min-h-[360px]">
+        <Card className="min-h-(--layout-skeleton-chart)">
           <CardHeader>
             <Skeleton className="h-5 w-24" />
           </CardHeader>
           <CardContent>
-            <Skeleton className="h-[300px] w-full" />
+            <Skeleton className={cn('w-full', layoutTokens.skeletonChart)} />
           </CardContent>
         </Card>
       </div>

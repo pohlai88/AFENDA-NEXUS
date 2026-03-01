@@ -59,7 +59,7 @@ export class DrizzleRecurringTemplateRepo implements IRecurringTemplateRepo {
 
     return {
       data: rows.map(mapRow),
-      total: total,
+      total,
       page,
       limit,
     };

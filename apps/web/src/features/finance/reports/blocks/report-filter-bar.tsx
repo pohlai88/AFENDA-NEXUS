@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
+import { layoutTokens } from '@/lib/layout-tokens';
 import {
   Select,
   SelectContent,
@@ -99,7 +100,7 @@ export function ReportFilterBar({
         <div className="space-y-1.5">
           <Label className="text-xs">Ledger</Label>
           <Select value={ledgerId} onValueChange={setLedgerId}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className={layoutTokens.selectWidthMd}>
               <SelectValue placeholder="Select ledger" />
             </SelectTrigger>
             <SelectContent>
@@ -117,7 +118,7 @@ export function ReportFilterBar({
         <div className="space-y-1.5">
           <Label className="text-xs">Period</Label>
           <Select value={periodId} onValueChange={setPeriodId}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className={layoutTokens.selectWidthMd}>
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
@@ -136,7 +137,7 @@ export function ReportFilterBar({
           <div className="space-y-1.5">
             <Label className="text-xs">From Period</Label>
             <Select value={fromPeriodId} onValueChange={setFromPeriodId}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className={layoutTokens.selectWidthMd}>
                 <SelectValue placeholder="From period" />
               </SelectTrigger>
               <SelectContent>
@@ -151,7 +152,7 @@ export function ReportFilterBar({
           <div className="space-y-1.5">
             <Label className="text-xs">To Period</Label>
             <Select value={toPeriodId} onValueChange={setToPeriodId}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className={layoutTokens.selectWidthMd}>
                 <SelectValue placeholder="To period" />
               </SelectTrigger>
               <SelectContent>
@@ -171,7 +172,7 @@ export function ReportFilterBar({
           <div className="space-y-1.5">
             <Label className="text-xs">Currency</Label>
             <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className={layoutTokens.colAmount}>
                 <SelectValue placeholder="Currency" />
               </SelectTrigger>
               <SelectContent>
@@ -192,7 +193,7 @@ export function ReportFilterBar({
               type="date"
               value={asOfDate}
               onChange={(e) => setAsOfDate(e.target.value)}
-              className="w-[160px]"
+              className={layoutTokens.selectWidthSm}
             />
           </div>
         </>

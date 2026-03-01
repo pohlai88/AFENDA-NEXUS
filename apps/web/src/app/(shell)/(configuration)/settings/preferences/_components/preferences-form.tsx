@@ -98,11 +98,11 @@ export function PreferencesForm({ preferences }: { preferences: UserPreferences 
         <Label htmlFor="pref-sidebar">Collapse sidebar by default</Label>
       </div>
 
-      {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-      {success && <p className="text-sm text-green-600" role="status">Preferences saved.</p>}
+      { error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
+      { success ? <p className="text-sm text-green-600" role="status">Preferences saved.</p> : null}
 
       <Button type="submit" disabled={isPending}>
-        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         Save Preferences
       </Button>
     </form>

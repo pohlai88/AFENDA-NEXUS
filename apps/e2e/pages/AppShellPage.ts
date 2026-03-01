@@ -1,11 +1,11 @@
-﻿/**
+/**
  * AppShellPage POM
  *
  * Based on apps/web/src/components/erp/app-shell.tsx
  *              apps/web/src/components/erp/sidebar-nav.tsx
  *
  * Real selectors:
- *  - main#main-content (id="main-content", tabIndex={-1})
+ *  - #afenda-main-content (Afenda shell) or #main-content (legacy)
  *  - Skip link: "Skip to main content"
  *  - Toaster: [data-sonner-toast] (Sonner, position="bottom-right")
  *  - Sidebar rendered as aside[data-slot="sidebar"]
@@ -23,7 +23,7 @@ export class AppShellPage {
   // --- Locators ---
 
   get mainContent(): Locator {
-    return this.page.locator('#main-content');
+    return this.page.locator('#afenda-main-content, #main-content').first();
   }
 
   get sidebar(): Locator {
@@ -34,7 +34,7 @@ export class AppShellPage {
   }
 
   get searchButton(): Locator {
-    return this.page.getByRole('button', { name: /Search/ });
+    return this.page.getByRole('button', { name: /command palette|search/i });
   }
 
   get toaster(): Locator {

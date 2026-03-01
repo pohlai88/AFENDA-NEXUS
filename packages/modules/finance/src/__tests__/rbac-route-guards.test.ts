@@ -9,6 +9,7 @@
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import Fastify, { type FastifyInstance } from 'fastify';
+import type { RoleDefinition } from '@afenda/authz';
 import type { FinanceRuntime, FinanceDeps } from '../app/ports/finance-runtime.js';
 import { registerJournalRoutes } from '../slices/gl/routes/journal-routes.js';
 import { registerPeriodRoutes } from '../slices/gl/routes/period-routes.js';
@@ -43,8 +44,8 @@ function createRoleResolver(map: Record<string, string[]> = {}): IRoleResolver {
     async resolveRoles(_tenantId: string, userId: string) {
       const roleNames = map[userId] ?? [];
       return roleNames
-        .map((n) => (roles as Record<string, import('@afenda/authz').RoleDefinition>)[n])
-        .filter((r): r is import('@afenda/authz').RoleDefinition => !!r);
+        .map((n) => (roles as Record<string, RoleDefinition>)[n])
+        .filter((r): r is RoleDefinition => !!r);
     },
   };
 }

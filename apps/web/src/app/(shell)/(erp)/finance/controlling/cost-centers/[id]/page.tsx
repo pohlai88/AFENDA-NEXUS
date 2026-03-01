@@ -16,15 +16,13 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getCostCenterById(ctx, id);
   return !result.ok ? { title: 'Cost Center | Finance' } : { title: `${result.value.code} — ${result.value.name} | Cost Accounting | Finance`, description: `Cost center ${result.value.code} — ${result.value.name} — ${result.value.status}` };
 }
 
 export default async function CostCenterDetailPage({ params }: Props) {
-  const { id } = await params;
-  const ctx = await getRequestContext();
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
   const result = await getCostCenterById(ctx, id);
 
   if (!result.ok) {

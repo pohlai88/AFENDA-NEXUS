@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
 
@@ -60,40 +61,40 @@ export interface InstrumentSummaryView {
 
 // --- Queries -----------------------------------------------------------------
 
-export async function getInstruments(
+export const getInstruments = cache(async (
   ctx: Ctx,
   params?: { category?: string; type?: string; status?: string },
-): Promise<ApiResult<{ data: InstrumentView[] }>> {
+): Promise<ApiResult<{ data: InstrumentView[] }>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.category) query.classification = params.category;
   if (params?.type) query.type = params.type;
   if (params?.status) query.status = params.status;
   return client.get<{ data: InstrumentView[] }>('/fin-instruments', query);
-}
+});
 
-export async function getInstrumentById(
+export const getInstrumentById = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<InstrumentView>> {
+): Promise<ApiResult<InstrumentView>> => {
   const client = createApiClient(ctx);
   return client.get<InstrumentView>(`/fin-instruments/${id}`);
-}
+});
 
-export async function getInstrumentFairValues(
+export const getInstrumentFairValues = cache(async (
   ctx: Ctx,
   instrumentId: string,
-): Promise<ApiResult<{ data: FairValueMeasurementView[] }>> {
+): Promise<ApiResult<{ data: FairValueMeasurementView[] }>> => {
   const client = createApiClient(ctx);
   return client.get<{ data: FairValueMeasurementView[] }>(`/fin-instruments/${instrumentId}/fair-values`);
-}
+});
 
-export async function getInstrumentSummary(
+export const getInstrumentSummary = cache(async (
   ctx: Ctx,
-): Promise<ApiResult<InstrumentSummaryView>> {
+): Promise<ApiResult<InstrumentSummaryView>> => {
   const client = createApiClient(ctx);
   return client.get<InstrumentSummaryView>('/fin-instruments/summary');
-}
+});
 
 // --- Commands ----------------------------------------------------------------
 

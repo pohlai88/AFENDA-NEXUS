@@ -26,8 +26,7 @@ interface BudgetVariancePageProps {
 }
 
 export default async function BudgetVariancePage({ searchParams }: BudgetVariancePageProps) {
-  const params = await searchParams;
-  const ctx = await getRequestContext();
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
   const ledgerId = params.ledgerId ?? '';
   const periodId = params.periodId ?? '';
 
@@ -69,7 +68,7 @@ export default async function BudgetVariancePage({ searchParams }: BudgetVarianc
       </div>
 
       {(!ledgerId || !periodId) && <EmptyState contentKey="finance.reports.budgetVariance" variant="firstRun" icon={BarChart3} />}
-      {alerts && <VarianceAlertsPanel alerts={alerts.alerts} />}
+      { alerts ? <VarianceAlertsPanel alerts={alerts.alerts} /> : null}
       {data && data.rows.length === 0 && <EmptyState contentKey="finance.reports.budgetVariance" variant="noResults" icon={BarChart3} />}
       {data && data.rows.length > 0 && (
         <BudgetVarianceTable rows={data.rows.map(r => ({ accountId: r.accountId, accountCode: r.accountCode, accountName: r.accountName, budgetAmount: Number(r.budgetAmount), actualAmount: Number(r.actualAmount), variance: Number(r.variance), variancePct: r.variancePct }))} totalBudget={Number(data.totalBudget)} totalActual={Number(data.totalActual)} totalVariance={Number(data.totalVariance)} />

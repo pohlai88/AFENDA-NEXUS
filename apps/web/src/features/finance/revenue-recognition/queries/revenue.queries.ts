@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 
@@ -72,32 +73,32 @@ export interface RevenueContractDetail {
 
 // ─── Query Functions ─────────────────────────────────────────────────────────
 
-export async function getRevenueContracts(
+export const getRevenueContracts = cache(async (
   ctx: Ctx,
   params: { page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<RevenueContractListItem>>> {
+): Promise<ApiResult<PaginatedResponse<RevenueContractListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<RevenueContractListItem>>('/revenue-contracts', query);
-}
+});
 
-export async function getRevenueContract(
+export const getRevenueContract = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<RevenueContractDetail>> {
+): Promise<ApiResult<RevenueContractDetail>> => {
   const client = createApiClient(ctx);
   return client.get<RevenueContractDetail>(`/revenue-contracts/${id}`);
-}
+});
 
-export async function getContractMilestones(
+export const getContractMilestones = cache(async (
   ctx: Ctx,
   contractId: string,
-): Promise<ApiResult<RecognitionMilestoneView[]>> {
+): Promise<ApiResult<RecognitionMilestoneView[]>> => {
   const client = createApiClient(ctx);
   return client.get<RecognitionMilestoneView[]>(`/revenue-contracts/${contractId}/milestones`);
-}
+});
 
 // ─── Command Functions ───────────────────────────────────────────────────────
 

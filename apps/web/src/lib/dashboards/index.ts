@@ -3,7 +3,6 @@
 
 export { DomainDashboardShell } from './domain-dashboard-shell';
 export { DomainDashboardLayout } from './domain-dashboard-layout';
-export { DashboardVisualsSection } from './dashboard-visuals-section';
 export { FeatureGrid } from './feature-grid';
 export { FeatureCard } from './feature-card';
 export { KpiDeck } from './kpi-deck.client';

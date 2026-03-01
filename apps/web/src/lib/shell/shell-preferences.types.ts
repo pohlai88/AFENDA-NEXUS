@@ -28,6 +28,12 @@ export interface ShellPreferences {
   leftCollapsed: boolean;
   /** Whether the right (domain) sidebar is visible. */
   rightOpen: boolean;
+  /**
+   * User-overridden keyboard shortcuts.
+   * Key = shortcut id (e.g. "nav-journals"), value = new key combo (e.g. "shift+j").
+   * Stored in cookie; falls back to default when absent.
+   */
+  shortcutOverrides?: Record<string, string>;
 }
 
 /** Default preferences used when no cookie is present. */
@@ -36,6 +42,7 @@ export const SHELL_PREFS_DEFAULTS: ShellPreferences = {
   density: 'default',
   leftCollapsed: false,
   rightOpen: true,
+  shortcutOverrides: {},
 };
 
 // ─── Convenience Preferences (localStorage) ─────────────────────────────────

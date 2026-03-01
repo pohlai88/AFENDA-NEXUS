@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -30,10 +31,10 @@ export interface AccountDetail {
 
 // ─── Query Functions ────────────────────────────────────────────────────────
 
-export async function getAccounts(
+export const getAccounts = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   params: { type?: string; active?: string; page?: string; limit?: string }
-): Promise<ApiResult<PaginatedResponse<AccountListItem>>> {
+): Promise<ApiResult<PaginatedResponse<AccountListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.type) query.type = params.type;
@@ -42,12 +43,12 @@ export async function getAccounts(
   if (params.limit) query.limit = params.limit;
 
   return client.get<PaginatedResponse<AccountListItem>>('/accounts', query);
-}
+});
 
-export async function getAccount(
+export const getAccount = cache(async (
   ctx: { tenantId: string; userId: string; token: string },
   id: string
-): Promise<ApiResult<AccountDetail>> {
+): Promise<ApiResult<AccountDetail>> => {
   const client = createApiClient(ctx);
   return client.get<AccountDetail>(`/accounts/${id}`);
-}
+});

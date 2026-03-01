@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 import type { RecurringFrequency } from '@afenda/contracts';
@@ -42,10 +43,10 @@ export interface RecurringTemplateDetail {
 
 type RequestCtx = { tenantId: string; userId: string; token: string };
 
-export async function getRecurringTemplates(
+export const getRecurringTemplates = cache(async (
   ctx: RequestCtx,
   params: { page?: string; limit?: string; active?: string }
-): Promise<ApiResult<PaginatedResponse<RecurringTemplateListItem>>> {
+): Promise<ApiResult<PaginatedResponse<RecurringTemplateListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.page) query.page = params.page;
@@ -53,15 +54,15 @@ export async function getRecurringTemplates(
   if (params.active) query.active = params.active;
 
   return client.get<PaginatedResponse<RecurringTemplateListItem>>('/recurring-templates', query);
-}
+});
 
-export async function getRecurringTemplate(
+export const getRecurringTemplate = cache(async (
   ctx: RequestCtx,
   id: string
-): Promise<ApiResult<RecurringTemplateDetail>> {
+): Promise<ApiResult<RecurringTemplateDetail>> => {
   const client = createApiClient(ctx);
   return client.get<RecurringTemplateDetail>(`/recurring-templates/${id}`);
-}
+});
 
 export async function createRecurringTemplate(
   ctx: RequestCtx,

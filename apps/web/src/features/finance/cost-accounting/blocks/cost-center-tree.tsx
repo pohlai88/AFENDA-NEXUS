@@ -22,8 +22,8 @@ import {
   Search,
   User2,
 } from 'lucide-react';
-import type { CostCenter, CostCenterType, CostCenterStatus } from '../types';
-import { costCenterStatusConfig, costCenterTypeLabels } from '../types';
+import type { CostCenter, CostCenterType } from '../types';
+import { costCenterStatusConfig } from '../types';
 import { routes } from '@/lib/constants';
 
 const typeIcons: Record<CostCenterType, React.ElementType> = {
@@ -58,7 +58,10 @@ function CostCenterNode({ costCenter, level = 0, onSelect }: CostCenterNodeProps
             level > 0 && `ml-${level * 6}`
           )}
           style={{ marginLeft: level * 24 }}
+          role="button"
+          tabIndex={0}
           onClick={() => onSelect?.(costCenter)}
+          onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(costCenter); } }}
         >
           {hasChildren ? (
             <CollapsibleTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -132,7 +135,7 @@ function CostCenterNode({ costCenter, level = 0, onSelect }: CostCenterNodeProps
 
         {hasChildren && (
           <CollapsibleContent>
-            {costCenter.children!.map((child) => (
+            {costCenter.children?.map((child) => (
               <CostCenterNode
                 key={child.id}
                 costCenter={child}

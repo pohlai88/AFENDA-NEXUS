@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
@@ -193,24 +194,24 @@ function supplierPath(supplierId: string): string {
 
 // ─── Queries ───────────────────────────────────────────────────────────────
 
-export async function getPortalSupplier(ctx: RequestContext): Promise<ApiResult<PortalSupplier>> {
+export const getPortalSupplier = cache(async (ctx: RequestContext): Promise<ApiResult<PortalSupplier>> => {
   const client = createApiClient(ctx);
   return client.get<PortalSupplier>('/portal/me');
-}
+});
 
-export async function getPortalDashboard(
+export const getPortalDashboard = cache(async (
   ctx: RequestContext,
   supplierId: string
-): Promise<ApiResult<PortalDashboardSummary>> {
+): Promise<ApiResult<PortalDashboardSummary>> => {
   const client = createApiClient(ctx);
   return client.get<PortalDashboardSummary>(`${supplierPath(supplierId)}/dashboard`);
-}
+});
 
-export async function getPortalInvoices(
+export const getPortalInvoices = cache(async (
   ctx: RequestContext,
   supplierId: string,
   params?: { page?: string; limit?: string; status?: string }
-): Promise<ApiResult<PaginatedResponse<PortalInvoiceListItem>>> {
+): Promise<ApiResult<PaginatedResponse<PortalInvoiceListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.page) query.page = params.page;
@@ -220,30 +221,30 @@ export async function getPortalInvoices(
     `${supplierPath(supplierId)}/invoices`,
     Object.keys(query).length > 0 ? query : undefined
   );
-}
+});
 
-export async function getPortalInvoiceDetail(
+export const getPortalInvoiceDetail = cache(async (
   ctx: RequestContext,
   supplierId: string,
   invoiceId: string
-): Promise<ApiResult<PortalInvoiceDetail>> {
+): Promise<ApiResult<PortalInvoiceDetail>> => {
   const client = createApiClient(ctx);
   return client.get<PortalInvoiceDetail>(`${supplierPath(supplierId)}/invoices/${invoiceId}`);
-}
+});
 
-export async function getPortalAging(
+export const getPortalAging = cache(async (
   ctx: RequestContext,
   supplierId: string
-): Promise<ApiResult<PortalAgingBucket[]>> {
+): Promise<ApiResult<PortalAgingBucket[]>> => {
   const client = createApiClient(ctx);
   return client.get<PortalAgingBucket[]>(`${supplierPath(supplierId)}/aging`);
-}
+});
 
-export async function getPortalPaymentRuns(
+export const getPortalPaymentRuns = cache(async (
   ctx: RequestContext,
   supplierId: string,
   params?: { page?: string; limit?: string }
-): Promise<ApiResult<PaginatedResponse<PortalPaymentRunListItem>>> {
+): Promise<ApiResult<PaginatedResponse<PortalPaymentRunListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params?.page) query.page = params.page;
@@ -252,84 +253,84 @@ export async function getPortalPaymentRuns(
     `${supplierPath(supplierId)}/payment-runs`,
     Object.keys(query).length > 0 ? query : undefined
   );
-}
+});
 
-export async function getPortalRemittance(
+export const getPortalRemittance = cache(async (
   ctx: RequestContext,
   supplierId: string,
   runId: string
-): Promise<ApiResult<PortalRemittanceAdvice>> {
+): Promise<ApiResult<PortalRemittanceAdvice>> => {
   const client = createApiClient(ctx);
   return client.get<PortalRemittanceAdvice>(
     `${supplierPath(supplierId)}/payment-runs/${runId}/remittance`
   );
-}
+});
 
-export async function getPortalBankAccounts(
+export const getPortalBankAccounts = cache(async (
   ctx: RequestContext,
   supplierId: string
-): Promise<ApiResult<PortalBankAccount[]>> {
+): Promise<ApiResult<PortalBankAccount[]>> => {
   const client = createApiClient(ctx);
   return client.get<PortalBankAccount[]>(`${supplierPath(supplierId)}/bank-accounts`);
-}
+});
 
-export async function getPortalWhtCertificates(
+export const getPortalWhtCertificates = cache(async (
   ctx: RequestContext,
   supplierId: string
-): Promise<ApiResult<PortalWhtCertificate[]>> {
+): Promise<ApiResult<PortalWhtCertificate[]>> => {
   const client = createApiClient(ctx);
   return client.get<PortalWhtCertificate[]>(`${supplierPath(supplierId)}/wht-certificates`);
-}
+});
 
-export async function getPortalWhtCertificateDetail(
+export const getPortalWhtCertificateDetail = cache(async (
   ctx: RequestContext,
   supplierId: string,
   certId: string
-): Promise<ApiResult<PortalWhtCertificate>> {
+): Promise<ApiResult<PortalWhtCertificate>> => {
   const client = createApiClient(ctx);
   return client.get<PortalWhtCertificate>(`${supplierPath(supplierId)}/wht-certificates/${certId}`);
-}
+});
 
-export async function getPortalDocuments(
+export const getPortalDocuments = cache(async (
   ctx: RequestContext,
   supplierId: string
-): Promise<ApiResult<PortalDocument[]>> {
+): Promise<ApiResult<PortalDocument[]>> => {
   const client = createApiClient(ctx);
   return client.get<PortalDocument[]>(`${supplierPath(supplierId)}/documents`);
-}
+});
 
-export async function getPortalDisputes(
+export const getPortalDisputes = cache(async (
   ctx: RequestContext,
   supplierId: string
-): Promise<ApiResult<PortalDispute[]>> {
+): Promise<ApiResult<PortalDispute[]>> => {
   const client = createApiClient(ctx);
   return client.get<PortalDispute[]>(`${supplierPath(supplierId)}/disputes`);
-}
+});
 
-export async function getPortalDisputeDetail(
+export const getPortalDisputeDetail = cache(async (
   ctx: RequestContext,
   supplierId: string,
   disputeId: string
-): Promise<ApiResult<PortalDispute>> {
+): Promise<ApiResult<PortalDispute>> => {
   const client = createApiClient(ctx);
   return client.get<PortalDispute>(`${supplierPath(supplierId)}/disputes/${disputeId}`);
-}
+});
 
-export async function getPortalCompliance(
+export const getPortalCompliance = cache(async (
   ctx: RequestContext,
   supplierId: string
-): Promise<ApiResult<PortalComplianceSummary>> {
+): Promise<ApiResult<PortalComplianceSummary>> => {
   const client = createApiClient(ctx);
   return client.get<PortalComplianceSummary>(`${supplierPath(supplierId)}/compliance`);
-}
+});
 
-export async function getPortalNotificationPrefs(
+export const getPortalNotificationPrefs = cache(async (
   ctx: RequestContext,
   supplierId: string
-): Promise<ApiResult<PortalNotificationPref[]>> {
+): Promise<ApiResult<PortalNotificationPref[]>> => {
   const client = createApiClient(ctx);
   return client.get<PortalNotificationPref[]>(`${supplierPath(supplierId)}/notification-prefs`);
-}
+});
 
 // ─── Mutations ─────────────────────────────────────────────────────────────
 

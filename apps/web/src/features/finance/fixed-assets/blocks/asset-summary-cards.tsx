@@ -3,14 +3,12 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { cn, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { routes } from '@/lib/constants';
 import {
   Box,
   TrendingDown,
   Banknote,
-  CheckCircle,
-  Trash2,
   AlertTriangle,
   Calculator,
 } from 'lucide-react';

@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -29,7 +28,6 @@ import {
 import { toast } from 'sonner';
 import { generateBillingPreview, submitBillingWizard } from '../actions/projects.actions';
 import type { Project, ProjectMilestone, WIPCalculation } from '../types';
-import { milestoneStatusConfig } from '../types';
 import { routes } from '@/lib/constants';
 
 type BillingType = 'milestone' | 'progress' | 'time_materials' | 'final';
@@ -72,7 +70,7 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
   } | null>(null);
   const [createInvoice, setCreateInvoice] = useState(true);
 
-  const pendingMilestones = milestones.filter(
+  const _pendingMilestones = milestones.filter(
     (m) => m.status === 'completed' && !selectedMilestones.includes(m.id)
   );
   const selectedMilestoneData = milestones.filter((m) => selectedMilestones.includes(m.id));
@@ -159,7 +157,10 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
         <ChevronLeft className="h-4 w-4" />
         <span
           className="hover:text-foreground cursor-pointer"
+          role="button"
+          tabIndex={0}
           onClick={() => router.push(routes.finance.projectDetail(project.id))}
+          onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(routes.finance.projectDetail(project.id)); } }}
         >
           {project.name}
         </span>
@@ -296,7 +297,10 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
                           <div
                             key={milestone.id}
                             className="flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-accent"
+                            role="button"
+                            tabIndex={0}
                             onClick={() => toggleMilestone(milestone.id)}
+                            onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMilestone(milestone.id); } }}
                           >
                             <Checkbox
                               checked={selectedMilestones.includes(milestone.id)}
@@ -305,7 +309,7 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
                             <div className="flex-1">
                               <div className="font-medium">{milestone.name}</div>
                               <div className="text-sm text-muted-foreground">
-                                Completed: {formatDate(milestone.completedDate!)}
+                                Completed: {milestone.completedDate ? formatDate(milestone.completedDate) : '—'}
                               </div>
                             </div>
                             <div className="font-mono">
@@ -438,7 +442,7 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
               </p>
               {!preview && (
                 <Button onClick={handleNext} disabled={isPending}>
-                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Generate Preview
                 </Button>
               )}
@@ -452,7 +456,8 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
                 <div className="bg-muted p-3 font-medium">Billing Line Items</div>
                 <div className="divide-y">
                   {preview.lineItems.map((item, index) => (
-                    <div key={index} className="p-3 flex justify-between">
+                    // eslint-disable-next-line react/no-array-index-key -- Preview items may share descriptions
+                    <div key={`preview-${index}-${item.description}`} className="p-3 flex justify-between">
                       <span>{item.description}</span>
                       <span className="font-mono">
                         {formatCurrency(item.amount, project.currency)}
@@ -513,7 +518,7 @@ export function BillingWizard({ project, milestones, wip }: BillingWizardProps) 
           )
         ) : (
           <Button onClick={handleSubmit} disabled={isPending}>
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {createInvoice ? 'Create Billing & Invoice' : 'Create Billing'}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>

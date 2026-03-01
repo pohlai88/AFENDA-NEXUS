@@ -71,8 +71,11 @@ export async function assignReviewAction(
   reviewId: string,
   assignedTo: string,
 ): Promise<ApiResult<CommandReceipt>> {
-  const ctx = await getRequestContext();
-  const client = (await import('@/lib/api-client')).createApiClient(ctx);
+  const [ctx, { createApiClient }] = await Promise.all([
+    getRequestContext(),
+    import('@/lib/api-client'),
+  ]);
+  const client = createApiClient(ctx);
   const result = await client.post<CommandReceipt>(`/credit-reviews/${reviewId}/assign`, { assignedTo });
   if (result.ok) revalidatePath(routes.finance.creditLimits);
   return result;
@@ -157,8 +160,11 @@ export async function releaseOrderFromHoldAction(
   orderId: string,
   reason: string,
 ): Promise<ApiResult<CommandReceipt>> {
-  const ctx = await getRequestContext();
-  const client = (await import('@/lib/api-client')).createApiClient(ctx);
+  const [ctx, { createApiClient }] = await Promise.all([
+    getRequestContext(),
+    import('@/lib/api-client'),
+  ]);
+  const client = createApiClient(ctx);
   const result = await client.post<CommandReceipt>(`/credit-holds/${holdId}/release-order`, {
     orderId,
     reason,
@@ -175,8 +181,11 @@ export async function releaseOrderFromHoldAction(
 export async function bulkRecalculateScoresAction(
   customerIds: string[],
 ): Promise<ApiResult<CommandReceipt>> {
-  const ctx = await getRequestContext();
-  const client = (await import('@/lib/api-client')).createApiClient(ctx);
+  const [ctx, { createApiClient }] = await Promise.all([
+    getRequestContext(),
+    import('@/lib/api-client'),
+  ]);
+  const client = createApiClient(ctx);
   const result = await client.post<CommandReceipt>('/credit-limits/bulk-recalculate', { customerIds });
   if (result.ok) revalidatePath(routes.finance.creditLimits);
   return result;
@@ -185,7 +194,10 @@ export async function bulkRecalculateScoresAction(
 export async function generateCreditReportAction(
   asOfDate: string,
 ): Promise<ApiResult<CommandReceipt>> {
-  const ctx = await getRequestContext();
-  const client = (await import('@/lib/api-client')).createApiClient(ctx);
+  const [ctx, { createApiClient }] = await Promise.all([
+    getRequestContext(),
+    import('@/lib/api-client'),
+  ]);
+  const client = createApiClient(ctx);
   return client.post<CommandReceipt>('/credit-limits/report', { asOfDate });
 }

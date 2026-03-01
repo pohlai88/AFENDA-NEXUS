@@ -6,7 +6,7 @@ import { DataTable, type ColumnDef } from '@/components/erp/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PromptDialog } from '@/components/erp/prompt-dialog';
-import { cn, formatCurrency, formatRelativeTime } from '@/lib/utils';
+import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import {
   FileText,
   Receipt,

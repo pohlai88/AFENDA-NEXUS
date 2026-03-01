@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { revalidatePath } from 'next/cache';
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
@@ -24,10 +25,10 @@ export async function markInvoiceIncompleteAction(
   return result;
 }
 
-export async function resolveTriageAction(
+export const resolveTriageAction = cache(async (
   invoiceId: string,
   targetStatus: 'DRAFT' | 'PENDING_APPROVAL'
-): Promise<ApiResult<CommandReceipt>> {
+): Promise<ApiResult<CommandReceipt>> => {
   const ctx = await getRequestContext();
   const client = createApiClient(ctx);
   const result = await client.post<CommandReceipt>(
@@ -40,4 +41,4 @@ export async function resolveTriageAction(
     revalidatePath(routes.finance.payableDetail(invoiceId));
   }
   return result;
-}
+});

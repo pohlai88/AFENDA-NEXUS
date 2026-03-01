@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 import type { SupplierStatus } from '@afenda/contracts';
@@ -65,10 +66,10 @@ export interface SupplierDetail {
 
 type Ctx = { tenantId: string; userId: string; token: string };
 
-export async function getSuppliers(
+export const getSuppliers = cache(async (
   ctx: Ctx,
   params: { status?: string; q?: string; page?: string; limit?: string },
-): Promise<ApiResult<PaginatedResponse<SupplierListItem>>> {
+): Promise<ApiResult<PaginatedResponse<SupplierListItem>>> => {
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.status) query.status = params.status;
@@ -76,15 +77,15 @@ export async function getSuppliers(
   if (params.page) query.page = params.page;
   if (params.limit) query.limit = params.limit;
   return client.get<PaginatedResponse<SupplierListItem>>('/ap/suppliers', query);
-}
+});
 
-export async function getSupplier(
+export const getSupplier = cache(async (
   ctx: Ctx,
   id: string,
-): Promise<ApiResult<SupplierDetail>> {
+): Promise<ApiResult<SupplierDetail>> => {
   const client = createApiClient(ctx);
   return client.get<SupplierDetail>(`/ap/suppliers/${id}`);
-}
+});
 
 export async function createSupplier(
   ctx: Ctx,

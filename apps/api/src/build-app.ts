@@ -78,6 +78,7 @@ import { createR2Adapter, createMockObjectStore, loadR2Config } from '@afenda/st
 import { registerHealthRoutes } from './routes/health.js';
 import { registerKernelSettingsRoutes } from './routes/kernel-settings.js';
 import { registerKernelAdminRoutes } from './routes/kernel-admin.js';
+import { registerFinanceDashboardRoutes } from './routes/finance-dashboard.js';
 import { tenantContextPlugin } from './middleware/tenant-context.js';
 import { authPlugin } from './middleware/auth.js';
 import { requestLoggingPlugin } from './middleware/request-logging.js';
@@ -224,6 +225,9 @@ export async function buildApp(deps: BuildAppDeps) {
 
   // Dashboard
   registerDashboardRoutes(app, financeRuntime, authPolicy);
+  
+  // Finance Dashboard API (unified endpoint)
+  registerFinanceDashboardRoutes(app);
 
   // Document Storage (R2)
   const r2Config = loadR2Config(process.env as Record<string, string>);

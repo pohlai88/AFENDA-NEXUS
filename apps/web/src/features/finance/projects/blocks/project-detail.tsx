@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { layoutTokens } from '@/lib/layout-tokens';
 import {
   Briefcase,
   Edit,
@@ -30,14 +31,12 @@ import {
   Calculator,
   Receipt,
   DollarSign,
-  TrendingUp,
   Target,
   CheckCircle2,
   Clock,
   AlertTriangle,
   Play,
   Pause,
-  Archive,
   X,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -50,7 +49,6 @@ import type {
   WIPCalculation,
   ProjectStatus,
   CostType,
-  MilestoneStatus,
 } from '../types';
 import {
   projectStatusConfig,
@@ -448,7 +446,7 @@ function CostsTab({ costs, currency }: CostsTabProps) {
 
       <Card>
         <CardContent className="p-0">
-          <ScrollArea className="h-[300px]">
+          <ScrollArea className={layoutTokens.scrollAreaH}>
             <div className="divide-y">
               {costs.map((cost) => (
                 <div key={cost.id} className="p-4 flex items-center justify-between">
@@ -538,7 +536,7 @@ function BillingsTab({ billings, currency }: BillingsTabProps) {
 
       <Card>
         <CardContent className="p-0">
-          <ScrollArea className="h-[300px]">
+          <ScrollArea className={layoutTokens.scrollAreaH}>
             <div className="divide-y">
               {billings.map((billing) => (
                 <div key={billing.id} className="p-4 flex items-center justify-between">
@@ -594,7 +592,7 @@ function MilestonesTab({ milestones, currency }: MilestonesTabProps) {
       </div>
 
       <div className="space-y-3">
-        {milestones.map((milestone, index) => (
+        {milestones.map((milestone, _index) => (
           <Card key={milestone.id}>
             <CardContent className="p-4">
               <div className="flex items-start gap-4">
@@ -645,7 +643,8 @@ function MilestonesTab({ milestones, currency }: MilestonesTabProps) {
                   {milestone.deliverables.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {milestone.deliverables.map((d, i) => (
-                        <Badge key={i} variant="outline" className="text-xs">
+                        // eslint-disable-next-line react/no-array-index-key -- Deliverable strings may duplicate
+                        <Badge key={`deliverable-${i}-${d}`} variant="outline" className="text-xs">
                           {d}
                         </Badge>
                       ))}

@@ -2,7 +2,6 @@
 
 import { StatusBadge } from '@/components/erp/status-badge';
 import { MoneyCell } from '@/components/erp/money-cell';
-import { Badge } from '@/components/ui/badge';
 import type { SupplierDetail } from '../queries/ap-supplier.queries';
 
 interface ApSupplierDetailHeaderProps {

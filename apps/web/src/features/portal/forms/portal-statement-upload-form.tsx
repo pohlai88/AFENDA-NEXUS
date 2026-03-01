@@ -116,7 +116,7 @@ export function PortalStatementUploadForm({
 
           <div className="flex justify-end">
             <Button onClick={handleSubmit} disabled={isPending}>
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               <Upload className="mr-2 h-4 w-4" />
               Reconcile
             </Button>
