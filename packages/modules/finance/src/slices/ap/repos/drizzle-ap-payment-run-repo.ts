@@ -1,4 +1,4 @@
-import { eq, count, sql } from 'drizzle-orm';
+import { eq, count, sql, and, gte } from 'drizzle-orm';
 import { ok, err, NotFoundError, money } from '@afenda/core';
 import type { Result, PaginationParams, PaginatedResult } from '@afenda/core';
 import type { TenantTx } from '@afenda/db';
@@ -8,6 +8,7 @@ import type {
   IApPaymentRunRepo,
   CreatePaymentRunInput,
   AddPaymentRunItemInput,
+  DiscountSumResult,
 } from '../ports/payment-run-repo.js';
 
 type RunRow = typeof apPaymentRuns.$inferSelect;
@@ -172,5 +173,36 @@ export class DrizzleApPaymentRunRepo implements IApPaymentRunRepo {
       })
       .where(eq(apPaymentRuns.id, id));
     return this.findById(id);
+  }
+
+  async getDiscountSumExecutedSince(cutoff: Date): Promise<Result<DiscountSumResult>> {
+    const runs = await this.tx.query.apPaymentRuns.findMany({
+      where: and(
+        eq(apPaymentRuns.status, 'EXECUTED'),
+        gte(apPaymentRuns.executedAt, cutoff)
+      ),
+      columns: { id: true, currencyId: true },
+    });
+
+    let totalDiscount = 0n;
+    let currencyCode = 'USD';
+
+    for (const run of runs) {
+      const items = await this.tx.query.apPaymentRunItems.findMany({
+        where: eq(apPaymentRunItems.paymentRunId, run.id),
+        columns: { discountAmount: true },
+      });
+      for (const item of items) {
+        totalDiscount += item.discountAmount;
+      }
+      if (run.currencyId) {
+        const curr = await this.tx.query.currencies.findFirst({
+          where: eq(currencies.id, run.currencyId),
+        });
+        if (curr) currencyCode = curr.code;
+      }
+    }
+
+    return ok({ totalDiscount, currencyCode });
   }
 }

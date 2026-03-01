@@ -5,6 +5,7 @@ import { requirePermission } from '../../../shared/routes/authorization-guard.js
 import type { CreateAssetInput } from '../ports/asset-repo.js';
 import { disposeAsset } from '../services/dispose-asset.js';
 import { runDepreciation } from '../services/run-depreciation.js';
+import { previewDepreciationRun } from '../services/preview-depreciation-run.js';
 import { extractIdentity } from '@afenda/api-kit';
 import type { IdParam } from '@afenda/contracts';
 
@@ -93,6 +94,27 @@ export function registerAssetRoutes(
         );
         if (!result.ok) return reply.status(400).send({ error: result.error });
         return reply.status(201).send(result.value);
+      });
+    }
+  );
+
+  // POST /fixed-assets/depreciation-run/preview — preview GL lines without persisting
+  app.post(
+    '/fixed-assets/depreciation-run/preview',
+    { preHandler: [requirePermission(policy, 'report:read')] },
+    async (req, reply) => {
+      const { tenantId, userId } = extractIdentity(req);
+      const body = req.body as Record<string, unknown>;
+      return runtime.withTenant({ tenantId, userId }, async (deps) => {
+        const result = await previewDepreciationRun(
+          {
+            periodStart: new Date(body.periodStart as string),
+            periodEnd: new Date(body.periodEnd as string),
+          },
+          deps
+        );
+        if (!result.ok) return reply.status(400).send({ error: result.error });
+        return result.value;
       });
     }
   );

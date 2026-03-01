@@ -57,6 +57,22 @@ export interface FavoriteItem {
   addedAt: number;
 }
 
+/** A user-configured quick-action shortcut. */
+export interface QuickActionItem {
+  /** Navigation target. */
+  href: string;
+  /** Display label (e.g. "New Journal Entry"). */
+  title: string;
+  /** Lucide icon name. */
+  icon: string;
+  /** Source action-registry id for identity. */
+  actionId: string;
+  /** Position (1-based) → maps to Ctrl+1, Ctrl+2, … Ctrl+9. */
+  slot: number;
+  /** When the action was pinned. */
+  addedAt: number;
+}
+
 /** Dashboard widget visibility toggles. */
 export interface WidgetVisibility {
   kpis: boolean;

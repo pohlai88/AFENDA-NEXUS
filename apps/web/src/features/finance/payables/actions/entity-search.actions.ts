@@ -136,3 +136,28 @@ export async function searchLedgers(q: string, companyId?: string): Promise<Enti
     hint: l.currencyCode,
   }));
 }
+
+// ─── Cost Driver Search ─────────────────────────────────────────────────────
+
+interface CostDriverSearchResult {
+  id: string;
+  name: string;
+  unit: string;
+}
+
+export async function searchCostDrivers(q: string): Promise<EntityOption[]> {
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result: ApiResult<CostDriverSearchResult[]> = await client.get(
+    '/cost-accounting/cost-drivers',
+    { q, limit: '20' },
+  );
+
+  if (!result.ok) return [];
+
+  return result.value.map((d) => ({
+    id: d.id,
+    label: d.name,
+    hint: d.unit,
+  }));
+}

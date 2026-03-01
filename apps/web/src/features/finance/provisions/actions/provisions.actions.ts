@@ -3,55 +3,56 @@
 import type { CreateProvisionInput } from '@afenda/contracts';
 
 import { revalidatePath } from 'next/cache';
-import type { MovementType } from '../types';
+import { getRequestContext } from '@/lib/auth';
 import { routes } from '@/lib/constants';
+import type { ApiResult, CommandReceipt } from '@/lib/types';
+import {
+  createProvision as createProvisionQ,
+  recordMovement as recordMovementQ,
+  reverseProvision as reverseProvisionQ,
+  runUnwinding as runUnwindingQ,
+} from '../queries/provisions.queries';
 
-export async function createProvision(
-  input: CreateProvisionInput
-): Promise<{ ok: true; provisionId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] createProvision:', input);
-  revalidatePath(routes.finance.provisions);
-  return { ok: true, provisionId: 'prov-new-' + Date.now() };
+export async function createProvisionAction(
+  input: CreateProvisionInput,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await createProvisionQ(ctx, input);
+  if (result.ok) revalidatePath(routes.finance.provisions);
+  return result;
 }
 
-export async function recordMovement(
+export async function recordMovementAction(
   provisionId: string,
-  movementType: MovementType,
+  movementType: string,
   amount: number,
-  description: string
-): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] recordMovement:', provisionId, movementType, amount);
-  revalidatePath(routes.finance.provisions);
-  revalidatePath(routes.finance.journals);
-  return { ok: true, journalId: 'je-mov-' + Date.now() };
+  description: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await recordMovementQ(ctx, provisionId, { movementType, amount, description });
+  if (result.ok) {
+    revalidatePath(routes.finance.provisions);
+    revalidatePath(routes.finance.journals);
+  }
+  return result;
 }
 
-export async function reverseProvision(
+export async function reverseProvisionAction(
   provisionId: string,
   amount: number,
-  reason: string
-): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] reverseProvision:', provisionId, amount, reason);
-  revalidatePath(routes.finance.provisions);
-  return { ok: true, journalId: 'je-rev-' + Date.now() };
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await reverseProvisionQ(ctx, provisionId, { amount, reason });
+  if (result.ok) revalidatePath(routes.finance.provisions);
+  return result;
 }
 
-export async function runUnwinding(
-  asOfDate: Date
-): Promise<
-  | { ok: true; provisionsProcessed: number; totalUnwinding: number; journalId: string }
-  | { ok: false; error: string }
-> {
-  await new Promise((r) => setTimeout(r, 600));
-  console.log('[Action] runUnwinding:', asOfDate);
-  revalidatePath(routes.finance.provisions);
-  return {
-    ok: true,
-    provisionsProcessed: 3,
-    totalUnwinding: 45000,
-    journalId: 'je-unwind-' + Date.now(),
-  };
+export async function runUnwindingAction(
+  asOfDate: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await runUnwindingQ(ctx, asOfDate);
+  if (result.ok) revalidatePath(routes.finance.provisions);
+  return result;
 }

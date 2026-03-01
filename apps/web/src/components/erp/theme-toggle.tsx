@@ -11,6 +11,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+/**
+ * Standalone theme toggle.
+ *
+ * **ERP shell consumers**: prefer `DisplayCluster` which combines theme +
+ * density controls in a single dropdown. This component remains available
+ * for lighter shells (e.g. supplier portal) that only need theme switching.
+ */
 export function ThemeToggle() {
   const { setTheme } = useTheme();
 

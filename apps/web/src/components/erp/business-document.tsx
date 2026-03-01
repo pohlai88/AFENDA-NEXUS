@@ -19,9 +19,9 @@ interface BusinessDocumentTab {
 
 interface BusinessDocumentProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Document header (title, status, amounts, etc.). */
-  header: React.ReactNode;
+  header?: React.ReactNode;
   /** Tab definitions for the body section. */
-  tabs: BusinessDocumentTab[];
+  tabs?: BusinessDocumentTab[];
   /** Value of the initially selected tab. Defaults to the first tab. */
   defaultTab?: string;
   /** Optional right-rail content (audit panel, metadata, actions). */
@@ -31,8 +31,17 @@ interface BusinessDocumentProps extends React.HTMLAttributes<HTMLDivElement> {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const BusinessDocument = React.forwardRef<HTMLDivElement, BusinessDocumentProps>(
-  ({ header, tabs, defaultTab, rightRail, className, ...props }, ref) => {
-    const defaultValue = defaultTab ?? tabs[0]?.value ?? 'details';
+  ({ header, tabs, defaultTab, rightRail, className, children, ...props }, ref) => {
+    // If no header/tabs provided, render as a simple card container with children
+    if (!header && !tabs) {
+      return (
+        <div ref={ref} className={cn('rounded-lg border bg-card p-6', className)} {...props}>
+          {children}
+        </div>
+      );
+    }
+
+    const defaultValue = defaultTab ?? tabs?.[0]?.value ?? 'details';
 
     return (
       <div ref={ref} className={cn('flex flex-col gap-6', className)} {...props}>
@@ -43,6 +52,7 @@ const BusinessDocument = React.forwardRef<HTMLDivElement, BusinessDocumentProps>
         <div className="flex gap-6">
           {/* Main content area with tabs */}
           <div className="min-w-0 flex-1">
+            {tabs && tabs.length > 0 && (
             <Tabs defaultValue={defaultValue}>
               <TabsList>
                 {tabs.map((tab) => (
@@ -58,6 +68,7 @@ const BusinessDocument = React.forwardRef<HTMLDivElement, BusinessDocumentProps>
                 </TabsContent>
               ))}
             </Tabs>
+            )}
           </div>
 
           {/* Right rail (audit panel, metadata, actions) */}

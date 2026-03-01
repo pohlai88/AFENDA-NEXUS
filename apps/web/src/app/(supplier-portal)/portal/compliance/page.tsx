@@ -1,9 +1,11 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalCompliance } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
 import { PortalComplianceSummaryBlock } from '@/features/portal/blocks/portal-compliance-summary';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalCompliancePage() {
   const ctx = await getRequestContext();
@@ -23,6 +25,7 @@ export default async function PortalCompliancePage() {
   const result = await getPortalCompliance(ctx, supplier.supplierId);
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Compliance"
@@ -38,5 +41,6 @@ export default async function PortalCompliancePage() {
         </div>
       )}
     </div>
+    </Suspense>
   );
 }

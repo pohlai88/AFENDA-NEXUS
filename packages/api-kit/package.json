@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "@afenda/core": "workspace:*",
-    "@afenda/platform": "workspace:*",
     "fastify": "catalog:",
     "zod": "catalog:"
   },

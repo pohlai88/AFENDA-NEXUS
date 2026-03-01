@@ -78,6 +78,8 @@ export { registerApAgingRoutes } from './slices/ap/routes/ap-aging-routes.js';
 export { registerSupplierRoutes } from './slices/ap/routes/supplier-routes.js';
 export { registerSupplierMdmRoutes } from './slices/ap/routes/supplier-mdm-routes.js';
 export { registerApHoldRoutes } from './slices/ap/routes/ap-hold-routes.js';
+export { registerApTriageRoutes } from './slices/ap/routes/ap-triage-routes.js';
+export { registerApMatchToleranceRoutes } from './slices/ap/routes/ap-match-tolerance-routes.js';
 export { registerApSupplierReconRoutes } from './slices/ap/routes/ap-supplier-recon-routes.js';
 export { registerApReportingRoutes } from './slices/ap/routes/ap-reporting-routes.js';
 export { registerApCaptureRoutes } from './slices/ap/routes/ap-capture-routes.js';

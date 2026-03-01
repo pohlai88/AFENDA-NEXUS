@@ -31,6 +31,7 @@ export type EmptyStateKey =
   | 'finance.payables.paymentRuns'
   | 'finance.payables.whtCerts'
   | 'finance.payables.holds'
+  | 'finance.payables.matchTolerances'
   | 'finance.receivables'
   // Finance — FX & IC
   | 'finance.fxRates'
@@ -42,6 +43,13 @@ export type EmptyStateKey =
   | 'finance.reports.cashFlow'
   | 'finance.reports.budgetVariance'
   | 'finance.reports.icAging'
+  | 'finance.reports.apAging'
+  | 'finance.reports.arAging'
+  | 'finance.reports.assetRegister'
+  | 'finance.reports.consolidation'
+  | 'finance.reports.costAllocation'
+  | 'finance.reports.equityStatement'
+  | 'finance.reports.taxSummary'
   // Finance — Extended domains
   | 'finance.tax.codes'
   | 'finance.tax.returns'
@@ -59,6 +67,7 @@ export type EmptyStateKey =
   | 'finance.costAccounting.allocations'
   | 'finance.approvals'
   | 'finance.banking.statements'
+  | 'finance.budgetEntries'
   // Portal
   | 'portal.invoices'
   | 'portal.payments'
@@ -70,7 +79,9 @@ export type EmptyStateKey =
   | 'admin.users'
   | 'admin.audit'
   | 'admin.members'
-  | 'settings.auditLog';
+  | 'settings.auditLog'
+  // Shell
+  | 'shell.attention';
 
 // ─── Component Props ─────────────────────────────────────────────────────────
 

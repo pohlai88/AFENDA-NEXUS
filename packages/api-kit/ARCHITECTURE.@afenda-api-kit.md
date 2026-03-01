@@ -9,15 +9,15 @@ public_api: null
 exports_map:
   ".": { source: "./src/index.ts", import: "./dist/index.js", types: "./dist/index.d.ts", default: "./src/index.ts" }
 dependency_kinds:
-  allowed_runtime: ["@afenda/core", "@afenda/platform", "fastify", "zod"]
+  allowed_runtime: ["@afenda/core", "fastify", "zod"]
   allowed_dev: ["@afenda/typescript-config", "@afenda/eslint-config", "tsup", "typescript", "vitest", "@types/node"]
   allowed_peer: []
 enforced_structure:
   required_files: ["src/index.ts", "package.json", "tsconfig.json", "tsconfig.build.json", "tsup.config.ts"]
   required_directories: ["src"]
 boundary_rules:
-  allowed_import_prefixes: ["./", "@afenda/core", "@afenda/platform", "fastify", "zod", "node:"]
-  forbidden_imports: ["drizzle-orm", "next", "@afenda/db", "@afenda/finance"]
+  allowed_import_prefixes: ["./", "@afenda/core", "fastify", "zod", "node:"]
+  forbidden_imports: ["drizzle-orm", "next", "@afenda/db", "@afenda/finance", "@afenda/platform"]
   allow_imports_by_path: {}
   forbid_cross_layer_imports: []
 ---
@@ -43,8 +43,8 @@ Shared Fastify infrastructure utilities extracted from domain modules. Provides 
 
 ## Layer Rules
 
-- **May import:** `@afenda/core`, `@afenda/platform`, `fastify`, `zod`, Node.js built-ins
-- **Must NOT import:** `drizzle-orm`, `@afenda/db`, `@afenda/finance`, `next`
+- **May import:** `@afenda/core`, `fastify`, `zod`, Node.js built-ins
+- **Must NOT import:** `drizzle-orm`, `@afenda/db`, `@afenda/finance`, `@afenda/platform`, `next`
 - No domain logic — this package is pure infrastructure plumbing
 
 ## CI Gate Enforcement

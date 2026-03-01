@@ -4,6 +4,9 @@
  * Zero external dependencies. No DB, no HTTP, no framework imports.
  */
 
+// ─── Request Context (AsyncLocalStorage) ────────────────────────────────────
+export { runWithContext, getContext, type RequestContext } from './context.js';
+
 // ─── Branded Types ──────────────────────────────────────────────────────────
 
 declare const __brand: unique symbol;

@@ -66,13 +66,13 @@ describe('JournalDraftForm', () => {
 
     // Fill line 1: debit 100
     const debitInputs = screen.getAllByLabelText(/debit/i);
-    await user.clear(debitInputs[0]);
-    await user.type(debitInputs[0], '100');
+    await user.clear(debitInputs[0]!);
+    await user.type(debitInputs[0]!, '100');
 
     // Fill line 1 account code
     const accountInputs = screen.getAllByLabelText(/account code/i);
-    await user.type(accountInputs[0], '1000');
-    await user.type(accountInputs[1], '2000');
+    await user.type(accountInputs[0]!, '1000');
+    await user.type(accountInputs[1]!, '2000');
 
     // Leave credit at 0 — unbalanced
     await user.click(screen.getByRole('button', { name: /create draft/i }));
@@ -103,16 +103,16 @@ describe('JournalDraftForm', () => {
     await user.type(descInput, 'Test journal');
 
     const accountInputs = screen.getAllByLabelText(/account code/i);
-    await user.type(accountInputs[0], '1000');
-    await user.type(accountInputs[1], '2000');
+    await user.type(accountInputs[0]!, '1000');
+    await user.type(accountInputs[1]!, '2000');
 
     const debitInputs = screen.getAllByLabelText(/debit/i);
-    await user.clear(debitInputs[0]);
-    await user.type(debitInputs[0], '100');
+    await user.clear(debitInputs[0]!);
+    await user.type(debitInputs[0]!, '100');
 
     const creditInputs = screen.getAllByLabelText(/credit/i);
-    await user.clear(creditInputs[1]);
-    await user.type(creditInputs[1], '100');
+    await user.clear(creditInputs[1]!);
+    await user.type(creditInputs[1]!, '100');
 
     await user.click(screen.getByRole('button', { name: /create draft/i }));
 
@@ -147,16 +147,16 @@ describe('JournalDraftForm', () => {
     await user.type(descInput3, 'Test journal');
 
     const accountInputs = screen.getAllByLabelText(/account code/i);
-    await user.type(accountInputs[0], '1000');
-    await user.type(accountInputs[1], '2000');
+    await user.type(accountInputs[0]!, '1000');
+    await user.type(accountInputs[1]!, '2000');
 
     const debitInputs = screen.getAllByLabelText(/debit/i);
-    await user.clear(debitInputs[0]);
-    await user.type(debitInputs[0], '100');
+    await user.clear(debitInputs[0]!);
+    await user.type(debitInputs[0]!, '100');
 
     const creditInputs = screen.getAllByLabelText(/credit/i);
-    await user.clear(creditInputs[1]);
-    await user.type(creditInputs[1], '100');
+    await user.clear(creditInputs[1]!);
+    await user.type(creditInputs[1]!, '100');
 
     await user.click(screen.getByRole('button', { name: /create draft/i }));
 

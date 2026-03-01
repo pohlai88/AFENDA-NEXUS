@@ -1,48 +1,53 @@
 'use server';
 
-import type { CreateInstrumentInput } from '@afenda/contracts';
-
 import { revalidatePath } from 'next/cache';
-import type { FairValueLevel } from '../types';
+import { getRequestContext } from '@/lib/auth';
 import { routes } from '@/lib/constants';
+import type { ApiResult, CommandReceipt } from '@/lib/types';
+import {
+  createInstrument as createInstrumentQ,
+  recordFairValue as recordFairValueQ,
+  calculateECL as calculateECLQ,
+  disposeInstrument as disposeInstrumentQ,
+} from '../queries/instruments.queries';
 
-export async function createInstrument(
-  input: CreateInstrumentInput
-): Promise<{ ok: true; instrumentId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] createInstrument:', input);
-  revalidatePath(routes.finance.instruments);
-  return { ok: true, instrumentId: 'inst-new-' + Date.now() };
+export async function createInstrumentAction(
+  input: unknown,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await createInstrumentQ(ctx, input);
+  if (result.ok) revalidatePath(routes.finance.instruments);
+  return result;
 }
 
-export async function recordFairValue(
+export async function recordFairValueAction(
   instrumentId: string,
   fairValue: number,
-  level: FairValueLevel,
-  valuationMethod: string
-): Promise<{ ok: true; journalId?: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] recordFairValue:', instrumentId, fairValue, level);
-  revalidatePath(routes.finance.instruments);
-  return { ok: true, journalId: 'je-fv-' + Date.now() };
+  level: string,
+  valuationMethod: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await recordFairValueQ(ctx, instrumentId, { fairValue, level, valuationMethod });
+  if (result.ok) revalidatePath(routes.finance.instruments);
+  return result;
 }
 
-export async function calculateECL(
-  instrumentId: string
-): Promise<{ ok: true; ecl: number; stage: 1 | 2 | 3 } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-  console.log('[Action] calculateECL:', instrumentId);
-  revalidatePath(routes.finance.instruments);
-  return { ok: true, ecl: 15000, stage: 1 };
+export async function calculateECLAction(
+  instrumentId: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await calculateECLQ(ctx, instrumentId);
+  if (result.ok) revalidatePath(routes.finance.instruments);
+  return result;
 }
 
-export async function disposeInstrument(
+export async function disposeInstrumentAction(
   instrumentId: string,
   salePrice: number,
-  saleDate: Date
-): Promise<{ ok: true; gainLoss: number; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-  console.log('[Action] disposeInstrument:', instrumentId, salePrice);
-  revalidatePath(routes.finance.instruments);
-  return { ok: true, gainLoss: 25000, journalId: 'je-disp-' + Date.now() };
+  saleDate: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await disposeInstrumentQ(ctx, instrumentId, { salePrice, saleDate });
+  if (result.ok) revalidatePath(routes.finance.instruments);
+  return result;
 }

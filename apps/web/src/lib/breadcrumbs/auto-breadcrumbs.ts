@@ -37,6 +37,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   'payment-runs': 'Payment Runs',
   suppliers: 'Suppliers',
   holds: 'Holds',
+  triage: 'Triage Queue',
+  'match-tolerances': 'Match Tolerances',
   'credit-memos': 'Credit Memos',
   'debit-memos': 'Debit Memos',
   receivables: 'Accounts Receivable',
@@ -196,10 +198,52 @@ const DYNAMIC_SEGMENT_RE = /^[0-9a-f]{8,}(?:-[0-9a-f]{4,}){0,4}$/i;
 /** Route groups that should be stripped from the breadcrumb path. */
 const ROUTE_GROUPS = new Set(['(shell)', '(auth)', '(public)', '(portal)']);
 
+// ─── Label Resolution Helpers ───────────────────────────────────────────────
+
+/**
+ * Build a label lookup from the modules array.
+ *
+ * Resolution order per segment:
+ *   1. Module label (for top-level segments like "finance" → "Finance")
+ *   2. NavGroup item title (for sub-segments like "journals" → "Journal Entries")
+ *   3. SEGMENT_LABELS fallback (for generic/action segments)
+ *   4. titleCase (last resort)
+ */
+function buildLabelLookup(
+  modules?: ClientModuleWithNav[],
+): Map<string, string> {
+  const lookup = new Map<string, string>();
+  if (!modules) return lookup;
+
+  for (const mod of modules) {
+    // Top-level module segment → module label
+    const modSeg = mod.href.split('/').filter(Boolean)[0];
+    if (modSeg) lookup.set(modSeg, mod.label);
+
+    // Nav group items → item title (keyed by terminal segment)
+    for (const group of mod.navGroups ?? []) {
+      for (const item of group.items) {
+        const itemSeg = item.href.split('/').filter(Boolean).pop();
+        if (itemSeg && !lookup.has(itemSeg)) lookup.set(itemSeg, item.title);
+
+        for (const child of item.children ?? []) {
+          const childSeg = child.href.split('/').filter(Boolean).pop();
+          if (childSeg && !lookup.has(childSeg)) lookup.set(childSeg, child.title);
+        }
+      }
+    }
+  }
+
+  return lookup;
+}
+
 // ─── Core Function ──────────────────────────────────────────────────────────
 
 /**
  * Derive breadcrumbs from a pathname.
+ *
+ * Label resolution order:
+ *   modules array → navGroup items → SEGMENT_LABELS → titleCase
  *
  * Rules:
  * - Route groups like `(shell)` are stripped.
@@ -210,7 +254,7 @@ const ROUTE_GROUPS = new Set(['(shell)', '(auth)', '(public)', '(portal)']);
  */
 export function deriveBreadcrumbs(
   pathname: string,
-  _modules?: ClientModuleWithNav[],
+  modules?: ClientModuleWithNav[],
   options?: { pageBreadcrumb?: string; maxVisible?: number },
 ): Breadcrumb[] {
   const maxVisible = options?.maxVisible ?? 4;
@@ -221,6 +265,9 @@ export function deriveBreadcrumbs(
   const segments = rawSegments.filter((s) => !ROUTE_GROUPS.has(s));
 
   if (segments.length === 0) return [];
+
+  // Config-driven labels take priority over the hardcoded fallback map
+  const configLabels = buildLabelLookup(modules);
 
   // Build breadcrumbs from segments
   const crumbs: Breadcrumb[] = [];
@@ -236,7 +283,8 @@ export function deriveBreadcrumbs(
     // Skip dynamic IDs (UUIDs) — don't show "8f3a..." in breadcrumbs
     if (DYNAMIC_SEGMENT_RE.test(seg)) continue;
 
-    const label = SEGMENT_LABELS[seg] ?? titleCase(seg);
+    // Prefer config-derived label → fallback map → titleCase
+    const label = configLabels.get(seg) ?? SEGMENT_LABELS[seg] ?? titleCase(seg);
 
     crumbs.push({ label, href: hrefAccumulator });
   }

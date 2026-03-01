@@ -200,25 +200,14 @@ export function registerFinanceHandlers(
       templateId: p.templateId,
     });
     if (deps?.session && p.autoPost) {
-      try {
-        const { postJournal } = await import('@afenda/finance');
-        await deps.session.withTenant({ tenantId: row.tenantId }, async (tx) => {
-          const result = await postJournal(tx, {
-            journalId: p.journalId as string,
-            postedBy: 'system:recurring',
-          });
-          if (result.ok) {
-            logger.info('Recurring journal auto-posted', { journalId: p.journalId });
-          } else {
-            logger.warn('Recurring journal auto-post failed', {
-              journalId: p.journalId,
-              error: result.error,
-            });
-          }
-        });
-      } catch (autoPostErr) {
-        logger.warn('Auto-post failed (non-fatal)', { error: String(autoPostErr) });
-      }
+      // TODO: wire up postJournal with full repo deps injection once
+      // the worker has access to the finance service container.
+      // postJournal now requires (input: PostJournalInput, deps: {...repos}, ctx?)
+      logger.warn('Recurring journal auto-post requested but not yet supported in worker', {
+        journalId: p.journalId,
+        templateId: p.templateId,
+        tenantId: row.tenantId,
+      });
     }
   });
 

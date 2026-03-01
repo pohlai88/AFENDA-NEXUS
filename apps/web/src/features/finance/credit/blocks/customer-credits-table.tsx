@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Plus, CreditCard, AlertTriangle, Ban, Building2 } from 'lucide-react';
-import type { CustomerCredit, CreditStatus, RiskRating } from '../types';
+import type { CustomerCreditView } from '../queries/credit.queries';
+import type { CreditStatus, RiskRating } from '../types';
 import { creditStatusConfig, riskRatingConfig } from '../types';
 import { routes } from '@/lib/constants';
 
-function StatusBadge({ status }: { status: CreditStatus }) {
-  const config = creditStatusConfig[status];
+function StatusBadge({ status }: { status: string }) {
+  const config = creditStatusConfig[status as CreditStatus];
   return (
     <Badge variant="outline" className={config.color}>
       {config.label}
@@ -22,8 +23,8 @@ function StatusBadge({ status }: { status: CreditStatus }) {
   );
 }
 
-function RiskBadge({ rating }: { rating: RiskRating }) {
-  const config = riskRatingConfig[rating];
+function RiskBadge({ rating }: { rating: string }) {
+  const config = riskRatingConfig[rating as RiskRating];
   return (
     <Badge variant="outline" className={config.color}>
       {config.label}
@@ -50,13 +51,13 @@ function UtilizationGauge({ percent, isOnHold }: { percent: number; isOnHold: bo
 }
 
 interface CustomerCreditsTableProps {
-  credits: CustomerCredit[];
+  credits: CustomerCreditView[];
 }
 
 export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
   const router = useRouter();
 
-  const columns: Column<CustomerCredit>[] = [
+  const columns: Column<CustomerCreditView>[] = [
     {
       key: 'customerCode',
       header: 'Customer',
@@ -130,9 +131,9 @@ export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
         <span
           className={cn(
             'font-mono',
-            credit.creditScoreInternal >= 70
+            (credit.creditScoreInternal ?? 0) >= 70
               ? 'text-success'
-              : credit.creditScoreInternal >= 50
+              : (credit.creditScoreInternal ?? 0) >= 50
                 ? 'text-warning'
                 : 'text-destructive'
           )}
@@ -173,7 +174,7 @@ export function CustomerCreditsTable({ credits }: CustomerCreditsTableProps) {
     },
   ];
 
-  const handleRowClick = (credit: CustomerCredit) => {
+  const handleRowClick = (credit: CustomerCreditView) => {
     router.push(routes.finance.creditLimitDetail(credit.id));
   };
 

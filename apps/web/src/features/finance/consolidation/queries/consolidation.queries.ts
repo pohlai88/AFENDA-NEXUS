@@ -1,128 +1,155 @@
-'use server';
+﻿'use server';
 
-import type { GroupEntity, GoodwillAllocation, ConsolidationSummary } from '../types';
+import { createApiClient } from '@/lib/api-client';
+import type { ApiResult, PaginatedResponse } from '@/lib/types';
 
-const mockEntities: GroupEntity[] = [
-  {
-    id: 'ent-parent',
-    entityCode: 'CORP',
-    name: 'Parent Corp Holdings',
-    country: 'US',
-    currency: 'USD',
-    entityType: 'parent',
-    consolidationMethod: 'none',
-    status: 'active',
-    parentId: null,
-    ownershipPercent: 100,
-    votingRightsPercent: 100,
-    acquisitionDate: null,
-    divestmentDate: null,
-    functionalCurrency: 'USD',
-    reportingCurrency: 'USD',
-    fxRate: 1,
-    children: [
-      {
-        id: 'ent-1',
-        entityCode: 'US-OP',
-        name: 'US Operations Inc.',
-        country: 'US',
-        currency: 'USD',
-        entityType: 'subsidiary',
-        consolidationMethod: 'full',
-        status: 'active',
-        parentId: 'ent-parent',
-        ownershipPercent: 100,
-        votingRightsPercent: 100,
-        acquisitionDate: new Date('2020-01-01'),
-        divestmentDate: null,
-        functionalCurrency: 'USD',
-        reportingCurrency: 'USD',
-        fxRate: 1,
-      },
-      {
-        id: 'ent-2',
-        entityCode: 'EU-OP',
-        name: 'European Operations GmbH',
-        country: 'DE',
-        currency: 'EUR',
-        entityType: 'subsidiary',
-        consolidationMethod: 'full',
-        status: 'active',
-        parentId: 'ent-parent',
-        ownershipPercent: 85,
-        votingRightsPercent: 85,
-        acquisitionDate: new Date('2022-06-15'),
-        divestmentDate: null,
-        functionalCurrency: 'EUR',
-        reportingCurrency: 'USD',
-        fxRate: 1.08,
-      },
-      {
-        id: 'ent-3',
-        entityCode: 'ASIA-JV',
-        name: 'Asia Pacific JV',
-        country: 'SG',
-        currency: 'SGD',
-        entityType: 'joint_venture',
-        consolidationMethod: 'equity',
-        status: 'active',
-        parentId: 'ent-parent',
-        ownershipPercent: 50,
-        votingRightsPercent: 50,
-        acquisitionDate: new Date('2023-03-01'),
-        divestmentDate: null,
-        functionalCurrency: 'SGD',
-        reportingCurrency: 'USD',
-        fxRate: 0.74,
-      },
-    ],
-  },
-];
+/* ── view models ────────────────────────────────────────── */
 
-const mockGoodwill: GoodwillAllocation[] = [
-  {
-    id: 'gw-1',
-    entityId: 'ent-2',
-    entityName: 'European Operations GmbH',
-    acquisitionDate: new Date('2022-06-15'),
-    initialGoodwill: 2500000,
-    accumulatedImpairment: 0,
-    carryingAmount: 2500000,
-    cguId: 'cgu-eu',
-    cguName: 'European Operations',
-    lastImpairmentTest: new Date('2025-12-31'),
-    currency: 'USD',
-  },
-];
-
-export async function getGroupEntities(): Promise<
-  { ok: true; data: GroupEntity[] } | { ok: false; error: string }
-> {
-  await new Promise((r) => setTimeout(r, 300));
-  return { ok: true, data: mockEntities };
+export interface GroupEntityView {
+  id: string;
+  entityCode: string;
+  name: string;
+  country: string;
+  currency: string;
+  entityType: string;
+  consolidationMethod: string;
+  status: string;
+  parentId: string | null;
+  ownershipPercent: number;
+  votingRightsPercent: number;
+  acquisitionDate: string | null;
+  divestmentDate: string | null;
+  functionalCurrency: string;
+  reportingCurrency: string;
+  fxRate: number;
+  children?: GroupEntityView[];
 }
 
-export async function getGoodwillAllocations(): Promise<
-  { ok: true; data: GoodwillAllocation[] } | { ok: false; error: string }
-> {
-  await new Promise((r) => setTimeout(r, 250));
-  return { ok: true, data: mockGoodwill };
+export interface GoodwillAllocationView {
+  id: string;
+  entityId: string;
+  entityName: string;
+  acquisitionDate: string;
+  initialGoodwill: number;
+  accumulatedImpairment: number;
+  carryingAmount: number;
+  cguId: string;
+  cguName: string;
+  lastImpairmentTest: string;
+  currency: string;
 }
 
-export async function getConsolidationSummary(): Promise<
-  { ok: true; data: ConsolidationSummary } | { ok: false; error: string }
-> {
-  await new Promise((r) => setTimeout(r, 250));
-  return {
-    ok: true,
-    data: {
-      totalEntities: 8,
-      subsidiaries: 5,
-      associates: 1,
-      jointVentures: 1,
-      totalGoodwill: 3850000,
-      nciEquity: 1250000,
-      eliminationEntries: 45,
-    },
-  };
+export interface OwnershipRecordView {
+  id: string;
+  entityId: string;
+  effectiveDate: string;
+  previousOwnership: number;
+  newOwnership: number;
+  changeType: string;
+  consideration: number;
+  nciAdjustment: number;
+  goodwillImpact: number;
+  journalEntryId: string | null;
+}
+
+export interface ConsolidationSummaryView {
+  totalEntities: number;
+  subsidiaries: number;
+  associates: number;
+  jointVentures: number;
+  totalGoodwill: number;
+  nciEquity: number;
+  eliminationEntries: number;
+}
+
+/* ── queries ────────────────────────────────────────────── */
+
+export async function getGroupEntities(
+  ctx: { userId: string; tenantId: string; token: string },
+): Promise<ApiResult<PaginatedResponse<GroupEntityView>>> {
+  const api = createApiClient(ctx);
+  return api.get<PaginatedResponse<GroupEntityView>>('/group-entities');
+}
+
+export async function getGroupEntityById(
+  ctx: { userId: string; tenantId: string; token: string },
+  id: string,
+): Promise<ApiResult<GroupEntityView>> {
+  const api = createApiClient(ctx);
+  return api.get<GroupEntityView>(`/group-entities/${id}`);
+}
+
+export async function getGoodwillAllocations(
+  ctx: { userId: string; tenantId: string; token: string },
+): Promise<ApiResult<PaginatedResponse<GoodwillAllocationView>>> {
+  const api = createApiClient(ctx);
+  return api.get<PaginatedResponse<GoodwillAllocationView>>('/goodwills');
+}
+
+export async function getGoodwillById(
+  ctx: { userId: string; tenantId: string; token: string },
+  id: string,
+): Promise<ApiResult<GoodwillAllocationView>> {
+  const api = createApiClient(ctx);
+  return api.get<GoodwillAllocationView>(`/goodwills/${id}`);
+}
+
+export async function getOwnershipRecords(
+  ctx: { userId: string; tenantId: string; token: string },
+): Promise<ApiResult<PaginatedResponse<OwnershipRecordView>>> {
+  const api = createApiClient(ctx);
+  return api.get<PaginatedResponse<OwnershipRecordView>>('/ownership-records');
+}
+
+export async function getConsolidationSummary(
+  ctx: { userId: string; tenantId: string; token: string },
+): Promise<ApiResult<ConsolidationSummaryView>> {
+  const api = createApiClient(ctx);
+  return api.get<ConsolidationSummaryView>('/group-entities/summary');
+}
+
+/* ── commands ───────────────────────────────────────────── */
+
+export async function addGroupEntityCmd(
+  ctx: { userId: string; tenantId: string; token: string },
+  input: unknown,
+): Promise<ApiResult<{ id: string }>> {
+  const api = createApiClient(ctx);
+  return api.post<{ id: string }>('/group-entities', input);
+}
+
+export async function runConsolidationCmd(
+  ctx: { userId: string; tenantId: string; token: string },
+  input: unknown,
+): Promise<ApiResult<{ journalEntries: number }>> {
+  const api = createApiClient(ctx);
+  return api.post<{ journalEntries: number }>('/consolidation', input);
+}
+
+export async function recordImpairmentCmd(
+  ctx: { userId: string; tenantId: string; token: string },
+  goodwillId: string,
+  amount: number,
+  reason: string,
+): Promise<ApiResult<{ journalId: string }>> {
+  const api = createApiClient(ctx);
+  return api.post<{ journalId: string }>(`/goodwills/${goodwillId}/impairment`, { amount, reason });
+}
+
+export async function createOwnershipRecordCmd(
+  ctx: { userId: string; tenantId: string; token: string },
+  input: unknown,
+): Promise<ApiResult<{ id: string }>> {
+  const api = createApiClient(ctx);
+  return api.post<{ id: string }>('/ownership-records', input);
+}
+
+export async function translateForeignSubCmd(
+  ctx: { userId: string; tenantId: string; token: string },
+  entityId: string,
+  fxRate: number,
+  periodEnd: string,
+): Promise<ApiResult<{ ctaAmount: number; journalId: string }>> {
+  const api = createApiClient(ctx);
+  return api.post<{ ctaAmount: number; journalId: string }>(`/group-entities/${entityId}/translate`, { fxRate, periodEnd });
 }

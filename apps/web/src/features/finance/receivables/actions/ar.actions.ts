@@ -4,10 +4,12 @@ import { getRequestContext } from '@/lib/auth';
 import {
   createArInvoice,
   approveArInvoice,
+  previewArPosting,
   postArInvoice,
   cancelArInvoice,
   writeOffArInvoice,
   allocateArPayment,
+  type PostingPreviewResult,
 } from '../queries/ar.queries';
 import { createApiClient } from '@/lib/api-client';
 import type { CreateArInvoice } from '@afenda/contracts';
@@ -27,6 +29,15 @@ export async function approveArInvoiceAction(
 ): Promise<ApiResult<CommandReceipt>> {
   const ctx = await getRequestContext();
   return approveArInvoice(ctx, invoiceId);
+}
+
+export async function previewArPostingAction(
+  invoiceId: string,
+  fiscalPeriodId: string,
+  arAccountId: string
+): Promise<ApiResult<PostingPreviewResult>> {
+  const ctx = await getRequestContext();
+  return previewArPosting(ctx, invoiceId, { fiscalPeriodId, arAccountId });
 }
 
 export async function postArInvoiceAction(

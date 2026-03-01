@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Ban, CheckCircle2, ArrowUpRight, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
-import { releaseCreditHold } from '../actions/credit.actions';
-import type { CreditHold, HoldStatus, HoldType } from '../types';
+import { releaseCreditHoldAction } from '../actions/credit.actions';
+import type { CreditHoldView } from '../queries/credit.queries';
+import type { HoldStatus, HoldType } from '../types';
 import { holdStatusConfig, holdTypeLabels } from '../types';
 import { routes } from '@/lib/constants';
 
-function StatusBadge({ status }: { status: HoldStatus }) {
-  const config = holdStatusConfig[status];
+function StatusBadge({ status }: { status: string }) {
+  const config = holdStatusConfig[status as HoldStatus];
   return (
     <Badge variant="outline" className={config.color}>
       {config.label}
@@ -22,33 +23,33 @@ function StatusBadge({ status }: { status: HoldStatus }) {
   );
 }
 
-function TypeBadge({ type }: { type: HoldType }) {
+function TypeBadge({ type }: { type: string }) {
   return (
     <Badge variant="secondary" className="text-xs">
-      {holdTypeLabels[type]}
+      {holdTypeLabels[type as HoldType]}
     </Badge>
   );
 }
 
 interface CreditHoldsTableProps {
-  holds: CreditHold[];
+  holds: CreditHoldView[];
 }
 
 export function CreditHoldsTable({ holds }: CreditHoldsTableProps) {
   const [isPending, startTransition] = useTransition();
 
-  const handleRelease = (hold: CreditHold) => {
+  const handleRelease = (hold: CreditHoldView) => {
     startTransition(async () => {
-      const result = await releaseCreditHold(hold.id, 'Released via hold management');
+      const result = await releaseCreditHoldAction(hold.id, 'Released via hold management');
       if (result.ok) {
         toast.success(`Credit hold released for ${hold.customerName}`);
       } else {
-        toast.error(result.error);
+        toast.error(result.error.message);
       }
     });
   };
 
-  const columns: Column<CreditHold>[] = [
+  const columns: Column<CreditHoldView>[] = [
     {
       key: 'customerCode',
       header: 'Customer',

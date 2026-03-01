@@ -1,0 +1,21 @@
+// tsup.config.ts
+import { defineConfig } from "tsup";
+var tsup_config_default = defineConfig({
+  entry: ["src/public.ts", "src/infra.ts"],
+  format: ["esm"],
+  dts: false,
+  sourcemap: true,
+  clean: true,
+  tsconfig: "./tsconfig.build.json",
+  external: [
+    "@afenda/core",
+    "@afenda/contracts",
+    "@afenda/authz",
+    "@afenda/db",
+    "@afenda/platform"
+  ]
+});
+export {
+  tsup_config_default as default
+};
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAic291cmNlcyI6IFsidHN1cC5jb25maWcudHMiXSwKICAic291cmNlc0NvbnRlbnQiOiBbImNvbnN0IF9faW5qZWN0ZWRfZmlsZW5hbWVfXyA9IFwiQzpcXFxcQUktQk9TXFxcXE5FWFVTQ0FOT04tQUZFTkRBXFxcXHBhY2thZ2VzXFxcXG1vZHVsZXNcXFxcZmluYW5jZVxcXFx0c3VwLmNvbmZpZy50c1wiO2NvbnN0IF9faW5qZWN0ZWRfZGlybmFtZV9fID0gXCJDOlxcXFxBSS1CT1NcXFxcTkVYVVNDQU5PTi1BRkVOREFcXFxccGFja2FnZXNcXFxcbW9kdWxlc1xcXFxmaW5hbmNlXCI7Y29uc3QgX19pbmplY3RlZF9pbXBvcnRfbWV0YV91cmxfXyA9IFwiZmlsZTovLy9DOi9BSS1CT1MvTkVYVVNDQU5PTi1BRkVOREEvcGFja2FnZXMvbW9kdWxlcy9maW5hbmNlL3RzdXAuY29uZmlnLnRzXCI7aW1wb3J0IHsgZGVmaW5lQ29uZmlnIH0gZnJvbSAndHN1cCc7XG5cbmV4cG9ydCBkZWZhdWx0IGRlZmluZUNvbmZpZyh7XG4gIGVudHJ5OiBbJ3NyYy9wdWJsaWMudHMnLCAnc3JjL2luZnJhLnRzJ10sXG4gIGZvcm1hdDogWydlc20nXSxcbiAgZHRzOiBmYWxzZSxcbiAgc291cmNlbWFwOiB0cnVlLFxuICBjbGVhbjogdHJ1ZSxcbiAgdHNjb25maWc6ICcuL3RzY29uZmlnLmJ1aWxkLmpzb24nLFxuICBleHRlcm5hbDogW1xuICAgICdAYWZlbmRhL2NvcmUnLFxuICAgICdAYWZlbmRhL2NvbnRyYWN0cycsXG4gICAgJ0BhZmVuZGEvYXV0aHonLFxuICAgICdAYWZlbmRhL2RiJyxcbiAgICAnQGFmZW5kYS9wbGF0Zm9ybScsXG4gIF0sXG59KTtcbiJdLAogICJtYXBwaW5ncyI6ICI7QUFBc1QsU0FBUyxvQkFBb0I7QUFFblYsSUFBTyxzQkFBUSxhQUFhO0FBQUEsRUFDMUIsT0FBTyxDQUFDLGlCQUFpQixjQUFjO0FBQUEsRUFDdkMsUUFBUSxDQUFDLEtBQUs7QUFBQSxFQUNkLEtBQUs7QUFBQSxFQUNMLFdBQVc7QUFBQSxFQUNYLE9BQU87QUFBQSxFQUNQLFVBQVU7QUFBQSxFQUNWLFVBQVU7QUFBQSxJQUNSO0FBQUEsSUFDQTtBQUFBLElBQ0E7QUFBQSxJQUNBO0FBQUEsSUFDQTtBQUFBLEVBQ0Y7QUFDRixDQUFDOyIsCiAgIm5hbWVzIjogW10KfQo=

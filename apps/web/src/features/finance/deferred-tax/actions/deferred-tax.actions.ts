@@ -1,44 +1,54 @@
 'use server';
 
-import type { CreateDTItemInput } from '@afenda/contracts';
-
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/lib/constants';
+import { getRequestContext } from '@/lib/auth';
+import type { CommandReceipt } from '@/lib/types';
+import {
+  createDeferredTaxItemCmd,
+  recalculateDeferredTaxCmd,
+  applyRateChangeCmd,
+  assessValuationAllowanceCmd,
+} from '../queries/deferred-tax.queries';
 
-export async function createDeferredTaxItem(
-  input: CreateDTItemInput
-): Promise<{ ok: true; itemId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] createDeferredTaxItem:', input);
+export async function createDeferredTaxItemAction(
+  input: unknown,
+): Promise<{ ok: true; id: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await createDeferredTaxItemCmd(ctx, input);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.deferredTax);
-  return { ok: true, itemId: 'dt-new-' + Date.now() };
+  return { ok: true, id: result.value.id };
 }
 
-export async function recalculateDeferredTax(
-  periodEnd: Date
-): Promise<{ ok: true; itemsProcessed: number; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 700));
-  console.log('[Action] recalculateDeferredTax:', periodEnd);
+export async function recalculateDeferredTaxAction(
+  periodEnd: string,
+): Promise<{ ok: true; itemsProcessed: number; journalId: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await recalculateDeferredTaxCmd(ctx, periodEnd);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.deferredTax);
-  return { ok: true, itemsProcessed: 25, journalId: 'je-dt-' + Date.now() };
+  return { ok: true, itemsProcessed: result.value.itemsProcessed, journalId: result.value.journalId };
 }
 
-export async function applyRateChange(
+export async function applyRateChangeAction(
   newRate: number,
-  effectiveDate: Date
-): Promise<{ ok: true; journalId: string; impact: number } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
-  console.log('[Action] applyRateChange:', newRate, effectiveDate);
+  effectiveDate: string,
+): Promise<{ ok: true; journalId: string; impact: number } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await applyRateChangeCmd(ctx, newRate, effectiveDate);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.deferredTax);
-  return { ok: true, journalId: 'je-rate-' + Date.now(), impact: -45000 };
+  return { ok: true, journalId: result.value.journalId, impact: result.value.impact };
 }
 
-export async function assessValuationAllowance(
+export async function assessValuationAllowanceAction(
   dtaItemIds: string[],
-  allowanceAmount: number
-): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] assessValuationAllowance:', dtaItemIds, allowanceAmount);
+  allowanceAmount: number,
+): Promise<{ ok: true; journalId: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await assessValuationAllowanceCmd(ctx, dtaItemIds, allowanceAmount);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.deferredTax);
-  return { ok: true, journalId: 'je-va-' + Date.now() };
+  return { ok: true, journalId: result.value.journalId };
 }

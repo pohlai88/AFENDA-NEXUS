@@ -14,6 +14,7 @@ export interface BudgetEntry {
 }
 
 export interface BudgetVarianceRow {
+  readonly accountId: string;
   readonly accountCode: string;
   readonly accountName: string;
   readonly budgetAmount: Money;

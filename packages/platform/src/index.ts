@@ -5,13 +5,13 @@
  */
 export {
   createLogger,
-  runWithContext,
-  getContext,
   type Logger,
   type LogLevel,
   type CreateLoggerOptions,
-  type RequestContext,
 } from './logger.js';
+
+// Context primitives re-exported for backward compat — canonical source is @afenda/core
+export { runWithContext, getContext, type RequestContext } from '@afenda/core';
 export { loadConfig, type AppConfig } from './config.js';
 export { featureFlags, type FeatureFlags } from './feature-flags.js';
 export {

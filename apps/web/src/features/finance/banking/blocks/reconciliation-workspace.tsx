@@ -27,8 +27,8 @@ import {
   MoreHorizontal,
   Sparkles,
   X,
-  Zap,
 } from 'lucide-react';
+import { getIcon } from '@/lib/modules/icon-map';
 import type {
   BankTransaction,
   GLTransaction,
@@ -45,6 +45,8 @@ import {
   excludeTransactions,
   completeReconciliation,
 } from '../actions/banking.actions';
+
+const ZapIcon = getIcon('Zap');
 
 // ─── Reconciliation Summary ──────────────────────────────────────────────────
 
@@ -456,7 +458,7 @@ export function ReconciliationWorkspace({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="sm" variant="outline" disabled={isPending}>
-                    <Zap className="mr-2 h-4 w-4" />
+                    <ZapIcon className="mr-2 h-4 w-4" />
                     Auto-Match
                     <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>

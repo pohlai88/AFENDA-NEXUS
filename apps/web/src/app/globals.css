@@ -21,6 +21,11 @@
    ─────────────────────────────────────────────────────────────────────────
    Add web-app-only styles below. Shared styles belong in
    packages/design-system/src/styles/ instead.
+
+   Sidebar tokens (--sidebar-*) are defined in the design-system:
+     _tokens-light.css / _tokens-dark.css → oklch values
+     _theme.css → @theme inline bridge (--color-sidebar-*)
+   Do NOT duplicate them here.
    ───────────────────────────────────────────────────────────────────────── */
 
 :root {

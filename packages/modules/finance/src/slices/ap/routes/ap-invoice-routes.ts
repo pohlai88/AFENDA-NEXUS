@@ -11,6 +11,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission, requireSoD } from '../../../shared/routes/authorization-guard.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { postApInvoice } from '../services/post-ap-invoice.js';
+import { previewApPosting } from '../services/preview-ap-posting.js';
 import { approveApInvoice } from '../services/approve-ap-invoice.js';
 import { cancelApInvoice } from '../services/cancel-ap-invoice.js';
 import { createDebitMemo } from '../services/create-debit-memo.js';
@@ -204,6 +205,32 @@ export function registerApInvoiceRoutes(
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return cancelApInvoice(
           { tenantId, userId, invoiceId: id, reason: body.reason ?? 'Cancelled' },
+          deps
+        );
+      });
+
+      return result.ok
+        ? reply.send(result.value)
+        : reply.status(mapErrorToStatus(result.error)).send({ error: result.error });
+    }
+  );
+
+  // POST /ap/invoices/:id/preview-posting — preview GL lines without persisting
+  app.post(
+    '/ap/invoices/:id/preview-posting',
+    { preHandler: [requirePermission(policy, 'report:read')] },
+    async (req, reply) => {
+      const { id } = IdParamSchema.parse(req.params);
+      const { tenantId, userId } = extractIdentity(req);
+      const body = PostApInvoiceSchema.parse(req.body);
+
+      const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
+        return previewApPosting(
+          {
+            invoiceId: id,
+            fiscalPeriodId: body.fiscalPeriodId,
+            apAccountId: body.apAccountId,
+          },
           deps
         );
       });

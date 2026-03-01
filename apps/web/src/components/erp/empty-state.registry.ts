@@ -129,6 +129,18 @@ const registry: Record<EmptyStateKey, RegistryEntry> = {
     },
   },
 
+  'finance.payables.matchTolerances': {
+    firstRun: {
+      title: 'No match tolerance rules',
+      description: 'Add rules to define PO–receipt–invoice matching tolerances. Invoices outside tolerance can be auto-held.',
+      ctaLabel: 'Add Tolerance Rule',
+    },
+    noResults: {
+      title: 'No rules found',
+      description: 'Add a match tolerance rule to get started.',
+    },
+  },
+
   'finance.receivables': {
     firstRun: {
       title: 'No receivable invoices found',
@@ -231,6 +243,95 @@ const registry: Record<EmptyStateKey, RegistryEntry> = {
     noResults: {
       title: 'No aging data',
       description: 'No intercompany balances found for the selected parameters.',
+    },
+  },
+
+  'finance.reports.apAging': {
+    firstRun: {
+      title: 'Select parameters',
+      description: 'Choose a ledger and as-of date to generate the AP aging report.',
+    },
+    noResults: {
+      title: 'No aging data',
+      description: 'No payable balances found for the selected parameters.',
+    },
+  },
+
+  'finance.reports.arAging': {
+    firstRun: {
+      title: 'Select parameters',
+      description: 'Choose a ledger and as-of date to generate the AR aging report.',
+    },
+    noResults: {
+      title: 'No aging data',
+      description: 'No receivable balances found for the selected parameters.',
+    },
+  },
+
+  'finance.reports.assetRegister': {
+    firstRun: {
+      title: 'Select parameters',
+      description: 'Choose a ledger to view the fixed asset register.',
+    },
+    noResults: {
+      title: 'No assets found',
+      description: 'No fixed assets match the selected parameters.',
+    },
+  },
+
+  'finance.reports.consolidation': {
+    firstRun: {
+      title: 'Select parameters',
+      description: 'Choose entities and period to generate the consolidation report.',
+    },
+    noResults: {
+      title: 'No consolidation data',
+      description: 'No data found for the selected parameters.',
+    },
+  },
+
+  'finance.reports.costAllocation': {
+    firstRun: {
+      title: 'Select parameters',
+      description: 'Choose a period and allocation run to view cost allocation results.',
+    },
+    noResults: {
+      title: 'No allocation data',
+      description: 'No cost allocations found for the selected parameters.',
+    },
+  },
+
+  'finance.reports.equityStatement': {
+    firstRun: {
+      title: 'Select parameters',
+      description: 'Choose a ledger and period range to generate the statement of equity.',
+    },
+    noResults: {
+      title: 'No equity data',
+      description: 'No equity movements found for the selected parameters.',
+    },
+  },
+
+  'finance.reports.taxSummary': {
+    firstRun: {
+      title: 'Select parameters',
+      description: 'Choose a period to generate the tax summary report.',
+    },
+    noResults: {
+      title: 'No tax data',
+      description: 'No tax entries found for the selected period.',
+    },
+  },
+
+  'finance.budgetEntries': {
+    firstRun: {
+      title: 'No budget entries',
+      description: 'Create budget line items to start tracking against actuals.',
+      ctaLabel: 'Create Budget Entry',
+    },
+    noResults: {
+      title: 'No budget entries match your search',
+      description: 'Try adjusting your filters or search terms.',
     },
   },
 
@@ -539,6 +640,19 @@ const registry: Record<EmptyStateKey, RegistryEntry> = {
     noResults: {
       title: 'No audit log entries match your search',
       description: 'Try adjusting your filters or search terms.',
+    },
+  },
+
+  // ─── Shell ─────────────────────────────────────────────────────────────────
+
+  'shell.attention': {
+    firstRun: {
+      title: 'Everything looks good',
+      description: 'No items require your attention',
+    },
+    noResults: {
+      title: 'No items need attention',
+      description: 'All items are up to date.',
     },
   },
 };

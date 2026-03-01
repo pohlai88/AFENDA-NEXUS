@@ -9,19 +9,20 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { formatDate } from '@/lib/utils';
 import { Plus, FileCheck, AlertTriangle, CheckCircle2, AlertCircle } from 'lucide-react';
-import type { Covenant, CovenantStatus, CovenantType } from '../types';
+import type { CovenantView as Covenant } from '../queries/treasury.queries';
+import type { CovenantStatus, CovenantType } from '../types';
 import { covenantStatusConfig, covenantTypeLabels } from '../types';
 import { routes } from '@/lib/constants';
 
-function StatusBadge({ status }: { status: CovenantStatus }) {
-  const config = covenantStatusConfig[status];
+function StatusBadge({ status }: { status: string }) {
+  const config = covenantStatusConfig[status as CovenantStatus];
   const icons: Record<CovenantStatus, React.ElementType> = {
     compliant: CheckCircle2,
     at_risk: AlertTriangle,
     breached: AlertCircle,
     waived: FileCheck,
   };
-  const Icon = icons[status];
+  const Icon = icons[status as CovenantStatus];
 
   return (
     <Badge variant="outline" className={config.color}>
@@ -94,7 +95,7 @@ export function CovenantsTable({ covenants }: CovenantsTableProps) {
     {
       key: 'type',
       header: 'Type',
-      render: (covenant) => <Badge variant="secondary">{covenantTypeLabels[covenant.type]}</Badge>,
+      render: (covenant) => <Badge variant="secondary">{covenantTypeLabels[covenant.type as CovenantType]}</Badge>,
     },
     {
       key: 'metric',

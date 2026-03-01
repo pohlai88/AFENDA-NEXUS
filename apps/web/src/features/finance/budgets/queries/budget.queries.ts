@@ -16,6 +16,7 @@ export interface BudgetEntryListItem {
 }
 
 export interface BudgetVarianceRow {
+  accountId: string;
   accountCode: string;
   accountName: string;
   budgetAmount: string;

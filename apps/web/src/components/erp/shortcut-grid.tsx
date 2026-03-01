@@ -1,50 +1,9 @@
 import * as React from 'react';
 import Link from 'next/link';
-import type { LucideIcon } from 'lucide-react';
-import {
-  LayoutDashboard,
-  BookOpen,
-  FileText,
-  CreditCard,
-  Landmark,
-  FileCheck,
-  Users,
-  Banknote,
-  Star,
-  TrendingUp,
-  Sparkles,
-  MessageSquare,
-  FolderKanban,
-  Building2,
-  Settings,
-  ShieldCheck,
-  CheckCircle,
-} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { getIcon } from '@/lib/modules/icon-map';
 import type { ShortcutCard } from '@/lib/modules/derive-shortcuts';
-
-// ─── Icon Map ───────────────────────────────────────────────────────────────
-
-const shortcutIconMap: Record<string, LucideIcon> = {
-  LayoutDashboard,
-  BookOpen,
-  FileText,
-  CreditCard,
-  Landmark,
-  FileCheck,
-  Users,
-  Banknote,
-  Star,
-  TrendingUp,
-  Sparkles,
-  MessageSquare,
-  FolderKanban,
-  Building2,
-  Settings,
-  ShieldCheck,
-  CheckCircle,
-};
 
 // ─── Shortcut Grid ──────────────────────────────────────────────────────────
 
@@ -63,7 +22,7 @@ function ShortcutGrid({ shortcuts }: ShortcutGridProps) {
 }
 
 function ShortcutCardComponent({ card }: { card: ShortcutCard }) {
-  const Icon = shortcutIconMap[card.icon] ?? FileText;
+  const Icon = getIcon(card.icon);
 
   return (
     <Card>

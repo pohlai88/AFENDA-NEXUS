@@ -8,12 +8,26 @@ import { redirect } from 'next/navigation';
 import { createNeonAuth } from '@neondatabase/auth/next/server';
 
 // ─── Auth Instance ──────────────────────────────────────────────────────────
+// Root .env is loaded by next.config.ts before module evaluation,
+// so process.env is populated by the time this runs.
+
+const baseUrl = process.env.NEON_AUTH_BASE_URL;
+const cookieSecret = process.env.NEON_AUTH_COOKIE_SECRET;
+
+if (!baseUrl) {
+  throw new Error(
+    'Missing env NEON_AUTH_BASE_URL. Copy .env.example → .env and fill in the Neon Auth values.',
+  );
+}
+if (!cookieSecret) {
+  throw new Error(
+    'Missing env NEON_AUTH_COOKIE_SECRET. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
+  );
+}
 
 export const auth = createNeonAuth({
-  baseUrl: process.env.NEON_AUTH_BASE_URL!,
-  cookies: {
-    secret: process.env.NEON_AUTH_COOKIE_SECRET!,
-  },
+  baseUrl,
+  cookies: { secret: cookieSecret },
 });
 
 // ─── Types ──────────────────────────────────────────────────────────────────

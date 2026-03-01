@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { routes } from '@/lib/constants';
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -182,7 +183,7 @@ export function LoginForm() {
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
             <Link
-              href="/forgot-password"
+              href={routes.forgotPassword}
               className="text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
             >
               Forgot password?
@@ -213,7 +214,7 @@ export function LoginForm() {
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{' '}
         <Link
-          href="/register"
+          href={routes.register}
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
           Create account

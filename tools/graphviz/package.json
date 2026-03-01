@@ -1,0 +1,19 @@
+{
+  "name": "@afenda/graphviz",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "dep-graph": "./src/dep-graph.mjs"
+  },
+  "scripts": {
+    "start": "node src/dep-graph.mjs",
+    "graph": "node src/dep-graph.mjs",
+    "graph:svg": "node src/dep-graph.mjs --render",
+    "graph:json": "node src/dep-graph.mjs --json",
+    "graph:orphans": "node src/dep-graph.mjs --orphans",
+    "graph:lineage": "node src/dep-graph.mjs --lineage",
+    "graph:imports": "node src/dep-graph.mjs --imports",
+    "graph:full": "node src/dep-graph.mjs --full"
+  }
+}

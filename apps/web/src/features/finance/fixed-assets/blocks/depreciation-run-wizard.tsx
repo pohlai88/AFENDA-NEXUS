@@ -33,12 +33,14 @@ import {
   Play,
   AlertTriangle,
 } from 'lucide-react';
+import { PostingPreview, type PostingPreviewData } from '@/components/erp/posting-preview';
 import type { DepreciationRun } from '../types';
 import { depRunStatusConfig } from '../types';
 import {
   calculateDepreciation,
   postDepreciationRun,
   cancelDepreciationRun,
+  previewDepreciationRunAction,
 } from '../actions/assets.actions';
 
 // ─── Step Indicator ──────────────────────────────────────────────────────────
@@ -242,18 +244,49 @@ function ReviewPostStep({
 }: ReviewPostStepProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [previewData, setPreviewData] = useState<PostingPreviewData | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
-  const handlePost = () => {
+  const handleLoadPreview = () => {
+    setIsLoadingPreview(true);
+    setPreviewError(null);
+    const [year, month] = selectedPeriod.split('-').map(Number) as [number, number];
+    const periodStart = new Date(year, month - 1, 1).toISOString();
+    const periodEnd = new Date(year, month, 0).toISOString();
+
     startTransition(async () => {
-      const result = await postDepreciationRun(runId);
-
+      const result = await previewDepreciationRunAction(periodStart, periodEnd);
+      setIsLoadingPreview(false);
       if (result.ok) {
-        toast.success(`Depreciation posted. Journal ${result.data.journalNumber} created.`);
-        router.push(routes.finance.fixedAssets);
+        const preview = result.value;
+        setPreviewData({
+          ledgerName: preview.ledgerName,
+          periodName: preview.periodName,
+          currency: preview.currency,
+          lines: preview.lines.map((l) => ({
+            accountCode: l.accountCode,
+            accountName: l.accountName,
+            debit: Number(l.debit),
+            credit: Number(l.credit),
+            description: l.description,
+          })),
+          warnings: preview.warnings,
+        });
       } else {
-        toast.error(result.error);
+        setPreviewError(result.error.message);
       }
     });
+  };
+
+  const handlePost = async () => {
+    const result = await postDepreciationRun(runId);
+    if (result.ok) {
+      toast.success(`Depreciation posted. Journal ${result.data.journalNumber} created.`);
+      router.push(routes.finance.fixedAssets);
+    } else {
+      toast.error(result.error);
+    }
   };
 
   const handleCancel = () => {
@@ -305,29 +338,62 @@ function ReviewPostStep({
           </div>
         </div>
 
-        <div className="text-sm text-muted-foreground">
-          Posting will create a journal entry debiting depreciation expense accounts and crediting
-          accumulated depreciation accounts for each asset category.
-        </div>
+        {/* PostingPreview Section */}
+        {!previewData && !previewError && (
+          <div className="flex flex-col items-center gap-3 py-4">
+            <p className="text-sm text-muted-foreground">
+              Preview the journal entries that will be created before posting.
+            </p>
+            <Button variant="outline" onClick={handleLoadPreview} disabled={isLoadingPreview || isPending}>
+              {isLoadingPreview ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading Preview...
+                </>
+              ) : (
+                'Preview Journal Entries'
+              )}
+            </Button>
+          </div>
+        )}
+
+        {previewError && (
+          <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 rounded-md px-3 py-2" role="alert">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            {previewError}
+          </div>
+        )}
+
+        {previewData && (
+          <PostingPreview
+            data={previewData}
+            onConfirm={handlePost}
+            title="Depreciation Posting Preview"
+            description="The following journal entries will debit depreciation expense and credit accumulated depreciation."
+            confirmLabel="Post to GL"
+          />
+        )}
       </CardContent>
-      <CardFooter className="justify-between">
-        <Button variant="outline" onClick={handleCancel} disabled={isPending}>
-          Cancel Run
-        </Button>
-        <Button onClick={handlePost} disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Posting...
-            </>
-          ) : (
-            <>
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Post to GL
-            </>
-          )}
-        </Button>
-      </CardFooter>
+      {!previewData && (
+        <CardFooter className="justify-between">
+          <Button variant="outline" onClick={handleCancel} disabled={isPending}>
+            Cancel Run
+          </Button>
+          <Button onClick={handleLoadPreview} disabled={isPending || isLoadingPreview}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Preview & Post to GL
+              </>
+            )}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }

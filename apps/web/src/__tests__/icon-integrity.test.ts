@@ -21,7 +21,7 @@ function getMetadataIconUrls(): string[] {
   const content = readFileSync(LAYOUT, 'utf-8');
   const urls: string[] = [];
   for (const match of content.matchAll(/url:\s*['"](\/.+?)['"]/g)) {
-    urls.push(match[1]);
+    urls.push(match[1]!);
   }
   return urls;
 }

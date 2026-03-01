@@ -4,6 +4,7 @@ import { useTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ReceiptPanel } from '@/components/erp/receipt-panel';
+import { ConfirmDialog } from '@/components/erp/confirm-dialog';
 import { processTemplateAction, toggleTemplateAction } from '../actions/recurring.actions';
 import type { CommandReceipt } from '@/lib/types';
 import { Play, Pause, RotateCcw } from 'lucide-react';
@@ -23,11 +24,10 @@ export function RecurringTemplateActions({
   const [isPending, startTransition] = useTransition();
   const [receipt, setReceipt] = useState<CommandReceipt | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmProcess, setConfirmProcess] = useState(false);
+  const [confirmToggle, setConfirmToggle] = useState(false);
 
-  function handleProcess() {
-    if (!confirm(`Process recurring template "${templateName}"? This will create a journal entry.`))
-      return;
-
+  function doProcess() {
     startTransition(async () => {
       setError(null);
       const result = await processTemplateAction(templateId);
@@ -40,10 +40,7 @@ export function RecurringTemplateActions({
     });
   }
 
-  function handleToggle() {
-    const action = isActive ? 'Deactivate' : 'Activate';
-    if (!confirm(`${action} template "${templateName}"?`)) return;
-
+  function doToggle() {
     startTransition(async () => {
       setError(null);
       const result = await toggleTemplateAction(templateId, !isActive);
@@ -66,30 +63,53 @@ export function RecurringTemplateActions({
     );
   }
 
+  const toggleAction = isActive ? 'Deactivate' : 'Activate';
+
   return (
-    <div className="flex items-center gap-2">
-      {error && <span className="text-xs text-destructive">{error}</span>}
+    <>
+      <div className="flex items-center gap-2">
+        {error && <span className="text-xs text-destructive">{error}</span>}
 
-      {isActive && (
-        <Button variant="outline" size="sm" disabled={isPending} onClick={handleProcess}>
-          <Play className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          Process
-        </Button>
-      )}
-
-      <Button variant="ghost" size="sm" disabled={isPending} onClick={handleToggle}>
-        {isActive ? (
-          <>
-            <Pause className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-            Deactivate
-          </>
-        ) : (
-          <>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-            Activate
-          </>
+        {isActive && (
+          <Button variant="outline" size="sm" disabled={isPending} onClick={() => setConfirmProcess(true)}>
+            <Play className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+            Process
+          </Button>
         )}
-      </Button>
-    </div>
+
+        <Button variant="ghost" size="sm" disabled={isPending} onClick={() => setConfirmToggle(true)}>
+          {isActive ? (
+            <>
+              <Pause className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+              Deactivate
+            </>
+          ) : (
+            <>
+              <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+              Activate
+            </>
+          )}
+        </Button>
+      </div>
+
+      <ConfirmDialog
+        open={confirmProcess}
+        onOpenChange={setConfirmProcess}
+        title="Process Template"
+        description={`Process recurring template "${templateName}"? This will create a journal entry.`}
+        confirmLabel="Process"
+        onConfirm={doProcess}
+      />
+
+      <ConfirmDialog
+        open={confirmToggle}
+        onOpenChange={setConfirmToggle}
+        title={`${toggleAction} Template`}
+        description={`${toggleAction} template "${templateName}"?`}
+        confirmLabel={toggleAction}
+        destructive={isActive}
+        onConfirm={doToggle}
+      />
+    </>
   );
 }

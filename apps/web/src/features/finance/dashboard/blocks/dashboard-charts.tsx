@@ -181,20 +181,22 @@ export function RevenueExpenseChart({ data }: RevenueExpenseChartProps) {
   );
 }
 
-// ─── AR Aging Chart ──────────────────────────────────────────────────────────
+// ─── Aging Donut (shared by AR/AP) ────────────────────────────────────────────
 
-interface ARAgingChartProps {
+interface AgingDonutChartProps {
   data: AgingBucket[];
+  title: string;
+  description: string;
 }
 
-export function ARAgingChart({ data }: ARAgingChartProps) {
+function AgingDonutChart({ data, title, description }: AgingDonutChartProps) {
   const total = data.reduce((sum, bucket) => sum + bucket.amount, 0);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>AR Aging</CardTitle>
-        <CardDescription>Receivables by age bucket</CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -231,6 +233,30 @@ export function ARAgingChart({ data }: ARAgingChartProps) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// ─── AR Aging Chart ──────────────────────────────────────────────────────────
+
+export function ARAgingChart({ data }: { data: AgingBucket[] }) {
+  return (
+    <AgingDonutChart
+      data={data}
+      title="AR Aging"
+      description="Receivables by age bucket"
+    />
+  );
+}
+
+// ─── AP Aging Chart ──────────────────────────────────────────────────────────
+
+export function APAgingChart({ data }: { data: AgingBucket[] }) {
+  return (
+    <AgingDonutChart
+      data={data}
+      title="AP Aging"
+      description="Payables by age bucket"
+    />
   );
 }
 

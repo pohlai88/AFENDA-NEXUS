@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Play, RotateCcw, XCircle } from 'lucide-react';
+import { Download, Loader2, Play, RotateCcw, XCircle } from 'lucide-react';
 import {
   executePaymentRunAction,
   reversePaymentRunAction,
@@ -91,6 +91,28 @@ export function ApPaymentRunActions({ runId, status }: ApPaymentRunActionsProps)
           >
             <RotateCcw className="mr-2 h-4 w-4" />
             Reverse
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const result = await downloadPaymentRunReportAction(runId);
+              if (result.ok) {
+                const blob = new Blob([result.value.content], {
+                  type: 'application/json',
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = result.value.filename;
+                a.click();
+                URL.revokeObjectURL(url);
+              }
+            }}
+            disabled={isPending}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download Report
           </Button>
           <Button asChild variant="outline" size="sm">
             <a href={routes.finance.paymentRunRemittance(runId)}>View Remittance</a>

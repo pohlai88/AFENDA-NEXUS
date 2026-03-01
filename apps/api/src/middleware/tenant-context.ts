@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { runWithContext, getContext } from '@afenda/platform';
+import { runWithContext, getContext } from '@afenda/core';
 
 declare module 'fastify' {
   interface FastifyRequest {

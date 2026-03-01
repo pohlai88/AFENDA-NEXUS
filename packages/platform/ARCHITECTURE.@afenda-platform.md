@@ -29,6 +29,6 @@ Config, structured logging, feature flags, env validation. Cross-cutting infrast
 
 ## Exports
 - `createLogger()`, `Logger`, `CreateLoggerOptions` — structured JSON logging (pino) with service name, mixin-based context injection
-- `runWithContext()`, `getContext()`, `RequestContext` — AsyncLocalStorage helpers for automatic correlationId/tenantId/userId injection into every log line
+- `runWithContext()`, `getContext()`, `RequestContext` — re-exported from `@afenda/core` for backward compat; AsyncLocalStorage helpers for automatic correlationId/tenantId/userId injection into every log line
 - `loadConfig()`, `AppConfig` — 12-factor env validation (zod)
 - `featureFlags()`, `FeatureFlags` — simple feature flag service

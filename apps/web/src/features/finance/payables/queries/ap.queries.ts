@@ -98,6 +98,32 @@ export async function approveApInvoice(
   });
 }
 
+export interface PostingPreviewLine {
+  accountId: string;
+  accountCode: string;
+  accountName: string;
+  debit: string;
+  credit: string;
+  description: string;
+}
+
+export interface PostingPreviewResult {
+  ledgerName: string;
+  periodName: string;
+  currency: string;
+  lines: PostingPreviewLine[];
+  warnings: string[];
+}
+
+export async function previewApPosting(
+  ctx: { tenantId: string; userId: string; token: string },
+  invoiceId: string,
+  body: { fiscalPeriodId: string; apAccountId: string }
+): Promise<ApiResult<PostingPreviewResult>> {
+  const client = createApiClient(ctx);
+  return client.post<PostingPreviewResult>(`/ap/invoices/${invoiceId}/preview-posting`, body);
+}
+
 export async function postApInvoice(
   ctx: { tenantId: string; userId: string; token: string },
   invoiceId: string,
@@ -114,6 +140,37 @@ export async function cancelApInvoice(
 ): Promise<ApiResult<CommandReceipt>> {
   const client = createApiClient(ctx);
   return client.post<CommandReceipt>(`/ap/invoices/${invoiceId}/cancel`, { reason });
+}
+
+export interface InvoiceEarlyDiscount {
+  eligible: boolean;
+  discountDeadline: string | null;
+  savingsPercent: number;
+  discountAmount: string;
+  netPayable: string;
+  currencyCode: string;
+}
+
+export async function getInvoiceEarlyDiscount(
+  ctx: { tenantId: string; userId: string; token: string },
+  invoiceId: string
+): Promise<ApiResult<InvoiceEarlyDiscount | null>> {
+  const client = createApiClient(ctx);
+  return client.get<InvoiceEarlyDiscount | null>(`/ap/invoices/${invoiceId}/early-discount`);
+}
+
+export interface ApDiscountSummary {
+  totalDiscount: string;
+  currencyCode: string;
+  days: number;
+}
+
+export async function getApDiscountSummary(
+  ctx: { tenantId: string; userId: string; token: string },
+  days = 30
+): Promise<ApiResult<ApDiscountSummary>> {
+  const client = createApiClient(ctx);
+  return client.get<ApDiscountSummary>('/ap/discount-summary', { days: String(days) });
 }
 
 export async function recordApPayment(

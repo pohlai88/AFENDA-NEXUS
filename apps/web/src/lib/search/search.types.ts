@@ -36,6 +36,9 @@ export interface SearchResult {
   shortcut?: string;
 }
 
+/** CRUD operation category for action grouping. */
+export type ActionCategory = 'create' | 'view' | 'manage' | 'report' | 'utility';
+
 /**
  * An executable action registered in the palette.
  * Actions can have both a handler (for inline execution) and an href (for navigation).
@@ -47,6 +50,8 @@ export interface SearchAction {
   title: string;
   /** Lucide icon name. */
   icon: string;
+  /** CRUD category — controls grouping in the quick-action picker. */
+  category?: ActionCategory;
   /** Keyboard shortcut hint. */
   shortcut?: string;
   /** Optional scope filter — shown only when this module is active. */

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useCallback, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,14 +14,21 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ReceiptPanel } from '@/components/erp/receipt-panel';
+import { EntityCombobox, type EntityOption } from '@/components/erp/entity-combobox';
+import { PostingPreview, type PostingPreviewData } from '@/components/erp/posting-preview';
 import { useReceipt } from '@/hooks/use-receipt';
 import { routes } from '@/lib/constants';
 import {
   approveArInvoiceAction,
+  previewArPostingAction,
   postArInvoiceAction,
   cancelArInvoiceAction,
   writeOffArInvoiceAction,
 } from '../actions/ar.actions';
+import {
+  searchFiscalPeriods,
+  searchAccounts,
+} from '../actions/entity-search.actions';
 import type { ArInvoiceStatus } from '@afenda/contracts';
 import { CheckCircle, Send, XCircle, DollarSign, FileX } from 'lucide-react';
 import Link from 'next/link';
@@ -44,8 +51,14 @@ export function ArInvoiceActions({ invoiceId, status }: ArInvoiceActionsProps) {
 
   // ─── Post Dialog State ──────────────────────────────────────────────
   const [postDialogOpen, setPostDialogOpen] = useState(false);
-  const [fiscalPeriodId, setFiscalPeriodId] = useState('');
-  const [arAccountId, setArAccountId] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState<EntityOption | null>(null);
+  const [selectedArAccount, setSelectedArAccount] = useState<EntityOption | null>(null);
+  const [previewData, setPreviewData] = useState<PostingPreviewData | null>(null);
+
+  const arAccountLoader = useCallback(
+    (q: string) => searchAccounts(q),
+    []
+  );
 
   function handleApprove() {
     setError(null);
@@ -60,23 +73,52 @@ export function ArInvoiceActions({ invoiceId, status }: ArInvoiceActionsProps) {
     });
   }
 
-  function handlePostSubmit() {
-    if (!fiscalPeriodId.trim() || !arAccountId.trim()) return;
+  function handlePreview() {
+    if (!selectedPeriod || !selectedArAccount) return;
     setError(null);
     startTransition(async () => {
-      const result = await postArInvoiceAction(
+      const result = await previewArPostingAction(
         invoiceId,
-        fiscalPeriodId.trim(),
-        arAccountId.trim()
+        selectedPeriod.id,
+        selectedArAccount.id
       );
       if (result.ok) {
-        setPostDialogOpen(false);
-        showReceipt(result.value);
-        router.refresh();
+        const d = result.value;
+        setPreviewData({
+          ledgerName: d.ledgerName,
+          periodName: d.periodName,
+          currency: d.currency,
+          lines: d.lines.map((l) => ({
+            accountCode: l.accountCode,
+            accountName: l.accountName,
+            debit: Number(l.debit),
+            credit: Number(l.credit),
+            description: l.description,
+          })),
+          warnings: d.warnings,
+        });
       } else {
         setError(result.error.message);
       }
     });
+  }
+
+  async function handlePostSubmit() {
+    if (!selectedPeriod || !selectedArAccount) return;
+    setError(null);
+    const result = await postArInvoiceAction(
+      invoiceId,
+      selectedPeriod.id,
+      selectedArAccount.id
+    );
+    if (result.ok) {
+      setPostDialogOpen(false);
+      setPreviewData(null);
+      showReceipt(result.value);
+      router.refresh();
+    } else {
+      setError(result.error.message);
+    }
   }
 
   function openReasonDialog(mode: 'cancel' | 'writeOff') {
@@ -262,62 +304,91 @@ export function ArInvoiceActions({ invoiceId, status }: ArInvoiceActionsProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Post Dialog (requires fiscal period + AR account) */}
-      <Dialog open={postDialogOpen} onOpenChange={setPostDialogOpen}>
-        <DialogContent>
+      {/* Post Dialog (requires fiscal period + AR account → preview → confirm) */}
+      <Dialog
+        open={postDialogOpen}
+        onOpenChange={(open) => {
+          setPostDialogOpen(open);
+          if (!open) setPreviewData(null);
+        }}
+      >
+        <DialogContent className={previewData ? 'max-w-2xl' : undefined}>
           <DialogHeader>
             <DialogTitle>Post Invoice to Ledger</DialogTitle>
             <DialogDescription>
-              Select the fiscal period and AR control account for posting.
+              {previewData
+                ? 'Review the journal lines that will be created, then confirm.'
+                : 'Select the fiscal period and AR control account for posting.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="ar-fiscal-period-id">
-                Fiscal Period ID <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="ar-fiscal-period-id"
-                value={fiscalPeriodId}
-                onChange={(e) => setFiscalPeriodId(e.target.value)}
-                placeholder="Select fiscal period"
-                autoFocus
+
+          {!previewData ? (
+            <>
+              <div className="space-y-3">
+                <EntityCombobox
+                  label="Fiscal Period"
+                  value={selectedPeriod}
+                  onChange={setSelectedPeriod}
+                  loadOptions={searchFiscalPeriods}
+                  placeholder="Search open periods…"
+                />
+                <EntityCombobox
+                  label="AR Control Account"
+                  value={selectedArAccount}
+                  onChange={setSelectedArAccount}
+                  loadOptions={arAccountLoader}
+                  placeholder="Search accounts…"
+                />
+              </div>
+              {error && (
+                <p className="text-xs text-destructive" role="alert">
+                  {error}
+                </p>
+              )}
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPostDialogOpen(false)}
+                  disabled={isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handlePreview}
+                  disabled={isPending || !selectedPeriod || !selectedArAccount}
+                >
+                  {isPending ? 'Loading Preview…' : 'Preview Posting'}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <PostingPreview
+                data={previewData}
+                onConfirm={handlePostSubmit}
+                title="AR Invoice Posting Preview"
+                confirmLabel="Post to Ledger"
+                compact
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ar-account-id">
-                AR Account ID <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="ar-account-id"
-                value={arAccountId}
-                onChange={(e) => setArAccountId(e.target.value)}
-                placeholder="Select AR control account"
-              />
-            </div>
-          </div>
-          {error && (
-            <p className="text-xs text-destructive" role="alert">
-              {error}
-            </p>
+              {error && (
+                <p className="text-xs text-destructive" role="alert">
+                  {error}
+                </p>
+              )}
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPreviewData(null)}
+                  disabled={isPending}
+                >
+                  Back
+                </Button>
+              </DialogFooter>
+            </>
           )}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setPostDialogOpen(false)}
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              onClick={handlePostSubmit}
-              disabled={isPending || !fiscalPeriodId.trim() || !arAccountId.trim()}
-            >
-              {isPending ? 'Posting…' : 'Confirm Post'}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

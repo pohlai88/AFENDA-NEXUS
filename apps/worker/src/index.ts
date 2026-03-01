@@ -44,11 +44,20 @@ async function main(): Promise<void> {
   const redisUrl = process.env.REDIS_URL;
   let redis: Redis | null = null;
   if (redisUrl) {
-    redis = new Redis(redisUrl, { maxRetriesPerRequest: 1, lazyConnect: true });
+    const redisInstance = new Redis(redisUrl, {
+      maxRetriesPerRequest: 1,
+      lazyConnect: true,
+      retryStrategy: () => null,
+    });
+    redisInstance.on('error', (err) => {
+      logger.warn('Redis error (non-fatal)', { error: String(err) });
+    });
     try {
-      await redis.connect();
+      await redisInstance.connect();
+      redis = redisInstance;
       logger.info('Redis connected for cache invalidation');
     } catch {
+      try { redisInstance.disconnect(false); } catch { /* already closed */ }
       redis = null;
       logger.warn('Redis connection failed — cache invalidation disabled');
     }
@@ -128,7 +137,7 @@ async function main(): Promise<void> {
 
   // Cleanup on shutdown
   healthServer.close();
-  if (redis) await redis.quit().catch(() => {});
+  if (redis) await redis.quit().catch(() => { });
   await listener.end();
 }
 

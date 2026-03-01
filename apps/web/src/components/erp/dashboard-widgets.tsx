@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AreaChartWidget, BarChartWidget } from '@/components/erp/charts';
+import { routes } from '@/lib/constants';
 import {
   TrendingUp,
   ArrowUpRight,
@@ -23,8 +24,14 @@ const FEATURE_DASHBOARD_CHARTS =
   process.env.NEXT_PUBLIC_FEATURE_DASHBOARD_CHARTS !== 'false';
 
 // ─── Stub Chart Data ─────────────────────────────────────────────────────────
+// TODO: Replace stub data with server-fetched chart data via props or RSC.
 
-const CASH_FLOW_DATA = [
+if (process.env.NODE_ENV === 'development') {
+  // eslint-disable-next-line no-console
+  console.warn('[DashboardWidgets] Using STUB chart data — replace with real API calls.');
+}
+
+const STUB_CASH_FLOW_DATA = [
   { month: 'Sep', inflow: 124000, outflow: 98000 },
   { month: 'Oct', inflow: 156000, outflow: 112000 },
   { month: 'Nov', inflow: 142000, outflow: 128000 },
@@ -33,7 +40,7 @@ const CASH_FLOW_DATA = [
   { month: 'Feb', inflow: 178000, outflow: 142000 },
 ];
 
-const EXPENSE_BREAKDOWN_DATA = [
+const STUB_EXPENSE_BREAKDOWN_DATA = [
   { category: 'Payroll', amount: 85000 },
   { category: 'Rent', amount: 12000 },
   { category: 'Software', amount: 8500 },
@@ -42,7 +49,7 @@ const EXPENSE_BREAKDOWN_DATA = [
   { category: 'Utilities', amount: 2100 },
 ];
 
-const AR_AGING_DATA = [
+const STUB_AR_AGING_DATA = [
   { bucket: 'Current', amount: 45000 },
   { bucket: '1-30', amount: 22000 },
   { bucket: '31-60', amount: 8500 },
@@ -53,10 +60,10 @@ const AR_AGING_DATA = [
 // ─── Quick Shortcuts ─────────────────────────────────────────────────────────
 
 const QUICK_SHORTCUTS = [
-  { title: 'New Journal Entry', href: '/finance/journals/new', icon: FilePlus2, shortcut: 'g n j' },
-  { title: 'New Invoice', href: '/finance/payables/new', icon: FileText },
-  { title: 'New Supplier', href: '/finance/payables/suppliers/new', icon: UserPlus },
-  { title: 'New Expense', href: '/finance/expenses/new', icon: Receipt },
+  { title: 'New Journal Entry', href: routes.finance.journalNew, icon: FilePlus2, shortcut: 'g n j' },
+  { title: 'New Invoice', href: routes.finance.payableNew, icon: FileText },
+  { title: 'New Supplier', href: routes.finance.supplierNew, icon: UserPlus },
+  { title: 'New Expense', href: routes.finance.expenseNew, icon: Receipt },
 ];
 
 // ─── Money Formatter ─────────────────────────────────────────────────────────
@@ -128,7 +135,7 @@ export function DashboardWidgets() {
                     Inflow
                   </span>
                   <span className="flex items-center gap-1">
-                    <ArrowDownLeft className="h-3 w-3 text-rose-500" />
+                    <ArrowDownLeft className="h-3 w-3 text-destructive" />
                     Outflow
                   </span>
                 </div>
@@ -136,7 +143,7 @@ export function DashboardWidgets() {
             </CardHeader>
             <CardContent className="pt-4">
               <AreaChartWidget
-                data={CASH_FLOW_DATA}
+                data={STUB_CASH_FLOW_DATA}
                 xKey="month"
                 yKeys={['inflow', 'outflow']}
                 colors={['hsl(160 60% 45%)', 'hsl(350 70% 55%)']}
@@ -156,7 +163,7 @@ export function DashboardWidgets() {
             </CardHeader>
             <CardContent className="pt-4">
               <BarChartWidget
-                data={EXPENSE_BREAKDOWN_DATA}
+                data={STUB_EXPENSE_BREAKDOWN_DATA}
                 xKey="category"
                 yKeys={['amount']}
                 colors={['hsl(220 70% 50%)']}
@@ -175,13 +182,13 @@ export function DashboardWidgets() {
                   Receivables Aging
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="text-xs" asChild>
-                  <Link href="/finance/receivables">View all →</Link>
+                  <Link href={routes.finance.receivables}>View all →</Link>
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-4">
               <BarChartWidget
-                data={AR_AGING_DATA}
+                data={STUB_AR_AGING_DATA}
                 xKey="bucket"
                 yKeys={['amount']}
                 colors={['hsl(30 80% 55%)']}

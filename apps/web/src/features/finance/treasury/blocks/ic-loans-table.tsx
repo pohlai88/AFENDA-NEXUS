@@ -8,12 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Plus, Landmark, Building2, ArrowRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import type { IntercompanyLoan, ICLoanStatus, ICLoanType } from '../types';
+import type { IntercompanyLoanView as IntercompanyLoan } from '../queries/treasury.queries';
+import type { ICLoanStatus, ICLoanType } from '../types';
 import { icLoanStatusConfig, icLoanTypeLabels } from '../types';
 import { routes } from '@/lib/constants';
 
-function StatusBadge({ status }: { status: ICLoanStatus }) {
-  const config = icLoanStatusConfig[status];
+function StatusBadge({ status }: { status: string }) {
+  const config = icLoanStatusConfig[status as ICLoanStatus];
   return (
     <Badge variant="outline" className={config.color}>
       {config.label}
@@ -85,7 +86,7 @@ export function ICLoansTable({ loans }: ICLoansTableProps) {
     {
       key: 'type',
       header: 'Type',
-      render: (loan) => <TypeBadge type={loan.type} />,
+      render: (loan) => <TypeBadge type={loan.type as ICLoanType} />,
     },
     {
       key: 'principal',

@@ -70,7 +70,7 @@ Or via **Console → Auth → Configuration → Domains**. See
 | **Core libs** | `core`, `contracts`, `authz`, `db`, `platform`                   | Domain primitives, DTOs, auth, DB, cross-cutting |
 | **Modules**   | `modules/finance`                                                | GL kernel + posting engine (P0)                  |
 | **Apps**      | `apps/api`, `apps/web`, `apps/worker`                            | Fastify API, Next.js UI, Graphile Worker         |
-| **Tools**     | `tools/drift-check`, `tools/generators`, `tools/scripts`         | CI gates, scaffolding, ad-hoc scripts            |
+| **Tools**     | `tools/drift-check`, `tools/generators`, `tools/graphviz`, `tools/scripts` | CI gates, scaffolding, dep-graph visualisation, ad-hoc scripts |
 
 ## Key Documents
 
@@ -107,6 +107,8 @@ All gates run in `.github/workflows/ci.yml` (guards job) and `preview.yml`
 | `pnpm gen:outbox-event <event>`                 | Outbox payload + worker handler stub          |
 | `pnpm turbo test:coverage`                      | Run tests with coverage threshold enforcement |
 | `node tools/drift-check/src/unused-exports.mjs` | Advisory scan for unused public API exports   |
+| `pnpm graph`                                    | Dependency graph + orphan/lineage analysis    |
+| `pnpm graph:full`                               | Full analysis + SVG render + JSON report      |
 | `pnpm agents:gen`                               | Regenerate .agents INDEX.md                   |
 
 ## Future Docs

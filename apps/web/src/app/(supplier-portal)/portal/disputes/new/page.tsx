@@ -1,9 +1,11 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
 import { PortalDisputeForm } from '@/features/portal/forms/portal-dispute-form';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalNewDisputePage() {
   const ctx = await getRequestContext();
@@ -20,6 +22,7 @@ export default async function PortalNewDisputePage() {
   }
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Raise Dispute"
@@ -33,5 +36,6 @@ export default async function PortalNewDisputePage() {
 
       <PortalDisputeForm supplierId={supplierResult.value.supplierId} />
     </div>
+    </Suspense>
   );
 }

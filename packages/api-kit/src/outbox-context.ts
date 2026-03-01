@@ -5,7 +5,7 @@
  * and returns metadata to include in outbox rows. This ensures correlation IDs
  * propagate from HTTP request → DB transaction → outbox row → worker handler.
  */
-import { getContext } from '@afenda/platform';
+import { getContext } from '@afenda/core';
 
 export interface OutboxMeta {
   readonly correlationId: string | undefined;

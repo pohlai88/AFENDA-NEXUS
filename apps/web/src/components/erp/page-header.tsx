@@ -13,6 +13,12 @@ interface Breadcrumb {
 
 // ─── PageHeader ───────────────────────────────────────────────────────────────
 
+interface ActionItem {
+  label: string;
+  href: string;
+  variant?: 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link';
+}
+
 interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Page title. */
   title?: string;
@@ -20,8 +26,10 @@ interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   description?: string;
   /** Breadcrumb trail rendered above the title. */
   breadcrumbs?: Breadcrumb[];
-  /** Action buttons rendered on the right. */
-  actions?: React.ReactNode;
+  /** Action buttons rendered on the right. Accepts ReactNode or a declarative ActionItem[]. */
+  actions?: React.ReactNode | ActionItem[];
+  /** Shorthand for a single primary action button. */
+  primaryAction?: { label: string; href: string };
   /** Whether this page is currently favorited. */
   isFavorite?: boolean;
   /** Toggle favorite for this page. */
@@ -34,8 +42,12 @@ interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   hideShellBreadcrumbs?: boolean;
 }
 
+function isActionItemArray(v: unknown): v is ActionItem[] {
+  return Array.isArray(v) && v.length > 0 && typeof (v as ActionItem[])[0]?.label === 'string';
+}
+
 const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
-  ({ title, description, breadcrumbs, actions, isFavorite, onToggleFavorite, hideShellBreadcrumbs, children, className, ...props }, ref) => (
+  ({ title, description, breadcrumbs, actions, primaryAction, isFavorite, onToggleFavorite, hideShellBreadcrumbs, children, className, ...props }, ref) => (
     <div ref={ref} className={cn('space-y-1', className)} {...props}>
       {!hideShellBreadcrumbs && breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb">
@@ -73,7 +85,7 @@ const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
                       className={cn(
                         'h-4 w-4',
                         isFavorite
-                          ? 'fill-amber-400 text-amber-400'
+                          ? 'fill-warning text-warning'
                           : 'text-muted-foreground',
                       )}
                     />
@@ -86,7 +98,22 @@ const PageHeader = React.forwardRef<HTMLDivElement, PageHeaderProps>(
             <p className="text-sm text-muted-foreground">{description}</p>
           )}
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {(actions || primaryAction) && (
+          <div className="flex items-center gap-2">
+            {isActionItemArray(actions)
+              ? actions.map((a) => (
+                <Button key={a.href} variant={a.variant ?? 'default'} asChild>
+                  <Link href={a.href}>{a.label}</Link>
+                </Button>
+              ))
+              : actions}
+            {primaryAction && (
+              <Button asChild>
+                <Link href={primaryAction.href}>{primaryAction.label}</Link>
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   ),

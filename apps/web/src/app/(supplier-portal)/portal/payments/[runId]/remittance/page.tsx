@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalRemittance } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
@@ -5,6 +6,7 @@ import { PortalRemittanceView } from '@/features/portal/blocks/portal-remittance
 import { AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 interface Props {
   params: Promise<{ runId: string }>;
@@ -40,6 +42,7 @@ export default async function PortalRemittancePage({ params }: Props) {
   }
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Remittance Advice"
@@ -54,5 +57,6 @@ export default async function PortalRemittancePage({ params }: Props) {
 
       <PortalRemittanceView remittance={result.value} />
     </div>
+    </Suspense>
   );
 }

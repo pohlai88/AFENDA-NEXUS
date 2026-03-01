@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, MailOpen } from 'lucide-react';
 import Link from 'next/link';
+import { routes } from '@/lib/constants';
 
 /**
  * Forgot password form — sends a password reset email via Neon Auth.
@@ -63,7 +64,7 @@ export function ForgotPasswordForm() {
           </span>
         </div>
         <Button asChild variant="outline" className="w-full">
-          <Link href="/login">
+          <Link href={routes.login}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to sign in
           </Link>
@@ -114,7 +115,7 @@ export function ForgotPasswordForm() {
       </form>
 
       <Button asChild variant="ghost" className="w-full">
-        <Link href="/login">
+        <Link href={routes.login}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to sign in
         </Link>

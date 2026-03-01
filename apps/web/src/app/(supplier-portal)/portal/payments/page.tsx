@@ -1,9 +1,11 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalPaymentRuns } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
 import { PortalPaymentTable } from '@/features/portal/blocks/portal-payment-table';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 interface Props {
   searchParams: Promise<{ page?: string }>;
@@ -31,6 +33,7 @@ export default async function PortalPaymentsPage({ searchParams }: Props) {
   });
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Payments"
@@ -46,5 +49,6 @@ export default async function PortalPaymentsPage({ searchParams }: Props) {
         </div>
       )}
     </div>
+    </Suspense>
   );
 }

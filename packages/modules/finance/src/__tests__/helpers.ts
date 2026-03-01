@@ -1089,6 +1089,19 @@ export function mockApPaymentRunRepo(
       runs.set(id, updated);
       return ok(updated);
     },
+    async getDiscountSumExecutedSince(_cutoff: Date) {
+      let total = 0n;
+      let currencyCode = 'USD';
+      for (const run of runs.values()) {
+        if (run.status === 'EXECUTED' && run.executedAt) {
+          currencyCode = run.currencyCode;
+          for (const item of run.items) {
+            total += item.discountAmount.amount;
+          }
+        }
+      }
+      return ok({ totalDiscount: total, currencyCode });
+    },
   };
 }
 

@@ -6,8 +6,22 @@ import {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-/** Cookie name for SSR-critical shell preferences. */
-export const SHELL_COOKIE_NAME = 'shell_prefs';
+/** Default cookie name prefix for SSR-critical shell preferences. */
+const SHELL_COOKIE_NAME = 'shell_prefs';
+
+/**
+ * Build a company-scoped cookie key.
+ * Enterprise multi-company: prevents Company A density leaking into Company B.
+ */
+export function buildShellCookieKey(
+  tenantId: string,
+  userId: string,
+  companyId?: string,
+): string {
+  const parts = [SHELL_COOKIE_NAME, tenantId, userId];
+  if (companyId) parts.push(companyId);
+  return parts.join(':');
+}
 
 /** Cookie max-age: 30 days (seconds). */
 const SHELL_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -33,6 +47,8 @@ export const DENSITY_CLASS_MAP: Record<DensityProfile, string | null> = {
 /**
  * Parse `ShellPreferences` from a raw cookie string value.
  * Returns defaults if the value is missing, unparseable, or a different version.
+ *
+ * @param raw - The raw cookie value string (from `cookieStore.get(key)?.value`).
  */
 export function parseShellCookie(raw: string | undefined | null): ShellPreferences {
   if (!raw) return { ...SHELL_PREFS_DEFAULTS };
@@ -57,13 +73,17 @@ export function parseShellCookie(raw: string | undefined | null): ShellPreferenc
 }
 
 /**
- * Serialize `ShellPreferences` to the `shell_prefs` cookie (client-side).
- * Follows the same `document.cookie` pattern used by the sidebar provider.
+ * Serialize `ShellPreferences` to a cookie (client-side).
+ *
+ * @param cookieKey - Scoped cookie name (e.g. `shell_prefs:tenantId:userId:companyId`).
+ *                    Defaults to `SHELL_COOKIE_NAME` for backward compat.
+ * @param prefs - The preferences to persist.
  */
-export function writeShellCookie(prefs: ShellPreferences): void {
+export function writeShellCookie(prefs: ShellPreferences, cookieKey?: string): void {
   if (typeof document === 'undefined') return;
+  const name = cookieKey ?? SHELL_COOKIE_NAME;
   const value = JSON.stringify(prefs);
-  document.cookie = `${SHELL_COOKIE_NAME}=${encodeURIComponent(value)}; path=/; max-age=${SHELL_COOKIE_MAX_AGE}; SameSite=Lax`;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${SHELL_COOKIE_MAX_AGE}; SameSite=Lax`;
 }
 
 // ─── localStorage read/write (convenience prefs) ────────────────────────────

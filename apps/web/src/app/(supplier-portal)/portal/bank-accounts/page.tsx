@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalBankAccounts } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
@@ -5,6 +6,7 @@ import { PortalBankAccountList } from '@/features/portal/blocks/portal-bank-acco
 import { PortalBankAccountForm } from '@/features/portal/forms/portal-bank-account-form';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalBankAccountsPage() {
   const ctx = await getRequestContext();
@@ -24,6 +26,7 @@ export default async function PortalBankAccountsPage() {
   const result = await getPortalBankAccounts(ctx, supplier.supplierId);
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Bank Accounts"
@@ -44,5 +47,6 @@ export default async function PortalBankAccountsPage() {
 
       <PortalBankAccountForm supplierId={supplier.supplierId} />
     </div>
+    </Suspense>
   );
 }

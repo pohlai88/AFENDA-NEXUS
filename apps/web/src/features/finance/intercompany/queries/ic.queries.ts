@@ -127,3 +127,37 @@ export async function getIcAging(
 
   return client.get<IcAgingResult>('/reports/ic-aging', query);
 }
+
+// ─── Posting Preview Types ──────────────────────────────────────────────────
+
+export interface PostingPreviewLine {
+  accountId: string;
+  accountCode: string;
+  accountName: string;
+  debit: string;
+  credit: string;
+  description: string;
+}
+
+export interface PostingPreviewResult {
+  ledgerName: string;
+  periodName: string;
+  currency: string;
+  lines: PostingPreviewLine[];
+  warnings: string[];
+}
+
+export interface IcTransactionPreviewResult {
+  sourceJournal: PostingPreviewResult;
+  mirrorJournal: PostingPreviewResult;
+}
+
+// ─── Preview Query ──────────────────────────────────────────────────────────
+
+export async function previewIcTransaction(
+  ctx: RequestCtx,
+  body: Record<string, unknown>
+): Promise<ApiResult<IcTransactionPreviewResult>> {
+  const client = createApiClient(ctx);
+  return client.post<IcTransactionPreviewResult>('/ic-transactions/preview', body);
+}

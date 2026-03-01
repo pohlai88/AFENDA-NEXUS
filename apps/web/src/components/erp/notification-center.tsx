@@ -4,17 +4,21 @@ import * as React from 'react';
 import { useState, useEffect, useCallback, useTransition } from 'react';
 import Link from 'next/link';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { POPOVER_NOTIFICATION_W, SCROLL_MAX_H } from '@/components/afenda/shell.tokens';
 import { getIcon } from '@/lib/modules/icon-map';
 import {
   Bell,
@@ -23,11 +27,13 @@ import {
   CheckCheck,
   X,
   Clock,
-  AlertOctagon,
-  AlertTriangle,
-  Info,
-  CheckCircle2,
 } from 'lucide-react';
+import {
+  NOTIFICATION_SEVERITY_ICON,
+  NOTIFICATION_SEVERITY_COLOR,
+  NOTIFICATION_SEVERITY_BG,
+} from '@/lib/ui/severity-styles';
+import { formatRelativeTime } from '@/lib/format';
 import {
   getNotificationSummary,
   markNotificationRead,
@@ -36,59 +42,46 @@ import {
 } from '@/lib/notifications/notification.actions';
 import type {
   Notification,
-  NotificationSeverity,
-  NotificationCategory,
 } from '@/lib/notifications/notification.types';
 import { CATEGORY_LABELS } from '@/lib/notifications/notification.types';
+import { EmptyState } from '@/components/erp/empty-state';
 
-// ─── Severity Styling ────────────────────────────────────────────────────────
+// ─── NotificationPopover ───────────────────────────────────────────────────
 
-const SEVERITY_ICON: Record<NotificationSeverity, React.ComponentType<{ className?: string }>> = {
-  info: Info,
-  warning: AlertTriangle,
-  critical: AlertOctagon,
-  success: CheckCircle2,
-};
-
-const SEVERITY_COLOR: Record<NotificationSeverity, string> = {
-  info: 'text-blue-500',
-  warning: 'text-amber-500',
-  critical: 'text-destructive',
-  success: 'text-emerald-500',
-};
-
-const SEVERITY_BG: Record<NotificationSeverity, string> = {
-  info: 'bg-blue-50 dark:bg-blue-950/30',
-  warning: 'bg-amber-50 dark:bg-amber-950/30',
-  critical: 'bg-destructive/5 dark:bg-destructive/10',
-  success: 'bg-emerald-50 dark:bg-emerald-950/30',
-};
-
-// ─── NotificationCenter ─────────────────────────────────────────────────────
-
-interface NotificationCenterProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface NotificationPopoverProps {
+  /** Initial unread count from server. */
+  initialUnreadCount?: number;
+  /** Fired whenever the unread count changes (read, dismiss, fetch). */
+  onUnreadCountChange?: (count: number) => void;
 }
 
 /**
- * Notification center Sheet (right slide-out panel).
- * Shows all notifications with filtering by category and read/unread tabs.
+ * Notification popover — bell trigger with dropdown content.
+ * Shows all notifications with filtering by read/unread tabs.
  */
-export function NotificationCenter({ open, onOpenChange }: NotificationCenterProps) {
+export function NotificationPopover({
+  initialUnreadCount = 0,
+  onUnreadCountChange,
+}: NotificationPopoverProps) {
+  const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const [isPending, startTransition] = useTransition();
 
-  // Fetch notifications when sheet opens
+  const onUnreadCountChangeRef = React.useRef(onUnreadCountChange);
+  onUnreadCountChangeRef.current = onUnreadCountChange;
+  React.useEffect(() => {
+    onUnreadCountChangeRef.current?.(unreadCount);
+  }, [unreadCount]);
+
   const fetchNotifications = useCallback(async () => {
     try {
       const summary = await getNotificationSummary();
       setNotifications(summary.notifications);
       setUnreadCount(summary.unreadCount);
-    } catch {
-      // Silently fail — notifications are non-critical
+    } catch (err) {
+      console.error('[NotificationPopover] Failed to fetch notifications:', err);
     }
   }, []);
 
@@ -97,7 +90,6 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
     startTransition(async () => { await fetchNotifications(); });
   }, [open, fetchNotifications]);
 
-  // Client polling — refresh every 60s while sheet is open
   useEffect(() => {
     if (!open) return;
     const interval = setInterval(() => {
@@ -177,19 +169,47 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
   }, [visibleNotifications]);
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <SheetHeader>
+    <Popover open={open} onOpenChange={setOpen}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="relative size-8"
+              aria-label={
+                unreadCount > 0
+                  ? `Notifications (${unreadCount} unread)`
+                  : 'Notifications'
+              }
+            >
+              <Bell className="size-4" aria-hidden />
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          {unreadCount > 0
+            ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
+            : 'Notifications'}
+        </TooltipContent>
+      </Tooltip>
+      <PopoverContent align="end" className={cn(POPOVER_NOTIFICATION_W, 'p-0')}>
+        <div className="border-b px-4 py-3">
           <div className="flex items-center justify-between">
-            <SheetTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
+            <h3 className="flex items-center gap-2 text-sm font-semibold">
+              <Bell className="h-4 w-4" />
               Notifications
               {unreadCount > 0 && (
-                <Badge variant="destructive" className="ml-1 h-5 min-w-5 justify-center text-xs">
+                <Badge variant="destructive" className="h-5 min-w-5 justify-center text-xs">
                   {unreadCount}
                 </Badge>
               )}
-            </SheetTitle>
+            </h3>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
@@ -203,17 +223,14 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
               </Button>
             )}
           </div>
-          <SheetDescription className="sr-only">
-            View and manage your notifications
-          </SheetDescription>
-        </SheetHeader>
+        </div>
 
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as 'all' | 'unread')}
-          className="mt-4"
+          className="px-2"
         >
-          <TabsList className="w-full">
+          <TabsList className="mt-2 w-full">
             <TabsTrigger value="all" className="flex-1">
               All
             </TabsTrigger>
@@ -227,60 +244,54 @@ export function NotificationCenter({ open, onOpenChange }: NotificationCenterPro
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-3">
-            <ScrollArea className="h-[calc(100vh-14rem)]">
-              {visibleNotifications.length === 0 ? (
-                <EmptyNotifications tab={activeTab} />
-              ) : (
-                <div className="space-y-4 pr-4">
-                  {groupedNotifications.map((group) => (
-                    <div key={group.label}>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        {group.label}
-                      </p>
-                      <div className="space-y-2">
-                        {group.items.map((notification) => (
-                          <NotificationItem
-                            key={notification.id}
-                            notification={notification}
-                            onMarkRead={handleMarkRead}
-                            onDismiss={handleDismiss}
-                            onClose={() => onOpenChange(false)}
-                          />
-                        ))}
+          <TabsContent value={activeTab} className="mt-2">
+            <ScrollArea className={SCROLL_MAX_H}>
+              <div className="pb-4 pr-2">
+                {visibleNotifications.length === 0 ? (
+                  <EmptyState
+                    title={activeTab === 'unread' ? 'All caught up!' : 'No notifications'}
+                    description={
+                      activeTab === 'unread'
+                        ? 'You have no unread notifications.'
+                        : 'Notifications will appear here when there are updates.'
+                    }
+                    icon={BellOff}
+                    variant="firstRun"
+                    size="sm"
+                    animate={false}
+                    className="border-0 py-8"
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    {groupedNotifications.map((group) => (
+                      <div key={group.label}>
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          {group.label}
+                        </p>
+                        <div className="space-y-2">
+                          {group.items.map((notification) => (
+                            <NotificationItem
+                              key={notification.id}
+                              notification={notification}
+                              onMarkRead={handleMarkRead}
+                              onDismiss={handleDismiss}
+                              onClose={() => setOpen(false)}
+                            />
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </ScrollArea>
           </TabsContent>
         </Tabs>
-      </SheetContent>
-    </Sheet>
+      </PopoverContent>
+    </Popover>
   );
 }
-NotificationCenter.displayName = 'NotificationCenter';
-
-// ─── Empty State ─────────────────────────────────────────────────────────────
-
-function EmptyNotifications({ tab }: { tab: 'all' | 'unread' }) {
-  return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <BellOff className="h-10 w-10 text-muted-foreground/40" />
-      <div>
-        <p className="text-sm font-medium">
-          {tab === 'unread' ? 'All caught up!' : 'No notifications'}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {tab === 'unread'
-            ? 'You have no unread notifications.'
-            : 'Notifications will appear here when there are updates.'}
-        </p>
-      </div>
-    </div>
-  );
-}
+NotificationPopover.displayName = 'NotificationPopover';
 
 // ─── Individual Notification ─────────────────────────────────────────────────
 
@@ -298,19 +309,14 @@ function NotificationItem({
   onClose,
 }: NotificationItemProps) {
   const isUnread = notification.status === 'unread';
-  const SeverityIcon = SEVERITY_ICON[notification.severity];
-  const severityColor = SEVERITY_COLOR[notification.severity];
-  const bgColor = isUnread ? SEVERITY_BG[notification.severity] : '';
+  const SeverityIcon = NOTIFICATION_SEVERITY_ICON[notification.severity];
+  const severityColor = NOTIFICATION_SEVERITY_COLOR[notification.severity];
+  const bgColor = isUnread ? NOTIFICATION_SEVERITY_BG[notification.severity] : '';
 
-  const timeSince = React.useMemo(() => {
-    const diffMs = Date.now() - new Date(notification.createdAt).getTime();
-    const mins = Math.floor(diffMs / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
-  }, [notification.createdAt]);
+  const timeSince = React.useMemo(
+    () => formatRelativeTime(notification.createdAt),
+    [notification.createdAt],
+  );
 
   return (
     <div
@@ -325,13 +331,15 @@ function NotificationItem({
       )}
     >
       {/* Dismiss button */}
-      <button
-        className="absolute right-2 top-2 hidden rounded-sm p-0.5 text-muted-foreground/60 hover:text-foreground group-hover:block"
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute right-2 top-2 hidden h-6 w-6 text-muted-foreground/60 hover:text-foreground group-hover:flex"
         onClick={() => onDismiss(notification.id)}
         aria-label="Dismiss notification"
       >
         <X className="h-3.5 w-3.5" />
-      </button>
+      </Button>
 
       <div className="flex gap-3">
         {/* Icon */}
@@ -411,23 +419,37 @@ interface NotificationBadgeProps {
 
 /**
  * Bell icon button with unread count badge. Used in the status cluster.
+ * Follows shadcn patterns: Tooltip, shell tokens, aria-label.
  */
 export function NotificationBadge({ unreadCount, onClick }: NotificationBadgeProps) {
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      className="relative h-8 w-8"
-      onClick={onClick}
-      aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
-    >
-      <Bell className="h-4 w-4" />
-      {unreadCount > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-          {unreadCount > 99 ? '99+' : unreadCount}
-        </span>
-      )}
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="relative size-8"
+          onClick={onClick}
+          aria-label={
+            unreadCount > 0
+              ? `Notifications (${unreadCount} unread)`
+              : 'Notifications'
+          }
+        >
+          <Bell className="size-4" aria-hidden />
+          {unreadCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        {unreadCount > 0
+          ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
+          : 'Notifications'}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 NotificationBadge.displayName = 'NotificationBadge';

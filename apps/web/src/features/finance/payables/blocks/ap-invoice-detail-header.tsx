@@ -1,16 +1,27 @@
 import { StatusBadge } from '@/components/erp/status-badge';
 import { DateCell } from '@/components/erp/date-cell';
 import { MoneyCell } from '@/components/erp/money-cell';
-import type { ApInvoiceDetail } from '../queries/ap.queries';
+import { Badge } from '@/components/ui/badge';
+import type { ApInvoiceDetail, InvoiceEarlyDiscount } from '../queries/ap.queries';
+import { format } from 'date-fns';
 
 interface ApInvoiceDetailHeaderProps {
   invoice: ApInvoiceDetail;
+  earlyDiscount?: InvoiceEarlyDiscount | null;
 }
 
-export function ApInvoiceDetailHeader({ invoice }: ApInvoiceDetailHeaderProps) {
+export function ApInvoiceDetailHeader({ invoice, earlyDiscount }: ApInvoiceDetailHeaderProps) {
+  const showDiscountBadge =
+    earlyDiscount &&
+    (earlyDiscount.eligible
+      ? true
+      : earlyDiscount.discountDeadline &&
+        new Date(earlyDiscount.discountDeadline) > new Date() &&
+        earlyDiscount.savingsPercent > 0);
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-xl font-bold font-mono">{invoice.invoiceNumber}</h2>
           <p className="text-sm text-muted-foreground">{invoice.supplierName}</p>
@@ -18,7 +29,16 @@ export function ApInvoiceDetailHeader({ invoice }: ApInvoiceDetailHeaderProps) {
             <p className="mt-1 text-sm text-muted-foreground">{invoice.description}</p>
           )}
         </div>
-        <StatusBadge status={invoice.status} />
+        <div className="flex items-center gap-2">
+          {showDiscountBadge && earlyDiscount && (
+            <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+              {earlyDiscount.eligible
+                ? `Save ${earlyDiscount.savingsPercent}% — pay by ${earlyDiscount.discountDeadline ? format(new Date(earlyDiscount.discountDeadline), 'MMM d') : ''}`
+                : `Pay by ${earlyDiscount.discountDeadline ? format(new Date(earlyDiscount.discountDeadline), 'MMM d') : ''} to save ${earlyDiscount.savingsPercent}%`}
+            </Badge>
+          )}
+          <StatusBadge status={invoice.status} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 rounded-lg border p-4 sm:grid-cols-4">

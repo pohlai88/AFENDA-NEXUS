@@ -1,16 +1,27 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTenantContext } from '@/providers/tenant-provider';
 import { useListOrganizations, organization } from '@/lib/auth-client';
 import { switchOrganizationAction } from '@/lib/kernel-actions';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Building2, ChevronsUpDown, Plus, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from '@/components/ui/sidebar';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -20,20 +31,24 @@ interface TenantSwitcherProps {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
+/**
+ * Tenant (organization) switcher for the domain popover sidebar.
+ *
+ * Displays the active organization name and allows switching between
+ * organizations via a dropdown. Switching orgs triggers a full session
+ * reload via `switchOrganizationAction`.
+ */
 function TenantSwitcher({ className }: TenantSwitcherProps) {
   const { tenant } = useTenantContext();
   const router = useRouter();
   const { data: orgsData } = useListOrganizations();
-  const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const { isMobile } = useSidebar();
 
   const orgs = orgsData ?? [];
 
   function handleSwitchOrg(orgId: string) {
-    if (orgId === tenant?.tenantId) {
-      setOpen(false);
-      return;
-    }
+    if (orgId === tenant?.tenantId) return;
 
     startTransition(async () => {
       const { error } = await organization.setActive({ organizationId: orgId });
@@ -41,7 +56,6 @@ function TenantSwitcher({ className }: TenantSwitcherProps) {
 
       const result = await switchOrganizationAction();
       if (result.ok) {
-        setOpen(false);
         router.refresh();
       }
     });
@@ -49,62 +63,83 @@ function TenantSwitcher({ className }: TenantSwitcherProps) {
 
   if (!tenant) return null;
 
+  const hasMultipleOrgs = orgs.length > 1;
+
+  if (!hasMultipleOrgs) {
+    // Single org – show a static label, no dropdown.
+    return (
+      <div
+        className={cn(
+          'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm',
+          className,
+        )}
+      >
+        <Building2 className="size-4 text-muted-foreground" aria-hidden="true" />
+        <span className="truncate font-medium">{tenant.tenantName}</span>
+      </div>
+    );
+  }
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          aria-label="Switch organization"
-          className={cn('w-full justify-start gap-2 px-3', className)}
-        >
-          <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="truncate font-medium">{tenant.tenantName}</span>
-          {isPending ? (
-            <Loader2 className="ml-auto h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
-          ) : (
-            <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-64 p-1" align="start">
-        <div className="flex flex-col">
-          <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-            Organizations
-          </p>
-          {orgs.map((org) => (
-            <Button
-              key={org.id}
-              variant="ghost"
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
               size="sm"
-              onClick={() => handleSwitchOrg(org.id)}
-              disabled={isPending}
-              className="w-full justify-start gap-2 px-2 font-normal"
-            >
-              <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <span className="truncate">{org.name}</span>
-              {org.id === tenant.tenantId && (
-                <Check className="ml-auto h-4 w-4 shrink-0" aria-hidden="true" />
+              className={cn(
+                'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+                className,
               )}
-            </Button>
-          ))}
-          <Separator className="my-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setOpen(false);
-              router.push('/onboarding');
-            }}
-            className="w-full justify-start gap-2 px-2 font-normal"
+            >
+              <Building2 className="size-4 shrink-0" aria-hidden="true" />
+              <span className="truncate">{tenant.tenantName}</span>
+              {isPending ? (
+                <Loader2 className="ml-auto size-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <ChevronsUpDown className="ml-auto size-4 shrink-0" />
+              )}
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-(--radix-dropdown-menu-trigger-width) min-w-48 rounded-lg"
+            align="start"
+            side={isMobile ? 'bottom' : 'right'}
+            sideOffset={4}
           >
-            <Plus className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <span>Create new organization</span>
-          </Button>
-        </div>
-      </PopoverContent>
-    </Popover>
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
+              Organizations
+            </DropdownMenuLabel>
+            {orgs.map((org) => (
+              <DropdownMenuItem
+                key={org.id}
+                onClick={() => handleSwitchOrg(org.id)}
+                disabled={isPending}
+                className="gap-2 p-2"
+              >
+                <div className="flex size-6 items-center justify-center rounded-sm border">
+                  <Building2 className="size-3.5 shrink-0" />
+                </div>
+                <span className="truncate">{org.name}</span>
+                {org.id === tenant.tenantId && (
+                  <Check className="ml-auto size-4 shrink-0" aria-hidden="true" />
+                )}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="gap-2 p-2"
+              onClick={() => router.push('/onboarding')}
+            >
+              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                <Plus className="size-4" />
+              </div>
+              <div className="text-muted-foreground font-medium">Add organization</div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
 }
 TenantSwitcher.displayName = 'TenantSwitcher';

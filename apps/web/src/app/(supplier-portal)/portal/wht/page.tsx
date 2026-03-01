@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   getPortalSupplier,
@@ -7,6 +8,7 @@ import { PageHeader } from '@/components/erp/page-header';
 import { PortalWhtTable } from '@/features/portal/blocks/portal-wht-table';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalWhtPage() {
   const ctx = await getRequestContext();
@@ -26,6 +28,7 @@ export default async function PortalWhtPage() {
   const result = await getPortalWhtCertificates(ctx, supplier.supplierId);
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="WHT Certificates"
@@ -44,5 +47,6 @@ export default async function PortalWhtPage() {
         </div>
       )}
     </div>
+    </Suspense>
   );
 }

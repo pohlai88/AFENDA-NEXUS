@@ -65,6 +65,11 @@ import {
   MinusCircle,
   Star,
   Target,
+  Copy,
+  Zap,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
 
 /**
@@ -129,6 +134,11 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   MinusCircle,
   Star,
   Target,
+  Copy,
+  Zap,
+  Sun,
+  Moon,
+  Monitor,
 };
 
 /**

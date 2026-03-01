@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalRemittance } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
@@ -8,6 +9,7 @@ import { notFound } from 'next/navigation';
 import { routes } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 interface Props {
   params: Promise<{ runId: string }>;
@@ -45,6 +47,7 @@ export default async function PortalPaymentDetailPage({ params }: Props) {
   const remittance = result.value;
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
@@ -83,5 +86,6 @@ export default async function PortalPaymentDetailPage({ params }: Props) {
         ]}
       />
     </div>
+    </Suspense>
   );
 }

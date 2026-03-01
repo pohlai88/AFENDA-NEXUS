@@ -12,6 +12,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { postArInvoice } from '../services/post-ar-invoice.js';
+import { previewArPosting } from '../services/preview-ar-posting.js';
 import { createCreditNote } from '../services/create-credit-note.js';
 import { writeOffInvoice } from '../services/write-off-invoice.js';
 import { extractIdentity } from '@afenda/api-kit';
@@ -141,6 +142,32 @@ export function registerArInvoiceRoutes(
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return writeOffInvoice({ tenantId, userId, invoiceId: id, reason: body.reason }, deps);
+      });
+
+      return result.ok
+        ? reply.send(result.value)
+        : reply.status(mapErrorToStatus(result.error)).send({ error: result.error });
+    }
+  );
+
+  // POST /ar/invoices/:id/preview-posting — preview GL lines without persisting
+  app.post(
+    '/ar/invoices/:id/preview-posting',
+    { preHandler: [requirePermission(policy, 'report:read')] },
+    async (req, reply) => {
+      const { id } = IdParamSchema.parse(req.params);
+      const { tenantId, userId } = extractIdentity(req);
+      const body = PostArInvoiceSchema.parse(req.body);
+
+      const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
+        return previewArPosting(
+          {
+            invoiceId: id,
+            fiscalPeriodId: body.fiscalPeriodId,
+            arAccountId: body.arAccountId,
+          },
+          deps
+        );
       });
 
       return result.ok

@@ -1,12 +1,12 @@
 import { cookies } from 'next/headers';
-import { AppShell } from '@/components/erp/app-shell';
+import { AfendaAppShell } from '@/components/afenda/afenda-app-shell';
 import { logoutAction } from '@/lib/auth-actions';
 import { requireAuth, getRequestContext } from '@/lib/auth';
 import { buildInitialTenantContext } from '@/lib/tenant-context.server';
 import { setActiveCompanyAction } from '@/lib/tenant-actions';
 import { isAdmin } from '@/lib/modules/is-admin.server';
 import { computeVisibleModulesWithNav } from '@/lib/modules/module-definitions.server';
-import { parseShellCookie, SHELL_COOKIE_NAME } from '@/lib/shell/shell-persistence';
+import { parseShellCookie, buildShellCookieKey } from '@/lib/shell/shell-persistence';
 import { resolveAttentionSummary } from '@/lib/attention/attention-registry.server';
 
 export const dynamic = 'force-dynamic';
@@ -21,8 +21,15 @@ export default async function ShellLayout({ children }: { children: React.ReactN
     resolveAttentionSummary(requestContext),
   ]);
 
-  // Read shell preferences from cookie for SSR-correct initial render
-  const shellCookie = cookieStore.get(SHELL_COOKIE_NAME)?.value;
+  // Build company-scoped cookie key for multi-company preference isolation
+  const prefsCookieKey = buildShellCookieKey(
+    requestContext.tenantId,
+    requestContext.userId,
+    initialTenant?.activeCompanyId,
+  );
+
+  // Read shell preferences from scoped cookie for SSR-correct initial render
+  const shellCookie = cookieStore.get(prefsCookieKey)?.value;
   const defaultPrefs = parseShellCookie(shellCookie);
 
   const user = session?.user
@@ -37,16 +44,17 @@ export default async function ShellLayout({ children }: { children: React.ReactN
   const modules = computeVisibleModulesWithNav(canSeeAdmin);
 
   return (
-    <AppShell
+    <AfendaAppShell
       initialTenant={initialTenant}
       user={user}
       logoutAction={logoutAction}
       onSwitchCompany={setActiveCompanyAction}
       modules={modules}
       defaultPrefs={defaultPrefs}
+      prefsCookieKey={prefsCookieKey}
       attentionSummary={attentionSummary}
     >
       {children}
-    </AppShell>
+    </AfendaAppShell>
   );
 }

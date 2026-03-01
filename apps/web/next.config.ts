@@ -1,6 +1,45 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 import bundleAnalyzer from '@next/bundle-analyzer';
+
+// ─── Monorepo Root .env Loader ─────────────────────────────────────────────
+// Next.js only auto-loads .env from the app directory (apps/web/).
+// We keep a single root .env per monorepo convention, so we parse it here
+// before any module evaluation. Existing env vars (CI, Vercel, etc.) win.
+function loadRootEnv() {
+  const envPath = resolve(import.meta.dirname, '../../.env');
+  let content: string;
+  try {
+    content = readFileSync(envPath, 'utf-8');
+  } catch {
+    return; // Root .env missing — rely on platform-injected vars
+  }
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    let value = trimmed.slice(eqIdx + 1).trim();
+    // Strip surrounding quotes (single or double)
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    // Strip inline comments (only outside quoted values)
+    const hashIdx = value.indexOf(' #');
+    if (hashIdx !== -1) value = value.slice(0, hashIdx).trim();
+    // Never overwrite existing env vars (CI / Vercel / .env.local take precedence)
+    if (!(key in process.env)) {
+      process.env[key] = value;
+    }
+  }
+}
+loadRootEnv();
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -44,7 +83,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       'cmdk',
       'react-day-picker',
-      '@radix-ui/react-icons',
       '@radix-ui/react-checkbox',
       '@radix-ui/react-radio-group',
       '@radix-ui/react-progress',
@@ -63,7 +101,7 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 3600,
     dangerouslyAllowSVG: false,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -103,7 +141,8 @@ const nextConfig: NextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "object-src 'none'",
-              "upgrade-insecure-requests",
+              // Only upgrade to HTTPS in production; dev server is HTTP-only
+              ...(isDev ? [] : ['upgrade-insecure-requests']),
             ].join('; '),
           },
           {

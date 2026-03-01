@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   getPortalSupplier,
@@ -10,6 +11,7 @@ import { PortalInvoiceLinesTable } from '@/features/portal/blocks/portal-invoice
 import { AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -47,6 +49,7 @@ export default async function PortalInvoiceDetailPage({ params }: Props) {
   const invoice = result.value;
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
@@ -73,5 +76,6 @@ export default async function PortalInvoiceDetailPage({ params }: Props) {
         ]}
       />
     </div>
+    </Suspense>
   );
 }

@@ -1,289 +1,278 @@
-'use server';
+import { createApiClient } from '@/lib/api-client';
+import type { ApiResult, CommandReceipt } from '@/lib/types';
 
-import type { CustomerCredit, CreditReview, CreditHold, CreditSummary } from '../types';
+// ─── Context type ────────────────────────────────────────────────────────────
 
-// ─── Mock Data ───────────────────────────────────────────────────────────────
+type Ctx = { tenantId: string; userId: string; token: string };
 
-const mockCustomerCredits: CustomerCredit[] = [
-  {
-    id: 'cc-1',
-    customerId: 'cust-1',
-    customerCode: 'CUST-001',
-    customerName: 'ABC Corporation',
-    creditLimit: 500000,
-    currentBalance: 325000,
-    availableCredit: 175000,
-    utilizationPercent: 65,
-    overdueAmount: 0,
-    currency: 'USD',
-    paymentTermsDays: 30,
-    avgPaymentDays: 28,
-    riskRating: 'low',
-    status: 'active',
-    lastReviewDate: new Date('2025-12-15'),
-    nextReviewDate: new Date('2026-06-15'),
-    reviewFrequency: 'quarterly',
-    creditScoreExternal: 720,
-    creditScoreInternal: 85,
-    isOnHold: false,
-    holdReason: null,
-    holdDate: null,
-    holdBy: null,
-    approvedBy: 'credit.mgr@company.com',
-    approvedDate: new Date('2025-12-15'),
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2026-02-20'),
-  },
-  {
-    id: 'cc-2',
-    customerId: 'cust-2',
-    customerCode: 'CUST-002',
-    customerName: 'XYZ Industries',
-    creditLimit: 250000,
-    currentBalance: 245000,
-    availableCredit: 5000,
-    utilizationPercent: 98,
-    overdueAmount: 45000,
-    currency: 'USD',
-    paymentTermsDays: 30,
-    avgPaymentDays: 52,
-    riskRating: 'high',
-    status: 'on_hold',
-    lastReviewDate: new Date('2025-11-20'),
-    nextReviewDate: new Date('2026-02-28'),
-    reviewFrequency: 'quarterly',
-    creditScoreExternal: 580,
-    creditScoreInternal: 45,
-    isOnHold: true,
-    holdReason: 'Overdue balance exceeds 30 days',
-    holdDate: new Date('2026-02-15'),
-    holdBy: 'credit.analyst@company.com',
-    approvedBy: 'credit.mgr@company.com',
-    approvedDate: new Date('2025-11-20'),
-    createdAt: new Date('2023-06-10'),
-    updatedAt: new Date('2026-02-15'),
-  },
-  {
-    id: 'cc-3',
-    customerId: 'cust-3',
-    customerCode: 'CUST-003',
-    customerName: 'Global Trading LLC',
-    creditLimit: 1000000,
-    currentBalance: 450000,
-    availableCredit: 550000,
-    utilizationPercent: 45,
-    overdueAmount: 0,
-    currency: 'USD',
-    paymentTermsDays: 45,
-    avgPaymentDays: 38,
-    riskRating: 'low',
-    status: 'active',
-    lastReviewDate: new Date('2026-01-10'),
-    nextReviewDate: new Date('2027-01-10'),
-    reviewFrequency: 'annually',
-    creditScoreExternal: 780,
-    creditScoreInternal: 92,
-    isOnHold: false,
-    holdReason: null,
-    holdDate: null,
-    holdBy: null,
-    approvedBy: 'cfo@company.com',
-    approvedDate: new Date('2026-01-10'),
-    createdAt: new Date('2022-03-20'),
-    updatedAt: new Date('2026-01-10'),
-  },
-];
+// ─── View Models ─────────────────────────────────────────────────────────────
 
-const mockReviews: CreditReview[] = [
-  {
-    id: 'rev-1',
-    reviewNumber: 'CR-2026-001',
-    customerId: 'cust-2',
-    customerCode: 'CUST-002',
-    customerName: 'XYZ Industries',
-    reviewType: 'risk_triggered',
-    status: 'in_progress',
-    currentLimit: 250000,
-    proposedLimit: 150000,
-    currentRating: 'high',
-    proposedRating: 'high',
-    currency: 'USD',
-    requestedBy: 'system',
-    requestedAt: new Date('2026-02-15'),
-    assignedTo: 'credit.analyst@company.com',
-    financialAnalysis: 'Customer shows declining payment behavior over past 6 months.',
-    paymentHistory: 'Average days to pay increased from 35 to 52 days.',
-    recommendation: null,
-    approvedBy: null,
-    approvedAt: null,
-    rejectionReason: null,
-    dueDate: new Date('2026-02-28'),
-    completedAt: null,
-    createdAt: new Date('2026-02-15'),
-    updatedAt: new Date('2026-02-20'),
-  },
-  {
-    id: 'rev-2',
-    reviewNumber: 'CR-2026-002',
-    customerId: 'cust-4',
-    customerCode: 'CUST-004',
-    customerName: 'New Ventures Inc.',
-    reviewType: 'new_customer',
-    status: 'pending',
-    currentLimit: 0,
-    proposedLimit: 100000,
-    currentRating: 'medium',
-    proposedRating: 'medium',
-    currency: 'USD',
-    requestedBy: 'sales@company.com',
-    requestedAt: new Date('2026-02-22'),
-    assignedTo: null,
-    financialAnalysis: null,
-    paymentHistory: null,
-    recommendation: null,
-    approvedBy: null,
-    approvedAt: null,
-    rejectionReason: null,
-    dueDate: new Date('2026-03-05'),
-    completedAt: null,
-    createdAt: new Date('2026-02-22'),
-    updatedAt: new Date('2026-02-22'),
-  },
-];
+export interface CustomerCreditView {
+  id: string;
+  customerId: string;
+  customerCode: string;
+  customerName: string;
+  creditLimit: number;
+  currentBalance: number;
+  availableCredit: number;
+  utilizationPercent: number;
+  overdueAmount: number;
+  currency: string;
+  paymentTermsDays: number;
+  avgPaymentDays: number;
+  riskRating: string;
+  status: string;
+  lastReviewDate: string;
+  nextReviewDate: string;
+  reviewFrequency: string;
+  creditScoreExternal: number | null;
+  creditScoreInternal: number | null;
+  isOnHold: boolean;
+  holdReason: string | null;
+  holdDate: string | null;
+  holdBy: string | null;
+  approvedBy: string | null;
+  approvedDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
-const mockHolds: CreditHold[] = [
-  {
-    id: 'hold-1',
-    customerId: 'cust-2',
-    customerCode: 'CUST-002',
-    customerName: 'XYZ Industries',
-    holdType: 'overdue',
-    status: 'active',
-    reason: 'Overdue balance exceeds 30 days threshold',
-    amount: 45000,
-    currency: 'USD',
-    blockedOrders: 3,
-    blockedOrderValue: 85000,
-    holdDate: new Date('2026-02-15'),
-    holdBy: 'system',
-    releaseDate: null,
-    releaseBy: null,
-    releaseNotes: null,
-    escalatedTo: null,
-    escalatedAt: null,
-    autoRelease: true,
-    autoReleaseCondition: 'On full payment of overdue amount',
-  },
-];
+export interface CreditReviewView {
+  id: string;
+  reviewNumber: string;
+  customerId: string;
+  customerCode: string;
+  customerName: string;
+  reviewType: string;
+  status: string;
+  currentLimit: number;
+  proposedLimit: number;
+  currentRating: string;
+  proposedRating: string;
+  currency: string;
+  requestedBy: string;
+  requestedAt: string;
+  assignedTo: string | null;
+  financialAnalysis: string | null;
+  paymentHistory: string | null;
+  recommendation: string | null;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  rejectionReason: string | null;
+  dueDate: string;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
-// ─── Query Functions ─────────────────────────────────────────────────────────
+export interface CreditHoldView {
+  id: string;
+  customerId: string;
+  customerCode: string;
+  customerName: string;
+  holdType: string;
+  status: string;
+  reason: string;
+  amount: number;
+  currency: string;
+  blockedOrders: number;
+  blockedOrderValue: number;
+  holdDate: string;
+  holdBy: string;
+  releaseDate: string | null;
+  releaseBy: string | null;
+  releaseNotes: string | null;
+  escalatedTo: string | null;
+  escalatedAt: string | null;
+  autoRelease: boolean;
+  autoReleaseCondition: string | null;
+}
 
-export async function getCustomerCredits(params?: {
-  status?: string;
-  riskRating?: string;
-  onHold?: boolean;
-  search?: string;
-}): Promise<{ ok: true; data: CustomerCredit[] } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
+export interface CreditSummaryView {
+  totalCustomers: number;
+  totalCreditLimit: number;
+  totalOutstanding: number;
+  totalOverdue: number;
+  avgUtilization: number;
+  customersOnHold: number;
+  pendingReviews: number;
+  overdueReviews: number;
+  highRiskCustomers: number;
+}
 
-  let filtered = [...mockCustomerCredits];
+// ─── Customer Credit Queries ─────────────────────────────────────────────────
 
-  if (params?.status) {
-    filtered = filtered.filter((c) => c.status === params.status);
-  }
+export async function getCustomerCredits(
+  ctx: Ctx,
+  params?: { status?: string; riskRating?: string; onHold?: boolean; search?: string },
+): Promise<ApiResult<{ data: CustomerCreditView[] }>> {
+  const client = createApiClient(ctx);
+  const query: Record<string, string> = {};
+  if (params?.status) query.status = params.status;
+  if (params?.riskRating) query.riskRating = params.riskRating;
+  if (params?.onHold !== undefined) query.onHold = String(params.onHold);
+  if (params?.search) query.search = params.search;
 
-  if (params?.riskRating) {
-    filtered = filtered.filter((c) => c.riskRating === params.riskRating);
-  }
-
-  if (params?.onHold !== undefined) {
-    filtered = filtered.filter((c) => c.isOnHold === params.onHold);
-  }
-
-  if (params?.search) {
-    const search = params.search.toLowerCase();
-    filtered = filtered.filter(
-      (c) =>
-        c.customerCode.toLowerCase().includes(search) ||
-        c.customerName.toLowerCase().includes(search)
-    );
-  }
-
-  return { ok: true, data: filtered };
+  return client.get<{ data: CustomerCreditView[] }>('/credit-limits', query);
 }
 
 export async function getCustomerCreditById(
-  id: string
-): Promise<{ ok: true; data: CustomerCredit } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 200));
-  const credit = mockCustomerCredits.find((c) => c.id === id);
-  if (!credit) return { ok: false, error: 'Customer credit not found' };
-  return { ok: true, data: credit };
+  ctx: Ctx,
+  id: string,
+): Promise<ApiResult<CustomerCreditView>> {
+  const client = createApiClient(ctx);
+  return client.get<CustomerCreditView>(`/credit-limits/${id}`);
 }
 
-export async function getCreditReviews(params?: {
-  status?: string;
-  reviewType?: string;
-}): Promise<{ ok: true; data: CreditReview[] } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
+export async function setCreditLimit(
+  ctx: Ctx,
+  body: unknown,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>('/credit-limits', body);
+}
 
-  let filtered = [...mockReviews];
+export async function updateRiskRating(
+  ctx: Ctx,
+  customerId: string,
+  rating: string,
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.patch<CommandReceipt>(`/credit-limits/${customerId}/risk-rating`, { rating, reason });
+}
 
-  if (params?.status) {
-    filtered = filtered.filter((r) => r.status === params.status);
-  }
+export async function recalculateInternalScore(
+  ctx: Ctx,
+  customerId: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/credit-limits/${customerId}/recalculate`, {});
+}
 
-  if (params?.reviewType) {
-    filtered = filtered.filter((r) => r.reviewType === params.reviewType);
-  }
+// ─── Credit Review Queries ───────────────────────────────────────────────────
 
-  return { ok: true, data: filtered };
+export async function getCreditReviews(
+  ctx: Ctx,
+  params?: { status?: string; reviewType?: string },
+): Promise<ApiResult<{ data: CreditReviewView[] }>> {
+  const client = createApiClient(ctx);
+  const query: Record<string, string> = {};
+  if (params?.status) query.status = params.status;
+  if (params?.reviewType) query.reviewType = params.reviewType;
+
+  return client.get<{ data: CreditReviewView[] }>('/credit-reviews', query);
 }
 
 export async function getCreditReviewById(
-  id: string
-): Promise<{ ok: true; data: CreditReview } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 200));
-  const review = mockReviews.find((r) => r.id === id);
-  if (!review) return { ok: false, error: 'Credit review not found' };
-  return { ok: true, data: review };
+  ctx: Ctx,
+  id: string,
+): Promise<ApiResult<CreditReviewView>> {
+  const client = createApiClient(ctx);
+  return client.get<CreditReviewView>(`/credit-reviews/${id}`);
 }
 
-export async function getCreditHolds(params?: {
-  status?: string;
-  holdType?: string;
-}): Promise<{ ok: true; data: CreditHold[] } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 250));
-
-  let filtered = [...mockHolds];
-
-  if (params?.status) {
-    filtered = filtered.filter((h) => h.status === params.status);
-  }
-
-  if (params?.holdType) {
-    filtered = filtered.filter((h) => h.holdType === params.holdType);
-  }
-
-  return { ok: true, data: filtered };
+export async function createCreditReview(
+  ctx: Ctx,
+  body: unknown,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>('/credit-reviews', body);
 }
 
-export async function getCreditSummary(): Promise<
-  { ok: true; data: CreditSummary } | { ok: false; error: string }
-> {
-  await new Promise((r) => setTimeout(r, 250));
+export async function updateCreditReview(
+  ctx: Ctx,
+  reviewId: string,
+  body: unknown,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.patch<CommandReceipt>(`/credit-reviews/${reviewId}`, body);
+}
 
-  const summary: CreditSummary = {
-    totalCustomers: 125,
-    totalCreditLimit: 45000000,
-    totalOutstanding: 28500000,
-    totalOverdue: 1250000,
-    avgUtilization: 63.3,
-    customersOnHold: 5,
-    pendingReviews: 8,
-    overdueReviews: 2,
-    highRiskCustomers: 12,
-  };
+export async function approveCreditReview(
+  ctx: Ctx,
+  reviewId: string,
+  body: { approvedLimit: number; approvedRating: string; notes?: string },
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/credit-reviews/${reviewId}/approve`, body);
+}
 
-  return { ok: true, data: summary };
+export async function rejectCreditReview(
+  ctx: Ctx,
+  reviewId: string,
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/credit-reviews/${reviewId}/reject`, { reason });
+}
+
+export async function escalateCreditReview(
+  ctx: Ctx,
+  reviewId: string,
+  escalateTo: string,
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/credit-reviews/${reviewId}/escalate`, { escalateTo, reason });
+}
+
+// ─── Credit Hold Queries ─────────────────────────────────────────────────────
+
+export async function getCreditHolds(
+  ctx: Ctx,
+  params?: { status?: string; holdType?: string },
+): Promise<ApiResult<{ data: CreditHoldView[] }>> {
+  const client = createApiClient(ctx);
+  const query: Record<string, string> = {};
+  if (params?.status) query.status = params.status;
+  if (params?.holdType) query.holdType = params.holdType;
+
+  return client.get<{ data: CreditHoldView[] }>('/credit-holds', query);
+}
+
+export async function placeCreditHold(
+  ctx: Ctx,
+  body: unknown,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>('/credit-holds', body);
+}
+
+export async function releaseCreditHold(
+  ctx: Ctx,
+  holdId: string,
+  notes: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/credit-holds/${holdId}/release`, { notes });
+}
+
+export async function escalateCreditHold(
+  ctx: Ctx,
+  holdId: string,
+  escalateTo: string,
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/credit-holds/${holdId}/escalate`, { escalateTo, reason });
+}
+
+// ─── Summary ─────────────────────────────────────────────────────────────────
+
+export async function getCreditSummary(
+  ctx: Ctx,
+): Promise<ApiResult<CreditSummaryView>> {
+  const client = createApiClient(ctx);
+  return client.get<CreditSummaryView>('/credit-limits/summary');
+}
+
+// ─── Audit ───────────────────────────────────────────────────────────────────
+
+export async function getCreditAudit(
+  ctx: Ctx,
+  customerId: string,
+): Promise<ApiResult<{ data: Array<{ id: string; action: string; userId: string; userName?: string; timestamp: string; details?: string }> }>> {
+  const client = createApiClient(ctx);
+  return client.get<{ data: Array<{ id: string; action: string; userId: string; userName?: string; timestamp: string; details?: string }> }>(`/credit-limits/${customerId}/audit`);
 }

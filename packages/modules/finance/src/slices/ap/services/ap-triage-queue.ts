@@ -115,7 +115,7 @@ export async function assignTriageInvoice(
   input: AssignTriageInput,
   deps: {
     apInvoiceRepo: IApInvoiceRepo;
-    triageAssignmentRepo: ITriageAssignmentRepo;
+    triageAssignmentRepo?: ITriageAssignmentRepo;
     outboxWriter: IOutboxWriter;
   }
 ): Promise<Result<TriageAssignment>> {
@@ -129,6 +129,10 @@ export async function assignTriageInvoice(
         `Invoice must be INCOMPLETE to assign, current: ${found.value.status}`
       )
     );
+  }
+
+  if (!deps.triageAssignmentRepo) {
+    return err(new AppError('NOT_IMPLEMENTED', 'Triage assignment is not configured'));
   }
 
   const assignment = await deps.triageAssignmentRepo.assign({
@@ -160,7 +164,7 @@ export async function resolveTriageInvoice(
   input: ResolveTriageInput,
   deps: {
     apInvoiceRepo: IApInvoiceRepo;
-    triageAssignmentRepo: ITriageAssignmentRepo;
+    triageAssignmentRepo?: ITriageAssignmentRepo;
     outboxWriter: IOutboxWriter;
   }
 ): Promise<Result<ApInvoice>> {
@@ -179,7 +183,9 @@ export async function resolveTriageInvoice(
   const updated = await deps.apInvoiceRepo.updateStatus(input.invoiceId, input.targetStatus);
   if (!updated.ok) return updated;
 
-  await deps.triageAssignmentRepo.unassign(input.invoiceId);
+  if (deps.triageAssignmentRepo) {
+    await deps.triageAssignmentRepo.unassign(input.invoiceId);
+  }
 
   await deps.outboxWriter.write({
     tenantId: input.tenantId,

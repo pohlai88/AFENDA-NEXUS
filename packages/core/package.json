@@ -30,6 +30,7 @@
   "devDependencies": {
     "@afenda/typescript-config": "workspace:*",
     "@afenda/eslint-config": "workspace:*",
+    "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

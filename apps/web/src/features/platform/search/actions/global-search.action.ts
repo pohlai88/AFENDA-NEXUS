@@ -1,6 +1,7 @@
 'use server';
 
 import type { EntitySearchResult } from '@/lib/search/search.types';
+import { routes } from '@/lib/constants';
 
 // ─── Global Search Server Action ──────────────────────────────────────────────
 //
@@ -16,30 +17,30 @@ const PER_TYPE_LIMIT = 5;
 /** Stub data representing different entity types for demo/dev purposes. */
 const STUB_ENTITIES: Omit<EntitySearchResult, 'id' | 'category'>[] = [
   // Journals
-  { title: 'JE-2026-001', subtitle: 'Monthly salary allocation', entityType: 'journal', href: '/finance/journals/je-2026-001', icon: 'BookOpen', moduleId: 'finance' },
-  { title: 'JE-2026-002', subtitle: 'Office rent accrual', entityType: 'journal', href: '/finance/journals/je-2026-002', icon: 'BookOpen', moduleId: 'finance' },
-  { title: 'JE-2026-003', subtitle: 'Depreciation - Q1', entityType: 'journal', href: '/finance/journals/je-2026-003', icon: 'BookOpen', moduleId: 'finance' },
-  { title: 'JE-2026-004', subtitle: 'Revenue recognition Feb', entityType: 'journal', href: '/finance/journals/je-2026-004', icon: 'BookOpen', moduleId: 'finance' },
-  { title: 'JE-2026-005', subtitle: 'FX revaluation', entityType: 'journal', href: '/finance/journals/je-2026-005', icon: 'BookOpen', moduleId: 'finance' },
+  { title: 'JE-2026-001', subtitle: 'Monthly salary allocation', entityType: 'journal', href: routes.finance.journalDetail('je-2026-001'), icon: 'BookOpen', moduleId: 'finance' },
+  { title: 'JE-2026-002', subtitle: 'Office rent accrual', entityType: 'journal', href: routes.finance.journalDetail('je-2026-002'), icon: 'BookOpen', moduleId: 'finance' },
+  { title: 'JE-2026-003', subtitle: 'Depreciation - Q1', entityType: 'journal', href: routes.finance.journalDetail('je-2026-003'), icon: 'BookOpen', moduleId: 'finance' },
+  { title: 'JE-2026-004', subtitle: 'Revenue recognition Feb', entityType: 'journal', href: routes.finance.journalDetail('je-2026-004'), icon: 'BookOpen', moduleId: 'finance' },
+  { title: 'JE-2026-005', subtitle: 'FX revaluation', entityType: 'journal', href: routes.finance.journalDetail('je-2026-005'), icon: 'BookOpen', moduleId: 'finance' },
 
   // Accounts
-  { title: '1000 - Cash & Equivalents', subtitle: 'Asset', entityType: 'account', href: '/finance/accounts/1000', icon: 'Landmark', moduleId: 'finance' },
-  { title: '1200 - Accounts Receivable', subtitle: 'Asset', entityType: 'account', href: '/finance/accounts/1200', icon: 'Landmark', moduleId: 'finance' },
-  { title: '2000 - Accounts Payable', subtitle: 'Liability', entityType: 'account', href: '/finance/accounts/2000', icon: 'Landmark', moduleId: 'finance' },
-  { title: '4000 - Revenue', subtitle: 'Revenue', entityType: 'account', href: '/finance/accounts/4000', icon: 'Landmark', moduleId: 'finance' },
-  { title: '5000 - Cost of Goods Sold', subtitle: 'Expense', entityType: 'account', href: '/finance/accounts/5000', icon: 'Landmark', moduleId: 'finance' },
+  { title: '1000 - Cash & Equivalents', subtitle: 'Asset', entityType: 'account', href: routes.finance.accountDetail('1000'), icon: 'Landmark', moduleId: 'finance' },
+  { title: '1200 - Accounts Receivable', subtitle: 'Asset', entityType: 'account', href: routes.finance.accountDetail('1200'), icon: 'Landmark', moduleId: 'finance' },
+  { title: '2000 - Accounts Payable', subtitle: 'Liability', entityType: 'account', href: routes.finance.accountDetail('2000'), icon: 'Landmark', moduleId: 'finance' },
+  { title: '4000 - Revenue', subtitle: 'Revenue', entityType: 'account', href: routes.finance.accountDetail('4000'), icon: 'Landmark', moduleId: 'finance' },
+  { title: '5000 - Cost of Goods Sold', subtitle: 'Expense', entityType: 'account', href: routes.finance.accountDetail('5000'), icon: 'Landmark', moduleId: 'finance' },
 
   // Suppliers
-  { title: 'Acme Corporation', subtitle: 'Active supplier', entityType: 'supplier', href: '/finance/payables/suppliers/acme', icon: 'Building2', moduleId: 'finance' },
-  { title: 'Global Logistics Ltd', subtitle: 'Active supplier', entityType: 'supplier', href: '/finance/payables/suppliers/global-logistics', icon: 'Building2', moduleId: 'finance' },
-  { title: 'TechParts Inc', subtitle: 'Pending onboarding', entityType: 'supplier', href: '/finance/payables/suppliers/techparts', icon: 'Building2', moduleId: 'finance' },
-  { title: 'Office Supplies Co', subtitle: 'Active supplier', entityType: 'supplier', href: '/finance/payables/suppliers/office-supplies', icon: 'Building2', moduleId: 'finance' },
+  { title: 'Acme Corporation', subtitle: 'Active supplier', entityType: 'supplier', href: routes.finance.supplierDetail('acme'), icon: 'Building2', moduleId: 'finance' },
+  { title: 'Global Logistics Ltd', subtitle: 'Active supplier', entityType: 'supplier', href: routes.finance.supplierDetail('global-logistics'), icon: 'Building2', moduleId: 'finance' },
+  { title: 'TechParts Inc', subtitle: 'Pending onboarding', entityType: 'supplier', href: routes.finance.supplierDetail('techparts'), icon: 'Building2', moduleId: 'finance' },
+  { title: 'Office Supplies Co', subtitle: 'Active supplier', entityType: 'supplier', href: routes.finance.supplierDetail('office-supplies'), icon: 'Building2', moduleId: 'finance' },
 
   // Invoices
-  { title: 'INV-2026-0142', subtitle: 'Acme Corporation - $14,500', entityType: 'invoice', href: '/finance/payables/inv-2026-0142', icon: 'FileText', moduleId: 'finance' },
-  { title: 'INV-2026-0143', subtitle: 'Global Logistics - $8,200', entityType: 'invoice', href: '/finance/payables/inv-2026-0143', icon: 'FileText', moduleId: 'finance' },
-  { title: 'INV-2026-0144', subtitle: 'Office Supplies Co - $320', entityType: 'invoice', href: '/finance/payables/inv-2026-0144', icon: 'FileText', moduleId: 'finance' },
-  { title: 'AR-2026-0089', subtitle: 'Customer A - $22,000', entityType: 'invoice', href: '/finance/receivables/ar-2026-0089', icon: 'FileText', moduleId: 'finance' },
+  { title: 'INV-2026-0142', subtitle: 'Acme Corporation - $14,500', entityType: 'invoice', href: routes.finance.payableDetail('inv-2026-0142'), icon: 'FileText', moduleId: 'finance' },
+  { title: 'INV-2026-0143', subtitle: 'Global Logistics - $8,200', entityType: 'invoice', href: routes.finance.payableDetail('inv-2026-0143'), icon: 'FileText', moduleId: 'finance' },
+  { title: 'INV-2026-0144', subtitle: 'Office Supplies Co - $320', entityType: 'invoice', href: routes.finance.payableDetail('inv-2026-0144'), icon: 'FileText', moduleId: 'finance' },
+  { title: 'AR-2026-0089', subtitle: 'Customer A - $22,000', entityType: 'invoice', href: routes.finance.receivableDetail('ar-2026-0089'), icon: 'FileText', moduleId: 'finance' },
 ];
 
 /**

@@ -1,55 +1,54 @@
-'use server';
-
-import type { DesignateHedgeInput } from '@afenda/contracts';
+﻿'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { EffectivenessResult } from '../types';
 import { routes } from '@/lib/constants';
+import { getRequestContext } from '@/lib/auth';
+import {
+  designateHedgeCmd,
+  runEffectivenessTestCmd,
+  discontinueHedgeCmd,
+  recycleCashFlowReserveCmd,
+} from '../queries/hedging.queries';
 
-export async function designateHedgeRelationship(
-  input: DesignateHedgeInput
-): Promise<{ ok: true; relationshipId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] designateHedgeRelationship:', input);
+export async function designateHedgeAction(
+  input: unknown,
+): Promise<{ ok: true; id: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await designateHedgeCmd(ctx, input);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.hedges);
-  return { ok: true, relationshipId: 'hedge-new-' + Date.now() };
+  return { ok: true, id: result.value.id };
 }
 
-export async function runEffectivenessTest(
+export async function runEffectivenessTestAction(
   relationshipId: string,
-  periodEnd: Date,
-  method: string
-): Promise<
-  | { ok: true; result: EffectivenessResult; ineffectiveness: number; journalId: string }
-  | { ok: false; error: string }
-> {
-  await new Promise((r) => setTimeout(r, 600));
-  console.log('[Action] runEffectivenessTest:', relationshipId, periodEnd, method);
-  revalidatePath(routes.finance.hedges);
-  return {
-    ok: true,
-    result: 'effective',
-    ineffectiveness: 2500,
-    journalId: 'je-eff-' + Date.now(),
-  };
+  input: unknown,
+): Promise<{ ok: true; id: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await runEffectivenessTestCmd(ctx, relationshipId, input);
+  if (!result.ok) return result;
+  revalidatePath(routes.finance.hedgeDetail(relationshipId));
+  return { ok: true, id: result.value.id };
 }
 
-export async function discontinueHedge(
+export async function discontinueHedgeAction(
   relationshipId: string,
-  reason: string
-): Promise<{ ok: true; journalId?: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] discontinueHedge:', relationshipId, reason);
+  reason: string,
+): Promise<{ ok: true; journalId: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await discontinueHedgeCmd(ctx, relationshipId, reason);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.hedges);
-  return { ok: true, journalId: 'je-disc-' + Date.now() };
+  return { ok: true, journalId: result.value.journalId };
 }
 
-export async function recycleCashFlowReserve(
+export async function recycleCashFlowReserveAction(
   relationshipId: string,
-  amount: number
-): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] recycleCashFlowReserve:', relationshipId, amount);
-  revalidatePath(routes.finance.hedges);
-  return { ok: true, journalId: 'je-recycle-' + Date.now() };
+  amount: number,
+): Promise<{ ok: true; journalId: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await recycleCashFlowReserveCmd(ctx, relationshipId, amount);
+  if (!result.ok) return result;
+  revalidatePath(routes.finance.hedgeDetail(relationshipId));
+  return { ok: true, journalId: result.value.journalId };
 }

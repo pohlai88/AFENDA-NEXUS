@@ -8,6 +8,7 @@ import {
   Clock,
   ShieldCheck,
   Lock,
+  AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getStatusConfig } from '@/lib/constants';
@@ -20,6 +21,7 @@ const STATUS_ICONS: Record<string, React.ElementType> = {
   REVERSED: Undo2,
   VOIDED: XCircle,
   PENDING_APPROVAL: Clock,
+  INCOMPLETE: AlertCircle,
   APPROVED: ShieldCheck,
   PAID: CheckCircle,
   PARTIALLY_PAID: Clock,

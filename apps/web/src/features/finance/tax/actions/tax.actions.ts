@@ -5,34 +5,34 @@ import type { IdParam } from '@afenda/contracts';
 import { revalidatePath } from 'next/cache';
 import type { TaxCode, TaxReturnPeriod, WHTCertificate } from '../types';
 import { routes } from '@/lib/constants';
+import { createApiClient } from '@/lib/api-client';
+import { getRequestContext } from '@/lib/auth';
 
 // ─── Tax Code Actions ────────────────────────────────────────────────────────
 
 export async function createTaxCode(
   data: Omit<TaxCode, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<{ ok: true; data: { id: string } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-
-  console.log('Creating tax code:', data);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post('/tax/codes', data);
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.taxCodes);
-
-  return { ok: true, data: { id: `tc-${Date.now()}` } };
+  return { ok: true, data: res.value as { id: string } };
 }
 
 export async function updateTaxCode(
   id: string,
   data: Partial<TaxCode>
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-
-  console.log('Updating tax code:', id, data);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.patch(`/tax/codes/${id}`, data);
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.taxCodes);
   revalidatePath(routes.finance.taxCodeDetail(id));
-
   return { ok: true };
 }
 
@@ -42,27 +42,25 @@ export async function updateTaxRate(params: {
   effectiveFrom: Date;
   reason: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-
-  console.log('Updating tax rate:', params);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post('/tax/rates', params);
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.taxCodes);
   revalidatePath(routes.finance.taxCodeDetail(params.taxCodeId));
-
   return { ok: true };
 }
 
 export async function deactivateTaxCode(
   id: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
-
-  console.log('Deactivating tax code:', id);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.patch(`/tax/codes/${id}`, { status: 'inactive' });
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.taxCodes);
-
   return { ok: true };
 }
 
@@ -74,14 +72,13 @@ export async function createTaxReturnPeriod(
     'id' | 'filedDate' | 'filedBy' | 'paidDate' | 'referenceNumber' | 'attachmentCount'
   >
 ): Promise<{ ok: true; data: { id: string } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-
-  console.log('Creating tax return period:', data);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post('/tax/returns', data);
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.taxReturns);
-
-  return { ok: true, data: { id: `trp-${Date.now()}` } };
+  return { ok: true, data: res.value as { id: string } };
 }
 
 export async function fileTaxReturn(params: {
@@ -90,14 +87,13 @@ export async function fileTaxReturn(params: {
   filedDate: Date;
   attachmentIds?: string[];
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
-
-  console.log('Filing tax return:', params);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post(`/tax/returns/${params.periodId}/file`, params);
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.taxReturns);
   revalidatePath(routes.finance.taxReturnDetail(params.periodId));
-
   return { ok: true };
 }
 
@@ -107,14 +103,13 @@ export async function recordTaxPayment(params: {
   amount: number;
   paymentReference?: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-
-  console.log('Recording tax payment:', params);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post(`/tax/returns/${params.periodId}/payment`, params);
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.taxReturns);
   revalidatePath(routes.finance.taxReturnDetail(params.periodId));
-
   return { ok: true };
 }
 
@@ -124,20 +119,12 @@ export async function recalculateTaxReturn(
   | { ok: true; data: { outputTax: number; inputTax: number; netPayable: number } }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 1000));
-
-  console.log('Recalculating tax return:', periodId);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post(`/tax/returns/${periodId}/recalculate`, {});
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.taxReturnDetail(periodId));
-
-  return {
-    ok: true,
-    data: {
-      outputTax: 125000.0,
-      inputTax: 85000.0,
-      netPayable: 40000.0,
-    },
-  };
+  return { ok: true, data: res.value as { outputTax: number; inputTax: number; netPayable: number } };
 }
 
 // ─── WHT Certificate Actions ─────────────────────────────────────────────────
@@ -147,35 +134,25 @@ export async function createWHTCertificate(
 ): Promise<
   { ok: true; data: { id: string; certificateNumber: string } } | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 600));
-
-  console.log('Creating WHT certificate:', data);
-
-  const certNumber = `WHT-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post('/tax/wht-certificates', data);
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.whtList);
-
-  return {
-    ok: true,
-    data: {
-      id: `wht-${Date.now()}`,
-      certificateNumber: certNumber,
-    },
-  };
+  return { ok: true, data: res.value as { id: string; certificateNumber: string } };
 }
 
 export async function issueWHTCertificate(
   id: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-
-  console.log('Issuing WHT certificate:', id);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post(`/tax/wht-certificates/${id}/issue`, {});
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.whtList);
   revalidatePath(routes.finance.whtDetail(id));
-
   return { ok: true };
 }
 
@@ -183,14 +160,13 @@ export async function cancelWHTCertificate(params: {
   id: string;
   reason: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-
-  console.log('Cancelling WHT certificate:', params);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post(`/tax/wht-certificates/${params.id}/cancel`, { reason: params.reason });
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.whtList);
   revalidatePath(routes.finance.whtDetail(params.id));
-
   return { ok: true };
 }
 
@@ -203,36 +179,24 @@ export async function replaceWHTCertificate(params: {
 }): Promise<
   { ok: true; data: { id: string; certificateNumber: string } } | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 700));
-
-  console.log('Replacing WHT certificate:', params);
-
-  const certNumber = `WHT-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post(`/tax/wht-certificates/${params.originalId}/replace`, params.newData);
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.whtList);
   revalidatePath(routes.finance.whtDetail(params.originalId));
-
-  return {
-    ok: true,
-    data: {
-      id: `wht-${Date.now()}`,
-      certificateNumber: certNumber,
-    },
-  };
+  return { ok: true, data: res.value as { id: string; certificateNumber: string } };
 }
 
 export async function downloadWHTCertificatePDF(
   id: string
 ): Promise<{ ok: true; data: { url: string } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
-
-  console.log('Generating WHT certificate PDF:', id);
-
-  return {
-    ok: true,
-    data: { url: `/api/tax/wht/${id}/pdf` },
-  };
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.get(`/tax/wht-certificates/${id}/pdf`);
+  if (!res.ok) return { ok: false, error: res.error.message };
+  return { ok: true, data: res.value as { url: string } };
 }
 
 // ─── Bulk Actions ────────────────────────────────────────────────────────────
@@ -240,12 +204,11 @@ export async function downloadWHTCertificatePDF(
 export async function bulkIssueWHTCertificates(
   ids: string[]
 ): Promise<{ ok: true; data: { issuedCount: number } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 800));
-
-  console.log('Bulk issuing WHT certificates:', ids);
-
+  const ctx = await getRequestContext();
+  const api = createApiClient(ctx);
+  const res = await api.post('/tax/wht-certificates/bulk/issue', { ids });
+  if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath(routes.finance.tax);
   revalidatePath(routes.finance.whtList);
-
-  return { ok: true, data: { issuedCount: ids.length } };
+  return { ok: true, data: res.value as { issuedCount: number } };
 }

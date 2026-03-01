@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { routes } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: '404 - Page Not Found',
@@ -20,10 +21,10 @@ export default function NotFound() {
       </div>
       <div className="flex gap-4">
         <Button asChild>
-          <Link href="/">Go Home</Link>
+          <Link href={routes.home}>Go Home</Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/finance">Go to Dashboard</Link>
+          <Link href={routes.finance.root}>Go to Dashboard</Link>
         </Button>
       </div>
     </main>

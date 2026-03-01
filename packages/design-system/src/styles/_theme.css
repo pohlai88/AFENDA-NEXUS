@@ -59,6 +59,12 @@
   --density-col-pad: var(--spacing-col-pad);
   --density-data-text: var(--text-size-data);
 
+  /* Shell layout — consumed by app shell via h-(--shell-header-h) etc. */
+  --shell-header-h: var(--shell-header-h);
+  --shell-content-max-w: var(--shell-content-max-w);
+  --shell-scroll-max-h: var(--shell-scroll-max-h);
+  --shell-action-gap: var(--shell-action-gap);
+
   /* ═══════════════════════════════════════════════════════════════════════
      COLOR TOKENS — Surfaces
      ═══════════════════════════════════════════════════════════════════════ */

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, CheckCircle2, Loader2, Users } from 'lucide-react';
 import Link from 'next/link';
+import { routes } from '@/lib/constants';
 
 /**
  * Accept an organization invitation.
@@ -55,7 +56,7 @@ export function AcceptInviteForm() {
         </CardHeader>
         <CardContent className="flex justify-center">
           <Button asChild>
-            <Link href="/login">Go to Sign In</Link>
+            <Link href={routes.login}>Go to Sign In</Link>
           </Button>
         </CardContent>
       </Card>
@@ -91,7 +92,7 @@ export function AcceptInviteForm() {
             invitation.
           </p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/login">Go to Sign In</Link>
+            <Link href={routes.login}>Go to Sign In</Link>
           </Button>
         </CardContent>
       </Card>

@@ -9,8 +9,11 @@
  * - AsyncLocalStorage mixin for automatic correlationId/tenantId/requestId injection
  * - Request/response serializers for structured HTTP logging
  */
-import { AsyncLocalStorage } from 'node:async_hooks';
 import pino from 'pino';
+import { getContext, type RequestContext } from '@afenda/core';
+
+export type { RequestContext };
+export { getContext };
 
 export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
@@ -25,26 +28,8 @@ export interface Logger {
   isLevelEnabled(level: LogLevel): boolean;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Request context — AsyncLocalStorage for automatic log enrichment   */
-/* ------------------------------------------------------------------ */
-
-export interface RequestContext {
-  correlationId: string;
-  tenantId?: string;
-  userId?: string;
-  requestId?: string;
-}
-
-const requestContextStore = new AsyncLocalStorage<RequestContext>();
-
-export function runWithContext<T>(ctx: RequestContext, fn: () => T): T {
-  return requestContextStore.run(ctx, fn);
-}
-
-export function getContext(): RequestContext | undefined {
-  return requestContextStore.getStore();
-}
+// Re-export runWithContext from @afenda/core (backward compat via platform barrel)
+export { runWithContext } from '@afenda/core';
 
 /* ------------------------------------------------------------------ */
 /*  Redaction — deeper paths for nested objects                       */
@@ -172,7 +157,7 @@ export function createLogger(opts?: CreateLoggerOptions): Logger {
     },
     timestamp: pino.stdTimeFunctions.isoTime,
     mixin() {
-      const ctx = requestContextStore.getStore();
+      const ctx = getContext();
       if (!ctx) return {};
       const merged: Record<string, unknown> = {
         correlation_id: ctx.correlationId,

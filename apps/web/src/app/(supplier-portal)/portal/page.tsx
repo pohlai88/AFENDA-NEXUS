@@ -1,8 +1,10 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalDashboard } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
 import { PortalDashboard } from '@/features/portal/blocks/portal-dashboard-summary';
 import { AlertTriangle } from 'lucide-react';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalDashboardPage() {
   const ctx = await getRequestContext();
@@ -22,6 +24,7 @@ export default async function PortalDashboardPage() {
   const dashboardResult = await getPortalDashboard(ctx, supplier.supplierId);
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title={`Welcome back, ${supplier.supplierName}`}
@@ -38,5 +41,6 @@ export default async function PortalDashboardPage() {
         </div>
       )}
     </div>
+    </Suspense>
   );
 }

@@ -12,20 +12,21 @@
  */
 import { NextResponse, type NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
+import { routes } from '@/lib/constants';
 
 const PUBLIC_PATHS = [
-  '/login',
-  '/register',
-  '/forgot-password',
-  '/reset-password',
+  routes.login,
+  routes.register,
+  routes.resetPassword,
+  routes.forgotPassword,
   // '/two-factor', — MFA not yet supported in Neon Auth (on roadmap)
-  '/onboarding',
-  '/verify-email',
-  '/accept-invite',
+  routes.onboarding,
+  routes.verifyEmail,
+  routes.acceptInvite,
 ];
 
 // Neon Auth middleware — handles OAuth callback exchange, session refresh, redirects
-const neonAuthProxy = auth.middleware({ loginUrl: '/login' });
+const neonAuthProxy = auth.middleware({ loginUrl: routes.login });
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -51,7 +52,7 @@ export async function proxy(request: NextRequest) {
   // - Redirects to /login if unauthenticated
   const response = await neonAuthProxy(request);
 
-  // Add security headers to all responses
+  // Add security headers (RSC/server-action requests bypass proxy via matcher)
   if (response) {
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('X-Frame-Options', 'DENY');
@@ -62,5 +63,15 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  matcher: [
+    {
+      source: '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
+      // Bypass proxy for server actions and RSC fetches — they require
+      // content-type: text/x-component; proxy/auth can corrupt the response.
+      missing: [
+        { type: 'header', key: 'next-action' },
+        { type: 'header', key: 'rsc' },
+      ],
+    },
+  ],
 };

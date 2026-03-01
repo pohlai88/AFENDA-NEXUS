@@ -9,6 +9,11 @@ export {
 } from './tenant-settings.js';
 
 export {
+  DashboardPrefsSchema,
+  TimeRangeSchema,
+  type DashboardPrefs,
+  type TimeRange,
+  type WidgetLayoutItem,
   UserPreferencesSchema,
   UpdateUserPreferencesSchema,
   type UserPreferences,

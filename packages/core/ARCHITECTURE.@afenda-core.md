@@ -16,7 +16,7 @@ enforced_structure:
   required_files: ["src/index.ts", "package.json", "tsconfig.json", "tsconfig.build.json", "tsup.config.ts"]
   required_directories: ["src"]
 boundary_rules:
-  allowed_import_prefixes: ["./"]
+  allowed_import_prefixes: ["./", "node:"]
   forbidden_imports: ["drizzle-orm", "fastify", "next", "pino", "postgres", "@afenda/db", "@afenda/platform", "@afenda/contracts", "@afenda/authz"]
   allow_imports_by_path: {}
   forbid_cross_layer_imports: []
@@ -25,11 +25,11 @@ boundary_rules:
 # @afenda/core
 
 ## Purpose
-IDs, money, time, Result<T,E>, branded types, domain errors. The innermost layer — zero external dependencies.
+IDs, money, time, Result<T,E>, branded types, domain errors, and request-context primitives. The innermost layer — zero external *framework* dependencies (uses only `node:async_hooks`).
 
 ## Layer Rules
-- Zero external framework imports
-- No DB, no HTTP, no side effects
+- Zero external framework imports (only Node.js built-ins allowed)
+- No DB, no HTTP, no side effects beyond AsyncLocalStorage
 - No imports from any other @afenda package
 
 ## Exports
@@ -38,3 +38,4 @@ IDs, money, time, Result<T,E>, branded types, domain errors. The innermost layer
 - `Money`, `money()` — financial primitives
 - `DateRange`, `dateRange()` — date utilities
 - `AppError`, `NotFoundError`, `ValidationError`, `AuthorizationError` — error hierarchy
+- `RequestContext`, `runWithContext()`, `getContext()` — AsyncLocalStorage helpers for correlation/tenant propagation

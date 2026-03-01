@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { DataTable, type ColumnDef } from '@/components/erp/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PromptDialog } from '@/components/erp/prompt-dialog';
 import { cn, formatCurrency, formatRelativeTime } from '@/lib/utils';
 import {
   FileText,
@@ -147,6 +148,7 @@ interface BulkActionsProps {
 function BulkActions({ selectedIds, onClear }: BulkActionsProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const [rejectOpen, setRejectOpen] = useState(false);
 
   const handleApprove = () => {
     startTransition(async () => {
@@ -161,10 +163,7 @@ function BulkActions({ selectedIds, onClear }: BulkActionsProps) {
     });
   };
 
-  const handleReject = () => {
-    const comment = window.prompt('Please provide a reason for rejection:');
-    if (!comment) return;
-
+  const handleReject = (comment: string) => {
     startTransition(async () => {
       const result = await rejectItems({ itemIds: Array.from(selectedIds), comment });
       if (result.ok) {
@@ -178,6 +177,7 @@ function BulkActions({ selectedIds, onClear }: BulkActionsProps) {
   };
 
   return (
+    <>
     <div className="flex items-center gap-2">
       <Button
         size="sm"
@@ -192,7 +192,7 @@ function BulkActions({ selectedIds, onClear }: BulkActionsProps) {
       <Button
         size="sm"
         variant="outline"
-        onClick={handleReject}
+        onClick={() => setRejectOpen(true)}
         disabled={isPending}
         className="gap-1"
       >
@@ -204,6 +204,18 @@ function BulkActions({ selectedIds, onClear }: BulkActionsProps) {
         Delegate
       </Button>
     </div>
+
+      <PromptDialog
+        open={rejectOpen}
+        onOpenChange={setRejectOpen}
+        title="Reject Items"
+        description="Please provide a reason for rejection."
+        inputLabel="Reason"
+        placeholder="Enter rejection reason…"
+        submitLabel="Reject"
+        onSubmit={handleReject}
+      />
+    </>
   );
 }
 

@@ -114,7 +114,7 @@ Layers form a strict dependency DAG. Lower layers MUST NOT import higher layers.
 | `industry-overlay`  | fnb, manufacturing…              | core, finance                        | db, platform directly                      |
 | `deployment`        | api, web, worker                 | any @afenda package                  | N/A (leaf apps)                            |
 | `config`            | typescript-config, eslint-config | N/A                                  | N/A                                        |
-| `tool`              | generators, drift-check          | N/A                                  | N/A                                        |
+| `tool`              | generators, drift-check, graphviz | N/A                                  | N/A                                        |
 
 ---
 
@@ -360,7 +360,7 @@ ARCHITECTURE.md files — they modify existing packages.
 | ------------------------------- | --------------------------------------------------- | ----------------------- |
 | `PROJECT.md`                    | Monorepo-wide architecture, conventions, tech stack | `agents-drift.mjs`      |
 | `ARCHITECTURE.*.md` (this spec) | Per-package boundaries, deps, structure             | `arch-guard.mjs`        |
-| `.afenda/project.manifest.json` | Package registry (name, type, layer)                | `drift-check/index.mjs` |
+| `.afenda/project.manifest.json` | Package registry (name, type, layer)                | `drift-check/index.mjs`, `dep-graph.mjs` |
 | `.agents/skills-registry.json`  | AI agent skill catalog                              | `agents-gen.mjs`        |
 
 `PROJECT.md` defines the **what** and **why**. `ARCHITECTURE.*.md` defines the

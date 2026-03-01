@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   getPortalSupplier,
@@ -11,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -48,6 +50,7 @@ export default async function PortalDisputeDetailPage({ params }: Props) {
   const dispute = result.value;
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
@@ -117,5 +120,6 @@ export default async function PortalDisputeDetailPage({ params }: Props) {
         </CardContent>
       </Card>
     </div>
+    </Suspense>
   );
 }

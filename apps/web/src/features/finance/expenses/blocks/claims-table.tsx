@@ -9,19 +9,20 @@ import { DataTable, type Column } from '@/components/erp/data-table';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { routes } from '@/lib/constants';
 import { Receipt, Plus, Calendar, User, Building2 } from 'lucide-react';
-import type { ExpenseClaim, ClaimStatus } from '../types';
+import type { ClaimStatus } from '../types';
+import type { ExpenseClaimListItem } from '../queries/expenses.queries';
 import { claimStatusConfig } from '../types';
 
 // ─── Status Badge ────────────────────────────────────────────────────────────
 
-function StatusBadge({ status }: { status: ClaimStatus }) {
-  const config = claimStatusConfig[status];
+function StatusBadge({ status }: { status: string }) {
+  const config = claimStatusConfig[status as ClaimStatus];
   return <Badge className={config.color}>{config.label}</Badge>;
 }
 
 // ─── Columns ─────────────────────────────────────────────────────────────────
 
-const columns: Column<ExpenseClaim>[] = [
+const columns: Column<ExpenseClaimListItem>[] = [
   {
     key: 'claimNumber',
     header: 'Claim #',
@@ -66,7 +67,7 @@ const columns: Column<ExpenseClaim>[] = [
         <div className="font-medium">{claim.title}</div>
         <div className="text-xs text-muted-foreground flex items-center gap-1">
           <Calendar className="h-3 w-3" />
-          {formatDate(claim.periodFrom)} - {formatDate(claim.periodTo)}
+          {formatDate(claim.createdAt)}
         </div>
       </div>
     ),
@@ -87,11 +88,6 @@ const columns: Column<ExpenseClaim>[] = [
         <div className="font-mono font-medium">
           {formatCurrency(claim.totalAmount, claim.currency)}
         </div>
-        {claim.approvedAmount !== null && claim.approvedAmount !== claim.totalAmount && (
-          <div className="text-xs text-muted-foreground">
-            Approved: {formatCurrency(claim.approvedAmount, claim.currency)}
-          </div>
-        )}
       </div>
     ),
   },
@@ -116,7 +112,7 @@ const columns: Column<ExpenseClaim>[] = [
 // ─── Claims Table ────────────────────────────────────────────────────────────
 
 interface ClaimsTableProps {
-  claims: ExpenseClaim[];
+  claims: ExpenseClaimListItem[];
   pagination?: {
     page: number;
     perPage: number;
@@ -129,7 +125,7 @@ interface ClaimsTableProps {
 export function ClaimsTable({ claims, pagination, showEmployee = true }: ClaimsTableProps) {
   const router = useRouter();
 
-  const handleRowClick = (claim: ExpenseClaim) => {
+  const handleRowClick = (claim: ExpenseClaimListItem) => {
     router.push(`${routes.finance.expenses}/${claim.id}`);
   };
 

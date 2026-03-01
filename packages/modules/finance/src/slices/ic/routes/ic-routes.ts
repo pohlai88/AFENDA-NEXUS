@@ -4,6 +4,7 @@ import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { createIcTransaction } from '../services/create-ic-transaction.js';
+import { previewIcTransaction } from '../services/preview-ic-transaction.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { extractIdentity } from '@afenda/api-kit';
 
@@ -49,6 +50,49 @@ export function registerIcRoutes(
 
       return result.ok
         ? reply.status(201).send(result.value)
+        : reply.status(mapErrorToStatus(result.error)).send({ error: result.error });
+    }
+  );
+
+  // POST /ic-transactions/preview — preview GL lines for both source + mirror journals
+  app.post(
+    '/ic-transactions/preview',
+    { preHandler: [requirePermission(policy, 'report:read')] },
+    async (req, reply) => {
+      const { tenantId, userId } = extractIdentity(req);
+      const body = CreateIcTransactionSchema.parse(req.body);
+
+      const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
+        return previewIcTransaction(
+          {
+            agreementId: body.agreementId,
+            sourceLedgerId: body.sourceLedgerId,
+            mirrorLedgerId: body.mirrorLedgerId,
+            fiscalPeriodId: body.fiscalPeriodId,
+            description: body.description,
+            currency: body.currency,
+            sourceLines: body.sourceLines.map((l) => ({
+              accountId: l.accountId,
+              debit: BigInt(l.debit),
+              credit: BigInt(l.credit),
+            })),
+            mirrorLines: body.mirrorLines.map((l) => ({
+              accountId: l.accountId,
+              debit: BigInt(l.debit),
+              credit: BigInt(l.credit),
+            })),
+          },
+          {
+            icAgreementRepo: deps.icAgreementRepo,
+            accountRepo: deps.accountRepo,
+            ledgerRepo: deps.ledgerRepo,
+            fiscalPeriodRepo: deps.periodRepo,
+          }
+        );
+      });
+
+      return result.ok
+        ? reply.send(result.value)
         : reply.status(mapErrorToStatus(result.error)).send({ error: result.error });
     }
   );

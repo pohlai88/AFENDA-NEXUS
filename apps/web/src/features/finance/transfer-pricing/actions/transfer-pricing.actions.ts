@@ -1,39 +1,43 @@
-'use server';
-
-import type { IdParam, CreatePolicyInput } from '@afenda/contracts';
+﻿'use server';
 
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/lib/constants';
+import { getRequestContext } from '@/lib/auth';
+import {
+  createPolicyCmd,
+  createBenchmarkCmd,
+  recordAdjustmentCmd,
+} from '../queries/transfer-pricing.queries';
 
-export async function createTransferPricingPolicy(
-  input: CreatePolicyInput
-): Promise<{ ok: true; policyId: IdParam['id'] } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] createTransferPricingPolicy:', input);
+export async function createPolicyAction(
+  input: unknown,
+): Promise<{ ok: true; id: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await createPolicyCmd(ctx, input);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.transferPricing);
-  return { ok: true, policyId: 'tp-new-' + Date.now() };
+  return { ok: true, id: result.value.id };
 }
 
-export async function uploadBenchmarkStudy(
+export async function uploadBenchmarkAction(
   policyId: string,
-  fiscalYear: number,
-  studyData: { lq: number; median: number; uq: number; actualResult: number }
-): Promise<{ ok: true; studyId: string; isCompliant: boolean } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] uploadBenchmarkStudy:', policyId, fiscalYear, studyData);
-  revalidatePath(routes.finance.transferPricing);
-  const isCompliant =
-    studyData.actualResult >= studyData.lq && studyData.actualResult <= studyData.uq;
-  return { ok: true, studyId: 'bm-new-' + Date.now(), isCompliant };
+  input: unknown,
+): Promise<{ ok: true; id: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await createBenchmarkCmd(ctx, policyId, input);
+  if (!result.ok) return result;
+  revalidatePath(routes.finance.transferPricingDetail(policyId));
+  return { ok: true, id: result.value.id };
 }
 
-export async function recordAdjustment(
+export async function recordAdjustmentAction(
   policyId: string,
   amount: number,
-  reason: string
-): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] recordAdjustment:', policyId, amount, reason);
-  revalidatePath(routes.finance.transferPricing);
-  return { ok: true, journalId: 'je-tp-' + Date.now() };
+  reason: string,
+): Promise<{ ok: true; journalId: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await recordAdjustmentCmd(ctx, policyId, amount, reason);
+  if (!result.ok) return result;
+  revalidatePath(routes.finance.transferPricingDetail(policyId));
+  return { ok: true, journalId: result.value.journalId };
 }

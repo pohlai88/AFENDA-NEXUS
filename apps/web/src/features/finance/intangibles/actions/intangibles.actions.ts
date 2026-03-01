@@ -3,8 +3,15 @@
 import type { IdParam } from '@afenda/contracts';
 
 import { revalidatePath } from 'next/cache';
+import { getRequestContext } from '@/lib/auth';
+import { createApiClient } from '@/lib/api-client';
+import type { ApiResult, CommandReceipt } from '@/lib/types';
 import type { IntangibleAsset, ImpairmentTestResult } from '../types';
 import { routes } from '@/lib/constants';
+import {
+  previewAmortizationPosting,
+  type PostingPreviewResult,
+} from '../queries/intangibles.queries';
 
 // ─── Asset CRUD Actions ──────────────────────────────────────────────────────
 
@@ -24,31 +31,28 @@ export async function createIntangibleAsset(
     | 'updatedAt'
   >
 ): Promise<{ ok: true; data: { id: string; assetNumber: string } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result = await client.post<{ id: string; assetNumber: string }>('/intangible-assets', data);
 
-  console.log('Creating intangible asset:', data);
-
-  const assetNumber = `IA-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+  if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath(routes.finance.intangibles);
-
-  return {
-    ok: true,
-    data: { id: `int-${Date.now()}`, assetNumber },
-  };
+  return { ok: true, data: result.value };
 }
 
 export async function updateIntangibleAsset(
   id: string,
   data: Partial<IntangibleAsset>
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result = await client.patch<CommandReceipt>(`/intangible-assets/${id}`, data);
 
-  console.log('Updating intangible asset:', id, data);
+  if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath(routes.finance.intangibles);
   revalidatePath(routes.finance.intangibleDetail(id));
-
   return { ok: true };
 }
 
@@ -65,20 +69,17 @@ export async function calculateAmortization(params: {
     }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 1500));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result = await client.post<{ runId: string; assetCount: number; totalAmortization: number }>(
+    '/intangible-assets/amortization/calculate',
+    params
+  );
 
-  console.log('Calculating amortization:', params);
+  if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath(routes.finance.intangibles);
-
-  return {
-    ok: true,
-    data: {
-      runId: `amort-run-${Date.now()}`,
-      assetCount: params.assetIds?.length ?? 22,
-      totalAmortization: 18500.0,
-    },
-  };
+  return { ok: true, data: result.value };
 }
 
 export async function postAmortizationRun(
@@ -86,20 +87,17 @@ export async function postAmortizationRun(
 ): Promise<
   { ok: true; data: { journalId: string; journalNumber: string } } | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 1000));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result = await client.post<{ journalId: string; journalNumber: string }>(
+    `/intangible-assets/amortization/${runId}/post`
+  );
 
-  console.log('Posting amortization run:', runId);
+  if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath(routes.finance.intangibles);
   revalidatePath(routes.finance.journals);
-
-  return {
-    ok: true,
-    data: {
-      journalId: `jnl-${Date.now()}`,
-      journalNumber: `JE-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
-    },
-  };
+  return { ok: true, data: result.value };
 }
 
 // ─── Impairment Actions ──────────────────────────────────────────────────────
@@ -122,22 +120,20 @@ export async function recordImpairmentTest(params: {
     }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 800));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result = await client.post<{
+    testId: string;
+    result: ImpairmentTestResult;
+    impairmentLoss: number;
+    journalId: string | null;
+  }>(`/intangible-assets/${params.assetId}/impairment-tests`, params);
 
-  console.log('Recording impairment test:', params);
+  if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath(routes.finance.intangibles);
   revalidatePath(routes.finance.intangibleDetail(params.assetId));
-
-  return {
-    ok: true,
-    data: {
-      testId: `imp-${Date.now()}`,
-      result: 'no_impairment',
-      impairmentLoss: 0,
-      journalId: null,
-    },
-  };
+  return { ok: true, data: result.value };
 }
 
 export async function reverseImpairment(params: {
@@ -146,18 +142,19 @@ export async function reverseImpairment(params: {
   reversalDate: Date;
   reason: string;
 }): Promise<{ ok: true; data: { journalId: string } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result = await client.post<{ journalId: string }>(
+    `/intangible-assets/${params.assetId}/impairment-reversal`,
+    params
+  );
 
-  console.log('Reversing impairment:', params);
+  if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath(routes.finance.intangibles);
   revalidatePath(routes.finance.intangibleDetail(params.assetId));
   revalidatePath(routes.finance.journals);
-
-  return {
-    ok: true,
-    data: { journalId: `jnl-${Date.now()}` },
-  };
+  return { ok: true, data: result.value };
 }
 
 // ─── Disposal Actions ────────────────────────────────────────────────────────
@@ -174,21 +171,19 @@ export async function disposeIntangibleAsset(params: {
     }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 700));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result = await client.post<{ gainLoss: number; journalId: string }>(
+    `/intangible-assets/${params.assetId}/dispose`,
+    params
+  );
 
-  console.log('Disposing intangible asset:', params);
+  if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath(routes.finance.intangibles);
   revalidatePath(routes.finance.intangibleDetail(params.assetId));
   revalidatePath(routes.finance.journals);
-
-  return {
-    ok: true,
-    data: {
-      gainLoss: params.disposalProceeds - 15000,
-      journalId: `jnl-${Date.now()}`,
-    },
-  };
+  return { ok: true, data: result.value };
 }
 
 export async function writeOffIntangibleAsset(params: {
@@ -196,16 +191,27 @@ export async function writeOffIntangibleAsset(params: {
   writeOffDate: Date;
   reason: string;
 }): Promise<{ ok: true; data: { journalId: string } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+  const result = await client.post<{ journalId: string }>(
+    `/intangible-assets/${params.assetId}/write-off`,
+    params
+  );
 
-  console.log('Writing off intangible asset:', params);
+  if (!result.ok) return { ok: false, error: result.error.message };
 
   revalidatePath(routes.finance.intangibles);
   revalidatePath(routes.finance.intangibleDetail(params.assetId));
   revalidatePath(routes.finance.journals);
+  return { ok: true, data: result.value };
+}
 
-  return {
-    ok: true,
-    data: { journalId: `jnl-${Date.now()}` },
-  };
+// ─── Preview Actions ─────────────────────────────────────────────────────────
+
+export async function previewAmortizationRunAction(
+  periodStart: string,
+  periodEnd: string
+): Promise<ApiResult<PostingPreviewResult>> {
+  const ctx = await getRequestContext();
+  return previewAmortizationPosting(ctx, { periodStart, periodEnd });
 }

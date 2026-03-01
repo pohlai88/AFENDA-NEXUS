@@ -3,8 +3,15 @@
 import type { IdParam } from '@afenda/contracts';
 
 import { revalidatePath } from 'next/cache';
-import type { FixedAsset, AssetDisposalType, DisposalRequest } from '../types';
+import type { FixedAsset, AssetDisposalType } from '../types';
+import { getRequestContext } from '@/lib/auth';
+import { createApiClient } from '@/lib/api-client';
 import { routes } from '@/lib/constants';
+import {
+  previewDepreciationPosting,
+  type PostingPreviewResult,
+} from '../queries/assets.queries';
+import type { ApiResult } from '@/lib/types';
 
 // ─── Asset CRUD Actions ──────────────────────────────────────────────────────
 
@@ -25,31 +32,30 @@ export async function createFixedAsset(
     | 'updatedAt'
   >
 ): Promise<{ ok: true; data: { id: string; assetNumber: string } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Creating fixed asset:', data);
-
-  const assetNumber = `FA-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+  const result = await client.post<{ id: string; assetNumber: string }>('/fixed-assets', data);
 
   revalidatePath(routes.finance.fixedAssets);
 
-  return {
-    ok: true,
-    data: { id: `asset-${Date.now()}`, assetNumber },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }
 
 export async function updateFixedAsset(
   id: string,
   data: Partial<FixedAsset>
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Updating fixed asset:', id, data);
+  const result = await client.patch(`/fixed-assets/${id}`, data);
 
   revalidatePath(routes.finance.fixedAssets);
   revalidatePath(routes.finance.fixedAssetDetail(id));
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -66,20 +72,23 @@ export async function calculateDepreciation(params: {
     }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 1500));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Calculating depreciation:', params);
+  const result = await client.post<{
+    runId: string;
+    assetCount: number;
+    totalDepreciation: number;
+  }>('/fixed-assets/depreciation-run', {
+    periodStart: params.periodStart.toISOString(),
+    periodEnd: params.periodEnd.toISOString(),
+    assetIds: params.assetIds,
+  });
 
   revalidatePath(routes.finance.depreciation);
 
-  return {
-    ok: true,
-    data: {
-      runId: `run-${Date.now()}`,
-      assetCount: params.assetIds?.length ?? 45,
-      totalDepreciation: 28500.0,
-    },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }
 
 export async function postDepreciationRun(
@@ -87,33 +96,42 @@ export async function postDepreciationRun(
 ): Promise<
   { ok: true; data: { journalId: string; journalNumber: string } } | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 1000));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Posting depreciation run:', runId);
+  const result = await client.post<{ journalId: string; journalNumber: string }>(
+    `/fixed-assets/depreciation-runs/${runId}/post`,
+    {}
+  );
 
   revalidatePath(routes.finance.fixedAssets);
   revalidatePath(routes.finance.depreciation);
   revalidatePath(routes.finance.journals);
 
-  return {
-    ok: true,
-    data: {
-      journalId: `jnl-${Date.now()}`,
-      journalNumber: `JE-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
-    },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }
 
 export async function cancelDepreciationRun(
   runId: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Cancelling depreciation run:', runId);
+  const result = await client.post(`/fixed-assets/depreciation-runs/${runId}/cancel`, {});
 
   revalidatePath(routes.finance.depreciation);
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
+}
+
+export async function previewDepreciationRunAction(
+  periodStart: string,
+  periodEnd: string
+): Promise<ApiResult<PostingPreviewResult>> {
+  const ctx = await getRequestContext();
+  return previewDepreciationPosting(ctx, { periodStart, periodEnd });
 }
 
 // ─── Disposal Actions ────────────────────────────────────────────────────────
@@ -126,35 +144,39 @@ export async function createDisposalRequest(data: {
 }): Promise<
   { ok: true; data: { requestId: string; requestNumber: string } } | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 500));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Creating disposal request:', data);
-
-  const requestNumber = `DR-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+  // Use the confirmed backend endpoint: POST /fixed-assets/:id/dispose
+  const result = await client.post<{ requestId: string; requestNumber: string }>(
+    `/fixed-assets/${data.assetId}/dispose`,
+    {
+      disposalType: data.disposalType,
+      expectedProceeds: data.expectedProceeds,
+      reason: data.reason,
+    }
+  );
 
   revalidatePath(routes.finance.fixedAssets);
   revalidatePath(routes.finance.assetDisposals);
 
-  return {
-    ok: true,
-    data: {
-      requestId: `disp-${Date.now()}`,
-      requestNumber,
-    },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }
 
 export async function approveDisposalRequest(
   requestId: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Approving disposal request:', requestId);
+  const result = await client.post(`/fixed-assets/disposal-requests/${requestId}/approve`, {});
 
   revalidatePath(routes.finance.fixedAssets);
   revalidatePath(routes.finance.assetDisposals);
   revalidatePath(routes.finance.approvals);
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -162,12 +184,17 @@ export async function rejectDisposalRequest(params: {
   requestId: string;
   reason: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Rejecting disposal request:', params);
+  const result = await client.post(
+    `/fixed-assets/disposal-requests/${params.requestId}/reject`,
+    { reason: params.reason }
+  );
 
   revalidatePath(routes.finance.assetDisposals);
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -182,21 +209,23 @@ export async function completeDisposal(params: {
     }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 800));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Completing disposal:', params);
+  const result = await client.post<{ gainLoss: number; journalId: string }>(
+    `/fixed-assets/disposal-requests/${params.requestId}/complete`,
+    {
+      actualProceeds: params.actualProceeds,
+      disposalDate: params.disposalDate.toISOString(),
+    }
+  );
 
   revalidatePath(routes.finance.fixedAssets);
   revalidatePath(routes.finance.assetDisposals);
   revalidatePath(routes.finance.journals);
 
-  return {
-    ok: true,
-    data: {
-      gainLoss: params.actualProceeds - 5000,
-      journalId: `jnl-${Date.now()}`,
-    },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }
 
 // ─── Bulk Actions ────────────────────────────────────────────────────────────
@@ -205,13 +234,18 @@ export async function bulkUpdateLocation(params: {
   assetIds: string[];
   location: string;
 }): Promise<{ ok: true; data: { updatedCount: number } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Bulk updating location:', params);
+  const result = await client.post<{ updatedCount: number }>('/fixed-assets/bulk/update-location', {
+    assetIds: params.assetIds,
+    location: params.location,
+  });
 
   revalidatePath(routes.finance.fixedAssets);
 
-  return { ok: true, data: { updatedCount: params.assetIds.length } };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }
 
 export async function bulkTransferDepartment(params: {
@@ -219,11 +253,20 @@ export async function bulkTransferDepartment(params: {
   department: string;
   responsiblePerson: string;
 }): Promise<{ ok: true; data: { transferredCount: number } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Bulk transferring department:', params);
+  const result = await client.post<{ transferredCount: number }>(
+    '/fixed-assets/bulk/transfer-department',
+    {
+      assetIds: params.assetIds,
+      department: params.department,
+      responsiblePerson: params.responsiblePerson,
+    }
+  );
 
   revalidatePath(routes.finance.fixedAssets);
 
-  return { ok: true, data: { transferredCount: params.assetIds.length } };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }

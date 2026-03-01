@@ -59,6 +59,7 @@ export async function getBudgetVariance(
     const variance = budget - actual;
 
     rows.push({
+      accountId: entry.accountId,
       accountCode: entry.accountCode,
       accountName: entry.accountCode,
       budgetAmount: money(budget, currency),

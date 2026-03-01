@@ -37,6 +37,16 @@
       "type": "library",
       "layer": "infrastructure"
     },
+    "packages/storage": {
+      "name": "@afenda/storage",
+      "type": "library",
+      "layer": "infrastructure"
+    },
+    "packages/design-system": {
+      "name": "@afenda/design-system",
+      "type": "library",
+      "layer": "infrastructure"
+    },
     "packages/modules/finance": {
       "name": "@afenda/finance",
       "type": "library",
@@ -74,6 +84,11 @@
     },
     "tools/drift-check": {
       "name": "@afenda/drift-check",
+      "type": "tool",
+      "layer": "tool"
+    },
+    "tools/graphviz": {
+      "name": "@afenda/graphviz",
       "type": "tool",
       "layer": "tool"
     },

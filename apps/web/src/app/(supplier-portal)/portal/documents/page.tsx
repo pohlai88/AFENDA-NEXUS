@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalDocuments } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
@@ -5,6 +6,7 @@ import { PortalDocumentTable } from '@/features/portal/blocks/portal-document-ta
 import { PortalDocumentUploadForm } from '@/features/portal/forms/portal-document-upload-form';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalDocumentsPage() {
   const ctx = await getRequestContext();
@@ -24,6 +26,7 @@ export default async function PortalDocumentsPage() {
   const result = await getPortalDocuments(ctx, supplier.supplierId);
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Document Vault"
@@ -41,5 +44,6 @@ export default async function PortalDocumentsPage() {
 
       <PortalDocumentUploadForm supplierId={supplier.supplierId} />
     </div>
+    </Suspense>
   );
 }

@@ -3,6 +3,8 @@
 import type { CreateLeaseInput, CreateModificationInput } from '@afenda/contracts';
 
 import { revalidatePath } from 'next/cache';
+import { getRequestContext } from '@/lib/auth';
+import { createApiClient } from '@/lib/api-client';
 import { routes } from '@/lib/constants';
 
 // ─── Lease Contract Actions ──────────────────────────────────────────────────
@@ -10,31 +12,46 @@ import { routes } from '@/lib/constants';
 export async function createLease(
   input: CreateLeaseInput
 ): Promise<{ ok: true; leaseId: string; leaseNumber: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-  console.log('[Action] createLease:', input);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ id: string; leaseNumber: string }>('/leases', input);
+
   revalidatePath(routes.finance.leases);
-  return { ok: true, leaseId: 'lease-new-' + Date.now(), leaseNumber: 'LS-2026-' + Date.now() };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, leaseId: result.value.id, leaseNumber: result.value.leaseNumber };
 }
 
 export async function updateLease(
   leaseId: string,
   updates: Partial<CreateLeaseInput>
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] updateLease:', leaseId, updates);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.patch(`/leases/${leaseId}`, updates);
+
   revalidatePath(routes.finance.leases);
   revalidatePath(routes.finance.leaseDetail(leaseId));
+
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
 export async function activateLease(
   leaseId: string
 ): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
-  console.log('[Action] activateLease:', leaseId);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ journalId: string }>(`/leases/${leaseId}/activate`, {});
+
   revalidatePath(routes.finance.leases);
   revalidatePath(routes.finance.journals);
-  return { ok: true, journalId: 'je-lease-' + Date.now() };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, journalId: result.value.journalId };
 }
 
 export async function terminateLease(
@@ -42,11 +59,19 @@ export async function terminateLease(
   terminationDate: Date,
   reason: string
 ): Promise<{ ok: true; journalId: string; gainOrLoss: number } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-  console.log('[Action] terminateLease:', leaseId, terminationDate, reason);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ journalId: string; gainOrLoss: number }>(
+    `/leases/${leaseId}/terminate`,
+    { terminationDate: terminationDate.toISOString(), reason }
+  );
+
   revalidatePath(routes.finance.leases);
   revalidatePath(routes.finance.journals);
-  return { ok: true, journalId: 'je-term-' + Date.now(), gainOrLoss: -15000 };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, journalId: result.value.journalId, gainOrLoss: result.value.gainOrLoss };
 }
 
 // ─── Lease Payment Actions ───────────────────────────────────────────────────
@@ -57,33 +82,57 @@ export async function recordLeasePayment(
   paymentDate: Date,
   amount: number
 ): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] recordLeasePayment:', leaseId, scheduleEntryId, paymentDate, amount);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ journalId: string }>(
+    `/leases/${leaseId}/payments`,
+    { scheduleEntryId, paymentDate: paymentDate.toISOString(), amount }
+  );
+
   revalidatePath(routes.finance.leaseDetail(leaseId));
   revalidatePath(routes.finance.journals);
-  return { ok: true, journalId: 'je-pay-' + Date.now() };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, journalId: result.value.journalId };
 }
 
 export async function runDepreciationForLease(
   leaseId: string,
   periodEnd: Date
 ): Promise<{ ok: true; journalId: string; amount: number } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] runDepreciationForLease:', leaseId, periodEnd);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ journalId: string; amount: number }>(
+    `/leases/${leaseId}/depreciation`,
+    { periodEnd: periodEnd.toISOString() }
+  );
+
   revalidatePath(routes.finance.leaseDetail(leaseId));
   revalidatePath(routes.finance.journals);
-  return { ok: true, journalId: 'je-dep-' + Date.now(), amount: 72917 };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, journalId: result.value.journalId, amount: result.value.amount };
 }
 
 export async function accrueLeaseLiabilityInterest(
   leaseId: string,
   periodEnd: Date
 ): Promise<{ ok: true; journalId: string; amount: number } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 350));
-  console.log('[Action] accrueLeaseLiabilityInterest:', leaseId, periodEnd);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ journalId: string; amount: number }>(
+    `/leases/${leaseId}/accrue-interest`,
+    { periodEnd: periodEnd.toISOString() }
+  );
+
   revalidatePath(routes.finance.leaseDetail(leaseId));
   revalidatePath(routes.finance.journals);
-  return { ok: true, journalId: 'je-int-' + Date.now(), amount: 20560 };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, journalId: result.value.journalId, amount: result.value.amount };
 }
 
 // ─── Lease Modification Actions ──────────────────────────────────────────────
@@ -91,10 +140,18 @@ export async function accrueLeaseLiabilityInterest(
 export async function createLeaseModification(
   input: CreateModificationInput
 ): Promise<{ ok: true; modificationId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] createLeaseModification:', input);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ id: string }>(
+    `/leases/${input.leaseId}/modifications`,
+    input
+  );
+
   revalidatePath(routes.finance.leaseDetail(input.leaseId));
-  return { ok: true, modificationId: 'mod-new-' + Date.now() };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, modificationId: result.value.id };
 }
 
 export async function calculateModificationImpact(modificationId: string): Promise<
@@ -106,24 +163,40 @@ export async function calculateModificationImpact(modificationId: string): Promi
     }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 500));
-  console.log('[Action] calculateModificationImpact:', modificationId);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.get<{
+    rouAdjustment: number;
+    liabilityAdjustment: number;
+    gainOrLoss: number;
+  }>(`/leases/modifications/${modificationId}/impact`);
+
+  if (!result.ok) return { ok: false, error: result.error.message };
   return {
     ok: true,
-    rouAdjustment: 150000,
-    liabilityAdjustment: 150000,
-    gainOrLoss: 0,
+    rouAdjustment: result.value.rouAdjustment,
+    liabilityAdjustment: result.value.liabilityAdjustment,
+    gainOrLoss: result.value.gainOrLoss,
   };
 }
 
 export async function processModification(
   modificationId: string
 ): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
-  console.log('[Action] processModification:', modificationId);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ journalId: string }>(
+    `/leases/modifications/${modificationId}/process`,
+    {}
+  );
+
   revalidatePath(routes.finance.leases);
   revalidatePath(routes.finance.journals);
-  return { ok: true, journalId: 'je-mod-' + Date.now() };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, journalId: result.value.journalId };
 }
 
 // ─── Option Assessment Actions ───────────────────────────────────────────────
@@ -133,13 +206,18 @@ export async function reassessExtensionOption(
   isReasonablyCertain: boolean,
   justification: string
 ): Promise<{ ok: true; journalId?: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] reassessExtensionOption:', leaseId, isReasonablyCertain, justification);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ journalId?: string }>(
+    `/leases/${leaseId}/reassess-extension`,
+    { isReasonablyCertain, justification }
+  );
+
   revalidatePath(routes.finance.leaseDetail(leaseId));
-  if (isReasonablyCertain) {
-    return { ok: true, journalId: 'je-ext-' + Date.now() };
-  }
-  return { ok: true };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, journalId: result.value.journalId };
 }
 
 export async function reassessPurchaseOption(
@@ -147,10 +225,18 @@ export async function reassessPurchaseOption(
   isReasonablyCertain: boolean,
   justification: string
 ): Promise<{ ok: true; journalId?: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] reassessPurchaseOption:', leaseId, isReasonablyCertain, justification);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ journalId?: string }>(
+    `/leases/${leaseId}/reassess-purchase`,
+    { isReasonablyCertain, justification }
+  );
+
   revalidatePath(routes.finance.leaseDetail(leaseId));
-  return { ok: true };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, journalId: result.value.journalId };
 }
 
 // ─── Bulk Actions ────────────────────────────────────────────────────────────
@@ -161,16 +247,20 @@ export async function bulkRunLeaseDepreciation(
   | { ok: true; leasesProcessed: number; totalDepreciation: number; journalId: string }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 800));
-  console.log('[Action] bulkRunLeaseDepreciation:', periodEnd);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{
+    leasesProcessed: number;
+    totalDepreciation: number;
+    journalId: string;
+  }>('/leases/bulk/depreciation', { periodEnd: periodEnd.toISOString() });
+
   revalidatePath(routes.finance.leases);
   revalidatePath(routes.finance.journals);
-  return {
-    ok: true,
-    leasesProcessed: 12,
-    totalDepreciation: 185000,
-    journalId: 'je-bulk-dep-' + Date.now(),
-  };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, ...result.value };
 }
 
 export async function bulkAccrueLeaseInterest(
@@ -179,14 +269,18 @@ export async function bulkAccrueLeaseInterest(
   | { ok: true; leasesProcessed: number; totalInterest: number; journalId: string }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 700));
-  console.log('[Action] bulkAccrueLeaseInterest:', periodEnd);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{
+    leasesProcessed: number;
+    totalInterest: number;
+    journalId: string;
+  }>('/leases/bulk/accrue-interest', { periodEnd: periodEnd.toISOString() });
+
   revalidatePath(routes.finance.leases);
   revalidatePath(routes.finance.journals);
-  return {
-    ok: true,
-    leasesProcessed: 12,
-    totalInterest: 45000,
-    journalId: 'je-bulk-int-' + Date.now(),
-  };
+
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, ...result.value };
 }

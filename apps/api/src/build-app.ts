@@ -40,6 +40,8 @@ import {
   registerSupplierRoutes,
   registerSupplierMdmRoutes,
   registerApHoldRoutes,
+  registerApTriageRoutes,
+  registerApMatchToleranceRoutes,
   registerApSupplierReconRoutes,
   registerApReportingRoutes,
   registerApCaptureRoutes,
@@ -172,6 +174,8 @@ export async function buildApp(deps: BuildAppDeps) {
   registerSupplierRoutes(app, financeRuntime, authPolicy);
   registerSupplierMdmRoutes(app, financeRuntime, authPolicy);
   registerApHoldRoutes(app, financeRuntime, authPolicy);
+  registerApTriageRoutes(app, financeRuntime, authPolicy);
+  registerApMatchToleranceRoutes(app, financeRuntime, authPolicy);
   registerApSupplierReconRoutes(app, financeRuntime, authPolicy);
   registerApReportingRoutes(app, financeRuntime, authPolicy);
   registerApCaptureRoutes(app, financeRuntime, authPolicy);

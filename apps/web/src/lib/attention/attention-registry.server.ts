@@ -5,16 +5,20 @@ import type {
   AttentionSummary,
 } from './attention.types';
 import { SEVERITY_ORDER } from './attention.types';
+import { routes } from '@/lib/constants';
+import { getPendingApprovalCount } from '@/features/finance/approvals/queries/approvals.queries';
 
 // ─── Attention Registry (Server-Only) ────────────────────────────────────────
 //
-// Error-isolated resolvers — a failing resolver produces a stub, never crashes
-// the shell. Same architecture as kpi-registry.server.ts.
+// Error-isolated resolvers — a failing resolver produces null (empty stack).
+// No hardcoded mock data. Wire to real APIs when available.
 //
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface RequestContextLike {
-  token?: string;
+  tenantId: string;
+  userId: string;
+  token: string;
   [key: string]: unknown;
 }
 
@@ -24,24 +28,25 @@ export type AttentionResolver = (
 
 // ─── Resolvers ──────────────────────────────────────────────────────────────
 //
-// Initial resolvers return stub data. Wire to real DB queries via
-// `createApiClient(ctx)` / `withTenant()` when the backends are ready.
+// All resolvers use real API or return null (empty stack).
+// No hardcoded counts or mock data.
 //
 
 const ATTENTION_RESOLVERS: Record<string, AttentionResolver> = {
   /**
-   * Pending approvals — count of approval_request where status=PENDING.
+   * Pending approvals — count from /approvals/pending API.
    */
-  pendingApprovals: async (_ctx) => {
-    // TODO: Wire to real DB query
-    const count = 2 as number;
+  pendingApprovals: async (ctx) => {
+    const result = await getPendingApprovalCount(ctx);
+    if (!result.ok) return null;
+    const count = result.data;
     if (count === 0) return null;
     return {
       id: 'pending-approvals',
       severity: 'warning',
       title: 'Pending Approvals',
       count,
-      href: '/finance/approvals',
+      href: routes.finance.approvals,
       reason: `${count} approval request${count > 1 ? 's' : ''} awaiting your review`,
       evidence: { pendingCount: count },
       lastComputedAt: new Date(),
@@ -49,105 +54,32 @@ const ATTENTION_RESOLVERS: Record<string, AttentionResolver> = {
   },
 
   /**
-   * Overdue payables — AP invoices past due date, status=POSTED.
+   * Overdue payables — AP invoices past due date.
+   * Returns null until real count API is available (empty stack).
    */
-  overduePayables: async (_ctx) => {
-    // TODO: Wire to real DB query
-    const count = 3 as number;
-    if (count === 0) return null;
-    return {
-      id: 'overdue-payables',
-      severity: 'critical',
-      title: 'Overdue Payables',
-      count,
-      href: '/finance/payables?filter=overdue',
-      reason: `${count} AP invoice${count > 1 ? 's are' : ' is'} past due date`,
-      evidence: {
-        overdueCount: count,
-        oldestDueDate: '2026-01-15',
-      },
-      lastComputedAt: new Date(),
-    };
-  },
+  overduePayables: async () => null,
 
   /**
-   * Overdue receivables — AR invoices past due date, status=POSTED.
+   * Overdue receivables — AR invoices past due date.
+   * Returns null until real count API is available (empty stack).
    */
-  overdueReceivables: async (_ctx) => {
-    // TODO: Wire to real DB query
-    const count = 1 as number;
-    if (count === 0) return null;
-    return {
-      id: 'overdue-receivables',
-      severity: 'warning',
-      title: 'Overdue Receivables',
-      count,
-      href: '/finance/receivables?filter=overdue',
-      reason: `${count} AR invoice${count > 1 ? 's are' : ' is'} past due date`,
-      evidence: {
-        overdueCount: count,
-        oldestDueDate: '2026-02-10',
-      },
-      lastComputedAt: new Date(),
-    };
-  },
+  overdueReceivables: async () => null,
 
   /**
    * Unreconciled bank lines.
+   * Returns null until real count API is available (empty stack).
    */
-  unreconciled: async (_ctx) => {
-    // TODO: Wire to real DB query
-    const count = 5 as number;
-    if (count === 0) return null;
-    return {
-      id: 'unreconciled',
-      severity: 'info',
-      title: 'Unreconciled Transactions',
-      count,
-      href: '/finance/banking/reconcile',
-      reason: `${count} bank statement line${count > 1 ? 's' : ''} unmatched`,
-      evidence: { unmatchedCount: count },
-      lastComputedAt: new Date(),
-    };
-  },
+  unreconciled: async () => null,
 
   /**
    * Unclosed periods — fiscal periods past end date that aren't closed.
    */
-  unclosedPeriods: async (_ctx) => {
-    // TODO: Wire to real DB query
-    const count = 0;
-    if (count === 0) return null;
-    return {
-      id: 'unclosed-periods',
-      severity: 'warning',
-      title: 'Unclosed Periods',
-      count,
-      href: '/finance/periods',
-      reason: `${count} fiscal period${count > 1 ? 's have' : ' has'} ended but not closed`,
-      evidence: { unclosedCount: count },
-      lastComputedAt: new Date(),
-    };
-  },
+  unclosedPeriods: async () => null,
 
   /**
    * Budget breaches — accounts exceeding budget threshold.
    */
-  budgetBreaches: async (_ctx) => {
-    // TODO: Wire to real DB query
-    const count = 0;
-    if (count === 0) return null;
-    return {
-      id: 'budget-breaches',
-      severity: 'critical',
-      title: 'Budget Breaches',
-      count,
-      href: '/finance/budgets',
-      reason: `${count} account${count > 1 ? 's exceed' : ' exceeds'} budget threshold`,
-      evidence: { breachedCount: count },
-      lastComputedAt: new Date(),
-    };
-  },
+  budgetBreaches: async () => null,
 };
 
 // ─── Resolve All ─────────────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalInvoices } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 interface Props {
   searchParams: Promise<{ page?: string; status?: string }>;
@@ -34,6 +36,7 @@ export default async function PortalInvoicesPage({ searchParams }: Props) {
   });
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Invoices"
@@ -54,5 +57,6 @@ export default async function PortalInvoicesPage({ searchParams }: Props) {
         </div>
       )}
     </div>
+    </Suspense>
   );
 }

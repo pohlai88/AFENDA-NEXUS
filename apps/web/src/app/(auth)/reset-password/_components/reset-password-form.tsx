@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { routes } from '@/lib/constants';
 
 /**
  * Reset password form — sets a new password using the token from the email link.
@@ -32,7 +33,7 @@ export function ResetPasswordForm() {
           </p>
         </div>
         <Button asChild className="w-full">
-          <Link href="/forgot-password">Request new link</Link>
+          <Link href={routes.forgotPassword}>Request new link</Link>
         </Button>
       </div>
     );
@@ -90,7 +91,7 @@ export function ResetPasswordForm() {
           </p>
         </div>
         <Button asChild className="w-full">
-          <Link href="/login">Sign in</Link>
+          <Link href={routes.login}>Sign in</Link>
         </Button>
       </div>
     );

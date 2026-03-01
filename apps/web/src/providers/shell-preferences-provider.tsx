@@ -12,7 +12,6 @@ import {
 import type { ShellPreferences, DensityProfile } from '@/lib/shell/shell-preferences.types';
 import { SHELL_PREFS_DEFAULTS } from '@/lib/shell/shell-preferences.types';
 import {
-  parseShellCookie,
   writeShellCookie,
   applyDensityClass,
 } from '@/lib/shell/shell-persistence';
@@ -44,11 +43,18 @@ interface ShellPreferencesProviderProps {
    * When provided, the provider SSR-renders with correct initial state.
    */
   defaultPrefs?: ShellPreferences;
+  /**
+   * Company-scoped cookie key (e.g. `shell_prefs:tenantId:userId:companyId`).
+   * Prevents preference leakage across companies in multi-company setups.
+   * Built server-side via `buildShellCookieKey()`.
+   */
+  cookieKey?: string;
 }
 
 export function ShellPreferencesProvider({
   children,
   defaultPrefs,
+  cookieKey,
 }: ShellPreferencesProviderProps) {
   const [prefs, setPrefs] = useState<ShellPreferences>(
     defaultPrefs ?? { ...SHELL_PREFS_DEFAULTS },
@@ -63,11 +69,11 @@ export function ShellPreferencesProvider({
     <K extends keyof Omit<ShellPreferences, 'v'>>(key: K, value: ShellPreferences[K]) => {
       setPrefs((prev) => {
         const next = { ...prev, [key]: value };
-        writeShellCookie(next);
+        writeShellCookie(next, cookieKey);
         return next;
       });
     },
-    [],
+    [cookieKey],
   );
 
   const setDensity = useCallback(
@@ -80,10 +86,10 @@ export function ShellPreferencesProvider({
   const toggleRightSidebar = useCallback(() => {
     setPrefs((prev) => {
       const next = { ...prev, rightOpen: !prev.rightOpen };
-      writeShellCookie(next);
+      writeShellCookie(next, cookieKey);
       return next;
     });
-  }, []);
+  }, [cookieKey]);
 
   const value = useMemo(
     () => ({ prefs, setPref, setDensity, toggleRightSidebar }),

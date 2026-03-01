@@ -9,6 +9,7 @@ import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import { recognizeRevenue } from '../services/recognize-revenue.js';
+import { previewRevenueRecognition } from '../services/preview-revenue-recognition.js';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { extractIdentity } from '@afenda/api-kit';
 
@@ -93,6 +94,33 @@ export function registerRevenueRoutes(
 
       const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
         return deps.revenueContractRepo.findMilestones(id);
+      });
+
+      return result.ok
+        ? reply.send(result.value)
+        : reply.status(mapErrorToStatus(result.error)).send({ error: result.error });
+    }
+  );
+
+  // POST /revenue-contracts/:id/preview-recognition — preview GL lines without persisting
+  app.post(
+    '/revenue-contracts/:id/preview-recognition',
+    { preHandler: [requirePermission(policy, 'report:read')] },
+    async (req, reply) => {
+      const { id } = IdParamSchema.parse(req.params);
+      const { tenantId, userId } = extractIdentity(req);
+      const body = RecognizeRevenueSchema.parse(req.body);
+
+      const result = await runtime.withTenant({ tenantId, userId }, async (deps) => {
+        return previewRevenueRecognition(
+          { contractId: id, periodId: body.periodId, ledgerId: body.ledgerId },
+          {
+            revenueContractRepo: deps.revenueContractRepo,
+            accountRepo: deps.accountRepo,
+            ledgerRepo: deps.ledgerRepo,
+            fiscalPeriodRepo: deps.periodRepo,
+          }
+        );
       });
 
       return result.ok

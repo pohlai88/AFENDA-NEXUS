@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUp, authClient } from '@/lib/auth-client';
+import { routes } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -67,7 +68,7 @@ export function RegisterForm() {
           window.location.href = '/onboarding';
         } else {
           // Fallback: redirect to login
-          router.push('/login');
+          router.push(routes.login);
         }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Registration failed.';
@@ -164,7 +165,7 @@ export function RegisterForm() {
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
+        <Link href={routes.login} className="font-medium text-primary underline-offset-4 hover:underline">
           Sign in
         </Link>
       </p>

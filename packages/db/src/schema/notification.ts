@@ -109,7 +109,7 @@ export const notifications = platformSchema.table(
     index('notifications_created_idx').on(table.tenantId, table.userId, table.createdAt),
     index('notifications_dismissed_idx').on(table.tenantId, table.userId, table.dismissedAt),
   ],
-);
+).enableRLS();
 
 // ─── Notification Preferences Table ──────────────────────────────────────────
 
@@ -143,17 +143,17 @@ export const notificationPreferences = platformSchema.table(
   (table) => [
     index('notification_prefs_user_idx').on(table.tenantId, table.userId),
   ],
-);
+).enableRLS();
 
 // ─── Relations ───────────────────────────────────────────────────────────────
 
-export const notificationsRelations = relations(notifications, ({ one }) => ({
+export const notificationsRelations = relations(notifications, ({ one: _one }) => ({
   // Add FK relations when wiring to users table
 }));
 
 export const notificationPreferencesRelations = relations(
   notificationPreferences,
-  ({ one }) => ({
+  ({ one: _one }) => ({
     // Add FK relations when wiring to users table
   }),
 );

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2, XCircle, MailOpen, Loader2, RefreshCw } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
+import { routes } from '@/lib/constants';
 
 /**
  * Verify-email landing page.
@@ -115,7 +116,7 @@ export function VerifyEmailStatus() {
         </CardHeader>
         <CardContent className="flex justify-center">
           <Button asChild>
-            <Link href="/login">Sign In</Link>
+            <Link href={routes.login}>Sign In</Link>
           </Button>
         </CardContent>
       </Card>
@@ -160,7 +161,7 @@ export function VerifyEmailStatus() {
           )}
           {message && <p className="text-center text-sm text-muted-foreground">{message}</p>}
           <Button asChild variant="ghost" className="w-full">
-            <Link href="/login">Back to Sign In</Link>
+            <Link href={routes.login}>Back to Sign In</Link>
           </Button>
         </CardContent>
       </Card>
@@ -239,7 +240,7 @@ export function VerifyEmailStatus() {
           </div>
 
           <Button asChild variant="outline" className="w-full">
-            <Link href="/login">Back to Sign In</Link>
+            <Link href={routes.login}>Back to Sign In</Link>
           </Button>
         </CardContent>
       </Card>
@@ -298,7 +299,7 @@ export function VerifyEmailStatus() {
           </>
         )}
         <Button asChild variant="ghost" className="w-full">
-          <Link href="/login">Back to Sign In</Link>
+          <Link href={routes.login}>Back to Sign In</Link>
         </Button>
       </CardContent>
     </Card>

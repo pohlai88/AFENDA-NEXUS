@@ -1,9 +1,11 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
 import { PortalReconciliationPageClient } from '@/features/portal/blocks/portal-reconciliation-page-client';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalReconciliationPage() {
   const ctx = await getRequestContext();
@@ -22,6 +24,7 @@ export default async function PortalReconciliationPage() {
   const supplier = supplierResult.value;
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Statement Reconciliation"
@@ -37,5 +40,6 @@ export default async function PortalReconciliationPage() {
         currencyCode={supplier.currencyCode}
       />
     </div>
+    </Suspense>
   );
 }

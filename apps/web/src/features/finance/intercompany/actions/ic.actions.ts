@@ -4,6 +4,10 @@ import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import type { CreateIcTransaction } from '@afenda/contracts';
 import type { ApiResult, CommandReceipt, AuditEntry } from '@/lib/types';
+import {
+  previewIcTransaction as previewQ,
+  type IcTransactionPreviewResult,
+} from '../queries/ic.queries';
 
 // ─── IC Transaction Mutations ───────────────────────────────────────────────
 
@@ -41,4 +45,13 @@ export async function getIcTransactionAuditAction(
   const ctx = await getRequestContext();
   const client = createApiClient(ctx);
   return client.get<AuditEntry[]>(`/ic-transactions/${transactionId}/audit`);
+}
+
+// ─── Preview Action ─────────────────────────────────────────────────────────
+
+export async function previewIcTransactionAction(
+  body: Record<string, unknown>
+): Promise<ApiResult<IcTransactionPreviewResult>> {
+  const ctx = await getRequestContext();
+  return previewQ(ctx, body);
 }

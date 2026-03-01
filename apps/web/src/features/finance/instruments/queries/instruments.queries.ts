@@ -1,104 +1,132 @@
-'use server';
+import { createApiClient } from '@/lib/api-client';
+import type { ApiResult, CommandReceipt } from '@/lib/types';
 
-import type { FinancialInstrument, FairValueMeasurement, InstrumentSummary } from '../types';
+// --- Context type ------------------------------------------------------------
 
-const mockInstruments: FinancialInstrument[] = [
-  {
-    id: 'inst-1',
-    instrumentNumber: 'FI-2024-001',
-    name: 'Treasury Bonds 2028',
-    description: 'US Treasury Bonds',
-    type: 'debt',
-    category: 'amortized_cost',
-    status: 'active',
-    issuer: 'US Treasury',
-    currency: 'USD',
-    faceValue: 1000000,
-    carryingAmount: 985000,
-    fairValue: 1015000,
-    fairValueLevel: 'level_1',
-    unrealizedGainLoss: 30000,
-    accruedInterest: 12500,
-    interestRate: 4.5,
-    maturityDate: new Date('2028-06-30'),
-    acquisitionDate: new Date('2024-01-15'),
-    acquisitionCost: 980000,
-    lastValuationDate: new Date('2026-02-20'),
-    ecl: 0,
-    eclStage: 1,
-    glAccountId: 'gl-1500',
-    glAccountCode: '1500',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2026-02-20'),
-  },
-  {
-    id: 'inst-2',
-    instrumentNumber: 'FI-2025-001',
-    name: 'Tech Corp Equity',
-    description: 'Equity investment in Tech Corp',
-    type: 'equity',
-    category: 'fvoci',
-    status: 'active',
-    issuer: 'Tech Corp',
-    currency: 'USD',
-    faceValue: 500000,
-    carryingAmount: 650000,
-    fairValue: 650000,
-    fairValueLevel: 'level_1',
-    unrealizedGainLoss: 150000,
-    accruedInterest: 0,
-    interestRate: null,
-    maturityDate: null,
-    acquisitionDate: new Date('2025-03-10'),
-    acquisitionCost: 500000,
-    lastValuationDate: new Date('2026-02-20'),
-    ecl: 0,
-    eclStage: 1,
-    glAccountId: 'gl-1510',
-    glAccountCode: '1510',
-    createdAt: new Date('2025-03-10'),
-    updatedAt: new Date('2026-02-20'),
-  },
-];
+type Ctx = { tenantId: string; userId: string; token: string };
 
-export async function getInstruments(params?: {
-  category?: string;
-  type?: string;
-  status?: string;
-}): Promise<{ ok: true; data: FinancialInstrument[] } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
-  let filtered = [...mockInstruments];
-  if (params?.category) filtered = filtered.filter((i) => i.category === params.category);
-  if (params?.type) filtered = filtered.filter((i) => i.type === params.type);
-  if (params?.status) filtered = filtered.filter((i) => i.status === params.status);
-  return { ok: true, data: filtered };
+// --- View Models -------------------------------------------------------------
+
+export interface InstrumentView {
+  id: string;
+  instrumentNumber: string;
+  name: string;
+  description: string;
+  type: string;
+  category: string;
+  status: string;
+  issuer: string;
+  currency: string;
+  faceValue: number;
+  carryingAmount: number;
+  fairValue: number;
+  fairValueLevel: string;
+  unrealizedGainLoss: number;
+  accruedInterest: number;
+  interestRate: number | null;
+  maturityDate: string | null;
+  acquisitionDate: string;
+  acquisitionCost: number;
+  lastValuationDate: string;
+  ecl: number;
+  eclStage: number;
+  glAccountId: string;
+  glAccountCode: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FairValueMeasurementView {
+  id: string;
+  instrumentId: string;
+  measurementDate: string;
+  fairValue: number;
+  fairValueLevel: string;
+  valuationMethod: string;
+  unrealizedGainLoss: number;
+  journalEntryId: string | null;
+  journalEntryNumber: string | null;
+  createdAt: string;
+}
+
+export interface InstrumentSummaryView {
+  totalInstruments: number;
+  totalCarryingAmount: number;
+  totalFairValue: number;
+  unrealizedGainLoss: number;
+  ecl: number;
+  byCategory: Record<string, number>;
+}
+
+// --- Queries -----------------------------------------------------------------
+
+export async function getInstruments(
+  ctx: Ctx,
+  params?: { category?: string; type?: string; status?: string },
+): Promise<ApiResult<{ data: InstrumentView[] }>> {
+  const client = createApiClient(ctx);
+  const query: Record<string, string> = {};
+  if (params?.category) query.classification = params.category;
+  if (params?.type) query.type = params.type;
+  if (params?.status) query.status = params.status;
+  return client.get<{ data: InstrumentView[] }>('/fin-instruments', query);
 }
 
 export async function getInstrumentById(
-  id: string
-): Promise<
-  | { ok: true; data: FinancialInstrument; valuations: FairValueMeasurement[] }
-  | { ok: false; error: string }
-> {
-  await new Promise((r) => setTimeout(r, 200));
-  const inst = mockInstruments.find((i) => i.id === id);
-  if (!inst) return { ok: false, error: 'Instrument not found' };
-  return { ok: true, data: inst, valuations: [] };
+  ctx: Ctx,
+  id: string,
+): Promise<ApiResult<InstrumentView>> {
+  const client = createApiClient(ctx);
+  return client.get<InstrumentView>(`/fin-instruments/${id}`);
 }
 
-export async function getInstrumentSummary(): Promise<
-  { ok: true; data: InstrumentSummary } | { ok: false; error: string }
-> {
-  await new Promise((r) => setTimeout(r, 250));
-  return {
-    ok: true,
-    data: {
-      totalInstruments: 15,
-      totalCarryingAmount: 8500000,
-      totalFairValue: 8750000,
-      unrealizedGainLoss: 250000,
-      ecl: 45000,
-      byCategory: { fvtpl: 1500000, fvoci: 2500000, amortized_cost: 4500000 },
-    },
-  };
+export async function getInstrumentFairValues(
+  ctx: Ctx,
+  instrumentId: string,
+): Promise<ApiResult<{ data: FairValueMeasurementView[] }>> {
+  const client = createApiClient(ctx);
+  return client.get<{ data: FairValueMeasurementView[] }>(`/fin-instruments/${instrumentId}/fair-values`);
+}
+
+export async function getInstrumentSummary(
+  ctx: Ctx,
+): Promise<ApiResult<InstrumentSummaryView>> {
+  const client = createApiClient(ctx);
+  return client.get<InstrumentSummaryView>('/fin-instruments/summary');
+}
+
+// --- Commands ----------------------------------------------------------------
+
+export async function createInstrument(
+  ctx: Ctx,
+  body: unknown,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>('/fin-instruments', body);
+}
+
+export async function recordFairValue(
+  ctx: Ctx,
+  instrumentId: string,
+  body: { fairValue: number; level: string; valuationMethod: string },
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/fin-instruments/${instrumentId}/fair-values`, body);
+}
+
+export async function calculateECL(
+  ctx: Ctx,
+  instrumentId: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/fin-instruments/${instrumentId}/ecl`, {});
+}
+
+export async function disposeInstrument(
+  ctx: Ctx,
+  instrumentId: string,
+  body: { salePrice: number; saleDate: string },
+): Promise<ApiResult<CommandReceipt>> {
+  const client = createApiClient(ctx);
+  return client.post<CommandReceipt>(`/fin-instruments/${instrumentId}/dispose`, body);
 }

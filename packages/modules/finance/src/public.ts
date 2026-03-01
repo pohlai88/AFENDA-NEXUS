@@ -312,6 +312,12 @@ export type {
 // ─── AP services ───────────────────────────────────────────────────────────
 export { postApInvoice, type PostApInvoiceInput } from './slices/ap/services/post-ap-invoice.js';
 export {
+  previewApPosting,
+  type PreviewApPostingInput,
+  type PostingLinePreview,
+  type PostingPreviewResult,
+} from './slices/ap/services/preview-ap-posting.js';
+export {
   executePaymentRun,
   type ExecutePaymentRunInput,
 } from './slices/ap/services/execute-payment-run.js';
@@ -781,6 +787,10 @@ export type {
 
 // ─── AR services ───────────────────────────────────────────────────────────
 export { postArInvoice, type PostArInvoiceInput } from './slices/ar/services/post-ar-invoice.js';
+export {
+  previewArPosting,
+  type PreviewArPostingInput,
+} from './slices/ar/services/preview-ar-posting.js';
 export {
   allocatePayment,
   type AllocatePaymentInput,

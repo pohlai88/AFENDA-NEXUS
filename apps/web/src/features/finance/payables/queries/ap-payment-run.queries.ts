@@ -151,6 +151,60 @@ export async function getPaymentRunReport(
   return client.get<{ summary: string; details: string }>(`/ap/payment-runs/${runId}/report`);
 }
 
+export interface PaymentProposalGroup {
+  groupKey: string;
+  supplierId: string;
+  supplierName: string;
+  paymentMethod: string;
+  bankAccountId: string | null;
+  currencyCode: string;
+  items: Array<{
+    invoiceId: string;
+    invoiceNumber: string;
+    dueDate: string;
+    outstandingAmount: string;
+    discountAmount: string;
+    netPayable: string;
+    discountEligible: boolean;
+    selectionReason: 'DUE' | 'DISCOUNT_OPPORTUNITY';
+  }>;
+  totalGross: string;
+  totalDiscount: string;
+  totalNet: string;
+}
+
+export interface PaymentProposalResponse {
+  paymentDate: string;
+  cutoffDate: string;
+  groups: PaymentProposalGroup[];
+  summary: {
+    totalInvoices: number;
+    totalGroups: number;
+    totalGross: string;
+    totalDiscount: string;
+    totalNet: string;
+    discountOpportunityCount: number;
+    discountSavings: string;
+  };
+}
+
+export async function getPaymentProposal(
+  ctx: Ctx,
+  params: { companyId: string; runDate: string; cutoffDate: string; currencyCode: string; includeDiscountOpportunities?: boolean },
+): Promise<ApiResult<PaymentProposalResponse>> {
+  const client = createApiClient(ctx);
+  const query: Record<string, string> = {
+    companyId: params.companyId,
+    runDate: params.runDate,
+    cutoffDate: params.cutoffDate,
+    currencyCode: params.currencyCode,
+  };
+  if (params.includeDiscountOpportunities !== undefined) {
+    query.includeDiscountOpportunities = String(params.includeDiscountOpportunities);
+  }
+  return client.get<PaymentProposalResponse>('/ap/payment-proposal', query);
+}
+
 export async function getUnpaidInvoicesForRun(
   ctx: Ctx,
   params: { companyId: string; currencyCode: string; cutoffDate: string; page?: string; limit?: string },

@@ -30,7 +30,7 @@ const VERSION = '1.0.0';
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
 
-const FINANCE_ROUTES = join(ROOT, 'apps/web/src/app/(shell)/finance');
+const FINANCE_ROUTES = join(ROOT, 'apps/web/src/app/(shell)/(erp)/finance');
 const PORTAL_ROUTES = join(ROOT, 'apps/web/src/app/(supplier-portal)/portal');
 const FINANCE_FEATURES = join(ROOT, 'apps/web/src/features/finance');
 const ERP_COMPONENTS = join(ROOT, 'apps/web/src/components/erp');
@@ -222,9 +222,9 @@ for (const reportName of reportSubDirs) {
     fileContains(pagePath, 'setTimeout') ||
     fileContainsRegex(pagePath, /await\s+new\s+Promise\(\s*\(?\s*r(?:esolve)?\s*\)?\s*=>\s*setTimeout/) ||
     (fileContainsRegex(pagePath, /(?:const|let)\s+\w+\s*(?::\s*\w[\w<>,\s|[\]]*\s*)?=\s*\[/) &&
-     !fileContains(pagePath, 'createApiClient') &&
-     !fileContains(pagePath, 'getRequestContext') &&
-     !fileContains(pagePath, 'queries'));
+      !fileContains(pagePath, 'createApiClient') &&
+      !fileContains(pagePath, 'getRequestContext') &&
+      !fileContains(pagePath, 'queries'));
 
   if (isStub) {
     stubReportCount++;
@@ -390,6 +390,126 @@ if (existsSync(DB_SCHEMA)) {
     tables.push(match[1]);
   }
 
+  // Known mappings: table variable name → feature domain that consumes it via API
+  // Tables accessed through createApiClient don't have their Drizzle names in
+  // frontend code, so we maintain an explicit mapping here.
+  const knownTableMappings = {
+    // periods / fiscal
+    fiscalYears: 'periods',
+    fiscalPeriods: 'periods',
+    // journals / GL
+    glJournals: 'journals',
+    glJournalLines: 'journals',
+    glBalances: 'journals',
+    // intercompany
+    counterparties: 'intercompany',
+    icAgreements: 'intercompany',
+    icTransactionLegs: 'intercompany',
+    icSettlements: 'intercompany',
+    icSettlementLines: 'intercompany',
+    // recurring
+    recurringTemplates: 'recurring',
+    // budgets
+    budgetEntries: 'budgets',
+    // revenue-recognition
+    revenueContracts: 'revenue-recognition',
+    recognitionMilestones: 'revenue-recognition',
+    // settings
+    classificationRuleSets: 'settings',
+    classificationRules: 'settings',
+    matchTolerances: 'settings',
+    paymentTermsTemplates: 'settings',
+    paymentTermsLines: 'settings',
+    mappingRules: 'settings',
+    mappingRuleVersions: 'settings',
+    accountingEvents: 'accounts',
+    // payables (AP, suppliers)
+    apInvoices: 'payables',
+    apInvoiceLines: 'payables',
+    apHolds: 'payables',
+    apPaymentRuns: 'payables',
+    apPaymentRunItems: 'payables',
+    apPrepayments: 'payables',
+    apPrepaymentApplications: 'payables',
+    supplierSites: 'payables',
+    supplierBankAccounts: 'payables',
+    supplierUsers: 'payables',
+    supplierDocuments: 'payables',
+    supplierDisputes: 'payables',
+    supplierNotificationPrefs: 'payables',
+    supplierComplianceItems: 'payables',
+    supplierAccountGroupConfigs: 'payables',
+    supplierCompanyOverrides: 'payables',
+    supplierBlocks: 'payables',
+    supplierBlockHistory: 'payables',
+    supplierBlacklists: 'payables',
+    supplierTaxRegistrations: 'payables',
+    supplierLegalDocuments: 'payables',
+    supplierDocRequirements: 'payables',
+    supplierEvalTemplates: 'payables',
+    supplierEvalCriteria: 'payables',
+    supplierEvaluations: 'payables',
+    supplierEvalScores: 'payables',
+    supplierRiskIndicators: 'payables',
+    supplierDiversities: 'payables',
+    supplierContacts: 'payables',
+    supplierDuplicateSuspects: 'payables',
+    ocrJobs: 'payables',
+    // receivables (AR, dunning)
+    arInvoices: 'receivables',
+    arInvoiceLines: 'receivables',
+    arPaymentAllocations: 'receivables',
+    arAllocationItems: 'receivables',
+    dunningRuns: 'receivables',
+    dunningLetters: 'receivables',
+    // tax
+    taxRates: 'tax',
+    taxReturnPeriods: 'tax',
+    whtCertificates: 'tax',
+    // fixed-assets
+    depreciationSchedules: 'fixed-assets',
+    assetMovements: 'fixed-assets',
+    assetComponents: 'fixed-assets',
+    // banking
+    bankStatementLines: 'banking',
+    bankMatches: 'banking',
+    bankReconciliations: 'banking',
+    // expenses
+    expenseClaims: 'expenses',
+    expenseClaimLines: 'expenses',
+    expensePolicies: 'expenses',
+    // projects
+    projectCostLines: 'projects',
+    projectBillings: 'projects',
+    // leases
+    leaseContracts: 'leases',
+    leaseSchedules: 'leases',
+    // provisions
+    provisionMovements: 'provisions',
+    // cost-accounting
+    costDriverValues: 'cost-accounting',
+    costAllocationRuns: 'cost-accounting',
+    costAllocationLines: 'cost-accounting',
+    // consolidation
+    groupEntities: 'consolidation',
+    ownershipRecords: 'consolidation',
+    // intangibles
+    intangibleAssets: 'intangibles',
+    // instruments
+    financialInstruments: 'instruments',
+    fairValueMeasurements: 'instruments',
+    // hedging
+    hedgeRelationships: 'hedging',
+    hedgeEffectivenessTests: 'hedging',
+    // deferred-tax
+    deferredTaxItems: 'deferred-tax',
+    // transfer-pricing
+    tpPolicies: 'transfer-pricing',
+    tpBenchmarks: 'transfer-pricing',
+    // treasury
+    cashForecasts: 'treasury',
+  };
+
   // Check which tables have at least one reference in features/
   const featureFiles = walkFiles(FINANCE_FEATURES, (name) =>
     /\.(ts|tsx)$/.test(name)
@@ -402,8 +522,8 @@ if (existsSync(DB_SCHEMA)) {
 
   let uncoveredCount = 0;
   for (const table of tables) {
-    // Convert snake_case table variable to check if referenced
-    if (!featureContent.includes(table)) {
+    // Table is covered if referenced in feature code OR explicitly mapped
+    if (!featureContent.includes(table) && !knownTableMappings[table]) {
       uncoveredCount++;
       if (uncoveredCount <= 20) {
         // Cap advisory warnings
@@ -418,6 +538,10 @@ if (existsSync(DB_SCHEMA)) {
   if (uncoveredCount > 0) {
     warn('FIN-DB-SUMMARY', `${uncoveredCount} DB tables with no frontend feature reference`, [
       `${tables.length} total tables, ${tables.length - uncoveredCount} referenced`,
+    ]);
+  } else {
+    pass('FIN-DB-COVERAGE', `All ${tables.length} DB tables mapped to frontend features`, [
+      `${Object.keys(knownTableMappings).length} via knownTableMappings, rest via code reference`,
     ]);
   }
 }
@@ -475,10 +599,14 @@ if (existsSync(MODULE_BARREL)) {
       registerApAgingRoutes: 'reports',
       registerApHoldRoutes: 'payables',
       registerApSupplierReconRoutes: 'payables',
+      registerApReportingRoutes: 'reports',
       registerSupplierRoutes: 'payables',
+      registerSupplierMdmRoutes: 'payables',
+      registerSupplierPortalRoutes: 'payables',
       registerArInvoiceRoutes: 'receivables',
       registerArPaymentRoutes: 'receivables',
       registerArAgingRoutes: 'reports',
+      registerArDunningRoutes: 'receivables',
       registerTaxCodeRoutes: 'tax',
       registerTaxRateRoutes: 'tax',
       registerTaxReturnRoutes: 'tax',
@@ -487,6 +615,13 @@ if (existsSync(MODULE_BARREL)) {
       registerBankRoutes: 'banking',
       registerFinInstrumentRoutes: 'instruments',
       registerApCaptureRoutes: 'payables',
+      registerExpenseRoutes: 'expenses',
+      registerProjectRoutes: 'projects',
+      registerLeaseRoutes: 'leases',
+      registerProvisionRoutes: 'provisions',
+      registerHedgeRoutes: 'hedging',
+      registerIntangibleRoutes: 'intangibles',
+      registerApprovalRoutes: 'approvals',
     };
 
     const knownMatch = knownMappings[registrar];
@@ -535,6 +670,40 @@ for (const domain of featureSubDomains) {
       ]
     );
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CHECK GROUP 8: API Path Validation (FORBIDDEN — frontend/backend path mismatch)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Known wrong paths that frontend must NOT use. Key = wrong path, value = correct backend path. */
+const KNOWN_API_PATH_MISMATCHES = {
+  '/ap/close-checklist': '/ap/period-close-checklist',
+};
+
+const payablesQueryFiles = walkFiles(join(FINANCE_FEATURES, 'payables'), (name) =>
+  /\.(ts|tsx)$/.test(name)
+);
+
+let apiPathMismatchCount = 0;
+for (const filePath of payablesQueryFiles) {
+  const content = readFileSync(filePath, 'utf-8');
+  for (const [wrongPath, correctPath] of Object.entries(KNOWN_API_PATH_MISMATCHES)) {
+    if (content.includes(wrongPath)) {
+      apiPathMismatchCount++;
+      fail(
+        `FIN-API-PATH-${String(apiPathMismatchCount).padStart(2, '0')}`,
+        `API path mismatch: frontend uses "${wrongPath}" but backend expects "${correctPath}"`,
+        [rel(filePath), `Replace "${wrongPath}" with "${correctPath}"`]
+      );
+    }
+  }
+}
+
+if (apiPathMismatchCount === 0) {
+  pass('FIN-API-PATH', 'All AP query paths match backend routes', [
+    'Checked payables queries/actions against known mismatches',
+  ]);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

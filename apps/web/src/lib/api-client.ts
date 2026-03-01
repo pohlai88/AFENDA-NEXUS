@@ -3,7 +3,7 @@ import { captureException, addBreadcrumb } from './error-reporting';
 
 // ─── Configuration ──────────────────────────────────────────────────────────
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 500;

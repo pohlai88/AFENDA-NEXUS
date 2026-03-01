@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Copy, Home, ArrowLeft } from 'lucide-react';
 import { reportError, getCorrelationId, getUserFriendlyMessage } from '@/lib/error-reporting';
+import { routes } from '@/lib/constants';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -171,7 +172,7 @@ export function ErrorDisplay({
         )}
         {showHomeLink && (
           <Button variant="ghost" asChild>
-            <a href="/">
+            <a href={routes.home}>
               <Home className="mr-2 h-4 w-4" />
               Home
             </a>
@@ -232,7 +233,7 @@ export function NotFoundDisplay({
         )}
         {showHomeLink && (
           <Button asChild>
-            <a href="/">
+            <a href={routes.home}>
               <Home className="mr-2 h-4 w-4" />
               Home
             </a>

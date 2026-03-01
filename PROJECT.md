@@ -271,6 +271,7 @@ repo/
   tools/                      # NOT "tooling" — monorepo convention
     generators/               # @afenda/generators — scaffold, gen:module, gen:table, etc.
     drift-check/              # @afenda/drift-check — CI gate, structure validation
+    graphviz/                 # @afenda/graphviz — dependency graph DOT/SVG + lineage analysis
     scripts/                  # ad-hoc scripts
   docs/
 ```
@@ -298,6 +299,9 @@ single monolithic "cli" packages.
 | `pnpm turbo test:coverage`                      | Run tests with coverage enforcement (thresholds: 80/80/75/80)                               |
 | `pnpm module:gates`                             | Run all 6 production hardening gates (see §13a below)                                       |
 | `node tools/drift-check/src/unused-exports.mjs` | Advisory scan for unused public API exports                                                 |
+| `pnpm graph`                                    | Dependency graph DOT + orphan/lineage analysis                                              |
+| `pnpm graph:full`                               | Full analysis + SVG render + JSON report + import scan                                      |
+| `pnpm graph:pkg @afenda/<name>`                 | Focus graph on a single package neighbourhood (deps + dependents)                           |
 
 **Drift gate:** CI runs `pnpm run drift` and `pnpm arch:guard` before
 lint/build. Structure changes require updating `tools/drift-check` and
@@ -622,6 +626,7 @@ shadcn/ui configured. Graphile Worker wired.
 | `apps/worker`                | ✅ Complete | Graphile Worker dep + background job processor                                                                                           |
 | `tools/drift-check`          | ✅ Complete | Manifest-driven structure validator                                                                                                      |
 | `tools/generators`           | ✅ Complete | gen:module, gen:table, gen:endpoint, gen:outbox-event (all functional)                                                                   |
+| `tools/graphviz`             | ✅ Complete | Dependency graph DOT/SVG + orphan/lineage/cycle/layer-violation analysis + regression diff                                               |
 | `tools/scripts`              | ✅ Created  | Ad-hoc scripts directory                                                                                                                 |
 
 ### Audit Status (2026-02-24)

@@ -2,6 +2,25 @@ import { createApiClient } from '@/lib/api-client';
 import type { ApiResult, PaginatedResponse, CommandReceipt } from '@/lib/types';
 import type { ArInvoiceStatus } from '@afenda/contracts';
 
+// ─── Shared Posting Preview Types ────────────────────────────────────────────
+
+export interface PostingPreviewLine {
+  accountId: string;
+  accountCode: string;
+  accountName: string;
+  debit: string;
+  credit: string;
+  description: string;
+}
+
+export interface PostingPreviewResult {
+  ledgerName: string;
+  periodName: string;
+  currency: string;
+  lines: PostingPreviewLine[];
+  warnings: string[];
+}
+
 // ─── View Models (what the UI receives from the API) ────────────────────────
 
 export interface ArInvoiceListItem {
@@ -96,6 +115,15 @@ export async function approveArInvoice(
   return client.post<CommandReceipt>(`/ar/invoices/${invoiceId}/approve`, {
     idempotencyKey: crypto.randomUUID(),
   });
+}
+
+export async function previewArPosting(
+  ctx: { tenantId: string; userId: string; token: string },
+  invoiceId: string,
+  body: { fiscalPeriodId: string; arAccountId: string }
+): Promise<ApiResult<PostingPreviewResult>> {
+  const client = createApiClient(ctx);
+  return client.post<PostingPreviewResult>(`/ar/invoices/${invoiceId}/preview-posting`, body);
 }
 
 export async function postArInvoice(

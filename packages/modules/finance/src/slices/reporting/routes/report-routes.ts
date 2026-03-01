@@ -13,6 +13,7 @@ import {
   GenerateNotesBodySchema,
   XbrlTagBodySchema,
   IcAgingQuerySchema,
+  AssetRegisterQuerySchema,
 } from '@afenda/contracts';
 import type { FinanceRuntime } from '../../../app/ports/finance-runtime.js';
 import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.js';
@@ -32,7 +33,7 @@ import { getBudgetVariance } from '../../../shared/ports/report-hooks.js';
 import { evaluateVarianceAlerts } from '../../../shared/ports/report-hooks.js';
 import { computeIcAging } from '../../../shared/ports/report-hooks.js';
 import type { IcOpenItem } from '../../../shared/ports/report-hooks.js';
-import { money } from '@afenda/core';
+import { money, formatMinorUnits } from '@afenda/core';
 import { mapErrorToStatus } from '../../../shared/routes/error-mapper.js';
 import { extractIdentity } from '@afenda/api-kit';
 
@@ -327,6 +328,52 @@ export function registerReportRoutes(
 
       const agingResult = computeIcAging(items, asOfDate, currency);
       return reply.send(agingResult.result);
+    }
+  );
+
+  // GET /reports/asset-register?asOfDate=2025-12-31
+  app.get(
+    '/reports/asset-register',
+    { preHandler: [requirePermission(policy, 'report:read')] },
+    async (req, reply) => {
+      const { tenantId, userId } = extractIdentity(req);
+      const parsed = AssetRegisterQuerySchema.parse(req.query);
+      const asOfDate = parsed.asOfDate ?? new Date().toISOString().slice(0, 10);
+
+      const list = await run({ tenantId, userId }, async (deps) => {
+        return deps.assetRepo.findAll();
+      });
+
+      let totalCost = 0n;
+      let totalDepreciation = 0n;
+      let totalNBV = 0n;
+      const currency = list[0]?.currencyCode ?? 'USD';
+
+      const rows = list.map((a) => {
+        totalCost += a.acquisitionCost;
+        totalDepreciation += a.accumulatedDepreciation;
+        totalNBV += a.netBookValue;
+        return {
+          assetId: a.id,
+          assetCode: a.assetNumber,
+          description: a.name,
+          category: a.categoryCode,
+          acquisitionDate: a.acquisitionDate.toISOString().slice(0, 10),
+          costAmount: formatMinorUnits(a.acquisitionCost),
+          accumulatedDepreciation: formatMinorUnits(a.accumulatedDepreciation),
+          netBookValue: formatMinorUnits(a.netBookValue),
+          status: a.status,
+        };
+      });
+
+      return reply.send({
+        asOfDate,
+        rows,
+        totalCost: formatMinorUnits(totalCost),
+        totalDepreciation: formatMinorUnits(totalDepreciation),
+        totalNBV: formatMinorUnits(totalNBV),
+        currency,
+      });
     }
   );
 }

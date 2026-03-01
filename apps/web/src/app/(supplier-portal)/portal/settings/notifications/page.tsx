@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import {
   getPortalSupplier,
@@ -7,6 +8,7 @@ import { PageHeader } from '@/components/erp/page-header';
 import { PortalNotificationForm } from '@/features/portal/forms/portal-notification-form';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalNotificationSettingsPage() {
   const ctx = await getRequestContext();
@@ -26,6 +28,7 @@ export default async function PortalNotificationSettingsPage() {
   const result = await getPortalNotificationPrefs(ctx, supplier.supplierId);
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Notification Settings"
@@ -45,5 +48,6 @@ export default async function PortalNotificationSettingsPage() {
         </div>
       )}
     </div>
+    </Suspense>
   );
 }

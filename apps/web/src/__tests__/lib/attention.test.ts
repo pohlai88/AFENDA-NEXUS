@@ -20,7 +20,7 @@ describe('Attention Types', () => {
       severity: 'critical',
       title: 'Overdue Payables',
       count: 3,
-      href: '/finance/payables?filter=overdue',
+      href: '/finance/accounts-payable/payables?filter=overdue',
       reason: '3 AP invoices are past due date',
       evidence: {
         overdueIds: ['INV-001', 'INV-003', 'INV-007'],

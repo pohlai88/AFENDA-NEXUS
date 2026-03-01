@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ReceiptPanel } from '@/components/erp/receipt-panel';
+import { PostingPreview, type PostingPreviewData } from '@/components/erp/posting-preview';
 import { useReceipt } from '@/hooks/use-receipt';
 import { routes } from '@/lib/constants';
 import {
@@ -22,25 +23,61 @@ import {
   voidJournalAction,
 } from '../actions/journal.actions';
 import type { JournalStatus } from '@afenda/contracts';
+import type { JournalLineView } from '../queries/journal.queries';
 import { CheckCircle, Undo2, XCircle } from 'lucide-react';
 
 interface JournalActionsProps {
   journalId: string;
   status: JournalStatus;
+  /** Journal lines for the posting preview */
+  lines?: JournalLineView[];
+  /** Currency code for the posting preview */
+  currency?: string;
+  /** Ledger name for the posting preview */
+  ledgerName?: string;
+  /** Posting period name */
+  periodName?: string;
 }
 
-export function JournalActions({ journalId, status }: JournalActionsProps) {
+export function JournalActions({ journalId, status, lines, currency, ledgerName, periodName }: JournalActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const { receipt, showReceipt, clearReceipt, isOpen } = useReceipt();
+  const [showPreview, setShowPreview] = useState(false);
 
   // ─── Reason Dialog State ────────────────────────────────────────────
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'reverse' | 'void'>('reverse');
   const [reason, setReason] = useState('');
 
+  // ─── Build Preview Data ─────────────────────────────────────────────
+  const previewData: PostingPreviewData | null =
+    lines && currency
+      ? {
+          ledgerName: ledgerName ?? 'General Ledger',
+          periodName: periodName ?? '',
+          currency,
+          lines: lines.map((l) => ({
+            accountCode: l.accountCode,
+            accountName: l.accountName ?? l.accountCode,
+            debit: parseFloat(l.debit) || 0,
+            credit: parseFloat(l.credit) || 0,
+            description: l.description,
+          })),
+        }
+      : null;
+
   function handlePost() {
+    // If lines are available, show preview first
+    if (previewData && !showPreview) {
+      setShowPreview(true);
+      return;
+    }
+    doPost();
+  }
+
+  function doPost() {
     setError(null);
     const idempotencyKey = crypto.randomUUID();
     startTransition(async () => {
@@ -99,6 +136,31 @@ export function JournalActions({ journalId, status }: JournalActionsProps) {
   }
 
   const isReadOnly = status === 'POSTED' || status === 'REVERSED' || status === 'VOIDED';
+
+  // ─── Posting Preview ───────────────────────────────────────────────
+  if (showPreview && previewData) {
+    return (
+      <div className="space-y-3">
+        <PostingPreview
+          data={previewData}
+          title="Post Journal to Ledger"
+          compact
+          onConfirm={async () => {
+            doPost();
+            setShowPreview(false);
+          }}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => setShowPreview(false)}
+        >
+          Cancel
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">

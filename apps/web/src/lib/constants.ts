@@ -5,9 +5,16 @@ import type { JournalStatus, ApInvoiceStatus, ArInvoiceStatus } from '@afenda/co
 export const routes = {
   home: '/',
   login: '/login',
+  register: '/register',
+  forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
+  onboarding: '/onboarding',
+  verifyEmail: '/verify-email',
+  acceptInvite: '/accept-invite',
   dashboard: '/',
   finance: {
     // Dashboard & Overview
+    root: '/finance' as const,
     dashboard: '/finance',
     approvals: '/finance/approvals',
 
@@ -16,6 +23,7 @@ export const routes = {
     paymentDetail: (id: string) => `/finance/payments/${id}`,
 
     // Budgets
+    budgetEntries: '/finance/budgets',
     budgetTransferDetail: (id: string) => `/finance/budgets/transfers/${id}`,
 
     // General Ledger
@@ -35,39 +43,56 @@ export const routes = {
     recurringDetail: (id: string) => `/finance/recurring/${id}`,
 
     // Accounts Payable
-    payables: '/finance/payables',
-    payableDetail: (id: string) => `/finance/payables/${id}`,
-    payableNew: '/finance/payables/new',
-    payablePay: (id: string) => `/finance/payables/${id}/pay`,
+    payables: '/finance/accounts-payable/payables',
+    payableDetail: (id: string) => `/finance/accounts-payable/payables/${id}`,
+    payableNew: '/finance/accounts-payable/payables/new',
+    payablePay: (id: string) => `/finance/accounts-payable/payables/${id}/pay`,
 
     // AP Payment Runs
-    paymentRuns: '/finance/payables/payment-runs',
-    paymentRunDetail: (id: string) => `/finance/payables/payment-runs/${id}`,
-    paymentRunNew: '/finance/payables/payment-runs/new',
-    paymentRunItems: (id: string) => `/finance/payables/payment-runs/${id}/items`,
-    paymentRunRemittance: (id: string) => `/finance/payables/payment-runs/${id}/remittance`,
-    paymentRunRejection: (id: string) => `/finance/payables/payment-runs/${id}/rejection`,
+    paymentRuns: '/finance/accounts-payable/payables/payment-runs',
+    paymentRunDetail: (id: string) => `/finance/accounts-payable/payables/payment-runs/${id}`,
+    paymentRunNew: '/finance/accounts-payable/payables/payment-runs/new',
+    paymentRunItems: (id: string) => `/finance/accounts-payable/payables/payment-runs/${id}/items`,
+    paymentRunRemittance: (id: string) => `/finance/accounts-payable/payables/payment-runs/${id}/remittance`,
+    paymentRunRejection: (id: string) => `/finance/accounts-payable/payables/payment-runs/${id}/rejection`,
 
     // AP Suppliers
-    suppliers: '/finance/payables/suppliers',
-    supplierDetail: (id: string) => `/finance/payables/suppliers/${id}`,
-    supplierNew: '/finance/payables/suppliers/new',
+    suppliers: '/finance/accounts-payable/payables/suppliers',
+    supplierDetail: (id: string) => `/finance/accounts-payable/payables/suppliers/${id}`,
+    supplierNew: '/finance/accounts-payable/payables/suppliers/new',
 
     // AP Holds
-    holds: '/finance/payables/holds',
+    holds: '/finance/accounts-payable/payables/holds',
+    duplicates: '/finance/accounts-payable/payables/duplicates',
+
+    // AP Triage
+    triage: '/finance/accounts-payable/payables/triage',
+
+    // AP Match Tolerances
+    matchTolerances: '/finance/accounts-payable/payables/match-tolerances',
+
+    // AP Prepayments
+    prepayments: '/finance/accounts-payable/payables/prepayments',
+    prepaymentDetail: (id: string) => `/finance/accounts-payable/payables/prepayments/${id}`,
 
     // AP Capture Extras
-    creditMemoNew: '/finance/payables/credit-memos/new',
-    debitMemoNew: '/finance/payables/debit-memos/new',
-    batchImport: '/finance/payables/import',
-    supplierRecon: '/finance/payables/reconciliation',
-    closeChecklist: '/finance/payables/close-checklist',
+    creditMemoNew: '/finance/accounts-payable/payables/credit-memos/new',
+    debitMemoNew: '/finance/accounts-payable/payables/debit-memos/new',
+    batchImport: '/finance/accounts-payable/payables/import',
+    supplierRecon: '/finance/accounts-payable/payables/reconciliation',
+    closeChecklist: '/finance/accounts-payable/payables/close-checklist',
 
     // Accounts Receivable
     receivables: '/finance/receivables',
     receivableDetail: (id: string) => `/finance/receivables/${id}`,
     receivableNew: '/finance/receivables/new',
     receivableAllocate: (id: string) => `/finance/receivables/${id}/allocate`,
+    receivableAllocations: '/finance/receivables/allocations',
+
+    // AR Dunning
+    dunning: '/finance/receivables/dunning',
+    dunningNew: '/finance/receivables/dunning/new',
+    dunningDetail: (id: string) => `/finance/receivables/dunning/${id}`,
 
     // Intercompany
     icTransactions: '/finance/intercompany',
@@ -80,12 +105,12 @@ export const routes = {
 
     // Banking & Reconciliation
     banking: '/finance/banking',
-    bankStatements: '/finance/banking',
+    bankStatements: '/finance/banking/statements',
     bankStatementsList: '/finance/banking/statements',
     bankStatementImport: '/finance/banking/import',
-    bankReconciliation: '/finance/banking',
+    bankReconciliation: '/finance/banking/reconciliation',
     bankReconciliationDetail: (id: string) => `/finance/banking/reconcile/${id}`,
-    bankRules: '/finance/banking',
+    bankRules: '/finance/banking/rules',
 
     // Tax & Compliance
     tax: '/finance/tax',
@@ -210,6 +235,18 @@ export const routes = {
     transferPricingPolicies: '/finance/transfer-pricing/policies',
     transferPricingBenchmarks: '/finance/transfer-pricing/benchmarks',
 
+    // Revenue Recognition (IFRS 15)
+    revenueRecognition: '/finance/revenue-recognition',
+    revenueContractNew: '/finance/revenue-recognition/new',
+    revenueContractDetail: (id: string) => `/finance/revenue-recognition/${id}`,
+
+    // Finance Settings
+    financeSettings: '/finance/settings',
+    paymentTerms: '/finance/settings/payment-terms',
+    paymentTermsDetail: (id: string) => `/finance/settings/payment-terms/${id}`,
+    matchTolerance: '/finance/settings/matching',
+    matchToleranceNew: '/finance/settings/matching/new',
+
     // Reports
     reports: '/finance/reports',
     balanceSheet: '/finance/reports/balance-sheet',
@@ -225,6 +262,8 @@ export const routes = {
     costAllocation: '/finance/reports/cost-allocation',
     consolidationReport: '/finance/reports/consolidation',
   },
+  /** Sales orders (used by credit hold release) */
+  salesOrders: '/sales/orders',
   settings: '/settings',
   settingsOrganization: '/settings/organization',
   settingsOrgConfig: '/settings/organization/config',
@@ -432,6 +471,7 @@ export const financeNavigationGroups: NavGroup[] = [
       { title: 'Ledgers', href: routes.finance.ledgers, icon: 'BookOpen' },
       { title: 'Fiscal Periods', href: routes.finance.periods, icon: 'Calendar' },
       { title: 'Trial Balance', href: routes.finance.trialBalance, icon: 'Scale' },
+      { title: 'Budget Entries', href: routes.finance.budgetEntries, icon: 'Target' },
     ],
   },
 
@@ -446,8 +486,12 @@ export const financeNavigationGroups: NavGroup[] = [
       { title: 'Credit Memos', href: routes.finance.creditMemoNew, icon: 'FileText' },
       { title: 'Debit Memos', href: routes.finance.debitMemoNew, icon: 'FileText' },
       { title: 'Payment Runs', href: routes.finance.paymentRuns, icon: 'Banknote' },
+      { title: 'Prepayments', href: routes.finance.prepayments, icon: 'CreditCard' },
       { title: 'Supplier Master', href: routes.finance.suppliers, icon: 'Users' },
       { title: 'Invoice Holds', href: routes.finance.holds, icon: 'PauseCircle' },
+      { title: 'Duplicate Review', href: routes.finance.duplicates, icon: 'Copy' },
+      { title: 'Triage Queue', href: routes.finance.triage, icon: 'AlertCircle' },
+      { title: 'Match Tolerances', href: routes.finance.matchTolerances, icon: 'Settings2' },
       { title: 'AP Aging', href: routes.finance.apAging, icon: 'Clock' },
     ],
   },
@@ -461,7 +505,8 @@ export const financeNavigationGroups: NavGroup[] = [
     items: [
       { title: 'AR Invoices', href: routes.finance.receivables, icon: 'HandCoins' },
       { title: 'Credit Limits', href: routes.finance.creditLimits, icon: 'Shield' },
-      { title: 'Payment Allocation', href: routes.finance.receivables, icon: 'GitMerge' },
+      { title: 'Dunning', href: routes.finance.dunning, icon: 'Bell' },
+      { title: 'Payment Allocation', href: routes.finance.receivableAllocations, icon: 'GitMerge' },
       { title: 'AR Aging', href: routes.finance.arAging, icon: 'Clock' },
     ],
   },
@@ -574,6 +619,7 @@ export const financeNavigationGroups: NavGroup[] = [
       { title: 'Instruments (IFRS 9)', href: routes.finance.instruments, icon: 'Banknote' },
       { title: 'Hedges (IFRS 9)', href: routes.finance.hedges, icon: 'Umbrella' },
       { title: 'Deferred Tax (IAS 12)', href: routes.finance.deferredTax, icon: 'Clock' },
+      { title: 'Revenue Recognition (IFRS 15)', href: routes.finance.revenueRecognition, icon: 'BarChart3' },
     ],
   },
 
@@ -589,6 +635,19 @@ export const financeNavigationGroups: NavGroup[] = [
       { title: 'Eliminations', href: routes.finance.eliminations, icon: 'MinusCircle' },
       { title: 'Goodwill', href: routes.finance.goodwill, icon: 'Star' },
       { title: 'Consolidation Report', href: routes.finance.consolidationReport, icon: 'GitBranch' },
+    ],
+  },
+
+  // ── FI-CFG: Finance Settings ────────────────────────────────────────────
+  {
+    title: 'Finance Settings (FI-CFG)',
+    icon: 'Settings',
+    collapsible: true,
+    shortcut: { description: 'Payment terms, match tolerances, policies' },
+    items: [
+      { title: 'Settings Hub', href: routes.finance.financeSettings, icon: 'Settings' },
+      { title: 'Payment Terms', href: routes.finance.paymentTerms, icon: 'Timer' },
+      { title: 'Match Tolerances', href: routes.finance.matchTolerance, icon: 'SlidersHorizontal' },
     ],
   },
 

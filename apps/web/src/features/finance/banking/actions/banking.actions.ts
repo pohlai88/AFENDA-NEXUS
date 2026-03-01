@@ -4,6 +4,8 @@ import type { IdParam } from '@afenda/contracts';
 
 import { revalidatePath } from 'next/cache';
 import type { MatchStatus, ReconciliationAction } from '../types';
+import { getRequestContext } from '@/lib/auth';
+import { createApiClient } from '@/lib/api-client';
 import { routes } from '@/lib/constants';
 
 // ─── Import Statement ────────────────────────────────────────────────────────
@@ -14,11 +16,8 @@ export async function importStatement(
   | { ok: true; data: { statementId: IdParam['id']; transactionCount: number } }
   | { ok: false; error: string }
 > {
-  await new Promise((r) => setTimeout(r, 1500));
-
   const file = formData.get('file') as File | null;
   const bankAccountId = formData.get('bankAccountId') as string;
-  const format = formData.get('format') as string;
 
   if (!file) {
     return { ok: false, error: 'No file provided' };
@@ -28,19 +27,20 @@ export async function importStatement(
     return { ok: false, error: 'Bank account is required' };
   }
 
-  // Simulate processing
-  console.log(`Importing ${format} file: ${file.name} for account ${bankAccountId}`);
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
+
+  const result = await client.post<{ statementId: string; transactionCount: number }>(
+    '/bank-statements/import',
+    formData
+  );
 
   revalidatePath(routes.finance.banking);
   revalidatePath(routes.finance.bankStatementsList);
 
-  return {
-    ok: true,
-    data: {
-      statementId: `stmt-new-${Date.now()}`,
-      transactionCount: Math.floor(Math.random() * 100) + 50,
-    },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+
+  return { ok: true, data: result.value };
 }
 
 // ─── Match Transactions ──────────────────────────────────────────────────────
@@ -50,12 +50,17 @@ export async function matchTransactions(params: {
   glTransactionIds: string[];
   statementId: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Matching transactions:', params);
+  const result = await client.post(`/bank-statements/${params.statementId}/match`, {
+    bankTransactionIds: params.bankTransactionIds,
+    glTransactionIds: params.glTransactionIds,
+  });
 
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -65,12 +70,16 @@ export async function unmatchTransactions(params: {
   bankTransactionIds: string[];
   statementId: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Unmatching transactions:', params);
+  const result = await client.post(`/bank-statements/${params.statementId}/unmatch`, {
+    bankTransactionIds: params.bankTransactionIds,
+  });
 
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -84,17 +93,25 @@ export async function createJournalFromTransaction(params: {
   description?: string;
   reference?: string;
 }): Promise<{ ok: true; data: { journalId: string } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Creating journal from transaction:', params);
+  const result = await client.post<{ journalId: string }>(
+    `/bank-statements/transactions/${params.bankTransactionId}/journal`,
+    {
+      statementId: params.statementId,
+      debitAccountId: params.debitAccountId,
+      creditAccountId: params.creditAccountId,
+      description: params.description,
+      reference: params.reference,
+    }
+  );
 
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
   revalidatePath(routes.finance.journals);
 
-  return {
-    ok: true,
-    data: { journalId: `jnl-${Date.now()}` },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }
 
 // ─── Exclude Transaction ─────────────────────────────────────────────────────
@@ -104,12 +121,17 @@ export async function excludeTransactions(params: {
   statementId: string;
   reason: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Excluding transactions:', params);
+  const result = await client.post(`/bank-statements/${params.statementId}/exclude`, {
+    bankTransactionIds: params.bankTransactionIds,
+    reason: params.reason,
+  });
 
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -119,12 +141,16 @@ export async function includeTransactions(params: {
   bankTransactionIds: string[];
   statementId: string;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Including transactions:', params);
+  const result = await client.post(`/bank-statements/${params.statementId}/include`, {
+    bankTransactionIds: params.bankTransactionIds,
+  });
 
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -134,16 +160,18 @@ export async function autoMatchTransactions(params: {
   statementId: string;
   confidenceThreshold: 'high' | 'medium' | 'low';
 }): Promise<{ ok: true; data: { matchedCount: number } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 2000));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Auto-matching transactions:', params);
+  const result = await client.post<{ matchedCount: number }>(
+    `/bank-statements/${params.statementId}/auto-match`,
+    { confidenceThreshold: params.confidenceThreshold }
+  );
 
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
-  return {
-    ok: true,
-    data: { matchedCount: Math.floor(Math.random() * 20) + 10 },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }
 
 // ─── Complete Reconciliation ─────────────────────────────────────────────────
@@ -157,14 +185,20 @@ export async function completeReconciliation(params: {
     description: string;
   }>;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 1000));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Completing reconciliation:', params);
+  // Use the confirmed backend endpoint: POST /bank-reconciliations/:id/sign-off
+  const result = await client.post(
+    `/bank-reconciliations/${params.statementId}/sign-off`,
+    { adjustmentEntries: params.adjustmentEntries }
+  );
 
   revalidatePath(routes.finance.banking);
   revalidatePath(routes.finance.bankStatementsList);
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -175,12 +209,17 @@ export async function updateTransactionMatchStatus(params: {
   statementId: string;
   matchStatus: MatchStatus;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 200));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Updating transaction match status:', params);
+  const result = await client.patch(
+    `/bank-statements/transactions/${params.bankTransactionId}/match-status`,
+    { matchStatus: params.matchStatus }
+  );
 
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
+  if (!result.ok) return { ok: false, error: result.error.message };
   return { ok: true };
 }
 
@@ -193,14 +232,21 @@ export async function bulkReconciliationAction(params: {
   glTransactionIds?: string[];
   reason?: string;
 }): Promise<{ ok: true; data: { affectedCount: number } } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 800));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  console.log('Bulk reconciliation action:', params);
+  const result = await client.post<{ affectedCount: number }>(
+    `/bank-statements/${params.statementId}/bulk-action`,
+    {
+      action: params.action,
+      bankTransactionIds: params.bankTransactionIds,
+      glTransactionIds: params.glTransactionIds,
+      reason: params.reason,
+    }
+  );
 
   revalidatePath(routes.finance.bankReconciliationDetail(params.statementId));
 
-  return {
-    ok: true,
-    data: { affectedCount: params.bankTransactionIds.length },
-  };
+  if (!result.ok) return { ok: false, error: result.error.message };
+  return { ok: true, data: result.value };
 }

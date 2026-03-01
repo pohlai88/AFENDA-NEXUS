@@ -3,20 +3,33 @@
 import type { ApproveItemsInput, RejectItemsInput, DelegateItemsInput } from '@afenda/contracts';
 
 import { revalidatePath } from 'next/cache';
+import { getRequestContext } from '@/lib/auth';
+import { createApiClient } from '@/lib/api-client';
+import type { ApiResult, CommandReceipt } from '@/lib/types';
 import { routes } from '@/lib/constants';
 
 // ─── Server Actions ──────────────────────────────────────────────────────────
 
 export async function approveItems(input: ApproveItemsInput) {
   const { itemIds, comment } = input;
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const results = await Promise.all(
+    itemIds.map((id) =>
+      client.post<CommandReceipt>(`/approvals/${id}/approve`, { reason: comment ?? '' })
+    )
+  );
 
-  // TODO: Replace with actual API call
-  console.log('Approving items:', itemIds, 'Comment:', comment);
-
+  const failures = results.filter((r) => !r.ok);
   revalidatePath(routes.finance.approvals);
+
+  if (failures.length > 0) {
+    return {
+      ok: false as const,
+      error: `Failed to approve ${failures.length} of ${itemIds.length} item(s)`,
+    };
+  }
 
   return {
     ok: true as const,
@@ -37,13 +50,24 @@ export async function rejectItems(input: RejectItemsInput) {
     };
   }
 
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  // TODO: Replace with actual API call
-  console.log('Rejecting items:', itemIds, 'Reason:', comment);
+  const results = await Promise.all(
+    itemIds.map((id) =>
+      client.post<CommandReceipt>(`/approvals/${id}/reject`, { reason: comment })
+    )
+  );
 
+  const failures = results.filter((r) => !r.ok);
   revalidatePath(routes.finance.approvals);
+
+  if (failures.length > 0) {
+    return {
+      ok: false as const,
+      error: `Failed to reject ${failures.length} of ${itemIds.length} item(s)`,
+    };
+  }
 
   return {
     ok: true as const,
@@ -64,13 +88,24 @@ export async function delegateItems(input: DelegateItemsInput) {
     };
   }
 
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  // TODO: Replace with actual API call
-  console.log('Delegating items:', itemIds, 'To:', delegateTo, 'Comment:', comment);
+  const results = await Promise.all(
+    itemIds.map((id) =>
+      client.post<CommandReceipt>(`/approvals/${id}/delegate`, { delegateTo })
+    )
+  );
 
+  const failures = results.filter((r) => !r.ok);
   revalidatePath(routes.finance.approvals);
+
+  if (failures.length > 0) {
+    return {
+      ok: false as const,
+      error: `Failed to delegate ${failures.length} of ${itemIds.length} item(s)`,
+    };
+  }
 
   return {
     ok: true as const,
@@ -82,13 +117,25 @@ export async function delegateItems(input: DelegateItemsInput) {
 }
 
 export async function escalateItems(itemIds: string[]) {
-  // Simulate API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const ctx = await getRequestContext();
+  const client = createApiClient(ctx);
 
-  // TODO: Replace with actual API call
-  console.log('Escalating items:', itemIds);
+  // Escalation is typically handled by re-submitting or delegating to next level
+  const results = await Promise.all(
+    itemIds.map((id) =>
+      client.post<CommandReceipt>(`/approvals/${id}/delegate`, { delegateTo: '__escalate__' })
+    )
+  );
 
+  const failures = results.filter((r) => !r.ok);
   revalidatePath(routes.finance.approvals);
+
+  if (failures.length > 0) {
+    return {
+      ok: false as const,
+      error: `Failed to escalate ${failures.length} of ${itemIds.length} item(s)`,
+    };
+  }
 
   return {
     ok: true as const,

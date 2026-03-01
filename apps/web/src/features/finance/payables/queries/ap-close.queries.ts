@@ -33,5 +33,5 @@ export async function getApCloseChecklist(
   const client = createApiClient(ctx);
   const query: Record<string, string> = {};
   if (params.periodId) query.periodId = params.periodId;
-  return client.get<ApCloseChecklist>('/ap/close-checklist', query);
+  return client.get<ApCloseChecklist>('/ap/period-close-checklist', query);
 }

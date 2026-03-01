@@ -7,6 +7,8 @@ import {
   reversePaymentRun,
   addPaymentRunItem,
   processBankRejection,
+  getPaymentRunReport,
+  getPaymentProposal,
 } from '../queries/ap-payment-run.queries';
 import type { CreatePaymentRun, AddPaymentRunItem } from '@afenda/contracts';
 import type { ApiResult, CommandReceipt } from '@/lib/types';
@@ -47,4 +49,27 @@ export async function processBankRejectionAction(
 ): Promise<ApiResult<CommandReceipt>> {
   const ctx = await getRequestContext();
   return processBankRejection(ctx, runId, body);
+}
+
+export async function getPaymentProposalAction(
+  params: { companyId: string; runDate: string; cutoffDate: string; currencyCode: string; includeDiscountOpportunities?: boolean },
+): Promise<ApiResult<import('../queries/ap-payment-run.queries').PaymentProposalResponse>> {
+  const ctx = await getRequestContext();
+  return getPaymentProposal(ctx, params);
+}
+
+/** Fetches payment run report and returns JSON for client-side download. */
+export async function downloadPaymentRunReportAction(
+  runId: string,
+): Promise<ApiResult<{ filename: string; content: string }>> {
+  const ctx = await getRequestContext();
+  const result = await getPaymentRunReport(ctx, runId);
+  if (!result.ok) return result;
+  const report = result.value as Record<string, unknown>;
+  const filename = `payment-run-report-${runId.slice(0, 8)}.json`;
+  const content = JSON.stringify(report, (_k, v) =>
+    typeof v === 'bigint' ? String(v) : v,
+    2
+  );
+  return { ok: true, value: { filename, content } };
 }

@@ -921,6 +921,7 @@ export type ApHoldListQuery = z.infer<typeof ApHoldListQuerySchema>;
 
 export const ApInvoiceStatusSchema = z.enum([
   'DRAFT',
+  'INCOMPLETE',
   'PENDING_APPROVAL',
   'APPROVED',
   'POSTED',
@@ -974,6 +975,11 @@ export const RecordApPaymentSchema = z.object({
   paymentRef: z.string().min(1, 'Payment reference is required').max(100),
 });
 export type RecordApPayment = z.infer<typeof RecordApPaymentSchema>;
+
+export const AssetRegisterQuerySchema = z.object({
+  asOfDate: z.string().date().optional(),
+});
+export type AssetRegisterQuery = z.infer<typeof AssetRegisterQuerySchema>;
 
 export const ApAgingQuerySchema = z.object({
   asOfDate: z.string().date().optional(),
@@ -1382,6 +1388,102 @@ export const CreateDeferredTaxItemSchema = z.object({
   periodId: z.string().uuid(),
 });
 export type CreateDeferredTaxItem = z.infer<typeof CreateDeferredTaxItemSchema>;
+
+// ─── Phase 8: Expense Claims ────────────────────────────────────────────────
+export const ExpenseCategorySchema = z.enum([
+  'TRAVEL',
+  'MEALS',
+  'ACCOMMODATION',
+  'TRANSPORT',
+  'OFFICE_SUPPLIES',
+  'COMMUNICATION',
+  'PROFESSIONAL_DEVELOPMENT',
+  'ENTERTAINMENT',
+  'OTHER',
+]);
+export type ExpenseCategory = z.infer<typeof ExpenseCategorySchema>;
+
+export const CreateExpenseClaimSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
+  currency: z.string().length(3),
+  periodFrom: z.string().date(),
+  periodTo: z.string().date(),
+});
+export type CreateExpenseClaim = z.infer<typeof CreateExpenseClaimSchema>;
+
+export const AddExpenseLineItemSchema = z.object({
+  expenseDate: z.string().date(),
+  category: ExpenseCategorySchema,
+  description: z.string().min(1).max(500),
+  merchantName: z.string().min(1).max(200),
+  amount: z.coerce.number().positive(),
+  currency: z.string().length(3),
+  glAccountId: z.string().uuid(),
+  costCenterId: z.string().uuid().optional(),
+});
+export type AddExpenseLineItem = z.infer<typeof AddExpenseLineItemSchema>;
+
+// ─── Phase 8: Fixed Assets ──────────────────────────────────────────────────
+export const AssetCategorySchema = z.enum([
+  'LAND',
+  'BUILDINGS',
+  'PLANT_MACHINERY',
+  'VEHICLES',
+  'FURNITURE_FIXTURES',
+  'IT_EQUIPMENT',
+  'LEASEHOLD_IMPROVEMENTS',
+  'OTHER',
+]);
+export type AssetCategory = z.infer<typeof AssetCategorySchema>;
+
+export const DepreciationMethodSchema = z.enum([
+  'STRAIGHT_LINE',
+  'DECLINING_BALANCE',
+  'UNITS_OF_PRODUCTION',
+  'SUM_OF_YEARS_DIGITS',
+]);
+export type DepreciationMethod = z.infer<typeof DepreciationMethodSchema>;
+
+export const CreateFixedAssetSchema = z.object({
+  companyId: z.string().uuid(),
+  assetNumber: z.string().min(1).max(30),
+  name: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
+  category: AssetCategorySchema,
+  acquisitionDate: z.string().date(),
+  acquisitionCost: z.coerce.number().nonnegative(),
+  residualValue: z.coerce.number().nonnegative().default(0),
+  usefulLifeMonths: z.coerce.number().int().positive(),
+  depreciationMethod: DepreciationMethodSchema,
+  currencyCode: z.string().length(3),
+  location: z.string().max(200).optional(),
+  department: z.string().max(200).optional(),
+  responsiblePerson: z.string().max(200).optional(),
+  glAccountAsset: z.string().uuid(),
+  glAccountDepreciation: z.string().uuid(),
+  glAccountAccumulated: z.string().uuid(),
+  costCenterId: z.string().uuid().optional(),
+});
+export type CreateFixedAsset = z.infer<typeof CreateFixedAssetSchema>;
+
+// ─── Phase 8: Tax Codes & Returns ───────────────────────────────────────────
+export const TaxTypeSchema = z.enum(['VAT', 'GST', 'SALES_TAX', 'SERVICE_TAX', 'WITHHOLDING', 'EXCISE', 'OTHER']);
+export type TaxType = z.infer<typeof TaxTypeSchema>;
+
+export const CreateTaxCodeSchema = z.object({
+  code: z.string().min(1).max(20),
+  name: z.string().min(1).max(200),
+  description: z.string().max(500).optional(),
+  taxType: TaxTypeSchema,
+  rate: z.coerce.number().min(0).max(100),
+  effectiveFrom: z.string().date(),
+  effectiveTo: z.string().date().optional(),
+  isReverseCharge: z.boolean().default(false),
+  glAccountCollected: z.string().uuid(),
+  glAccountPaid: z.string().uuid(),
+});
+export type CreateTaxCode = z.infer<typeof CreateTaxCodeSchema>;
 
 // ─── Phase 7: Transfer Pricing (OECD Guidelines) ───────────────────────────
 export const TpMethodSchema = z.enum(['CUP', 'RESALE_PRICE', 'COST_PLUS', 'TNMM', 'PROFIT_SPLIT']);

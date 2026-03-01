@@ -6,164 +6,186 @@ import type {
   UpdateReviewInput,
   PlaceHoldInput,
 } from '@afenda/contracts';
-import type { RiskRating } from '../types';
 
 import { revalidatePath } from 'next/cache';
+import { getRequestContext } from '@/lib/auth';
 import { routes } from '@/lib/constants';
+import type { ApiResult, CommandReceipt } from '@/lib/types';
+import {
+  setCreditLimit as setCreditLimitQ,
+  updateRiskRating as updateRiskRatingQ,
+  recalculateInternalScore as recalculateScoreQ,
+  createCreditReview as createReviewQ,
+  updateCreditReview as updateReviewQ,
+  approveCreditReview as approveReviewQ,
+  rejectCreditReview as rejectReviewQ,
+  escalateCreditReview as escalateReviewQ,
+  placeCreditHold as placeHoldQ,
+  releaseCreditHold as releaseHoldQ,
+  escalateCreditHold as escalateHoldQ,
+} from '../queries/credit.queries';
 
 // ─── Credit Limit Actions ────────────────────────────────────────────────────
 
-export async function setCreditLimit(
-  input: SetCreditLimitInput
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] setCreditLimit:', input);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+export async function setCreditLimitAction(
+  input: SetCreditLimitInput,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await setCreditLimitQ(ctx, input);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function updateRiskRating(
+export async function updateRiskRatingAction(
   customerId: string,
-  rating: RiskRating,
-  reason: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
-  console.log('[Action] updateRiskRating:', customerId, rating, reason);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+  rating: string,
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await updateRiskRatingQ(ctx, customerId, rating, reason);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function recalculateInternalScore(
-  customerId: string
-): Promise<{ ok: true; newScore: number } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-  console.log('[Action] recalculateInternalScore:', customerId);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true, newScore: 78 };
+export async function recalculateInternalScoreAction(
+  customerId: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await recalculateScoreQ(ctx, customerId);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
 // ─── Credit Review Actions ───────────────────────────────────────────────────
 
-export async function createCreditReview(
-  input: CreateReviewInput
-): Promise<{ ok: true; reviewId: string; reviewNumber: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] createCreditReview:', input);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true, reviewId: 'rev-new-' + Date.now(), reviewNumber: 'CR-2026-' + Date.now() };
+export async function createCreditReviewAction(
+  input: CreateReviewInput,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await createReviewQ(ctx, input);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function assignReview(
+export async function assignReviewAction(
   reviewId: string,
-  assignedTo: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 250));
-  console.log('[Action] assignReview:', reviewId, assignedTo);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+  assignedTo: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const client = (await import('@/lib/api-client')).createApiClient(ctx);
+  const result = await client.post<CommandReceipt>(`/credit-reviews/${reviewId}/assign`, { assignedTo });
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function updateCreditReview(
-  input: UpdateReviewInput
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 350));
-  console.log('[Action] updateCreditReview:', input);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+export async function updateCreditReviewAction(
+  input: UpdateReviewInput,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await updateReviewQ(ctx, input.reviewId, input);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function approveCreditReview(
+export async function approveCreditReviewAction(
   reviewId: string,
   approvedLimit: number,
-  approvedRating: RiskRating,
-  notes?: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] approveCreditReview:', reviewId, approvedLimit, approvedRating);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+  approvedRating: string,
+  notes?: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await approveReviewQ(ctx, reviewId, { approvedLimit, approvedRating, notes });
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function rejectCreditReview(
+export async function rejectCreditReviewAction(
   reviewId: string,
-  reason: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
-  console.log('[Action] rejectCreditReview:', reviewId, reason);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await rejectReviewQ(ctx, reviewId, reason);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function escalateCreditReview(
+export async function escalateCreditReviewAction(
   reviewId: string,
   escalateTo: string,
-  reason: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
-  console.log('[Action] escalateCreditReview:', reviewId, escalateTo, reason);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await escalateReviewQ(ctx, reviewId, escalateTo, reason);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
 // ─── Credit Hold Actions ─────────────────────────────────────────────────────
 
-export async function placeCreditHold(
-  input: PlaceHoldInput
-): Promise<{ ok: true; holdId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] placeCreditHold:', input);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true, holdId: 'hold-new-' + Date.now() };
+export async function placeCreditHoldAction(
+  input: PlaceHoldInput,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await placeHoldQ(ctx, input);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function releaseCreditHold(
+export async function releaseCreditHoldAction(
   holdId: string,
-  notes: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 350));
-  console.log('[Action] releaseCreditHold:', holdId, notes);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+  notes: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await releaseHoldQ(ctx, holdId, notes);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function escalateCreditHold(
+export async function escalateCreditHoldAction(
   holdId: string,
   escalateTo: string,
-  reason: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
-  console.log('[Action] escalateCreditHold:', holdId, escalateTo, reason);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true };
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const result = await escalateHoldQ(ctx, holdId, escalateTo, reason);
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function releaseOrderFromHold(
+export async function releaseOrderFromHoldAction(
   holdId: string,
   orderId: string,
-  reason: string
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 300));
-  console.log('[Action] releaseOrderFromHold:', holdId, orderId, reason);
-  revalidatePath(routes.finance.creditLimits);
-  revalidatePath('/sales/orders');
-  return { ok: true };
+  reason: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const client = (await import('@/lib/api-client')).createApiClient(ctx);
+  const result = await client.post<CommandReceipt>(`/credit-holds/${holdId}/release-order`, {
+    orderId,
+    reason,
+  });
+  if (result.ok) {
+    revalidatePath(routes.finance.creditLimits);
+    revalidatePath(routes.salesOrders);
+  }
+  return result;
 }
 
 // ─── Bulk Actions ────────────────────────────────────────────────────────────
 
-export async function bulkRecalculateScores(
-  customerIds: string[]
-): Promise<{ ok: true; updated: number } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 800));
-  console.log('[Action] bulkRecalculateScores:', customerIds);
-  revalidatePath(routes.finance.creditLimits);
-  return { ok: true, updated: customerIds.length };
+export async function bulkRecalculateScoresAction(
+  customerIds: string[],
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const client = (await import('@/lib/api-client')).createApiClient(ctx);
+  const result = await client.post<CommandReceipt>('/credit-limits/bulk-recalculate', { customerIds });
+  if (result.ok) revalidatePath(routes.finance.creditLimits);
+  return result;
 }
 
-export async function generateCreditReport(
-  asOfDate: Date
-): Promise<{ ok: true; reportId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 600));
-  console.log('[Action] generateCreditReport:', asOfDate);
-  return { ok: true, reportId: 'rpt-credit-' + Date.now() };
+export async function generateCreditReportAction(
+  asOfDate: string,
+): Promise<ApiResult<CommandReceipt>> {
+  const ctx = await getRequestContext();
+  const client = (await import('@/lib/api-client')).createApiClient(ctx);
+  return client.post<CommandReceipt>('/credit-limits/report', { asOfDate });
 }

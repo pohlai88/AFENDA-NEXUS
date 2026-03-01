@@ -4,6 +4,7 @@ import type { IAuthorizationPolicy } from '../../../shared/ports/authorization.j
 import { requirePermission } from '../../../shared/routes/authorization-guard.js';
 import type { DriverType } from '../entities/cost-driver.js';
 import { runCostAllocation } from '../services/run-allocation.js';
+import { previewCostAllocation } from '../services/preview-cost-allocation.js';
 import { extractIdentity } from '@afenda/api-kit';
 import type { IdParam } from '@afenda/contracts';
 
@@ -117,6 +118,30 @@ export function registerCostAccountingRoutes(
         if (!run) return reply.status(404).send({ error: 'Allocation run not found' });
         const lines = await deps.costAllocationRunRepo.findLinesByRun(run.id);
         return { ...run, lines };
+      });
+    }
+  );
+
+  // POST /cost-allocation-runs/preview — preview allocation lines without persisting
+  app.post(
+    '/cost-allocation-runs/preview',
+    { preHandler: [requirePermission(policy, 'report:read')] },
+    async (req, reply) => {
+      const { tenantId, userId } = extractIdentity(req);
+      const body = req.body as Record<string, unknown>;
+      return runtime.withTenant({ tenantId, userId }, async (deps) => {
+        const result = await previewCostAllocation(
+          {
+            companyId: body.companyId as string,
+            periodId: body.periodId as string,
+            method: body.method as 'DIRECT' | 'STEP_DOWN' | 'RECIPROCAL',
+            driverId: body.driverId as string,
+            currencyCode: (body.currencyCode as string) ?? 'USD',
+          },
+          deps
+        );
+        if (!result.ok) return reply.status(400).send({ error: result.error });
+        return result.value;
       });
     }
   );

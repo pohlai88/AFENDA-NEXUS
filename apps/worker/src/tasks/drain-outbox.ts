@@ -7,7 +7,7 @@
 import { randomUUID } from 'node:crypto';
 import type { OutboxDrainer } from '@afenda/db';
 import type { Logger } from '@afenda/platform';
-import { runWithContext } from '@afenda/platform';
+import { runWithContext } from '@afenda/core';
 import { getEventMeta } from '@afenda/finance/infra';
 import type { EventHandlerRegistry } from '../event-handlers.js';
 

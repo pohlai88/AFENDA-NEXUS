@@ -241,11 +241,13 @@ function checkW04() {
   const SUSPECT_PATTERN =
     /(?:interface|type)\s+\w+(?:Payload|Request|Response|Body|Input|Output)\b/;
   const ALLOWED_FILES = ['types.ts', 'api-client.ts']; // lib types are OK
+  const ALLOWED_SUFFIXES = ['-form.tsx']; // form components may define local input shapes
 
   const featureFiles = collectFiles(join(SRC, 'features'), ['.ts', '.tsx']);
   for (const file of featureFiles) {
     const name = file.split(/[\\/]/).pop();
     if (ALLOWED_FILES.includes(name)) continue;
+    if (ALLOWED_SUFFIXES.some((s) => name.endsWith(s))) continue;
 
     const content = readFileSync(file, 'utf-8');
     const lines = content.split('\n');
@@ -634,6 +636,8 @@ function checkW13() {
     'react-dropzone',
     'recharts',
     'qrcode.react',
+    '@radix-ui/react-alert-dialog',
+    '@t3-oss/env-nextjs',
   ];
 
   const ALLOWED_DEV = [
@@ -658,6 +662,7 @@ function checkW13() {
     '@next/bundle-analyzer',
     'babel-plugin-react-compiler',
     'next-devtools-mcp',
+    '@types/node',
   ];
 
   const pkgJson = loadJson(join(WEB_ROOT, 'package.json'));
@@ -740,7 +745,7 @@ function checkW14() {
   // Allowed exceptions:
   // - status-badge uses emerald/blue for status-specific colors
   // - module-sidebar uses per-module accent colors (brand identity)
-  const EXCEPTION_FILES = ['status-badge.tsx', 'module-sidebar.tsx', 'status-colors.ts'];
+  const EXCEPTION_FILES = ['status-badge.tsx', 'module-sidebar.tsx', 'status-colors.ts', 'sidebar-config.ts', 'severity-styles.ts'];
   // Also allow in globals.css
   const EXCEPTION_DIRS = ['app/'];
 

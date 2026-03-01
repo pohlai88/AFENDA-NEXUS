@@ -1,46 +1,55 @@
-'use server';
-
-import type { AddEntityInput } from '@afenda/contracts';
+﻿'use server';
 
 import { revalidatePath } from 'next/cache';
 import { routes } from '@/lib/constants';
+import { getRequestContext } from '@/lib/auth';
+import {
+  addGroupEntityCmd,
+  runConsolidationCmd,
+  recordImpairmentCmd,
+  translateForeignSubCmd,
+} from '../queries/consolidation.queries';
 
-export async function addGroupEntity(
-  input: AddEntityInput
-): Promise<{ ok: true; entityId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] addGroupEntity:', input);
+export async function addGroupEntityAction(
+  input: unknown,
+): Promise<{ ok: true; id: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await addGroupEntityCmd(ctx, input);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.consolidation);
-  return { ok: true, entityId: 'ent-new-' + Date.now() };
+  return { ok: true, id: result.value.id };
 }
 
-export async function runConsolidation(
-  periodEnd: Date
-): Promise<{ ok: true; journalEntries: number } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 1000));
-  console.log('[Action] runConsolidation:', periodEnd);
+export async function runConsolidationAction(
+  input: unknown,
+): Promise<{ ok: true; journalEntries: number } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await runConsolidationCmd(ctx, input);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.consolidation);
-  return { ok: true, journalEntries: 45 };
+  return { ok: true, journalEntries: result.value.journalEntries };
 }
 
-export async function recordImpairment(
+export async function recordImpairmentAction(
   goodwillId: string,
   amount: number,
-  reason: string
-): Promise<{ ok: true; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log('[Action] recordImpairment:', goodwillId, amount, reason);
+  reason: string,
+): Promise<{ ok: true; journalId: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await recordImpairmentCmd(ctx, goodwillId, amount, reason);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.consolidation);
-  return { ok: true, journalId: 'je-imp-' + Date.now() };
+  return { ok: true, journalId: result.value.journalId };
 }
 
-export async function translateForeignSubsidiary(
+export async function translateForeignSubAction(
   entityId: string,
   fxRate: number,
-  periodEnd: Date
-): Promise<{ ok: true; ctaAmount: number; journalId: string } | { ok: false; error: string }> {
-  await new Promise((r) => setTimeout(r, 500));
-  console.log('[Action] translateForeignSubsidiary:', entityId, fxRate, periodEnd);
+  periodEnd: string,
+): Promise<{ ok: true; ctaAmount: number; journalId: string } | { ok: false; error: { message: string } }> {
+  const ctx = await getRequestContext();
+  const result = await translateForeignSubCmd(ctx, entityId, fxRate, periodEnd);
+  if (!result.ok) return result;
   revalidatePath(routes.finance.consolidation);
-  return { ok: true, ctaAmount: -25000, journalId: 'je-cta-' + Date.now() };
+  return { ok: true, ctaAmount: result.value.ctaAmount, journalId: result.value.journalId };
 }

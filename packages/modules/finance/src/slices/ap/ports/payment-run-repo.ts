@@ -17,6 +17,11 @@ export interface AddPaymentRunItemInput {
   readonly netAmount: bigint;
 }
 
+export interface DiscountSumResult {
+  readonly totalDiscount: bigint;
+  readonly currencyCode: string;
+}
+
 export interface IApPaymentRunRepo {
   create(input: CreatePaymentRunInput): Promise<Result<PaymentRun>>;
   findById(id: string): Promise<Result<PaymentRun>>;
@@ -24,4 +29,6 @@ export interface IApPaymentRunRepo {
   addItem(runId: string, item: AddPaymentRunItemInput): Promise<Result<PaymentRunItem>>;
   updateStatus(id: string, status: PaymentRunStatus): Promise<Result<PaymentRun>>;
   execute(id: string, userId: string): Promise<Result<PaymentRun>>;
+  /** Sum of discount amounts from executed runs since cutoff (for KPI). */
+  getDiscountSumExecutedSince(cutoff: Date): Promise<Result<DiscountSumResult>>;
 }

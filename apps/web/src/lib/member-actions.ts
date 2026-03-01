@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { requireAuth } from './auth';
+import { routes } from './constants';
 import { organization } from './auth-client';
 
 /**
@@ -55,7 +56,7 @@ export async function inviteMemberAction(data: {
       return { ok: false, error: (error as { message?: string }).message ?? 'Failed to send invitation' };
     }
 
-    revalidatePath('/(shell)/settings/members', 'page');
+    revalidatePath(routes.settingsMembers, 'page');
     return { ok: true };
   } catch {
     return { ok: false, error: 'Failed to send invitation' };
@@ -105,7 +106,7 @@ export async function updateMemberRoleAction(data: {
       return { ok: false, error: (error as { message?: string }).message ?? 'Failed to update role' };
     }
 
-    revalidatePath('/(shell)/settings/members', 'page');
+    revalidatePath(routes.settingsMembers, 'page');
     return { ok: true };
   } catch {
     return { ok: false, error: 'Failed to update role' };
@@ -144,7 +145,7 @@ export async function removeMemberAction(data: {
       return { ok: false, error: (error as { message?: string }).message ?? 'Failed to remove member' };
     }
 
-    revalidatePath('/(shell)/settings/members', 'page');
+    revalidatePath(routes.settingsMembers, 'page');
     return { ok: true };
   } catch {
     return { ok: false, error: 'Failed to remove member' };
@@ -170,7 +171,7 @@ export async function revokeInvitationAction(data: {
       return { ok: false, error: (error as { message?: string }).message ?? 'Failed to revoke invitation' };
     }
 
-    revalidatePath('/(shell)/settings/members', 'page');
+    revalidatePath(routes.settingsMembers, 'page');
     return { ok: true };
   } catch {
     return { ok: false, error: 'Failed to revoke invitation' };

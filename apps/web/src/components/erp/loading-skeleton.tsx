@@ -1,8 +1,54 @@
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 /* ─── Shared ERP Loading Skeletons ────────────────────────────────────────── */
-/* Keep loading.tsx files DRY — import a variant instead of inlining.          */
+/* Centralized loading UI for Next.js loading.tsx and Suspense fallbacks.     */
+/*
+ * NEXT.JS BEST PRACTICES:
+ * 1. loading.tsx — Next.js wraps page.tsx in Suspense; loading.tsx is the
+ *    fallback. Place loading.tsx next to page.tsx in the route segment.
+ * 2. Layout mirroring — Skeleton should match the loaded page layout to avoid
+ *    layout shift (CLS). Choose a variant that mirrors your page structure.
+ * 3. DRY — Import a variant from here instead of inlining skeletons.
+ * 4. Composed layouts — For pages with header + cards + table, compose
+ *    multiple exports (e.g. PageHeader + CardsSkeleton + TableSkeleton).
+ *
+ * HOW TO CREATE loading.tsx:
+ *
+ *   // Simple: single variant
+ *   import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+ *   export default function MyPageLoading() {
+ *     return <LoadingSkeleton variant="table" />;
+ *   }
+ *
+ *   // Composed: mirror complex page layout
+ *   import { CardsSkeleton, TableSkeleton } from '@/components/erp/loading-skeleton';
+ *   import { PageHeader } from '@/components/erp/page-header';
+ *   export default function MyPageLoading() {
+ *     return (
+ *       <div className="flex flex-col gap-6" role="status" aria-label="Loading…">
+ *         <PageHeader><PageHeaderHeading>Title</PageHeaderHeading></PageHeader>
+ *         <CardsSkeleton cards={6} />
+ *         <TableSkeleton />
+ *         <span className="sr-only">Loading…</span>
+ *       </div>
+ *     );
+ *   }
+ *
+ * VARIANT → PAGE TYPE:
+ *   table        list/data-table
+ *   detail       document detail (summary + line items)
+ *   form         create/edit form
+ *   report       KPI cards + table
+ *   statement    financial statement sections
+ *   dashboard    KPI cards + chart/activity
+ *   cards        KPI cards only
+ *   settings     sectioned preferences
+ *   tabbed-table cards + tabs + table
+ *   approval     status cards + filter tabs + queue
+ *   split-pane   two-column workspace + sidebar
+ */
 /* ────────────────────────────────────────────────────────────────────────── */
 
 const SKELETON_VARIANTS = [
@@ -261,6 +307,72 @@ export function StatementSkeleton({
           ))}
         </div>
       ))}
+      <span className="sr-only">Loading…</span>
+    </div>
+  );
+}
+
+// --------------- KPI deck (bento grid, domain dashboards) ---------------
+
+export function KpiDeckSkeleton({
+  count = 4,
+  className,
+}: {
+  count?: number;
+  className?: string;
+}) {
+  const n = Math.min(count, 8);
+  return (
+    <div
+      className={cn('space-y-3', className)}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Loading key metrics"
+    >
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-28" />
+        <Skeleton className="h-8 w-20" />
+      </div>
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: n }, (_, i) => (
+          <Skeleton key={i} className="h-[130px] rounded-lg" />
+        ))}
+      </div>
+      <span className="sr-only">Loading…</span>
+    </div>
+  );
+}
+
+// --------------- charts (chart + diagram grid, domain dashboards) ---------------
+
+export function ChartsSkeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={className}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Loading charts"
+    >
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="sm:col-span-2 min-h-[360px]">
+          <CardHeader>
+            <Skeleton className="h-5 w-32" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+        <Card className="min-h-[360px]">
+          <CardHeader>
+            <Skeleton className="h-5 w-24" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+      </div>
       <span className="sr-only">Loading…</span>
     </div>
   );

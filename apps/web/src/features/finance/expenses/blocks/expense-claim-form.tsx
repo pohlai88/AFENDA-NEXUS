@@ -38,9 +38,9 @@ import { Plus, Trash2, Save, Send, Loader2, Receipt, Upload, CheckCircle } from 
 import type { ExpenseLineItem, ExpenseCategory, ExpensePolicy } from '../types';
 import { expenseCategoryLabels } from '../types';
 import {
-  createExpenseClaim,
-  submitExpenseClaim,
-  addExpenseLineItem,
+  createExpenseClaimAction,
+  submitExpenseClaimAction,
+  addExpenseLineItemAction,
 } from '../actions/expenses.actions';
 
 // ─── Line Item Form ──────────────────────────────────────────────────────────
@@ -145,23 +145,19 @@ export function ExpenseClaimForm({
     }
 
     startTransition(async () => {
-      const result = await createExpenseClaim({
-        employeeId,
-        employeeName,
-        department: 'Sales',
+      const result = await createExpenseClaimAction({
         title,
         description,
-        periodFrom: new Date(periodFrom!),
-        periodTo: new Date(periodTo!),
-        totalAmount,
+        periodFrom: periodFrom!,
+        periodTo: periodTo!,
         currency: 'USD',
       });
 
       if (result.ok) {
-        toast.success(`Claim ${result.data.claimNumber} saved as draft`);
-        router.push(`${routes.finance.expenses}/${result.data.id}`);
+        toast.success(`Claim saved as draft`);
+        router.push(routes.finance.expenses);
       } else {
-        toast.error(result.error);
+        toast.error(result.error.message);
       }
     });
   };
@@ -174,30 +170,26 @@ export function ExpenseClaimForm({
     }
 
     startTransition(async () => {
-      const createResult = await createExpenseClaim({
-        employeeId,
-        employeeName,
-        department: 'Sales',
+      const createResult = await createExpenseClaimAction({
         title,
         description,
-        periodFrom: new Date(periodFrom!),
-        periodTo: new Date(periodTo!),
-        totalAmount,
+        periodFrom: periodFrom!,
+        periodTo: periodTo!,
         currency: 'USD',
       });
 
       if (!createResult.ok) {
-        toast.error(createResult.error);
+        toast.error(createResult.error.message);
         return;
       }
 
-      const submitResult = await submitExpenseClaim(createResult.data.id);
+      const submitResult = await submitExpenseClaimAction(createResult.value.resultRef ?? '');
 
       if (submitResult.ok) {
-        toast.success(`Claim ${createResult.data.claimNumber} submitted for approval`);
+        toast.success('Claim submitted for approval');
         router.push(routes.finance.expenses);
       } else {
-        toast.error(submitResult.error);
+        toast.error(submitResult.error.message);
       }
     });
   };

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
@@ -5,6 +6,7 @@ import { PortalProfileForm } from '@/features/portal/forms/portal-profile-form';
 import { StatusBadge } from '@/components/erp/status-badge';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
+import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export default async function PortalProfilePage() {
   const ctx = await getRequestContext();
@@ -23,6 +25,7 @@ export default async function PortalProfilePage() {
   const supplier = supplierResult.value;
 
   return (
+    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Profile"
@@ -33,5 +36,6 @@ export default async function PortalProfilePage() {
 
       <PortalProfileForm supplier={supplier} />
     </div>
+    </Suspense>
   );
 }
