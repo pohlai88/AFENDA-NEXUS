@@ -23,9 +23,9 @@
     "@opentelemetry/exporter-trace-otlp-proto": "^0.212.0",
     "@opentelemetry/resources": "^2.5.1",
     "@opentelemetry/sdk-node": "^0.212.0",
-    "@opentelemetry/semantic-conventions": "^1.39.0",
+    "@opentelemetry/semantic-conventions": "^1.40.0",
     "graphile-worker": "catalog:",
-    "ioredis": "^5.9.3",
+    "ioredis": "^5.10.0",
     "postgres": "catalog:",
     "resend": "^6.9.3"
   },
