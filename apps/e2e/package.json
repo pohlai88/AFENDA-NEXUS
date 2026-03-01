@@ -14,7 +14,7 @@
     "@afenda/typescript-config": "workspace:*",
     "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.51.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.3.3",
     "axe-playwright": "^2.0.3",
     "dotenv": "^17.3.1"
   }
