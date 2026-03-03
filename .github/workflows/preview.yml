@@ -86,7 +86,7 @@ jobs:
       DATABASE_URL_DIRECT: ${{ needs.create-branch.outputs.db_url_direct }}
       NEON_AUTH_BASE_URL: ${{ needs.create-branch.outputs.neon_auth_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
         with:
