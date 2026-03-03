@@ -32,11 +32,37 @@ export class ApprovalWorkflowService implements IApprovalWorkflow {
     const route = routeApproval(policies, input.entityType, input.metadata);
 
     if (!route || route.chain.length === 0) {
-      // No approval required — create an auto-approved request
+      // ─── SP-8020: No-policy-match handling ─────────────────────────────────
+      // Security Note: This is intentional design. When no approval policies are
+      // configured for an entity type/context, requests are approved without
+      // additional steps to avoid blocking operations. This assumes:
+      // 1. Policy absence = no governance required for that operation
+      // 2. Policy admins have explicitly chosen not to gate this workflow
+      // 3. Audit trail still captures the request in APPROVED state
+      //
+      // Alternative: Reject when no policy matches (fail-closed).
+      // Trade-off: Fail-closed blocks legitimate operations if policies misconfigured.
+      // ───────────────────────────────────────────────────────────────────────
       const reqResult = await this.requestRepo.createRequest(input);
       if (!reqResult.ok) return reqResult;
 
       const approved = await this.requestRepo.updateRequestStatus(reqResult.value.id, 'APPROVED');
+      
+      // Emit audit event for transparency when no policy matched
+      await this.outboxWriter.write({
+        tenantId: input.tenantId,
+        eventType: FinanceEventType.APPROVAL_SUBMITTED,
+        payload: {
+          requestId: reqResult.value.id,
+          entityType: input.entityType,
+          entityId: input.entityId,
+          requestedBy: input.requestedBy,
+          stepsCount: 0,
+          noMatchingPolicy: true,
+          reason: 'No matching approval policy',
+        },
+      });
+
       return approved;
     }
 
@@ -90,6 +116,16 @@ export class ApprovalWorkflowService implements IApprovalWorkflow {
         new AppError(
           'INVALID_STATE',
           `Approval request ${requestId} is ${request.status}, expected PENDING`
+        )
+      );
+    }
+
+    // ─── SP-8020: Prevent self-approval (SoD enforcement) ──────────────────
+    if (request.requestedBy === approverId) {
+      return err(
+        new AppError(
+          'SOD_VIOLATION',
+          `Self-approval is not permitted. Request ${requestId} was submitted by ${request.requestedBy}, cannot be approved by the same user.`
         )
       );
     }
