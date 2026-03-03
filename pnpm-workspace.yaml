@@ -47,7 +47,7 @@ catalog:
   resend: ^6.9.0
   # Dev
   shadcn: latest
-  '@vitejs/plugin-react': ^4.3.0
+  '@vitejs/plugin-react': ^5.1.4
   tsup: ^8.4.0
   tsx: ^4.19.0
   vitest: ^3.0.0
