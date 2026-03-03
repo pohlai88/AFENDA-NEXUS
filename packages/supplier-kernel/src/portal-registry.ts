@@ -804,26 +804,90 @@ export const PORTAL_REGISTRY = {
   'SP-8011': {
     cap: 'CAP-CASE',
     title: 'Case E2E Tests',
-    status: 'planned',
+    status: 'done',
     phase: '1.1',
   },
   'SP-8020': {
     cap: 'KERNEL',
     title: 'SoD Gate Script',
-    status: 'planned',
+    status: 'done',
     phase: '1.0',
   },
   'SP-8022': {
     cap: 'CAP-PROOF',
     title: 'Proof Chain Property Tests',
-    status: 'planned',
+    status: 'done',
     phase: '1.0',
   },
   'SP-8025': {
     cap: 'KERNEL',
     title: 'Supplier-Safe Language Gate',
+    status: 'done',
+    phase: '1.0',
+  },
+
+  // ─── Completed E2E Tests (Newly Registered) ────────────────────────────
+  'SP-8027': {
+    cap: 'CAP-SOS',
+    title: 'Escalation E2E Tests (Complete Lifecycle)',
+    status: 'done',
+    phase: '1.2',
+  },
+  'SP-8028': {
+    cap: 'CAP-RECON',
+    title: 'Statement Reconciliation E2E Tests',
+    status: 'done',
+    phase: '1.2',
+  },
+
+  // ─── Remaining E2E & Property Tests ─────────────────────────────────────
+  'SP-8029': {
+    cap: 'CAP-COMPL',
+    title: 'Compliance Workflow E2E Tests',
+    status: 'planned',
+    phase: '1.1',
+  },
+  'SP-8030': {
+    cap: 'CAP-BULK',
+    title: 'Bulk Upload E2E Tests',
+    status: 'planned',
+    phase: '1.3',
+  },
+  'SP-8031': {
+    cap: 'CAP-ANNOUNCE',
+    title: 'Dashboard Announcement E2E Tests',
+    status: 'planned',
+    phase: '1.2',
+  },
+  'SP-8032': {
+    cap: 'KERNEL',
+    title: 'Idempotency E2E Tests',
     status: 'planned',
     phase: '1.0',
+  },
+  'SP-8033': {
+    cap: 'CAP-CASE',
+    title: 'Case-Message Timeline Integration E2E',
+    status: 'planned',
+    phase: '1.1',
+  },
+  'SP-8034': {
+    cap: 'CAP-DOC',
+    title: 'Document Access Audit E2E Tests',
+    status: 'planned',
+    phase: '1.1',
+  },
+  'SP-8035': {
+    cap: 'CAP-PAY-ETA',
+    title: 'Payment State Machine Property Tests',
+    status: 'planned',
+    phase: '1.4',
+  },
+  'SP-8036': {
+    cap: 'CAP-BULK',
+    title: 'Invoice Deduplication Fingerprint Tests',
+    status: 'planned',
+    phase: '1.3',
   },
 } as const satisfies Record<string, SpRegistryEntry>;
 

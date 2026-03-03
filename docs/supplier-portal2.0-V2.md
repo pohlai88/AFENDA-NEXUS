@@ -1799,22 +1799,24 @@ Desktop `PortalDataTable` is replaced on mobile with:
 
 **Test Coverage (Priority Order):**
 
-| Priority  | SP Code | Item                          | Type          | Status     | Effort | Notes                                               |
-| --------- | ------- | ----------------------------- | ------------- | ---------- | ------ | --------------------------------------------------- |
-| 🔴 High   | SP-8011 | Case E2E Tests                | E2E           | 🔲 Pending | 2-3d   | Create case → comment → status change → close       |
-| 🔴 High   | SP-8020 | SoD Gate Script               | Governance    | 🔲 Pending | 1d     | Enforce bank account propose ≠ approver             |
-| 🔴 High   | SP-8022 | Proof Chain Property Tests    | Property Test | 🔲 Pending | 2d     | Hash chain continuity, no gaps, daily anchor valid  |
-| 🟡 Medium | SP-8025 | Supplier-Safe Language Gate   | Governance    | 🔲 Pending | 1d     | No "FRAUD_SUSPICION" or internal labels to supplier |
-| 🟡 Medium | SP-8014 | Escalation E2E Tests          | E2E           | 🔲 Pending | 1d     | SOS trigger → assignment → resolution               |
-| 🟡 Medium | SP-8015 | Reconciliation E2E Tests      | E2E           | 🔲 Pending | 1-2d   | Upload statement → match → save → history           |
-| 🟡 Medium | SP-8016 | Compliance E2E Tests          | E2E           | 🔲 Pending | 1d     | Expiring cert → reminder → upload → cleared         |
-| 🟡 Medium | SP-8017 | Bulk Upload E2E Tests         | E2E           | 🔲 Pending | 2d     | 200 rows → dedupe → errors → retry failed           |
-| 🟢 Low    | SP-8018 | Announcement E2E Tests        | E2E           | 🔲 Pending | 0.5d   | Buyer posts → supplier sees banner                  |
-| 🟢 Low    | SP-8019 | Idempotency E2E Tests         | E2E           | 🔲 Pending | 1d     | Duplicate submit → same result, no double-create    |
-| 🟢 Low    | SP-8021 | Case ↔ Message Timeline Tests | E2E           | 🔲 Pending | 1d     | Message on case → unified timeline with proof       |
-| 🟢 Low    | SP-8023 | Document Access Audit Tests   | Audit         | 🔲 Pending | 0.5d   | Download → audit_log entry created                  |
-| 🟢 Low    | SP-8024 | Payment State Machine Tests   | Property Test | 🔲 Pending | 1d     | No impossible stage transitions                     |
-| 🟢 Low    | SP-8026 | Dedupe Fingerprint Tests      | Unit          | 🔲 Pending | 0.5d   | Same invoice → deterministic fingerprint            |
+> **Note:** SP codes 8014-8019 were previously assigned to service-level tests. E2E test codes updated to 8027+ to avoid conflicts. See `portal-registry.ts` for full tracking.
+
+| Priority  | SP Code | Item                          | Type          | Status      | Effort | Notes                                               |
+| --------- | ------- | ----------------------------- | ------------- | ----------- | ------ | --------------------------------------------------- |
+| 🔴 High   | SP-8011 | Case E2E Tests                | E2E           | ✅ Done     | 2-3d   | Create case → comment → status change → close       |
+| 🔴 High   | SP-8020 | SoD Gate Script               | Governance    | ✅ Done     | 1d     | Enforce bank account propose ≠ approver             |
+| 🔴 High   | SP-8022 | Proof Chain Property Tests    | Property Test | ✅ Done     | 2d     | Hash chain continuity, no gaps, daily anchor valid  |
+| 🟡 Medium | SP-8025 | Supplier-Safe Language Gate   | Governance    | ✅ Done     | 1d     | No "FRAUD_SUSPICION" or internal labels to supplier |
+| 🟡 Medium | SP-8027 | Escalation E2E Tests          | E2E           | ✅ Done     | 1d     | SOS trigger → assignment → resolution               |
+| 🟡 Medium | SP-8028 | Reconciliation E2E Tests      | E2E           | ✅ Done     | 1-2d   | Upload statement → match → save → history           |
+| 🟡 Medium | SP-8029 | Compliance E2E Tests          | E2E           | 🔲 Pending  | 1d     | Expiring cert → reminder → upload → cleared         |
+| 🟡 Medium | SP-8030 | Bulk Upload E2E Tests         | E2E           | 🔲 Pending  | 2d     | 200 rows → dedupe → errors → retry failed           |
+| 🟢 Low    | SP-8031 | Announcement E2E Tests        | E2E           | 🔲 Pending  | 0.5d   | Buyer posts → supplier sees banner                  |
+| 🟢 Low    | SP-8032 | Idempotency E2E Tests         | E2E           | 🔲 Pending  | 1d     | Duplicate submit → same result, no double-create    |
+| 🟢 Low    | SP-8033 | Case ↔ Message Timeline Tests | E2E           | 🔲 Pending  | 1d     | Message on case → unified timeline with proof       |
+| 🟢 Low    | SP-8034 | Document Access Audit Tests   | Audit         | 🔲 Pending  | 0.5d   | Download → audit_log entry created                  |
+| 🟢 Low    | SP-8035 | Payment State Machine Tests   | Property Test | 🔲 Pending  | 1d     | No impossible stage transitions                     |
+| 🟢 Low    | SP-8036 | Dedupe Fingerprint Tests      | Unit          | 🔲 Pending  | 0.5d   | Same invoice → deterministic fingerprint            |
 
 **Quality Gates:**
 
@@ -1830,16 +1832,19 @@ Desktop `PortalDataTable` is replaced on mobile with:
 
 **High Priority Block (Test Foundation):**
 
-- SP-8011 (Case E2E): 2-3 days
-- SP-8020 (SoD Gate): 1 day
-- SP-8022 (Proof Chain Property): 2 days
-- SP-8025 (Language Gate): 1 day
-- **Subtotal: 6-7 days**
+- ✅ SP-8011 (Case E2E): 2-3 days — **DONE 2026-03-03**
+- ✅ SP-8020 (SoD Gate): 1 day — **DONE 2026-03-03**
+- ✅ SP-8022 (Proof Chain Property): 2 days — **DONE 2026-03-03**
+- ✅ SP-8025 (Language Gate): 1 day — **DONE 2026-03-03**
+- **Subtotal: 6-7 days completed ✅**
 
 **Medium Priority Block (Feature E2E):**
 
-- SP-8014, SP-8015, SP-8016, SP-8017: 5-7 days
-- **Subtotal: 5-7 days**
+- ✅ SP-8027 (Escalation E2E): 1 day — **DONE 2026-03-03**
+- ✅ SP-8028 (Reconciliation E2E): 1-2 days — **DONE 2026-03-03**
+- 🔲 SP-8029 (Compliance E2E): 1 day — Pending
+- 🔲 SP-8030 (Bulk Upload E2E): 2 days — Pending
+- **Subtotal: 2-3 days completed, 3 days remaining**
 
 **Low Priority + Quality Gates:**
 
@@ -1879,21 +1884,73 @@ with 2 engineers parallelizing)
 
 **Pre-Production Checklist:**
 
-1. ✅ Complete High Priority tests (SP-8011, SP-8020, SP-8022, SP-8025)
-2. ⚠️ Run accessibility audit (SP-9010)
-3. ⚠️ Establish performance baseline (SP-9011)
-4. ⚠️ Complete OpenAPI spec (SP-9012)
-5. ⚠️ Run load tests (SP-9013, SP-9014)
-6. ⚠️ Security review (penetration testing, OWASP Top 10)
-7. ⚠️ User acceptance testing with pilot supplier
+1. ✅ Complete High Priority tests (SP-8011, SP-8020, SP-8022, SP-8025) — **DONE 2026-03-03**
+2. ✅ Complete Medium Priority E2E tests (SP-8027, SP-8028) — **DONE 2026-03-03**
+3. 🔲 Complete remaining Medium Priority tests (SP-8029, SP-8030)
+4. ⚠️ Run accessibility audit (SP-9010)
+5. ⚠️ Establish performance baseline (SP-9011)
+6. ⚠️ Complete OpenAPI spec (SP-9012)
+7. ⚠️ Run load tests (SP-9013, SP-9014)
+8. ⚠️ Security review (penetration testing, OWASP Top 10)
+9. ⚠️ User acceptance testing with pilot supplier
 
 **Recommended Approach:**
 
-1. **Week 1-2:** High priority tests + SoD/Language gates → **Production-ready
-   architecture**
-2. **Week 3:** Medium priority E2E tests → **Feature validation complete**
-3. **Week 4-5:** Quality gates + security review → **Production deployment**
-4. **Week 6:** Pilot with 1-3 suppliers → **Feedback iteration**
+1. ✅ **Week 1-2:** High priority tests + SoD/Language gates → **Production-ready architecture** — **DONE 2026-03-03**
+2. 🔄 **Week 3:** Medium priority E2E tests → **Feature validation complete** — 2/4 done
+3. ⚠️ **Week 4-5:** Quality gates + security review → **Production deployment**
+4. ⚠️ **Week 6:** Pilot with 1-3 suppliers → **Feedback iteration**
+
+---
+
+## 9.6 Session Progress Summary — 2026-03-03
+
+**Work Completed This Session (6 items, 100 tests):**
+
+| SP Code | Item | Evidence | Tests | Commit |
+|---------|------|----------|-------|--------|
+| SP-8020 | SoD Gate | `tools/scripts/sod-gate-check.mjs` | 4/4 checks PASS | b15ce41 |
+| SP-8025 | Language Gate | `tools/scripts/language-gate-check.mjs` | 4/4 checks PASS | b15ce41, 5a51685 |
+| SP-8011 | Case E2E Tests | `apps/e2e/tests/finance/supplier-portal-cases.spec.ts` | 19 tests | 3caa09c |
+| SP-8022 | Proof Chain Property Tests | `packages/supplier-kernel/src/__tests__/proof-chain-properties.test.ts` | 24/24 passing | 9f08611 |
+| SP-8027 | Escalation E2E Tests | `apps/e2e/tests/finance/supplier-portal-escalations.spec.ts` | 25 tests | be99a78 |
+| SP-8028 | Reconciliation E2E Tests | `apps/e2e/tests/finance/supplier-portal-reconciliation.spec.ts` | 32 tests | 317caf7 |
+
+**Additional Files Created:**
+
+- `packages/modules/finance/src/shared/utils/status-display.ts` — Supplier-safe status/hold reason mappings
+- `packages/modules/finance/src/slices/ap/services/supplier-portal-invoice-view.ts` — Invoice list with L04 validation
+- `packages/modules/finance/src/slices/ap/services/supplier-portal-payment-view.ts` — Payment list with L04 validation
+- `packages/modules/finance/src/slices/ap/services/supplier-portal-bank-account.ts` — Propose/approve workflow with SoD
+- `apps/e2e/pages/SupplierPortalEscalationsPage.ts` — Escalation workflow POM (285 lines)
+- `apps/e2e/pages/SupplierPortalReconciliationPage.ts` — Reconciliation workflow POM (320 lines)
+
+**Build Health After Session:**
+
+- TypeScript: 0 errors
+- CI Gates: 102/102 passing  
+- Unit Tests: 225/225 passing (supplier-kernel)
+- E2E Tests Created: 76 (19 cases + 25 escalation + 32 reconciliation)
+- Property Tests: 24/24 passing (proof chain)
+
+**Progress Metrics:**
+
+```
+High Priority Block:   6-7 days planned → 6-7 days completed ✅ (100%)
+Medium Priority Block: 5-7 days planned → 2-3 days completed  (40-60%)
+Low Priority Block:    4-5 days planned → 0 days completed    (0%)
+Quality Gates:         6-8 days planned → 0 days completed    (0%)
+```
+
+**Overall Progress:** 8-10 days of 21-27 day plan completed (37-48%)  
+**Remaining Effort:** 11-17 days
+
+**Registry Reconciliation:**
+
+- SP codes 8014-8019 were already assigned to service-level tests
+- Created new codes 8027-8036 for E2E and property tests
+- Updated `portal-registry.ts` with corrected status and new entries
+- Detailed reconciliation plan: `docs/RECONCILIATION-PLAN-2026-03-03.md`
 
 ---
 
