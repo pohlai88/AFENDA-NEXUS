@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
+import type { RequestContext } from '@afenda/core';
 import { handleApiError } from '@/lib/api-error.server';
 import { getMatchTolerances } from '@/features/finance/settings/queries/settings.queries';
 import { MatchTolerancesTable } from '@/features/finance/settings/blocks/match-tolerances-table';
@@ -17,8 +18,13 @@ interface Props {
   searchParams: Promise<{ page?: string; limit?: string }>;
 }
 
-export default async function MatchTolerancePage({ searchParams }: Props) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+async function MatchToleranceContent({
+  ctx,
+  params,
+}: {
+  ctx: RequestContext;
+  params: { page?: string; limit?: string };
+}) {
   const result = await getMatchTolerances(ctx, {
     page: params.page ?? '1',
     limit: params.limit ?? '50',
@@ -31,7 +37,6 @@ export default async function MatchTolerancePage({ searchParams }: Props) {
   const tolerances = result.value.data;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Match Tolerance"
@@ -52,11 +57,24 @@ export default async function MatchTolerancePage({ searchParams }: Props) {
       />
 
       {tolerances.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No match tolerances configured. Click &ldquo;Add Tolerance&rdquo; to create one.</CardContent></Card>
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            No match tolerances configured. Click &ldquo;Add Tolerance&rdquo; to create one.
+          </CardContent>
+        </Card>
       ) : (
         <MatchTolerancesTable tolerances={tolerances} />
       )}
     </div>
-  </Suspense>
+  );
+}
+
+export default async function MatchTolerancePage({ searchParams }: Props) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <MatchToleranceContent ctx={ctx} params={params} />
+    </Suspense>
   );
 }

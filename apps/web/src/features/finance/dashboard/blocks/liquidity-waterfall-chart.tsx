@@ -1,7 +1,12 @@
 'use client';
 
 import { ChartCard } from '@/components/charts/chart-card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, LabelList } from 'recharts';
 import { formatChartValue } from './chart-utils';
 import type { ChartParams, DrilldownTarget } from '@/components/charts';
@@ -15,8 +20,8 @@ interface WaterfallDataPoint {
   step: string;
   label: string;
   value: number;
-  start: number;          // Cumulative before this step
-  isTotal?: boolean;      // Opening/closing balances
+  start: number; // Cumulative before this step
+  isTotal?: boolean; // Opening/closing balances
   category: 'operating_in' | 'operating_out' | 'investing' | 'financing' | 'fx_reval' | 'total';
 }
 
@@ -32,6 +37,9 @@ interface LiquidityWaterfallChartProps {
   error?: Error | null;
   mode?: 'actual' | 'forecast';
   onModeChange?: (mode: 'actual' | 'forecast') => void;
+  _params?: unknown;
+  _gridW?: number;
+  _gridH?: number;
 }
 
 const WATERFALL_CONFIG = {
@@ -45,11 +53,11 @@ const WATERFALL_CONFIG = {
 
 /**
  * Liquidity Waterfall Chart
- * 
+ *
  * Enterprise waterfall showing cash movements from opening to closing balance
  * - Actual mode: From bank statements / cash ledger
  * - Forecast mode: Treasury forecast
- * 
+ *
  * Stable steps:
  * - Opening cash
  * - Operating inflows/outflows
@@ -80,7 +88,9 @@ export function LiquidityWaterfallChart({
     }
   };
 
-  const margin = compact ? { top: 20, right: 8, left: 0, bottom: 8 } : { top: 20, right: 10, left: 0, bottom: 0 };
+  const margin = compact
+    ? { top: 20, right: 8, left: 0, bottom: 8 }
+    : { top: 20, right: 10, left: 0, bottom: 0 };
   const tickFontSize = compact ? 10 : 12;
 
   return (
@@ -92,16 +102,12 @@ export function LiquidityWaterfallChart({
       isEmpty={!data || data.length === 0}
       error={error}
       compact={compact}
+      emptyStateKey="finance.dashboard.liquidityWaterfall"
     >
       {/* Mode toggle */}
       {!compact && onModeChange && (
         <div className="mb-2 flex justify-end">
-          <ToggleGroup
-            type="single"
-            value={displayMode}
-            onValueChange={handleModeChange}
-            size="sm"
-          >
+          <ToggleGroup type="single" value={displayMode} onValueChange={handleModeChange} size="sm">
             <ToggleGroupItem value="actual" aria-label="Actual">
               Actual
             </ToggleGroupItem>
@@ -116,11 +122,7 @@ export function LiquidityWaterfallChart({
         config={WATERFALL_CONFIG}
         className={compact ? 'h-full w-full min-h-[160px]' : 'h-[300px] w-full'}
       >
-        <BarChart
-          data={data}
-          margin={margin}
-          accessibilityLayer
-        >
+        <BarChart data={data} margin={margin} accessibilityLayer>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" vertical={false} />
           <XAxis
             dataKey="label"
@@ -166,8 +168,8 @@ export function LiquidityWaterfallChart({
                   entry.isTotal
                     ? WATERFALL_CONFIG.total.color
                     : entry.value >= 0
-                    ? WATERFALL_CONFIG.operating_in.color
-                    : WATERFALL_CONFIG.operating_out.color
+                      ? WATERFALL_CONFIG.operating_in.color
+                      : WATERFALL_CONFIG.operating_out.color
                 }
               />
             ))}

@@ -60,7 +60,7 @@ function AttentionItemRow({ item }: { item: AttentionItem }) {
         config.bgColor
       )}
     >
-      <Icon className={cn('mt-0.5 h-5 w-5', config.iconColor)} />
+      <Icon className={cn('mt-0.5 h-5 w-5', config.iconColor)} aria-hidden="true" />
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-start justify-between gap-2">
           <span className="font-medium text-sm">{item.title}</span>
@@ -92,7 +92,12 @@ interface AttentionPanelProps {
 export function AttentionPanel({ items }: AttentionPanelProps) {
   // Sort by priority (RBP-03: browser-compatible immutability)
   const sortedItems = toSorted(items, (a, b) => {
-    const priorityOrder: Record<AttentionPriority, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+    const priorityOrder: Record<AttentionPriority, number> = {
+      critical: 0,
+      high: 1,
+      medium: 2,
+      low: 3,
+    };
     return priorityOrder[a.priority] - priorityOrder[b.priority];
   });
 
@@ -120,10 +125,9 @@ export function AttentionPanel({ items }: AttentionPanelProps) {
           ))}
           {items.length === 0 && (
             <EmptyState
+              contentKey="finance.dashboard.attention"
               variant="firstRun"
-              size="sm"
-              title="All caught up!"
-              description="No items need attention."
+              constraint="2x1"
               icon={Info}
             />
           )}

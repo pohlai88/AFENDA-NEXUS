@@ -1,0 +1,49 @@
+
+╔══════════════════════════════════════════════════════════════╗
+║  Parallel Gate Runner                                        ║
+║  6 gates (group: compliance)                               ║
+╚══════════════════════════════════════════════════════════════╝
+
+── Results ───────────────────────────────────────────────────
+
+  ✅ API smoke CI (SMOKE-01–04)                   [compliance]      238ms
+  ✅ SOX ITGC audit (strict)                      [compliance]      280ms
+  ✅ AIS benchmark audit                          [compliance]      304ms
+  ✅ Test directory convention                    [compliance]      388ms
+  ✅ Dependency audit (high+crit)                 [compliance]      5.75s
+  ❌ Neon integration sync                        [compliance]     14.00s
+
+── Summary ───────────────────────────────────────────────────
+  Total: 6 gates | ✅ 5 passed | ❌ 1 failed | ⏱  14.01s
+
+── Failure Details ───────────────────────────────────────────
+
+  ╭─ Neon integration sync (neon-sync) [compliance]
+  │ > NEON Integration Sync (packages/db/docs/NEON-INTEGRATION.md)
+  │ 
+  │ 1. drizzle-kit check (snapshot ↔ migrations)...
+  │ 
+  │ > @afenda/db@0.0.0 db:check C:\AI-BOS\NEXUSCANON-AFENDA\packages\db
+  │ > drizzle-kit check
+  │ 
+  │ No config path provided, using default 'drizzle.config.ts'
+  │ Reading config file 'C:\AI-BOS\NEXUSCANON-AFENDA\packages\db\drizzle.config.ts'
+  │ Everything's fine 🐶🔥
+  │    ✓ Passed
+  │ 
+  │ 2. db:ci (no pending schema changes)...
+  │ 
+  │ > @afenda/monorepo@ db:ci C:\AI-BOS\NEXUSCANON-AFENDA
+  │ > node tools/scripts/db-check-ci.mjs
+  │ 
+  │ > drizzle-kit check (snapshot consistency)...
+  │   [PASS] Snapshots consistent
+  │ > drizzle-kit generate --name=ci_check (dry run)...
+  │   [FAIL] Schema has pending changes not captured in migrations:
+  │      - 0041_ci_check.sql
+  │ 
+  │   Fix: run `pnpm --filter @afenda/db db:generate` and commit the result.
+  │  ELIFECYCLE  Command failed with exit code 1.
+  │    ✗ Failed
+  ╰───────────────────────────────────────────────────────────
+

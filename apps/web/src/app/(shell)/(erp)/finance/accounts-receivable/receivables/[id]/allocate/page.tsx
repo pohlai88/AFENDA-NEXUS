@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { ArAllocatePaymentForm } from '@/features/finance/receivables/forms/ar-allocate-payment-form';
 import { getRequestContext } from '@/lib/auth';
@@ -10,12 +11,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Allocate Payment' };
 
-export default async function ReceivableAllocatePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function ReceivableAllocateContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getArInvoice(ctx, id);
 
   if (!result.ok) {
@@ -26,7 +22,6 @@ export default async function ReceivableAllocatePage({
   const invoice = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Allocate Payment"
@@ -43,6 +38,19 @@ export default async function ReceivableAllocatePage({
         <ArAllocatePaymentForm invoice={invoice} />
       </div>
     </div>
-  </Suspense>
+  );
+}
+
+export default async function ReceivableAllocatePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <ReceivableAllocateContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

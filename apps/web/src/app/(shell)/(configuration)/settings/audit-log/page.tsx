@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
@@ -7,8 +8,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Audit Log' };
 
-export default async function AuditLogPage() {
-  const ctx = await getRequestContext();
+async function AuditLogContent({ ctx }: { ctx: RequestContext }) {
   const api = createApiClient(ctx);
   const result = await api.get<{
     data: Array<{
@@ -28,19 +28,24 @@ export default async function AuditLogPage() {
   const data = result.ok ? result.value.data : [];
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Audit Log"
         description="View all audited actions within your organization."
-        breadcrumbs={[
-          { label: 'Settings', href: '/settings' },
-          { label: 'Audit Log' },
-        ]}
+        breadcrumbs={[{ label: 'Settings', href: '/settings' }, { label: 'Audit Log' }]}
       />
 
       <AuditLogTable entries={data} />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function AuditLogPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AuditLogContent ctx={ctx} />
+    </Suspense>
   );
 }

@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { LedgerForm } from '@/features/finance/ledgers/forms/ledger-form';
 import { createLedgerAction } from '@/features/finance/ledgers/actions/ledger.actions';
@@ -9,13 +10,11 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'New Ledger' };
 
-export default async function NewLedgerPage() {
-  const ctx = await getRequestContext();
+async function NewLedgerContent({ ctx }: { ctx: RequestContext }) {
   const tenantContext = await buildInitialTenantContext(ctx);
   const companies = tenantContext?.companies ?? [];
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Create Ledger"
@@ -31,6 +30,15 @@ export default async function NewLedgerPage() {
         <LedgerForm onSubmit={createLedgerAction} companies={companies} />
       </div>
     </div>
-  </Suspense>
+  );
+}
+
+export default async function NewLedgerPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <NewLedgerContent ctx={ctx} />
+    </Suspense>
   );
 }

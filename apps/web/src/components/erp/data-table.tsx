@@ -26,7 +26,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/erp/empty-state';
-import type { EmptyStateKey, EmptyStateVariant, EmptyStateSize } from '@/components/erp/empty-state.types';
+import type {
+  EmptyStateKey,
+  EmptyStateVariant,
+  EmptyStateSize,
+  EmptyStateConstraint,
+} from '@/components/erp/empty-state.types';
 import { ExportMenu, type ExportPayload } from '@/components/erp/export-menu';
 import { cn } from '@/lib/utils';
 import { toSorted, toReversed } from '@/lib/utils/array';
@@ -99,7 +104,9 @@ function toColumnDefs<T>(columns: Column<T>[]): ColumnDef<T>[] {
 function normalizeColumns<T>(columns: (Column<T> | ColumnDef<T>)[]): ColumnDef<T>[] {
   if (columns.length === 0) return [];
   const first = columns[0];
-  return first && isColumnDef(first) ? (columns as ColumnDef<T>[]) : toColumnDefs(columns as Column<T>[]);
+  return first && isColumnDef(first)
+    ? (columns as ColumnDef<T>[])
+    : toColumnDefs(columns as Column<T>[]);
 }
 
 // ─── Pagination Types ────────────────────────────────────────────────────────
@@ -118,6 +125,9 @@ export type EmptyStateConfig =
       /** Registry key — resolves title/description from the empty-state registry. */
       key: EmptyStateKey;
       variant?: EmptyStateVariant;
+      /** Layout constraint tier. Defaults to `'table'` inside DataTable. */
+      constraint?: EmptyStateConstraint;
+      /** @deprecated Use `constraint` instead. */
       size?: EmptyStateSize;
       action?: React.ReactNode | { label: string; href: string };
       icon?: React.ElementType;
@@ -127,6 +137,9 @@ export type EmptyStateConfig =
       title: string;
       description?: string;
       variant?: EmptyStateVariant;
+      /** Layout constraint tier. Defaults to `'table'` inside DataTable. */
+      constraint?: EmptyStateConstraint;
+      /** @deprecated Use `constraint` instead. */
       size?: EmptyStateSize;
       action?: React.ReactNode | { label: string; href: string };
       icon?: React.ElementType;
@@ -445,7 +458,8 @@ function useTableKeyboard<T>({
   const handleTableKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+      const isInput =
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
 
       // `/` to focus search (only when not in input)
       if (e.key === '/' && !isInput) {
@@ -502,7 +516,7 @@ function useTableKeyboard<T>({
         return;
       }
     },
-    [rowCount, focusedRowIndex, searchInputRef, onSelectAll],
+    [rowCount, focusedRowIndex, searchInputRef, onSelectAll]
   );
 
   // Scroll focused row into view
@@ -552,7 +566,7 @@ export function DataTable<T>({
       (keyField
         ? (row: T) => String((row as Record<string, unknown>)[keyField as string] ?? '')
         : (row: T) => String((row as { id?: string }).id ?? '')),
-    [keyFnProp, keyField],
+    [keyFnProp, keyField]
   );
 
   const paginationProps: PaginationProps | undefined = useMemo(() => {
@@ -601,7 +615,7 @@ export function DataTable<T>({
     if (emptyTitleProp || emptyMessageProp || emptyIconProp || emptyActionProp) {
       console.warn(
         '[DataTable] emptyTitle/emptyMessage/emptyIcon/emptyAction are deprecated. ' +
-          'Use emptyState={{ key: "…" }} instead.',
+          'Use emptyState={{ key: "…" }} instead.'
       );
     }
   }
@@ -611,7 +625,7 @@ export function DataTable<T>({
 
   /** Resolve `{ label, href }` shorthand into a `<Button>` ReactNode. */
   function resolveAction(
-    action: React.ReactNode | { label: string; href: string } | undefined,
+    action: React.ReactNode | { label: string; href: string } | undefined
   ): React.ReactNode | undefined {
     if (action && typeof action === 'object' && 'href' in action) {
       const a = action as { label: string; href: string };
@@ -631,7 +645,7 @@ export function DataTable<T>({
       return {
         contentKey: emptyState.key,
         variant: emptyState.variant ?? inferredVariant,
-        size: emptyState.size,
+        constraint: emptyState.constraint,
         icon: emptyIconProp ?? emptyState.icon,
         action: resolveAction(emptyActionProp ?? emptyState.action),
       } as const;
@@ -644,7 +658,7 @@ export function DataTable<T>({
       icon: emptyIconProp ?? emptyState?.icon ?? Inbox,
       action: resolveAction(emptyActionProp ?? emptyState?.action),
       variant: emptyState?.variant ?? inferredVariant,
-      size: emptyState?.size,
+      constraint: emptyState?.constraint,
     } as const;
   })();
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -702,12 +716,15 @@ export function DataTable<T>({
   const handleTableFocus = useCallback(() => {
     shortcutCtx?.engine.pushScope('table');
   }, [shortcutCtx]);
-  const handleTableBlur = useCallback((e: React.FocusEvent) => {
-    // Only pop if focus moves outside the table container
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      shortcutCtx?.engine.popScope('table');
-    }
-  }, [shortcutCtx]);
+  const handleTableBlur = useCallback(
+    (e: React.FocusEvent) => {
+      // Only pop if focus moves outside the table container
+      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        shortcutCtx?.engine.popScope('table');
+      }
+    },
+    [shortcutCtx]
+  );
 
   // Note: Enter key on focused row is handled by useTableKeyboard's
   // handleTableKeyDown via React's onKeyDown. The hook sets focusedRowIndex
@@ -720,7 +737,7 @@ export function DataTable<T>({
         onRowClick(focusedRow);
       }
     },
-    [focusedRowIndex, sortedData, onRowClick],
+    [focusedRowIndex, sortedData, onRowClick]
   );
 
   // Sorting handlers
@@ -828,7 +845,7 @@ export function DataTable<T>({
             )}
 
             {/* Export */}
-            { exportPayload ? <ExportMenu payload={exportPayload} /> : null}
+            {exportPayload ? <ExportMenu payload={exportPayload} /> : null}
           </div>
         </div>
       )}
@@ -848,7 +865,10 @@ export function DataTable<T>({
           aria-colcount={columnCount}
           aria-label="Data table"
           tabIndex={0}
-          onKeyDown={(e) => { handleTableKeyDown(e); handleRowEnter(e); }}
+          onKeyDown={(e) => {
+            handleTableKeyDown(e);
+            handleRowEnter(e);
+          }}
         >
           <TableHeader>
             <TableRow>
@@ -904,7 +924,7 @@ export function DataTable<T>({
                     <EmptyState
                       contentKey={resolvedEmptyState.contentKey}
                       variant={resolvedEmptyState.variant}
-                      size={resolvedEmptyState.size}
+                      constraint={resolvedEmptyState.constraint ?? 'table'}
                       icon={resolvedEmptyState.icon}
                       action={resolvedEmptyState.action}
                     />
@@ -913,7 +933,7 @@ export function DataTable<T>({
                       title={resolvedEmptyState.title}
                       description={resolvedEmptyState.description}
                       variant={resolvedEmptyState.variant}
-                      size={resolvedEmptyState.size}
+                      constraint={resolvedEmptyState.constraint ?? 'table'}
                       icon={resolvedEmptyState.icon}
                       action={resolvedEmptyState.action}
                     />
@@ -933,7 +953,7 @@ export function DataTable<T>({
                     className={cn(
                       onRowClick && 'cursor-pointer',
                       isSelected && 'bg-muted/50',
-                      isFocused && 'ring-2 ring-inset ring-primary/50 bg-accent/30',
+                      isFocused && 'ring-2 ring-inset ring-primary/50 bg-accent/30'
                     )}
                     onClick={() => onRowClick?.(row)}
                     aria-selected={selectable ? isSelected : undefined}
@@ -978,8 +998,4 @@ export function DataTable<T>({
   );
 }
 
-export type {
-  DataTableProps,
-  PaginationProps as DataTablePaginationProps,
-};
-
+export type { DataTableProps, PaginationProps as DataTablePaginationProps };

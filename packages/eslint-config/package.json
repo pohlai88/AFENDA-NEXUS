@@ -8,7 +8,7 @@
   },
   "files": [
     "*.js",
-    "ARCHITECTURE.@afenda-eslint-config.md"
+    "ARCHITECTURE_afenda-eslint-config.md"
   ],
   "devDependencies": {
     "eslint": "catalog:",

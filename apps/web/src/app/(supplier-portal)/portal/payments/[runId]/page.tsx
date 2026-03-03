@@ -1,23 +1,30 @@
 import { Suspense } from 'react';
 import { getRequestContext } from '@/lib/auth';
-import { getPortalSupplier, getPortalRemittance } from '@/features/portal/queries/portal.queries';
+import {
+  getPortalSupplier,
+  getPortalRemittance,
+  getPortalPaymentStatusTimeline,
+} from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { PortalRemittanceView } from '@/features/portal/blocks/portal-remittance-view';
+import {
+  PortalPaymentStatusTimeline,
+  PortalPaymentStatusTimelineSkeleton,
+} from '@/features/portal/blocks/portal-payment-status-timeline';
 import { AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { routes } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { RequestContext } from '@afenda/core';
 
 interface Props {
   params: Promise<{ runId: string }>;
 }
 
-export default async function PortalPaymentDetailPage({ params }: Props) {
-  const [{ runId }, ctx] = await Promise.all([params, getRequestContext()]);
-
+async function PaymentDetailPageContent({ ctx, runId }: { ctx: RequestContext; runId: string }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -30,7 +37,10 @@ export default async function PortalPaymentDetailPage({ params }: Props) {
   }
 
   const supplier = supplierResult.value;
-  const result = await getPortalRemittance(ctx, supplier.supplierId, runId);
+  const [result, statusResult] = await Promise.all([
+    getPortalRemittance(ctx, supplier.supplierId, runId),
+    getPortalPaymentStatusTimeline(ctx, runId),
+  ]);
 
   if (!result.ok) {
     if (result.error.statusCode === 404) notFound();
@@ -44,9 +54,9 @@ export default async function PortalPaymentDetailPage({ params }: Props) {
   }
 
   const remittance = result.value;
+  const statusTimeline = statusResult.ok ? statusResult.value : null;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
@@ -82,9 +92,29 @@ export default async function PortalPaymentDetailPage({ params }: Props) {
             label: 'Remittance Details',
             content: <PortalRemittanceView remittance={remittance} />,
           },
+          {
+            value: 'payment-status',
+            label: 'Payment Status',
+            content: statusTimeline ? (
+              <Suspense fallback={<PortalPaymentStatusTimelineSkeleton />}>
+                <PortalPaymentStatusTimeline data={statusTimeline} />
+              </Suspense>
+            ) : (
+              <PortalPaymentStatusTimelineSkeleton />
+            ),
+          },
         ]}
       />
     </div>
+  );
+}
+
+export default async function PortalPaymentDetailPage({ params }: Props) {
+  const [{ runId }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PaymentDetailPageContent ctx={ctx} runId={runId} />
     </Suspense>
   );
 }

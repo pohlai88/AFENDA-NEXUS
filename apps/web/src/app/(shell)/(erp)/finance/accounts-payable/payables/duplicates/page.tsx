@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { getRequestContext } from '@/lib/auth';
 import { getHolds } from '@/features/finance/payables/queries/ap-hold.queries';
 import { ApDuplicateReviewTable } from '@/features/finance/payables/blocks/ap-duplicate-review-table';
@@ -10,15 +11,7 @@ export const metadata = { title: 'Payables — Duplicate Review' };
 
 const PAGE_SIZE = 20;
 
-export default async function DuplicatesPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const params = await searchParams;
-  const page = typeof params.page === 'string' ? params.page : '1';
-
-  const ctx = await getRequestContext();
+async function DuplicatesContent({ ctx, page }: { ctx: RequestContext; page: string }) {
   const result = await getHolds(ctx, {
     holdType: 'DUPLICATE',
     status: 'ACTIVE',
@@ -39,9 +32,7 @@ export default async function DuplicatesPage({
         </p>
       </div>
 
-      <Suspense fallback={<TableSkeleton />}>
-        <ApDuplicateReviewTable data={holds} />
-      </Suspense>
+      <ApDuplicateReviewTable data={holds} />
 
       <Pagination
         page={currentPage}
@@ -54,5 +45,21 @@ export default async function DuplicatesPage({
         }}
       />
     </div>
+  );
+}
+
+export default async function DuplicatesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const page = typeof params.page === 'string' ? params.page : '1';
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<TableSkeleton />}>
+      <DuplicatesContent ctx={ctx} page={page} />
+    </Suspense>
   );
 }

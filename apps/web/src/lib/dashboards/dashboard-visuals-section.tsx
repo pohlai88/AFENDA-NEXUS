@@ -11,7 +11,6 @@ import {
 import type { DomainDashboardConfig } from './types';
 import type { UserPreferences } from '@afenda/contracts';
 
-
 // ─── Chart/Diagram ID → Component mapping ───────────────────────────────────
 
 const CHART_COMPONENTS: Record<string, React.ComponentType<{ data: unknown }>> = {
@@ -30,11 +29,7 @@ const DIAGRAM_COMPONENTS: Record<string, React.ComponentType<{ data: unknown }>>
  * Renders 1 chart + 1 diagram from the registry.
  * Uses user prefs (selectedChartId, selectedDiagramId) when set.
  */
-export async function DashboardVisualsSection({
-  config,
-}: {
-  config: DomainDashboardConfig;
-}) {
+export async function DashboardVisualsSection({ config }: { config: DomainDashboardConfig }) {
   const chartSlotIds = config.chartSlotIds ?? [];
   const diagramSlotIds = config.diagramSlotIds ?? [];
 
@@ -67,13 +62,13 @@ export async function DashboardVisualsSection({
     // Use defaults
   }
 
-  // Fetch chart data (server-side: API-first, stub fallback when endpoints missing)
+  // Fetch chart data (server-side: API-first, fallback when endpoints missing)
   let chartData: unknown = null;
   if (selectedChartId && selectedChartId !== CHART_DIAGRAM_NONE) {
     chartData = await fetchChartData(selectedChartId, ctx);
   }
 
-  // Fetch diagram data (server-side: API-first, stub fallback when endpoints missing)
+  // Fetch diagram data (server-side: API-first, fallback when endpoints missing)
   let diagramData: unknown = null;
   if (selectedDiagramId && selectedDiagramId !== CHART_DIAGRAM_NONE) {
     diagramData = await fetchDiagramData(selectedDiagramId, ctx);

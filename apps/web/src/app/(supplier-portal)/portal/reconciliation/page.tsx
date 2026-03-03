@@ -6,10 +6,12 @@ import { PortalReconciliationPageClient } from '@/features/portal/blocks/portal-
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { RequestContext } from '@afenda/core';
 
-export default async function PortalReconciliationPage() {
-  const ctx = await getRequestContext();
-
+/**
+ * Async child component - enables Suspense streaming
+ */
+async function ReconciliationContent({ ctx }: { ctx: RequestContext }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -24,7 +26,6 @@ export default async function PortalReconciliationPage() {
   const supplier = supplierResult.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Statement Reconciliation"
@@ -40,6 +41,15 @@ export default async function PortalReconciliationPage() {
         currencyCode={supplier.currencyCode}
       />
     </div>
+  );
+}
+
+export default async function PortalReconciliationPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <ReconciliationContent ctx={ctx} />
     </Suspense>
   );
 }

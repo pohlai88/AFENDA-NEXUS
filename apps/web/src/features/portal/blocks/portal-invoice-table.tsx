@@ -29,6 +29,7 @@ export function PortalInvoiceTable({ data, total }: PortalInvoiceTableProps) {
     return (
       <EmptyState
         contentKey="portal.invoices"
+        constraint="table"
         icon={Receipt}
         action={
           <Button asChild>
@@ -71,7 +72,9 @@ export function PortalInvoiceTable({ data, total }: PortalInvoiceTableProps) {
                       window.location.href = detailHref;
                     }
                   }}
-                  onClick={() => { window.location.href = detailHref; }}
+                  onClick={() => {
+                    window.location.href = detailHref;
+                  }}
                 >
                   <TableCell>
                     <Link

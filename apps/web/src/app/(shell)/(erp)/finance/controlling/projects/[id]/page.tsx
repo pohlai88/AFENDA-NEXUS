@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import type { RequestContext } from '@afenda/core';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import {
   getProjectById,
@@ -17,9 +18,7 @@ interface ProjectDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
-
+async function ProjectDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const [projectResult, costsResult, billingsResult, milestonesResult, wipResult] =
     await Promise.all([
       getProjectById(ctx, id),
@@ -34,14 +33,22 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   }
 
   return (
+    <ProjectDetail
+      project={projectResult.data}
+      costs={costsResult.ok ? costsResult.data : []}
+      billings={billingsResult.ok ? billingsResult.data : []}
+      milestones={milestonesResult.ok ? milestonesResult.data : []}
+      wip={wipResult.ok ? wipResult.data : undefined}
+    />
+  );
+}
+
+export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
     <Suspense fallback={<LoadingSkeleton />}>
-      <ProjectDetail
-        project={projectResult.data}
-        costs={costsResult.ok ? costsResult.data : []}
-        billings={billingsResult.ok ? billingsResult.data : []}
-        milestones={milestonesResult.ok ? milestonesResult.data : []}
-        wip={wipResult.ok ? wipResult.data : undefined}
-      />
+      <ProjectDetailContent ctx={ctx} id={id} />
     </Suspense>
   );
 }

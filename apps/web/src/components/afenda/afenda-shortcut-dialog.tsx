@@ -9,11 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
@@ -49,9 +45,19 @@ const SCOPE_LABELS: Record<ShortcutScope, string> = {
  * Uses platform-agnostic keys (mod = ⌘ on Mac, Ctrl on Win/Linux).
  */
 const STATIC_SHORTCUTS: Omit<ShortcutRegistration, 'handler'>[] = [
-  { id: 'static-help', keys: 'ctrl+shift+?', description: 'Show keyboard shortcuts', scope: 'global' },
+  {
+    id: 'static-help',
+    keys: 'mod+/',
+    description: 'Show keyboard shortcuts',
+    scope: 'global',
+  },
   { id: 'static-search', keys: 'mod+k', description: 'Open command palette', scope: 'global' },
-  { id: 'static-quick-actions', keys: 'ctrl+q', description: 'Open Quick Action picker (Ctrl+1…9 for pinned)', scope: 'global' },
+  {
+    id: 'static-quick-actions',
+    keys: 'mod+q',
+    description: 'Open Quick Action picker (slots 1…9 for pinned)',
+    scope: 'global',
+  },
   { id: 'static-calculator', keys: 'mod+=', description: 'Open calculator', scope: 'global' },
   { id: 'static-sidebar', keys: 'mod+b', description: 'Toggle sidebar', scope: 'global' },
   { id: 'static-dashboard', keys: 'g d', description: 'Go to Dashboard', scope: 'global' },
@@ -70,15 +76,45 @@ const STATIC_SHORTCUTS: Omit<ShortcutRegistration, 'handler'>[] = [
   { id: 'static-create-bill', keys: 'c b', description: 'New Bill (AP)', scope: 'global' },
   { id: 'static-create-expense', keys: 'c x', description: 'New Expense Claim', scope: 'global' },
   { id: 'static-create-account', keys: 'c a', description: 'New Account', scope: 'global' },
-  { id: 'static-escape', keys: 'escape', description: 'Close dialog / clear search', scope: 'global' },
+  {
+    id: 'static-escape',
+    keys: 'escape',
+    description: 'Close dialog / clear search',
+    scope: 'global',
+  },
   { id: 'static-date-today', keys: 't', description: 'Date field: Today', scope: 'global' },
   { id: 'static-date-yesterday', keys: 'y', description: 'Date field: Yesterday', scope: 'global' },
   { id: 'static-date-month-end', keys: 'm', description: 'Date field: Month end', scope: 'global' },
-  { id: 'static-table-select-all', keys: 'mod+a', description: 'Table: Select all rows', scope: 'global' },
-  { id: 'static-journal-copy-row', keys: 'f8', description: 'Journal lines: Copy row above into current row', scope: 'global' },
-  { id: 'static-page-new', keys: 'n', description: 'New (contextual — create item on current page)', scope: 'global' },
-  { id: 'static-form-save', keys: 'mod+s', description: 'Save form (when form has focus)', scope: 'global' },
-  { id: 'static-form-save-close', keys: 'mod+enter', description: 'Save and close form', scope: 'global' },
+  {
+    id: 'static-table-select-all',
+    keys: 'mod+a',
+    description: 'Table: Select all rows',
+    scope: 'global',
+  },
+  {
+    id: 'static-journal-copy-row',
+    keys: 'f8',
+    description: 'Journal lines: Copy row above into current row',
+    scope: 'global',
+  },
+  {
+    id: 'static-page-new',
+    keys: 'n',
+    description: 'New (contextual — create item on current page)',
+    scope: 'global',
+  },
+  {
+    id: 'static-form-save',
+    keys: 'mod+s',
+    description: 'Save form (when form has focus)',
+    scope: 'global',
+  },
+  {
+    id: 'static-form-save-close',
+    keys: 'mod+enter',
+    description: 'Save and close form',
+    scope: 'global',
+  },
 ];
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -109,9 +145,7 @@ export function AfendaShortcutDialog({ open, onOpenChange }: AfendaShortcutDialo
     const q = filter.toLowerCase().trim();
     const filtered = q
       ? shortcuts.filter(
-          (s) =>
-            s.description.toLowerCase().includes(q) ||
-            s.keys.toLowerCase().includes(q),
+          (s) => s.description.toLowerCase().includes(q) || s.keys.toLowerCase().includes(q)
         )
       : shortcuts;
 
@@ -130,20 +164,19 @@ export function AfendaShortcutDialog({ open, onOpenChange }: AfendaShortcutDialo
 
       if (scope === 'global') {
         const moduleNav = items.filter(
-          (s) => s.keys.startsWith('g ') || s.description.startsWith('Go to '),
+          (s) => s.keys.startsWith('g ') || s.description.startsWith('Go to ')
         );
         const create = items.filter(
-          (s) => s.keys.startsWith('c ') || s.description.startsWith('New ') || s.description.startsWith('Create '),
+          (s) =>
+            s.keys.startsWith('c ') ||
+            s.description.startsWith('New ') ||
+            s.description.startsWith('Create ')
         );
-        const other = items.filter(
-          (s) => !moduleNav.includes(s) && !create.includes(s),
-        );
+        const other = items.filter((s) => !moduleNav.includes(s) && !create.includes(s));
         if (moduleNav.length > 0)
           result.push({ scope, label: 'Module navigation', shortcuts: moduleNav });
-        if (create.length > 0)
-          result.push({ scope, label: 'Create', shortcuts: create });
-        if (other.length > 0)
-          result.push({ scope, label: 'Other', shortcuts: other });
+        if (create.length > 0) result.push({ scope, label: 'Create', shortcuts: create });
+        if (other.length > 0) result.push({ scope, label: 'Other', shortcuts: other });
       } else {
         result.push({ scope, label: SCOPE_LABELS[scope], shortcuts: items });
       }
@@ -173,9 +206,7 @@ export function AfendaShortcutDialog({ open, onOpenChange }: AfendaShortcutDialo
         />
         <ScrollArea className="min-h-0 max-h-[min(50vh,28rem)] flex-1">
           {grouped.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No shortcuts found.
-            </p>
+            <p className="py-8 text-center text-sm text-muted-foreground">No shortcuts found.</p>
           ) : (
             <div className="space-y-4 pr-2">
               {grouped.map(({ scope, label, shortcuts: items }) => (
@@ -213,9 +244,38 @@ export function AfendaShortcutDialog({ open, onOpenChange }: AfendaShortcutDialo
           </CollapsibleTrigger>
           <CollapsibleContent>
             <div className="mt-2 space-y-2 rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-              <p><strong className="text-foreground">Quick Actions</strong> — Press <Kbd>Ctrl+Q</Kbd> to open the picker. Add any action from the sidebar to pin it as <Kbd>Ctrl+1</Kbd>…<Kbd>Ctrl+9</Kbd>. Remove via the ⋮ menu on each item.</p>
-              <p><strong className="text-foreground">Favorites</strong> — Use the + button in the Favorites section of the sidebar to pin pages. Your favorites appear in the command palette (<KbdGroup><Kbd>{isMac ? <Command className="size-3" aria-hidden /> : 'Ctrl'}</Kbd><Kbd>K</Kbd></KbdGroup>).</p>
-              <p><strong className="text-foreground">Custom shortcuts</strong> — Go to Settings → Preferences to remap navigation and create shortcuts.</p>
+              <p>
+                <strong className="text-foreground">Quick Actions</strong> — Press{' '}
+                <KbdGroup>
+                  <Kbd>{isMac ? <Command className="size-3" aria-hidden /> : 'Ctrl'}</Kbd>
+                  <Kbd>Q</Kbd>
+                </KbdGroup>{' '}
+                to open the picker. Add any action from the sidebar to pin it as{' '}
+                <KbdGroup>
+                  <Kbd>{isMac ? <Command className="size-3" aria-hidden /> : 'Ctrl'}</Kbd>
+                  <Kbd>1</Kbd>
+                </KbdGroup>
+                …
+                <KbdGroup>
+                  <Kbd>{isMac ? <Command className="size-3" aria-hidden /> : 'Ctrl'}</Kbd>
+                  <Kbd>9</Kbd>
+                </KbdGroup>
+                . Remove via the ⋮ menu on each item.
+              </p>
+              <p>
+                <strong className="text-foreground">Favorites</strong> — Use the + button in the
+                Favorites section of the sidebar to pin pages. Your favorites appear in the command
+                palette (
+                <KbdGroup>
+                  <Kbd>{isMac ? <Command className="size-3" aria-hidden /> : 'Ctrl'}</Kbd>
+                  <Kbd>K</Kbd>
+                </KbdGroup>
+                ).
+              </p>
+              <p>
+                <strong className="text-foreground">Custom shortcuts</strong> — Go to Settings →
+                Preferences to remap navigation and create shortcuts.
+              </p>
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -228,14 +288,6 @@ AfendaShortcutDialog.displayName = 'AfendaShortcutDialog';
 // ─── Key combo renderer ──────────────────────────────────────────────────────
 
 function AfendaKeyCombo({ keys, isMac }: { keys: string; isMac: boolean }) {
-  if (keys === 'ctrl+shift+?' || keys === 'ctrl+?') {
-    return (
-      <KbdGroup>
-        <Kbd>Ctrl</Kbd>
-        <Kbd>?</Kbd>
-      </KbdGroup>
-    );
-  }
   const parts = keys.split(/(?<=\+)|(?=\+)|\s+/).filter((p) => p !== '+');
 
   return (

@@ -5,18 +5,20 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Settings2, Search } from 'lucide-react';
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Settings2, Search, RotateCcw } from 'lucide-react';
 import type { KPICatalogEntry } from '@/lib/kpis/kpi-catalog';
+import { toPlainTitle } from '@/lib/kpis/kpi-plain-title';
+import { cn } from '@/lib/utils';
+import { SCROLL_MAX_H } from '@/components/afenda/shell.tokens';
 import type { DashboardPrefs } from '@afenda/contracts';
 import { CHART_META, DIAGRAM_META, CHART_DIAGRAM_NONE } from './chart-registry';
 import { toSorted } from '@/lib/utils/array';
@@ -32,7 +34,10 @@ interface WidgetConfigDialogProps {
   chartSlotIds?: string[];
   diagramSlotIds?: string[];
   prefs: DashboardPrefs;
-  onSavePrefs: (domainId: string, prefs: DashboardPrefs) => Promise<{ ok?: boolean; error?: string } | void>;
+  onSavePrefs: (
+    domainId: string,
+    prefs: DashboardPrefs
+  ) => Promise<{ ok?: boolean; error?: string } | void>;
 }
 
 function WidgetConfigDialog({
@@ -46,14 +51,12 @@ function WidgetConfigDialog({
   prefs,
   onSavePrefs,
 }: WidgetConfigDialogProps) {
-  const [selected, setSelected] = React.useState<Set<string>>(
-    () => new Set(activeKpiIds),
-  );
+  const [selected, setSelected] = React.useState<Set<string>>(() => new Set(activeKpiIds));
   const [selectedChart, setSelectedChart] = React.useState<string>(
-    () => prefs.selectedChartId ?? chartSlotIds[0] ?? NONE_VALUE,
+    () => prefs.selectedChartId ?? chartSlotIds[0] ?? NONE_VALUE
   );
   const [selectedDiagram, setSelectedDiagram] = React.useState<string>(
-    () => prefs.selectedDiagramId ?? diagramSlotIds[0] ?? NONE_VALUE,
+    () => prefs.selectedDiagramId ?? diagramSlotIds[0] ?? NONE_VALUE
   );
   const [saving, setSaving] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -66,17 +69,22 @@ function WidgetConfigDialog({
       setSelectedDiagram(prefs.selectedDiagramId ?? diagramSlotIds[0] ?? NONE_VALUE);
       setSearchQuery('');
     }
-  }, [open, activeKpiIds, prefs.selectedChartId, prefs.selectedDiagramId, chartSlotIds, diagramSlotIds]);
+  }, [
+    open,
+    activeKpiIds,
+    prefs.selectedChartId,
+    prefs.selectedDiagramId,
+    chartSlotIds,
+    diagramSlotIds,
+  ]);
 
   const filteredCatalog = React.useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return availableCatalog;
     return availableCatalog.filter((entry) => {
-      const titleMatch = entry.title.toLowerCase().includes(q) ||
-        (entry.plainTitle?.toLowerCase().includes(q));
-      const keywordMatch = entry.searchKeywords?.some((kw) =>
-        kw.toLowerCase().includes(q),
-      );
+      const plain = entry.plainTitle ?? toPlainTitle(entry.title, entry.description);
+      const titleMatch = entry.title.toLowerCase().includes(q) || plain.toLowerCase().includes(q);
+      const keywordMatch = entry.searchKeywords?.some((kw) => kw.toLowerCase().includes(q));
       return titleMatch || keywordMatch;
     });
   }, [availableCatalog, searchQuery]);
@@ -105,15 +113,13 @@ function WidgetConfigDialog({
       // Use reload instead of router.refresh() to avoid "unexpected response" RSC fetch race
       window.location.reload();
     },
-    [domainId, onSavePrefs],
+    [domainId, onSavePrefs]
   );
 
   const handleApply = async () => {
     setSaving(true);
     try {
-      const ordered = availableCatalog
-        .map((c) => c.id)
-        .filter((id) => selected.has(id));
+      const ordered = availableCatalog.map((c) => c.id).filter((id) => selected.has(id));
       const finalOrdered = maxWidgets ? ordered.slice(0, maxWidgets) : ordered;
 
       await saveToPrefs({
@@ -121,9 +127,17 @@ function WidgetConfigDialog({
         selectedWidgetIds: finalOrdered,
         widgetOrder: finalOrdered,
         selectedChartId:
-          hasCharts && selectedChart !== NONE_VALUE ? selectedChart : (hasCharts ? NONE_VALUE : undefined),
+          hasCharts && selectedChart !== NONE_VALUE
+            ? selectedChart
+            : hasCharts
+              ? NONE_VALUE
+              : undefined,
         selectedDiagramId:
-          hasDiagrams && selectedDiagram !== NONE_VALUE ? selectedDiagram : (hasDiagrams ? NONE_VALUE : undefined),
+          hasDiagrams && selectedDiagram !== NONE_VALUE
+            ? selectedDiagram
+            : hasDiagrams
+              ? NONE_VALUE
+              : undefined,
         savedViewId: 'custom',
         widgetLayout: undefined,
       });
@@ -163,131 +177,200 @@ function WidgetConfigDialog({
   const hasDiagrams = diagramSlotIds.length > 0;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setSearchQuery('');
+      }}
+    >
+      <PopoverTrigger asChild>
         <Button variant="outline" size="sm">
           <Settings2 className="mr-2 h-4 w-4" />
           Configure
         </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Dashboard Layout</DialogTitle>
-          <DialogDescription>
+      </PopoverTrigger>
+      <PopoverContent align="end" side="bottom" className="w-80 p-0">
+        {/* ─── Fixed header: title + search (never scrolls) ─── */}
+        <PopoverHeader className="border-b px-4 py-3">
+          <PopoverTitle className="text-base">Dashboard Layout</PopoverTitle>
+          <p className="text-xs text-muted-foreground">
             {maxWidgets
-              ? `Choose up to ${maxWidgets} KPI cards, one chart, and one diagram.`
+              ? `Up to ${maxWidgets} KPI cards, one chart, one diagram.`
               : 'Configure cards, chart, and diagram.'}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-6 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="kpi-search">KPI Cards</Label>
+          </p>
+          <div className="mt-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search
+                className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
               <Input
                 id="kpi-search"
                 placeholder="Search KPIs…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="h-8 pl-8 text-sm"
+                aria-label="Filter KPIs"
               />
             </div>
-            <div className="max-h-40 space-y-2 overflow-y-auto rounded-md border p-4">
-              {toSorted(filteredCatalog, (a, b) => {
+          </div>
+        </PopoverHeader>
+
+        {/* ─── Scrollable content: segmented groups (like ModuleNavPopover) ─── */}
+        <ScrollArea className={cn(SCROLL_MAX_H, 'h-[min(70vh,24rem)]')} type="auto">
+          <nav className="flex flex-col gap-1 py-3 pr-4 pl-3" aria-label="Dashboard configuration">
+            {/* ── KPI Cards group ── */}
+            <div className="px-2">
+              <div className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                <span>KPI Cards</span>
+                <span className="ml-auto tabular-nums">
+                  {selected.size}
+                  {maxWidgets ? `/${maxWidgets}` : ''}
+                </span>
+              </div>
+              <ul className="space-y-0.5">
+                {toSorted(filteredCatalog, (a, b) => {
                   const pa = a.displayPriority ?? 999;
                   const pb = b.displayPriority ?? 999;
                   return pa - pb || a.title.localeCompare(b.title);
-                })
-                .map((entry) => (
-                  <label
-                    key={entry.id}
-                    className="flex cursor-pointer items-center gap-2"
-                  >
-                    <Checkbox
-                      checked={selected.has(entry.id)}
-                      onCheckedChange={(checked) =>
-                        handleToggle(entry.id, checked === true)
-                      }
-                    />
-                    <span className="text-sm">{entry.title}</span>
-                  </label>
+                }).map((entry) => (
+                  <li key={entry.id}>
+                    <label
+                      className={cn(
+                        'flex min-w-0 cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                        selected.has(entry.id) && 'bg-accent font-medium text-accent-foreground'
+                      )}
+                    >
+                      <Checkbox
+                        checked={selected.has(entry.id)}
+                        onCheckedChange={(checked) => handleToggle(entry.id, checked === true)}
+                        className="shrink-0"
+                      />
+                      <span className="truncate">{entry.title}</span>
+                    </label>
+                  </li>
                 ))}
+              </ul>
             </div>
-          </div>
 
-          {hasCharts && (
-            <div className="grid gap-2">
-              <Label>Chart</Label>
-              <RadioGroup
-                value={selectedChart}
-                onValueChange={setSelectedChart}
-                className="grid gap-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value={NONE_VALUE} id="chart-none" />
-                  <Label htmlFor="chart-none" className="font-normal cursor-pointer">
-                    None
-                  </Label>
+            {hasCharts && (
+              <>
+                <Separator className="my-1" />
+                <div className="px-2">
+                  <div className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                    <span>Chart</span>
+                  </div>
+                  <RadioGroup value={selectedChart} onValueChange={setSelectedChart}>
+                    <ul className="space-y-0.5">
+                      <li>
+                        <label
+                          className={cn(
+                            'flex min-w-0 cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                            selectedChart === NONE_VALUE &&
+                              'bg-accent font-medium text-accent-foreground'
+                          )}
+                        >
+                          <RadioGroupItem value={NONE_VALUE} id="chart-none" className="shrink-0" />
+                          <span>None</span>
+                        </label>
+                      </li>
+                      {chartSlotIds.map((id) => {
+                        const meta = CHART_META[id];
+                        return (
+                          <li key={id}>
+                            <label
+                              className={cn(
+                                'flex min-w-0 cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                                selectedChart === id &&
+                                  'bg-accent font-medium text-accent-foreground'
+                              )}
+                            >
+                              <RadioGroupItem value={id} id={`chart-${id}`} className="shrink-0" />
+                              <span className="truncate">{meta?.title ?? id}</span>
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </RadioGroup>
                 </div>
-                {chartSlotIds.map((id) => {
-                  const meta = CHART_META[id];
-                  return (
-                    <div key={id} className="flex items-center space-x-2">
-                      <RadioGroupItem value={id} id={`chart-${id}`} />
-                      <Label htmlFor={`chart-${id}`} className="font-normal cursor-pointer">
-                        {meta?.title ?? id}
-                      </Label>
-                    </div>
-                  );
-                })}
-              </RadioGroup>
-            </div>
-          )}
+              </>
+            )}
 
-          {hasDiagrams && (
-            <div className="grid gap-2">
-              <Label>Diagram</Label>
-              <RadioGroup
-                value={selectedDiagram}
-                onValueChange={setSelectedDiagram}
-                className="grid gap-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value={NONE_VALUE} id="diagram-none" />
-                  <Label htmlFor="diagram-none" className="font-normal cursor-pointer">
-                    None
-                  </Label>
+            {hasDiagrams && (
+              <>
+                <Separator className="my-1" />
+                <div className="px-2">
+                  <div className="flex items-center gap-2 px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                    <span>Diagram</span>
+                  </div>
+                  <RadioGroup value={selectedDiagram} onValueChange={setSelectedDiagram}>
+                    <ul className="space-y-0.5">
+                      <li>
+                        <label
+                          className={cn(
+                            'flex min-w-0 cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                            selectedDiagram === NONE_VALUE &&
+                              'bg-accent font-medium text-accent-foreground'
+                          )}
+                        >
+                          <RadioGroupItem
+                            value={NONE_VALUE}
+                            id="diagram-none"
+                            className="shrink-0"
+                          />
+                          <span>None</span>
+                        </label>
+                      </li>
+                      {diagramSlotIds.map((id) => {
+                        const meta = DIAGRAM_META[id];
+                        return (
+                          <li key={id}>
+                            <label
+                              className={cn(
+                                'flex min-w-0 cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+                                selectedDiagram === id &&
+                                  'bg-accent font-medium text-accent-foreground'
+                              )}
+                            >
+                              <RadioGroupItem
+                                value={id}
+                                id={`diagram-${id}`}
+                                className="shrink-0"
+                              />
+                              <span className="truncate">{meta?.title ?? id}</span>
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </RadioGroup>
                 </div>
-                {diagramSlotIds.map((id) => {
-                  const meta = DIAGRAM_META[id];
-                  return (
-                    <div key={id} className="flex items-center space-x-2">
-                      <RadioGroupItem value={id} id={`diagram-${id}`} />
-                      <Label htmlFor={`diagram-${id}`} className="font-normal cursor-pointer">
-                        {meta?.title ?? id}
-                      </Label>
-                    </div>
-                  );
-                })}
-              </RadioGroup>
-            </div>
-          )}
-        </div>
+              </>
+            )}
+          </nav>
+        </ScrollArea>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleReset} disabled={saving}>
+        {/* ─── Fixed footer (never scrolls) ─── */}
+        <Separator />
+        <div className="flex items-center justify-between gap-2 px-3 py-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleResetAndApply}
+            disabled={saving}
+            className="text-muted-foreground"
+          >
+            <RotateCcw className="mr-1.5 size-3.5" />
             Reset
           </Button>
-          <Button variant="secondary" onClick={handleResetAndApply} disabled={saving}>
-            Reset & Apply
-          </Button>
-          <Button onClick={handleApply} disabled={saving || selected.size === 0}>
+          <Button size="sm" onClick={handleApply} disabled={saving || selected.size === 0}>
             {saving ? 'Saving…' : 'Apply'}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 WidgetConfigDialog.displayName = 'WidgetConfigDialog';

@@ -1,6 +1,13 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
 import {
   ChartContainer,
   ChartTooltip,
@@ -8,6 +15,7 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/erp/empty-state';
 import {
   BarChart,
   Bar,
@@ -58,7 +66,8 @@ function getAgingConfigKey(range: string): (typeof AGING_RANGE_KEYS)[number] | '
   const r = range.trim();
   const normalized = r.toLowerCase();
   if (normalized === 'current') return 'current';
-  if (AGING_RANGE_KEYS.includes(r as (typeof AGING_RANGE_KEYS)[number])) return r as (typeof AGING_RANGE_KEYS)[number];
+  if (AGING_RANGE_KEYS.includes(r as (typeof AGING_RANGE_KEYS)[number]))
+    return r as (typeof AGING_RANGE_KEYS)[number];
   return 'other';
 }
 
@@ -90,58 +99,79 @@ interface CashFlowChartProps {
   gridW?: number;
   /** Grid height in units (1–3). Affects chart density. */
   gridH?: number;
+  _gridW?: number;
+  _gridH?: number;
 }
 
 export function CashFlowChart({ data, compact, _gridW = 2, _gridH = 2 }: CashFlowChartProps) {
-  const margin = compact ? { top: 8, right: 8, left: 0, bottom: 8 } : { top: 10, right: 10, left: 0, bottom: 0 };
+  const margin = compact
+    ? { top: 8, right: 8, left: 0, bottom: 8 }
+    : { top: 10, right: 10, left: 0, bottom: 0 };
   const tickFontSize = compact ? 11 : undefined;
+
+  const isEmpty = !data || data.length === 0;
+
   return (
     <Card className={compact ? 'flex h-full min-h-0 flex-col overflow-hidden' : undefined}>
       <CardHeader className={compact ? 'shrink-0 px-3 py-2' : undefined}>
         <CardTitle className={compact ? 'text-sm font-medium' : undefined}>Cash Flow</CardTitle>
         {!compact && <CardDescription>Monthly inflows vs outflows</CardDescription>}
       </CardHeader>
-      <CardContent className={compact ? 'flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-0' : undefined}>
-        <ChartContainer
-          config={CASH_FLOW_CHART_CONFIG}
-          className={compact ? 'relative min-h-[160px] min-w-0 flex-1 w-full aspect-video' : 'min-h-[200px] w-full aspect-video'}
-        >
-          <BarChart data={data} margin={margin} barCategoryGap={12} accessibilityLayer>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis
-              dataKey="month"
-              tick={{ fill: 'currentColor', fontSize: tickFontSize }}
-              tickLine={{ stroke: 'currentColor' }}
-              axisLine={false}
-            />
-            <YAxis
-              tick={{ fill: 'currentColor', fontSize: tickFontSize }}
-              tickLine={{ stroke: 'currentColor' }}
-              axisLine={false}
-              tickFormatter={(value) => formatChartValue(value)}
-              width={36}
-            />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  formatter={(value, name, item) => currencyFormatter(value, String(name), item as { color?: string })}
-                />
-              }
-            />
-            <Bar
-              dataKey="inflows"
-              name="Inflows"
-              fill="var(--color-inflows)"
-              radius={[4, 4, 0, 0]}
-            />
-            <Bar
-              dataKey="outflows"
-              name="Outflows"
-              fill="var(--color-outflows)"
-              radius={[4, 4, 0, 0]}
-            />
-          </BarChart>
-        </ChartContainer>
+      <CardContent
+        className={
+          compact ? 'flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-0' : undefined
+        }
+      >
+        {isEmpty ? (
+          <EmptyState contentKey="finance.dashboard.cashFlow" variant="firstRun" constraint="2x2" />
+        ) : (
+          <ChartContainer
+            config={CASH_FLOW_CHART_CONFIG}
+            className={
+              compact
+                ? 'relative min-h-[160px] min-w-0 flex-1 w-full aspect-video'
+                : 'min-h-[200px] w-full aspect-video'
+            }
+          >
+            <BarChart data={data} margin={margin} barCategoryGap={12} accessibilityLayer>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis
+                dataKey="month"
+                tick={{ fill: 'currentColor', fontSize: tickFontSize }}
+                tickLine={{ stroke: 'currentColor' }}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fill: 'currentColor', fontSize: tickFontSize }}
+                tickLine={{ stroke: 'currentColor' }}
+                axisLine={false}
+                tickFormatter={(value) => formatChartValue(value)}
+                width={36}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name, item) =>
+                      currencyFormatter(value, String(name), item as { color?: string })
+                    }
+                  />
+                }
+              />
+              <Bar
+                dataKey="inflows"
+                name="Inflows"
+                fill="var(--color-inflows)"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="outflows"
+                name="Outflows"
+                fill="var(--color-outflows)"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );
@@ -157,72 +187,104 @@ interface RevenueExpenseChartProps {
   gridW?: number;
   /** Grid height in units (1–3). */
   gridH?: number;
+  _gridW?: number;
+  _gridH?: number;
 }
 
-export function RevenueExpenseChart({ data, compact, _gridW = 2, _gridH = 2 }: RevenueExpenseChartProps) {
-  const margin = compact ? { top: 8, right: 8, left: 0, bottom: 8 } : { top: 10, right: 10, left: 0, bottom: 0 };
+export function RevenueExpenseChart({
+  data,
+  compact,
+  _gridW = 2,
+  _gridH = 2,
+}: RevenueExpenseChartProps) {
+  const margin = compact
+    ? { top: 8, right: 8, left: 0, bottom: 8 }
+    : { top: 10, right: 10, left: 0, bottom: 0 };
   const tickFontSize = compact ? 11 : undefined;
+
+  const isEmpty = !data || data.length === 0;
+
   return (
     <Card className={compact ? 'flex h-full min-h-0 flex-col overflow-hidden' : undefined}>
       <CardHeader className={compact ? 'shrink-0 px-3 py-2' : undefined}>
-        <CardTitle className={compact ? 'text-sm font-medium' : undefined}>Revenue & Expenses</CardTitle>
+        <CardTitle className={compact ? 'text-sm font-medium' : undefined}>
+          Revenue & Expenses
+        </CardTitle>
         {!compact && <CardDescription>Monthly P&L trend</CardDescription>}
       </CardHeader>
-      <CardContent className={compact ? 'flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-0' : undefined}>
-        <ChartContainer
-          config={REVENUE_EXPENSE_CHART_CONFIG}
-          className={compact ? 'relative min-h-[160px] min-w-0 flex-1 w-full aspect-video' : 'min-h-[200px] w-full aspect-video'}
-        >
-          <AreaChart data={data} margin={margin} accessibilityLayer>
-            <defs>
-              <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--color-revenue)" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-expenses)" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="var(--color-expenses)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-            <XAxis
-              dataKey="month"
-              tick={{ fill: 'currentColor', fontSize: tickFontSize }}
-              tickLine={{ stroke: 'currentColor' }}
-              axisLine={false}
-            />
-            <YAxis
-              tick={{ fill: 'currentColor', fontSize: tickFontSize }}
-              tickLine={{ stroke: 'currentColor' }}
-              axisLine={false}
-              tickFormatter={(value) => formatChartValue(value)}
-              width={36}
-            />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  formatter={(value, name, item) => currencyFormatter(value, String(name), item as { color?: string })}
-                />
-              }
-            />
-            <Area
-              type="monotone"
-              dataKey="revenue"
-              name="Revenue"
-              stroke="var(--color-revenue)"
-              fill="url(#revenueGradient)"
-              strokeWidth={2}
-            />
-            <Area
-              type="monotone"
-              dataKey="expenses"
-              name="Expenses"
-              stroke="var(--color-expenses)"
-              fill="url(#expensesGradient)"
-              strokeWidth={2}
-            />
-          </AreaChart>
-        </ChartContainer>
+      <CardContent
+        className={
+          compact ? 'flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-0' : undefined
+        }
+      >
+        {isEmpty ? (
+          <EmptyState
+            contentKey="finance.dashboard.revenueExpense"
+            variant="firstRun"
+            constraint="2x2"
+          />
+        ) : (
+          <ChartContainer
+            config={REVENUE_EXPENSE_CHART_CONFIG}
+            className={
+              compact
+                ? 'relative min-h-[160px] min-w-0 flex-1 w-full aspect-video'
+                : 'min-h-[200px] w-full aspect-video'
+            }
+          >
+            <AreaChart data={data} margin={margin} accessibilityLayer>
+              <defs>
+                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--color-revenue)" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-expenses)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--color-expenses)" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis
+                dataKey="month"
+                tick={{ fill: 'currentColor', fontSize: tickFontSize }}
+                tickLine={{ stroke: 'currentColor' }}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fill: 'currentColor', fontSize: tickFontSize }}
+                tickLine={{ stroke: 'currentColor' }}
+                axisLine={false}
+                tickFormatter={(value) => formatChartValue(value)}
+                width={36}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name, item) =>
+                      currencyFormatter(value, String(name), item as { color?: string })
+                    }
+                  />
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                name="Revenue"
+                stroke="var(--color-revenue)"
+                fill="url(#revenueGradient)"
+                strokeWidth={2}
+              />
+              <Area
+                type="monotone"
+                dataKey="expenses"
+                name="Expenses"
+                stroke="var(--color-expenses)"
+                fill="url(#expensesGradient)"
+                strokeWidth={2}
+              />
+            </AreaChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );
@@ -234,6 +296,8 @@ interface AgingRadialChartProps {
   data: AgingBucket[];
   title: string;
   description: string;
+  /** Registry key for empty-state content. */
+  emptyStateKey: 'finance.dashboard.arAging' | 'finance.dashboard.apAging';
   /** Compact mode: fills container — for bento grid. */
   compact?: boolean;
   /** Grid width (1–3). Smaller = denser layout. */
@@ -242,21 +306,33 @@ interface AgingRadialChartProps {
   gridH?: number;
 }
 
-/** 
+/**
  * Radial bar chart for AR/AP aging — shadcn enterprise pattern.
  * Uses stacked radial bars for clear visual hierarchy per aging bucket.
  * Superior to basic donut: better separation, more professional, space-efficient.
  */
-function AgingRadialChart({ data, title, description, compact, gridW = 2, gridH = 2 }: AgingRadialChartProps) {
+function AgingRadialChart({
+  data,
+  title,
+  description,
+  emptyStateKey,
+  compact,
+  gridW = 2,
+  gridH = 2,
+}: AgingRadialChartProps) {
+  const isEmpty = !data || data.length === 0;
   const total = data.reduce((sum, bucket) => sum + bucket.amount, 0);
   const isMinimal = (gridW ?? 2) === 1 && (gridH ?? 2) === 1;
-  
+
   // Map data with fill from config (shadcn pattern — no hardcoded colors)
   const chartData = [
-    data.reduce((acc, bucket) => {
-      const key = getAgingConfigKey(bucket.range);
-      return { ...acc, [key]: bucket.amount };
-    }, {} as Record<string, number>)
+    data.reduce(
+      (acc, bucket) => {
+        const key = getAgingConfigKey(bucket.range);
+        return { ...acc, [key]: bucket.amount };
+      },
+      {} as Record<string, number>
+    ),
   ];
 
   return (
@@ -265,62 +341,71 @@ function AgingRadialChart({ data, title, description, compact, gridW = 2, gridH 
         <CardTitle className={compact ? 'text-sm font-medium' : undefined}>{title}</CardTitle>
         {!compact && <CardDescription>{description}</CardDescription>}
       </CardHeader>
-      <CardContent className={compact ? 'flex min-h-0 flex-1 items-center pb-2 px-2 pt-0' : 'flex items-center pb-0'}>
-        <ChartContainer
-          config={AGING_CHART_CONFIG}
-          className={compact ? 'mx-auto aspect-square w-full max-w-[200px]' : 'mx-auto aspect-square w-full max-w-[250px]'}
-        >
-          <RadialBarChart
-            data={chartData}
-            endAngle={180}
-            innerRadius={isMinimal ? '50%' : '60%'}
-            outerRadius={isMinimal ? '85%' : '90%'}
+      <CardContent
+        className={
+          compact ? 'flex min-h-0 flex-1 items-center pb-2 px-2 pt-0' : 'flex items-center pb-0'
+        }
+      >
+        {isEmpty ? (
+          <EmptyState contentKey={emptyStateKey} variant="firstRun" constraint="2x2" />
+        ) : (
+          <ChartContainer
+            config={AGING_CHART_CONFIG}
+            className={
+              compact
+                ? 'mx-auto aspect-square w-full max-w-[200px]'
+                : 'mx-auto aspect-square w-full max-w-[250px]'
+            }
           >
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
-              <Label
-                content={({ viewBox }) => {
-                  if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
-                    return (
-                      <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) - 16}
-                          className="fill-foreground text-2xl font-bold tabular-nums"
-                        >
-                          {formatChartValue(total)}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 4}
-                          className="fill-muted-foreground text-xs"
-                        >
-                          Total
-                        </tspan>
-                      </text>
-                    );
-                  }
-                  return null;
-                }}
-              />
-            </PolarRadiusAxis>
-            {AGING_RANGE_KEYS.map((key, _index) => (
-              <RadialBar
-                key={key}
-                dataKey={key}
-                stackId="aging"
-                cornerRadius={3}
-                fill={`var(--color-${key})`}
-                className="stroke-transparent stroke-2"
-              />
-            ))}
-          </RadialBarChart>
-        </ChartContainer>
+            <RadialBarChart
+              data={chartData}
+              endAngle={180}
+              innerRadius={isMinimal ? '50%' : '60%'}
+              outerRadius={isMinimal ? '85%' : '90%'}
+            >
+              <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+              <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+                <Label
+                  content={({ viewBox }) => {
+                    if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+                      return (
+                        <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) - 16}
+                            className="fill-foreground text-2xl font-bold tabular-nums"
+                          >
+                            {formatChartValue(total)}
+                          </tspan>
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 4}
+                            className="fill-muted-foreground text-xs"
+                          >
+                            Total
+                          </tspan>
+                        </text>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+              </PolarRadiusAxis>
+              {AGING_RANGE_KEYS.map((key, _index) => (
+                <RadialBar
+                  key={key}
+                  dataKey={key}
+                  stackId="aging"
+                  cornerRadius={3}
+                  fill={`var(--color-${key})`}
+                  className="stroke-transparent stroke-2"
+                />
+              ))}
+            </RadialBarChart>
+          </ChartContainer>
+        )}
       </CardContent>
-      {!isMinimal && (
+      {!isMinimal && !isEmpty && (
         <CardFooter className={compact ? 'px-3 pb-2 pt-1' : 'pt-0'}>
           <div className="flex flex-wrap items-center justify-center gap-2 text-[10px]">
             {AGING_RANGE_KEYS.map((key) => {
@@ -344,7 +429,17 @@ function AgingRadialChart({ data, title, description, compact, gridW = 2, gridH 
 
 // ─── AR Aging Chart ──────────────────────────────────────────────────────────
 
-export function ARAgingChart({ data, compact, gridW, gridH }: { data: AgingBucket[]; compact?: boolean; gridW?: number; gridH?: number }) {
+export function ARAgingChart({
+  data,
+  compact,
+  gridW,
+  gridH,
+}: {
+  data: AgingBucket[];
+  compact?: boolean;
+  gridW?: number;
+  gridH?: number;
+}) {
   return (
     <AgingRadialChart
       data={data}
@@ -353,13 +448,24 @@ export function ARAgingChart({ data, compact, gridW, gridH }: { data: AgingBucke
       compact={compact}
       gridW={gridW}
       gridH={gridH}
+      emptyStateKey="finance.dashboard.arAging"
     />
   );
 }
 
 // ─── AP Aging Chart ──────────────────────────────────────────────────────────
 
-export function APAgingChart({ data, compact, gridW, gridH }: { data: AgingBucket[]; compact?: boolean; gridW?: number; gridH?: number }) {
+export function APAgingChart({
+  data,
+  compact,
+  gridW,
+  gridH,
+}: {
+  data: AgingBucket[];
+  compact?: boolean;
+  gridW?: number;
+  gridH?: number;
+}) {
   return (
     <AgingRadialChart
       data={data}
@@ -368,6 +474,7 @@ export function APAgingChart({ data, compact, gridW, gridH }: { data: AgingBucke
       compact={compact}
       gridW={gridW}
       gridH={gridH}
+      emptyStateKey="finance.dashboard.apAging"
     />
   );
 }

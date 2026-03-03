@@ -21,7 +21,7 @@
   },
   "files": [
     "dist",
-    "ARCHITECTURE.@afenda-modules-finance.md"
+    "ARCHITECTURE_afenda-modules-finance.md"
   ],
   "sideEffects": false,
   "scripts": {
@@ -44,6 +44,7 @@
     "@afenda/db": "workspace:*",
     "@afenda/platform": "workspace:*",
     "@afenda/storage": "workspace:*",
+    "@afenda/supplier-kernel": "workspace:*",
     "drizzle-orm": "catalog:",
     "fastify": "catalog:",
     "zod": "catalog:"

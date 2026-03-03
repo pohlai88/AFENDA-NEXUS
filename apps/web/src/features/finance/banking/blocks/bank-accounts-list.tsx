@@ -37,7 +37,7 @@ function BankAccountCard({ account }: { account: BankAccount }) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-accent p-2">
-              <Icon className="h-5 w-5" />
+              <Icon className="h-5 w-5"  aria-hidden="true" />
             </div>
             <div>
               <CardTitle className="text-base">{account.name}</CardTitle>

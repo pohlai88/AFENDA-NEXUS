@@ -54,11 +54,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { QUICK_ACTION_PICKER_EVENT } from '../quick-action-shortcuts';
 
 // ─── CRUD Category Metadata ──────────────────────────────────────────────────
@@ -95,7 +91,7 @@ export function NavQuickActions() {
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const isMac = React.useMemo(
     () => typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent),
-    [],
+    []
   );
 
   // ─── Picker data: action-registry grouped by CRUD category ──────────────
@@ -112,7 +108,7 @@ export function NavQuickActions() {
     // Return entries sorted by category order (RBP-03: toSorted for immutability)
     return toSorted(
       Array.from(grouped.entries()),
-      ([a], [b]) => (CATEGORY_META[a]?.order ?? 99) - (CATEGORY_META[b]?.order ?? 99),
+      ([a], [b]) => (CATEGORY_META[a]?.order ?? 99) - (CATEGORY_META[b]?.order ?? 99)
     );
   }, []);
 
@@ -126,14 +122,10 @@ export function NavQuickActions() {
   return (
     <>
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel>
-          Quick Actions
-        </SidebarGroupLabel>
+        <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
         <Tooltip>
           <TooltipTrigger asChild>
-            <SidebarGroupAction
-              onClick={() => setPickerOpen(true)}
-            >
+            <SidebarGroupAction onClick={() => setPickerOpen(true)}>
               <Plus /> <span className="sr-only">Add Quick Action</span>
             </SidebarGroupAction>
           </TooltipTrigger>
@@ -194,20 +186,14 @@ export function NavQuickActions() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() =>
-                            navigator.clipboard.writeText(
-                              window.location.origin + action.href,
-                            )
+                            navigator.clipboard.writeText(window.location.origin + action.href)
                           }
                         >
                           <LinkIcon className="text-muted-foreground" />
                           <span>Copy Link</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <a
-                            href={action.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
+                          <a href={action.href} target="_blank" rel="noopener noreferrer">
                             <ArrowUpRight className="text-muted-foreground" />
                             <span>Open in New Tab</span>
                           </a>
@@ -228,7 +214,7 @@ export function NavQuickActions() {
           <DialogHeader className="sr-only">
             <DialogTitle>Add Quick Action</DialogTitle>
             <DialogDescription>
-              Pin any CRUD action as a quick-action shortcut (Ctrl+1…9).
+              Pin any CRUD action as a quick-action shortcut ({isMac ? '⌘' : 'Ctrl'}+1…9).
             </DialogDescription>
           </DialogHeader>
           <Command className="[&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group]]:px-2">
@@ -253,9 +239,7 @@ export function NavQuickActions() {
                       {catActions.map((regAction) => {
                         const RegIcon = getIcon(regAction.icon);
                         const pinned = regAction.href ? isQuickAction(regAction.href) : false;
-                        const slot = actions.find(
-                          (a) => a.href === regAction.href,
-                        )?.slot;
+                        const slot = actions.find((a) => a.href === regAction.href)?.slot;
 
                         return (
                           <CommandItem
@@ -274,11 +258,16 @@ export function NavQuickActions() {
                             className="flex items-center gap-2"
                           >
                             <RegIcon className="size-4 shrink-0 text-muted-foreground" />
-                            <span className="flex-1 truncate">
-                              {regAction.title}
-                            </span>
+                            <span className="flex-1 truncate">{regAction.title}</span>
                             {pinned && (
-                              <span className="shrink-0 text-xs text-amber-500" aria-label={slot ? `Shortcut: ${formatShortcutKey(`ctrl+${slot}`, isMac)}` : undefined}>
+                              <span
+                                className="shrink-0 text-xs text-amber-500"
+                                aria-label={
+                                  slot
+                                    ? `Shortcut: ${formatShortcutKey(`ctrl+${slot}`, isMac)}`
+                                    : undefined
+                                }
+                              >
                                 ★
                               </span>
                             )}

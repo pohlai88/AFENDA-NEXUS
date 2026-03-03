@@ -167,12 +167,12 @@ export function DrilldownBreadcrumb({ items, className }: DrilldownBreadcrumbPro
                 href={item.href}
                 className="inline-flex items-center gap-1 hover:text-foreground hover:underline transition-colors"
               >
-                <Icon className="h-3 w-3" />
+                <Icon className="h-3 w-3"  aria-hidden="true" />
                 {item.label}
               </Link>
             ) : (
               <span className="inline-flex items-center gap-1">
-                <Icon className="h-3 w-3" />
+                <Icon className="h-3 w-3"  aria-hidden="true" />
                 {item.label}
               </span>
             )}
@@ -189,5 +189,5 @@ export function DrilldownBreadcrumb({ items, className }: DrilldownBreadcrumbPro
 
 export function DocumentTypeIcon({ type, className }: { type: DrilldownLinkProps['documentType']; className?: string }) {
   const Icon = type ? iconMap[type] ?? FileText : FileText;
-  return <Icon className={cn('h-4 w-4 text-muted-foreground', className)} />;
+  return <Icon className={cn('h-4 w-4 text-muted-foreground', className)}  aria-hidden="true" />;
 }

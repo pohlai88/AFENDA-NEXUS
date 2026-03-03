@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
 import {
   getShortcutEngine,
   type ShortcutEngine,
@@ -45,7 +39,21 @@ export function ShortcutProvider({ children }: ShortcutProviderProps) {
 
   useEffect(() => {
     engine.start();
-    return () => engine.stop();
+
+    // Expose engine globally for debugging (dev only)
+    if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+      (
+        window as Window & { __AFENDA_SHORTCUT_ENGINE__?: ShortcutEngine }
+      ).__AFENDA_SHORTCUT_ENGINE__ = engine;
+    }
+
+    return () => {
+      engine.stop();
+      if (typeof window !== 'undefined' && process.env.NODE_ENV !== 'production') {
+        delete (window as Window & { __AFENDA_SHORTCUT_ENGINE__?: ShortcutEngine })
+          .__AFENDA_SHORTCUT_ENGINE__;
+      }
+    };
   }, [engine]);
 
   const value = useMemo(() => ({ engine }), [engine]);
@@ -77,7 +85,7 @@ export function useRegisterShortcut(
   keys: string,
   description: string,
   handler: () => void,
-  scope: ShortcutScope = 'global',
+  scope: ShortcutScope = 'global'
 ): void {
   const { engine } = useShortcutContext();
 

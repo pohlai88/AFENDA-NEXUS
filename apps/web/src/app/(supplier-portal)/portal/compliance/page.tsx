@@ -3,13 +3,22 @@ import { getRequestContext } from '@/lib/auth';
 import { getPortalSupplier, getPortalCompliance } from '@/features/portal/queries/portal.queries';
 import { PageHeader } from '@/components/erp/page-header';
 import { PortalComplianceSummaryBlock } from '@/features/portal/blocks/portal-compliance-summary';
+import { PortalComplianceNav } from '@/features/portal/blocks/portal-compliance-nav';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
 
-export default async function PortalCompliancePage() {
-  const ctx = await getRequestContext();
+export const metadata: Metadata = {
+  title: 'Compliance | Supplier Portal',
+};
 
+/**
+ * Async child component - enables Suspense streaming
+ * Fetches data inside the Suspense boundary for proper progressive rendering
+ */
+async function ComplianceContent({ ctx }: { ctx: RequestContext }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -25,7 +34,25 @@ export default async function PortalCompliancePage() {
   const result = await getPortalCompliance(ctx, supplier.supplierId);
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
+    <>
+      <PortalComplianceNav activeTab="summary" />
+
+      {result.ok ? (
+        <PortalComplianceSummaryBlock data={result.value} supplierId={supplier.supplierId} />
+      ) : (
+        <div className="rounded-lg border border-dashed p-12 text-center">
+          <p className="text-sm text-muted-foreground">{result.error.message}</p>
+        </div>
+      )}
+    </>
+  );
+}
+
+export default async function PortalCompliancePage() {
+  // Only await critical, non-blocking context
+  const ctx = await getRequestContext();
+
+  return (
     <div className="space-y-6">
       <PageHeader
         title="Compliance"
@@ -33,14 +60,10 @@ export default async function PortalCompliancePage() {
         breadcrumbs={[{ label: 'Portal', href: routes.portal.dashboard }, { label: 'Compliance' }]}
       />
 
-      {result.ok ? (
-        <PortalComplianceSummaryBlock data={result.value} />
-      ) : (
-        <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-sm text-muted-foreground">{result.error.message}</p>
-        </div>
-      )}
+      {/* Suspense wraps async child component for proper streaming */}
+      <Suspense fallback={<LoadingSkeleton />}>
+        <ComplianceContent ctx={ctx} />
+      </Suspense>
     </div>
-    </Suspense>
   );
 }

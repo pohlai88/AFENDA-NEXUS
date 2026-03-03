@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { ExportMenu } from '@/components/erp/export-menu';
 import { EmptyState } from '@/components/erp/empty-state';
@@ -23,11 +24,17 @@ interface TaxSummaryPageProps {
   }>;
 }
 
-export default async function TaxSummaryPage({ searchParams }: TaxSummaryPageProps) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-  const ledgerId = params.ledgerId ?? '';
-  const fromPeriodId = params.fromPeriodId ?? '';
-  const toPeriodId = params.toPeriodId ?? '';
+async function TaxSummaryContent({
+  ctx,
+  ledgerId,
+  fromPeriodId,
+  toPeriodId,
+}: {
+  ctx: RequestContext;
+  ledgerId: string;
+  fromPeriodId: string;
+  toPeriodId: string;
+}) {
   const [filterData, result] = await Promise.all([
     getReportFilterData(),
     fromPeriodId && toPeriodId
@@ -70,9 +77,34 @@ export default async function TaxSummaryPage({ searchParams }: TaxSummaryPagePro
         </Suspense>
       </div>
 
-      {(!fromPeriodId || !toPeriodId) && <EmptyState contentKey="finance.reports.taxSummary" variant="firstRun" icon={BarChart3} />}
+      {(!fromPeriodId || !toPeriodId) && (
+        <EmptyState
+          contentKey="finance.reports.taxSummary"
+          constraint="page"
+          variant="firstRun"
+          icon={BarChart3}
+        />
+      )}
 
-      { data ? <TaxSummaryTable data={data} /> : null}
+      {data ? <TaxSummaryTable data={data} /> : null}
     </div>
+  );
+}
+
+export default async function TaxSummaryPage({ searchParams }: TaxSummaryPageProps) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+  const ledgerId = params.ledgerId ?? '';
+  const fromPeriodId = params.fromPeriodId ?? '';
+  const toPeriodId = params.toPeriodId ?? '';
+
+  return (
+    <Suspense>
+      <TaxSummaryContent
+        ctx={ctx}
+        ledgerId={ledgerId}
+        fromPeriodId={fromPeriodId}
+        toPeriodId={toPeriodId}
+      />
+    </Suspense>
   );
 }

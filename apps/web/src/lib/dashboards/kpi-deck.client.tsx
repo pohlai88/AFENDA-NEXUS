@@ -90,9 +90,11 @@ function KpiDeck({
 
       <CollapsibleContent className="mt-3">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {resolvedKpis.map((data, i) => (
-            <KPICard key={data.id} catalog={catalog[i] ?? catalog[0]} data={data} />
-          ))}
+          {resolvedKpis.map((data, i) => {
+            const catalogEntry = catalog[i];
+            if (!catalogEntry) return null;
+            return <KPICard key={data.id} catalog={catalogEntry} data={data} />;
+          })}
         </div>
       </CollapsibleContent>
     </Collapsible>

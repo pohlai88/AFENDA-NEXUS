@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { ExportMenu } from '@/components/erp/export-menu';
 import { EmptyState } from '@/components/erp/empty-state';
@@ -22,12 +23,15 @@ interface ArAgingPageProps {
   }>;
 }
 
-export default async function ArAgingPage({ searchParams }: ArAgingPageProps) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-
-  const asOfDate = params.asOfDate ?? '';
-  const currency = params.currency ?? '';
-
+async function ArAgingContent({
+  ctx,
+  asOfDate,
+  currency,
+}: {
+  ctx: RequestContext;
+  asOfDate: string;
+  currency: string;
+}) {
   const [filterData, result] = await Promise.all([
     getReportFilterData(),
     asOfDate ? getArAging(ctx, { asOfDate }) : Promise.resolve(null),
@@ -69,9 +73,29 @@ export default async function ArAgingPage({ searchParams }: ArAgingPageProps) {
         </Suspense>
       </div>
 
-      {!asOfDate && <EmptyState contentKey="finance.reports.arAging" variant="firstRun" icon={BarChart3} />}
+      {!asOfDate && (
+        <EmptyState
+          contentKey="finance.reports.arAging"
+          constraint="page"
+          variant="firstRun"
+          icon={BarChart3}
+        />
+      )}
 
-      { data ? <ArAgingTable data={data} /> : null}
+      {data ? <ArAgingTable data={data} /> : null}
     </div>
+  );
+}
+
+export default async function ArAgingPage({ searchParams }: ArAgingPageProps) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  const asOfDate = params.asOfDate ?? '';
+  const currency = params.currency ?? '';
+
+  return (
+    <Suspense>
+      <ArAgingContent ctx={ctx} asOfDate={asOfDate} currency={currency} />
+    </Suspense>
   );
 }

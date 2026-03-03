@@ -33,15 +33,23 @@ function findRouteFiles(dir: string): string[] {
  *   app.post('/path', async ...
  *   app.post<...>('/path', { preHandler: ... }, async ...
  */
-function extractWriteRoutes(content: string): { line: number; text: string; hasGuard: boolean }[] {
+function extractWriteRoutes(
+  content: string
+): { line: number; text: string; path: string | null; hasGuard: boolean }[] {
   const lines = content.split('\n');
-  const results: { line: number; text: string; hasGuard: boolean }[] = [];
+  const results: { line: number; text: string; path: string | null; hasGuard: boolean }[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]!;
     // Match app.post, app.put, app.patch, app.delete (with optional generic type param)
     const match = line.match(/app\.(post|put|patch|delete)(<[^>]*>)?\s*\(/);
     if (!match) continue;
+
+    // Extract route path (first string literal after method call)
+    const pathMatch = line.match(
+      /app\.(post|put|patch|delete)(?:<[^>]*>)?\s*\(\s*['"]([^'"]+)['"]/
+    );
+    const routePath = pathMatch ? pathMatch[2] : null;
 
     // Look at this line and the next lines to find the preHandler (multi-line config blocks)
     const context = lines.slice(i, Math.min(i + 12, lines.length)).join(' ');
@@ -50,6 +58,7 @@ function extractWriteRoutes(content: string): { line: number; text: string; hasG
     results.push({
       line: i + 1,
       text: line.trim(),
+      path: routePath,
       hasGuard,
     });
   }
@@ -81,7 +90,10 @@ describe('RBAC Guard Gate — CI enforcement', () => {
     for (const file of routeFiles) {
       const content = fs.readFileSync(file, 'utf-8');
       const routes = extractWriteRoutes(content);
-      const unguarded = routes.filter((r) => !r.hasGuard);
+      // Exclude public routes (paths starting with /public/) - these are intentionally unguarded
+      const unguarded = routes.filter(
+        (r) => !r.hasGuard && (!r.path || !r.path.startsWith('/public/'))
+      );
 
       for (const route of unguarded) {
         violations.push(`${path.relative(SLICES_DIR, file)}:${route.line} — ${route.text}`);

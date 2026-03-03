@@ -12,11 +12,22 @@ import { routes } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { ArrowLeftRight, Plus } from 'lucide-react';
 
-type Params = { status?: string; q?: string; from?: string; to?: string; page?: string; limit?: string };
+type Params = {
+  status?: string;
+  q?: string;
+  from?: string;
+  to?: string;
+  page?: string;
+  limit?: string;
+};
 
 export async function IcListSection({ params }: { params: Params }) {
   const ctx = await getRequestContext();
-  const result = await getIcTransactions(ctx, { status: params.status, page: params.page ?? '1', limit: params.limit ?? '20' });
+  const result = await getIcTransactions(ctx, {
+    status: params.status,
+    page: params.page ?? '1',
+    limit: params.limit ?? '20',
+  });
   if (!result.ok) handleApiError(result, 'Failed to load intercompany transactions');
   const { data: transactions, total, page, limit } = result.value;
 
@@ -38,15 +49,24 @@ export async function IcListSection({ params }: { params: Params }) {
       ) : (
         <EmptyState
           contentKey="finance.intercompany"
+          constraint="table"
           icon={ArrowLeftRight}
           action={
             <Button asChild>
-              <Link href={routes.finance.icTransactionNew}><Plus className="mr-2 h-4 w-4" aria-hidden="true" />Create IC Transaction</Link>
+              <Link href={routes.finance.icTransactionNew}>
+                <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                Create IC Transaction
+              </Link>
             </Button>
           }
         />
       )}
-      <Pagination page={page} pageSize={limit} totalCount={total} buildHref={(p) => buildListHref(routes.finance.icTransactions, params, p)} />
+      <Pagination
+        page={page}
+        pageSize={limit}
+        totalCount={total}
+        buildHref={(p) => buildListHref(routes.finance.icTransactions, params, p)}
+      />
     </>
   );
 }

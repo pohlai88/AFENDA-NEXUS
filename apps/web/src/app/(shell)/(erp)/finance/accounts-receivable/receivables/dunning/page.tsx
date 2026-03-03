@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
@@ -17,8 +18,13 @@ interface Props {
   searchParams: Promise<{ page?: string; limit?: string }>;
 }
 
-export default async function DunningPage({ searchParams }: Props) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+async function DunningContent({
+  ctx,
+  params,
+}: {
+  ctx: RequestContext;
+  params: { page?: string; limit?: string };
+}) {
   const result = await getDunningRuns(ctx, {
     page: params.page ?? '1',
     limit: params.limit ?? '20',
@@ -31,7 +37,6 @@ export default async function DunningPage({ searchParams }: Props) {
   const runs = result.value.data;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Dunning"
@@ -52,11 +57,24 @@ export default async function DunningPage({ searchParams }: Props) {
       />
 
       {runs.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No dunning runs yet. Click &ldquo;Run Dunning&rdquo; to start.</CardContent></Card>
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            No dunning runs yet. Click &ldquo;Run Dunning&rdquo; to start.
+          </CardContent>
+        </Card>
       ) : (
         <DunningRunsTable runs={runs} />
       )}
     </div>
-  </Suspense>
+  );
+}
+
+export default async function DunningPage({ searchParams }: Props) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <DunningContent ctx={ctx} params={params} />
+    </Suspense>
   );
 }

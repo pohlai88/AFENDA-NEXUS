@@ -13,7 +13,7 @@
 #   1. Composite setup action — DRY checkout/pnpm/node/install/Turbo cache
 #   2. Turbo local-cache shared across runs via actions/cache
 #   3. Path-based filtering — docs-only PRs skip all heavy jobs
-#   4. Parallel gate runner — 30 gates run concurrently (~5-10× faster)
+#   4. Parallel gate runner — 42 gates run concurrently (~5-10× faster)
 #   5. Test result publishing — JUnit XML → GitHub check annotations
 #   6. Coverage artifact upload for downstream analysis
 #   7. Job summaries via GITHUB_STEP_SUMMARY
@@ -142,7 +142,7 @@ jobs:
           fail-on-error: false
 
   # ─── Governance & Drift Guards (Parallel) ─────────────────────────────
-  # All 22 gates run concurrently via the parallel gate runner for a
+  # All 42 gates run concurrently via the parallel gate runner for a
   # ~5-10× speedup over sequential execution. Output includes a
   # GitHub Actions Job Summary with pass/fail table.
   guards:
@@ -155,7 +155,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
 
-      - name: Run all gates in parallel (35 gates)
+      - name: Run all gates in parallel (42 gates)
         run: node tools/scripts/run-gates-parallel.mjs
         env:
           CI: true

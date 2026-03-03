@@ -1,0 +1,244 @@
+---
+description: Supplier Portal 2.0 coding rules — architecture, identity, SoD, imports, SP-* tracking
+globs:
+  [
+    'packages/supplier-kernel/**',
+    'packages/contracts/src/portal/**',
+    'packages/db/src/schema/portal-*',
+    'packages/modules/finance/src/slices/ap/services/supplier-portal-*',
+    'packages/modules/finance/src/slices/ap/routes/supplier-portal-*',
+    'apps/web/src/app/(supplier-portal)/**',
+  ]
+alwaysApply: false
+---
+
+# Supplier Portal 2.0 — Coding Rules
+
+Reference plan: `docs/supplier-portal2.0-V2.md`
+
+---
+
+## 1. Package & Import Boundaries
+
+### SP-IMPORT-01: Kernel is a standalone package
+
+`@afenda/supplier-kernel` lives in `packages/supplier-kernel/`.
+It may depend on `@afenda/contracts`, `@afenda/authz`, `@afenda/core` (port
+interfaces only). It must **never** import from:
+
+- `packages/modules/finance/` (no AP coupling)
+- `apps/web/` (no frontend coupling)
+
+```typescript
+// ✅ OK
+import { PortalRequestContext } from '@afenda/supplier-kernel';
+import { ListResponseSchema } from '@afenda/contracts';
+
+// ❌ FORBIDDEN — kernel importing from AP module
+import { something } from '@afenda/modules/finance';
+```
+
+### SP-IMPORT-02: Module services consume kernel, not the other way around
+
+Services in `packages/modules/finance/src/slices/ap/services/supplier-portal-*`
+import from `@afenda/supplier-kernel`. The kernel never imports from services.
+
+---
+
+## 2. Identity — PortalRequestContext (SP-1010)
+
+### SP-IDENTITY-01: Single identity source
+
+Every portal service must receive identity through `PortalRequestContext`.
+Services **never** construct their own identity or call
+`resolveSupplierIdentity()` directly.
+
+```typescript
+// ✅ Correct — context passed as dependency
+async function submitCase(ctx: PortalRequestContext, dto: CreateCaseDto) {
+  // ctx.tenantId, ctx.supplierId, ctx.portalRole are pre-resolved
+}
+
+// ❌ Wrong — service resolving its own identity
+async function submitCase(supplierId: string) {
+  const identity = await resolveSupplierIdentity(supplierId);
+}
+```
+
+### SP-IDENTITY-02: Context is immutable
+
+`PortalRequestContext` is `readonly`. Never mutate fields after construction in
+the Fastify `preHandler` hook.
+
+---
+
+## 3. Idempotency (SP-1009)
+
+### SP-IDEMP-01: All mutation endpoints must support Idempotency-Key
+
+```typescript
+// ✅ Route handler pattern
+const idempotencyKey = request.headers['idempotency-key'];
+const cached = await idempotencyStore.claimOrGet(idempotencyKey, scope);
+if (cached.hit) return cached.result;
+// ... execute command ...
+await idempotencyStore.recordOutcome(idempotencyKey, result);
+```
+
+Query (GET) endpoints do not need idempotency.
+
+---
+
+## 4. Status Dictionary (SP-1003) — Supplier-Safe Language
+
+### SP-LANG-01: All supplier-visible text from Status Dictionary
+
+Every status label, hold reason, error message, and badge text rendered to the
+supplier **must** resolve through the Status Dictionary. No ad-hoc strings.
+
+```typescript
+// ✅ Correct
+const label = statusDictionary.get(paymentFact.holdReason);
+
+// ❌ Wrong — hardcoded label leaks internal terminology
+return { label: 'FRAUD_SUSPICION' };
+```
+
+### SP-LANG-02: Never expose internal hold reasons
+
+Internal labels like `FRAUD_SUSPICION`, `SANCTIONS_HIT`, `AML_REVIEW` must map
+to supplier-safe equivalents (`"Verification pending"`, `"Under review"`).
+
+---
+
+## 5. Separation of Duties (SoD)
+
+### SP-SOD-01: Portal SoD rules follow FINANCE_SOD_RULES pattern
+
+SoD is pure data in `PORTAL_SOD_RULES[]`, enforced via `requireSoD()` guard.
+Same shape as `packages/modules/finance/src/shared/authorization/sod-rules.ts`.
+
+### SP-SOD-02: Two-person control for critical actions
+
+- `bank_account:propose` ≠ `bank_account:approve`
+- `api_key:create` ≠ `api_key:activate`
+- `case:resolve` ≠ `case:reopen`
+
+### SP-SOD-03: PORTAL_READONLY cannot escalate
+
+`PORTAL_READONLY` role must not have `ESCALATE` permission. Breakglass (P19)
+requires `PORTAL_OWNER` or `PORTAL_FINANCE`.
+
+---
+
+## 6. Unified Case Timeline (D7 invariant)
+
+### SP-TIMELINE-01: Messages always anchor to a case
+
+A message without explicit case context creates an implicit "general inquiry"
+case. There is no standalone messaging — messages are `supplier_case_timeline`
+entries of type `message`.
+
+### SP-TIMELINE-02: Single storage truth — no dual-writing
+
+Source entities (`supplier_message`, `supplier_document`, etc.) store domain
+data. The timeline table references them via `ref_id` + `ref_type`. Never
+duplicate full content into the timeline `content` JSONB — only summaries.
+
+### SP-TIMELINE-03: Timeline + source in same transaction
+
+When creating a source entity (message, escalation, attachment), the
+corresponding `supplier_case_timeline` insert must happen in the **same DB
+transaction**. No eventual consistency for timeline entries.
+
+---
+
+## 7. Proof Chain (SP-1006)
+
+### SP-PROOF-01: Writer in same transaction as event
+
+The proof chain writer (`SP-1006`) must be called in the same DB transaction as
+the event it proves. If the event commits but proof fails → broken chain.
+
+### SP-PROOF-02: Deterministic hash input
+
+Hash formula is fixed:
+`SHA-256(id + event_type + entity_type + entity_id + actor_type + actor_id + event_at_ISO + canonical_JSON + previous_hash)`
+
+Never change field order or add fields without updating the formula in both
+writer and verifier.
+
+---
+
+## 8. SP-\* Tracking
+
+### SP-TRACK-01: SP codes track files/components, not minor changes
+
+SP codes are assigned per **file or component** (schema, table, service, route,
+page, test suite). Not per bug fix or style tweak.
+
+### SP-TRACK-02: Kernel items always get SP codes
+
+Every file in `packages/supplier-kernel/` must have an SP-1xxx code.
+
+### SP-TRACK-03: Commit message format
+
+```
+feat(SP-1001): wire portal identity resolver
+fix(SP-1003): correct hold reason mapping for MANUAL_HOLD
+```
+
+Reference the existing SP code when modifying an SP-tracked file.
+
+---
+
+## 9. Route & Page Convention
+
+### SP-ROUTE-01: Every portal page needs loading + error
+
+Every `page.tsx` under `(supplier-portal)` must have sibling `loading.tsx` and
+`error.tsx`. Enforced by `gate-web-module.mjs`.
+
+### SP-ROUTE-02: Lists use PortalDataTable
+
+All list views use `PortalDataTable` wrapper (pagination, filters, sort, empty
+state). No per-page custom table implementations.
+
+### SP-ROUTE-03: Query files per domain
+
+Portal queries are split into per-domain files (e.g., `case.queries.ts`,
+`invoice.queries.ts`). No monolith query file.
+
+---
+
+## 10. Rate Limiting
+
+### SP-RATE-01: All mutations rate-limited
+
+Rate limiting middleware on every portal mutation route, keyed by
+`actorFingerprint` (IP + UA hash). Per-API-key limits for `CAP-API`.
+
+---
+
+## Skills Reference
+
+- Plan: `docs/supplier-portal2.0-V2.md`
+- SoD patterns: `.agents/skills/better-auth-security-best-practices/`
+- Drizzle + RLS: `.agents/skills/drizzle/`
+- Zod contracts: `.agents/skills/zod/`
+
+---
+
+## 11. Inherited ESLint Rules (portal code inherits these)
+
+Portal code runs through three ESLint layers. Key rules agents must know:
+
+| ID        | What                                                | Scope             | Impact on portal                                      |
+| --------- | --------------------------------------------------- | ----------------- | ----------------------------------------------------- |
+| CIG-02    | No float math on money (`Number()`, `parseFloat()`) | Finance module    | Portal SCF / payments must use `convertAmountPrecise` |
+| CIG-03    | No `req.query as Record` / `req.params` casts       | Finance module    | Portal routes must use Zod `.parse()`                 |
+| CIG-04    | Routes/pages cannot import `@afenda/db` directly    | Base config (all) | Portal pages/routes use composition root only         |
+| RBP-03    | Use `.toSorted()` not `.sort()`                     | Web app           | Portal list sorting must be immutable                 |
+| RBP-CACHE | Server fetchers must use `cache()`                  | Web app           | Portal server fetchers need `cache()` wrapper         |
+
+See `portal-ci-gates.mdc` for the complete inherited rule table.

@@ -93,6 +93,18 @@
           },
           "default": [],
           "description": "Additional entity fields beyond the standard set"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable singular name (e.g. 'AP Invoice'). Defaults to toTitleCase(name)."
+        },
+        "displayPlural": {
+          "type": "string",
+          "description": "Human-readable plural name (e.g. 'AP Invoices'). Defaults to pluralize(displayName)."
+        },
+        "emptyStateDescription": {
+          "type": "string",
+          "description": "Description for generated empty-state entries (e.g. 'Track and manage supplier invoices'). Defaults to 'Create your first {displayName} to get started.'"
         }
       }
     },

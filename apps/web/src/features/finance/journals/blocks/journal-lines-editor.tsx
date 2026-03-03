@@ -87,10 +87,10 @@ export function JournalLinesEditor({ form }: JournalLinesEditorProps) {
         description: prevLine.description ?? '',
         debit: prevLine.debit ?? 0,
         credit: prevLine.credit ?? 0,
-        currency: prevLine.currency ?? 'USD',
+        currency: prevLine.currency ?? '',
       });
     },
-    [lines, form],
+    [lines, form]
   );
   const totalDebit = lines?.reduce((sum, l) => sum + (l.debit || 0), 0) ?? 0;
   const totalCredit = lines?.reduce((sum, l) => sum + (l.credit || 0), 0) ?? 0;

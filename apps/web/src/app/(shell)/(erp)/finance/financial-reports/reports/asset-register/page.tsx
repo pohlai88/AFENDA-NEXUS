@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { ExportMenu } from '@/components/erp/export-menu';
 import { EmptyState } from '@/components/erp/empty-state';
@@ -22,12 +23,15 @@ interface AssetRegisterPageProps {
   }>;
 }
 
-export default async function AssetRegisterPage({ searchParams }: AssetRegisterPageProps) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-
-  const asOfDate = params.asOfDate ?? '';
-  const currency = params.currency ?? '';
-
+async function AssetRegisterContent({
+  ctx,
+  asOfDate,
+  currency,
+}: {
+  ctx: RequestContext;
+  asOfDate: string;
+  currency: string;
+}) {
   const [filterData, result] = await Promise.all([
     getReportFilterData(),
     asOfDate ? getAssetRegister(ctx, { asOfDate }) : Promise.resolve(null),
@@ -69,9 +73,29 @@ export default async function AssetRegisterPage({ searchParams }: AssetRegisterP
         </Suspense>
       </div>
 
-      {!asOfDate && <EmptyState contentKey="finance.reports.assetRegister" variant="firstRun" icon={BarChart3} />}
+      {!asOfDate && (
+        <EmptyState
+          contentKey="finance.reports.assetRegister"
+          constraint="page"
+          variant="firstRun"
+          icon={BarChart3}
+        />
+      )}
 
-      { data ? <AssetRegisterTable data={data} /> : null}
+      {data ? <AssetRegisterTable data={data} /> : null}
     </div>
+  );
+}
+
+export default async function AssetRegisterPage({ searchParams }: AssetRegisterPageProps) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  const asOfDate = params.asOfDate ?? '';
+  const currency = params.currency ?? '';
+
+  return (
+    <Suspense>
+      <AssetRegisterContent ctx={ctx} asOfDate={asOfDate} currency={currency} />
+    </Suspense>
   );
 }

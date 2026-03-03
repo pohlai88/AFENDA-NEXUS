@@ -23,12 +23,7 @@ interface ApWhtCertificateTableProps {
 
 export function ApWhtCertificateTable({ data }: ApWhtCertificateTableProps) {
   if (data.length === 0) {
-    return (
-      <EmptyState
-        contentKey="finance.payables.whtCerts"
-        icon={FileText}
-      />
-    );
+    return <EmptyState contentKey="finance.payables.whtCerts" constraint="table" icon={FileText} />;
   }
 
   return (
@@ -63,7 +58,9 @@ export function ApWhtCertificateTable({ data }: ApWhtCertificateTableProps) {
                 }
               }}
             >
-              <TableCell className="font-mono text-sm font-medium">{cert.certificateNumber}</TableCell>
+              <TableCell className="font-mono text-sm font-medium">
+                {cert.certificateNumber}
+              </TableCell>
               <TableCell>
                 <Link
                   href={routes.finance.supplierDetail(cert.supplierId)}
@@ -89,7 +86,10 @@ export function ApWhtCertificateTable({ data }: ApWhtCertificateTableProps) {
                 <DateCell date={cert.issueDate} format="short" />
               </TableCell>
               <TableCell>
-                <Badge variant={cert.status === 'ISSUED' ? 'default' : 'destructive'} className="text-xs">
+                <Badge
+                  variant={cert.status === 'ISSUED' ? 'default' : 'destructive'}
+                  className="text-xs"
+                >
                   {cert.status}
                 </Badge>
               </TableCell>

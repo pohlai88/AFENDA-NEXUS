@@ -1,7 +1,12 @@
 'use client';
 
 import { ChartCard } from '@/components/charts/chart-card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { formatChartValue } from './chart-utils';
 import type { ChartParams, DrilldownTarget } from '@/components/charts';
@@ -26,6 +31,9 @@ interface WorkingCapitalChartProps {
   lastUpdated?: string;
   isLoading?: boolean;
   error?: Error | null;
+  _params?: unknown;
+  _gridW?: number;
+  _gridH?: number;
 }
 
 const WC_CONFIG = {
@@ -36,14 +44,14 @@ const WC_CONFIG = {
 
 /**
  * Working Capital Components Chart
- * 
+ *
  * Enterprise working capital visualization (SAP Fiori pattern):
  * - Current Assets (bar)
  * - Current Liabilities (bar)
  * - Net Working Capital (line)
- * 
+ *
  * Net WC = Current Assets - Current Liabilities
- * 
+ *
  * Drilldown: Balance sheet
  */
 export function WorkingCapitalChart({
@@ -57,7 +65,9 @@ export function WorkingCapitalChart({
   isLoading,
   error,
 }: WorkingCapitalChartProps) {
-  const margin = compact ? { top: 10, right: 8, left: 0, bottom: 8 } : { top: 10, right: 10, left: 0, bottom: 0 };
+  const margin = compact
+    ? { top: 10, right: 8, left: 0, bottom: 8 }
+    : { top: 10, right: 10, left: 0, bottom: 0 };
   const tickFontSize = compact ? 10 : 12;
 
   return (
@@ -69,6 +79,7 @@ export function WorkingCapitalChart({
       isEmpty={!data || data.length === 0}
       error={error}
       compact={compact}
+      emptyStateKey="finance.dashboard.workingCapital"
     >
       <ChartContainer
         config={WC_CONFIG}
@@ -112,12 +123,7 @@ export function WorkingCapitalChart({
               />
             }
           />
-          {!compact && (
-            <Legend
-              wrapperStyle={{ fontSize: '12px' }}
-              iconType="circle"
-            />
-          )}
+          {!compact && <Legend wrapperStyle={{ fontSize: '12px' }} iconType="circle" />}
           <Bar
             dataKey="currentAssets"
             fill="var(--chart-5)"

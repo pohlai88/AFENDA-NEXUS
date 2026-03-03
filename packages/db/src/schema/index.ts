@@ -21,6 +21,7 @@ export {
   apHoldTypeEnum,
   apHoldStatusEnum,
   apInvoiceStatusEnum,
+  apInvoiceTypeEnum,
   paymentRunStatusEnum,
   arInvoiceStatusEnum,
   dunningRunStatusEnum,
@@ -98,8 +99,34 @@ export {
   supplierContactRoleEnum,
   supplierDuplicateMatchTypeEnum,
   supplierDuplicateStatusEnum,
+  caseStatusEnum,
+  caseCategoryEnum,
+  casePriorityEnum,
+  caseTimelineEntryTypeEnum,
+  caseLinkedEntityTypeEnum,
+  portalActorTypeEnum,
+  proofEventTypeEnum,
+  complianceAlertTypeEnum,
+  locationTypeEnum,
+  departmentEnum,
+  invitationStatusEnum,
+  senderTypeEnum,
+  announcementSeverityEnum,
+  meetingRequestStatusEnum,
+  meetingTypeEnum,
+  paymentStageEnum,
+  paymentSourceEnum,
+  holdReasonEnum,
 } from './_enums';
-export { tenants, companies, users, userPreferences, systemConfig, adminUsers, adminActionLogs } from './platform';
+export {
+  tenants,
+  companies,
+  users,
+  userPreferences,
+  systemConfig,
+  adminUsers,
+  adminActionLogs,
+} from './platform';
 export {
   accounts,
   counterparties,
@@ -226,4 +253,19 @@ export {
   notificationStatusEnum,
   notificationCategoryEnum,
 } from './notification';
+export { supplierCases, supplierCaseTimeline, portalCommunicationProof } from './portal-case';
+export { supplierOnboardingSubmissions } from './portal-onboarding';
+export { supplierComplianceAlertLog } from './portal-compliance-alert';
+export {
+  portalCompanyLocations,
+  portalDirectoryEntries,
+  portalSupplierInvitations,
+} from './portal-location-directory';
+export { supplierMessageThreads, supplierMessages } from './portal-messaging';
+export { supplierEscalations } from './portal-escalation';
+export { portalAnnouncements } from './portal-announcement';
+export { portalMeetingRequests } from './portal-meeting-request';
+export { supplierPaymentStatusFacts, earlyPaymentOffers } from './portal-payment-status';
+export { portalBrandConfig } from './portal-brand-config';
+export { portalWebhookSubscription, webhookStatusEnum } from './portal-webhook-subscription';
 export * from './relations';

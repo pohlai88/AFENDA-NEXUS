@@ -89,11 +89,7 @@ export function ApDuplicateReviewTable({ data }: ApDuplicateReviewTableProps) {
 
   if (data.length === 0) {
     return (
-      <EmptyState
-        icon={Copy}
-        title="No duplicate holds"
-        description="Invoices flagged as potential duplicates will appear here for review."
-      />
+      <EmptyState contentKey="finance.payables.duplicates" variant="noResults" constraint="table" />
     );
   }
 
@@ -142,11 +138,7 @@ export function ApDuplicateReviewTable({ data }: ApDuplicateReviewTableProps) {
                         <Copy className="mr-1 h-3 w-3" />
                         Compare
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setReleaseTarget(hold)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setReleaseTarget(hold)}>
                         <Unlock className="mr-1 h-3 w-3" />
                         Release
                       </Button>
@@ -175,15 +167,12 @@ export function ApDuplicateReviewTable({ data }: ApDuplicateReviewTableProps) {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {invoices.map((inv) => (
-                <div
-                  key={inv.id}
-                  className="rounded-lg border p-4 space-y-2"
-                >
+                <div key={inv.id} className="rounded-lg border p-4 space-y-2">
                   <div className="font-mono font-medium">{inv.invoiceNumber}</div>
                   <div className="text-sm text-muted-foreground">{inv.supplierName}</div>
                   <div className="text-sm">
-                    <span className="text-muted-foreground">Amount:</span>{' '}
-                    {inv.totalAmount} {inv.currencyCode}
+                    <span className="text-muted-foreground">Amount:</span> {inv.totalAmount}{' '}
+                    {inv.currencyCode}
                   </div>
                   <div className="text-sm">
                     <span className="text-muted-foreground">Date:</span> {inv.invoiceDate}
@@ -239,11 +228,8 @@ export function ApDuplicateReviewTable({ data }: ApDuplicateReviewTableProps) {
             <Button variant="outline" onClick={() => setReleaseTarget(null)} disabled={isPending}>
               Cancel
             </Button>
-            <Button
-              onClick={handleRelease}
-              disabled={isPending || !releaseReason.trim()}
-            >
-              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            <Button onClick={handleRelease} disabled={isPending || !releaseReason.trim()}>
+              {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Release Hold
             </Button>
           </DialogFooter>

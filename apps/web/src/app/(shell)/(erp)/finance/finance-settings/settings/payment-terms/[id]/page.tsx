@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
+import type { RequestContext } from '@afenda/core';
 import { handleApiError } from '@/lib/api-error.server';
 import { getPaymentTermsById } from '@/features/finance/settings/queries/settings.queries';
 import { PaymentTermsLinesTable } from '@/features/finance/settings/blocks/payment-terms-lines-table';
@@ -20,8 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${result.value.code} — ${result.value.name} | Payment Terms` };
 }
 
-export default async function PaymentTermsDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function PaymentTermsDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getPaymentTermsById(ctx, id);
 
   if (!result.ok) {
@@ -32,7 +32,6 @@ export default async function PaymentTermsDetailPage({ params }: Props) {
   const terms = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title={`${terms.code} — ${terms.name}`}
@@ -47,10 +46,30 @@ export default async function PaymentTermsDetailPage({ params }: Props) {
       <BusinessDocument
         header={
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div><span className="text-xs text-muted-foreground">Due Days</span><p className="font-medium">{terms.dueDays}</p></div>
-            <div><span className="text-xs text-muted-foreground">Discount</span><p className="font-medium">{terms.discountPercent != null ? `${terms.discountPercent}% / ${terms.discountDays} days` : '—'}</p></div>
-            <div><span className="text-xs text-muted-foreground">Status</span><p><Badge variant={terms.isActive ? 'default' : 'secondary'}>{terms.isActive ? 'Active' : 'Inactive'}</Badge></p></div>
-            <div><span className="text-xs text-muted-foreground">Description</span><p className="font-medium">{terms.description ?? '—'}</p></div>
+            <div>
+              <span className="text-xs text-muted-foreground">Due Days</span>
+              <p className="font-medium">{terms.dueDays}</p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Discount</span>
+              <p className="font-medium">
+                {terms.discountPercent != null
+                  ? `${terms.discountPercent}% / ${terms.discountDays} days`
+                  : '—'}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Status</span>
+              <p>
+                <Badge variant={terms.isActive ? 'default' : 'secondary'}>
+                  {terms.isActive ? 'Active' : 'Inactive'}
+                </Badge>
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Description</span>
+              <p className="font-medium">{terms.description ?? '—'}</p>
+            </div>
           </div>
         }
         tabs={[
@@ -62,6 +81,15 @@ export default async function PaymentTermsDetailPage({ params }: Props) {
         ]}
       />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function PaymentTermsDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PaymentTermsDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

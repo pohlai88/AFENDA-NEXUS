@@ -56,6 +56,24 @@ export class DrizzleSupplierComplianceRepo implements ISupplierComplianceRepo {
     return rows.map(mapToDomain);
   }
 
+  async findExpiringByTenant(tenantId: string): Promise<readonly SupplierComplianceItem[]> {
+    const now = new Date();
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    const thirtyDaysFromNow = new Date(now.getTime() + thirtyDaysMs);
+
+    const rows = await this.tx.query.supplierComplianceItems.findMany({
+      where: (t, { eq, and, lte, isNotNull, gte }) =>
+        and(
+          eq(t.tenantId, tenantId),
+          isNotNull(t.expiresAt),
+          lte(t.expiresAt, thirtyDaysFromNow),
+          gte(t.expiresAt, now)
+        ),
+    });
+
+    return rows.map(mapToDomain);
+  }
+
   async findById(id: string): Promise<SupplierComplianceItem | null> {
     const row = await this.tx.query.supplierComplianceItems.findFirst({
       where: eq(supplierComplianceItems.id, id),

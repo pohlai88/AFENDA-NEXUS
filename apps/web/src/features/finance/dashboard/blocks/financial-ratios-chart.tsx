@@ -15,12 +15,12 @@ interface RatioGaugeData {
   value: number;
   target?: number;
   threshold: {
-    danger: number;    // Red zone
-    warning: number;   // Yellow zone
-    success: number;   // Green zone
+    danger: number; // Red zone
+    warning: number; // Yellow zone
+    success: number; // Green zone
   };
   unit: 'ratio' | 'percent' | 'days';
-  definition: string;  // Tooltip explanation
+  definition: string; // Tooltip explanation
 }
 
 interface FinancialRatiosChartProps {
@@ -33,6 +33,10 @@ interface FinancialRatiosChartProps {
   lastUpdated?: string;
   isLoading?: boolean;
   error?: Error | null;
+  _params?: unknown;
+  _gridW?: number;
+  _gridH?: number;
+  _onDrilldown?: (target: DrilldownTarget) => void;
 }
 
 const RATIOS_CONFIG = {
@@ -45,7 +49,7 @@ const RATIOS_CONFIG = {
  */
 function RatioGauge({ ratio, compact }: { ratio: RatioGaugeData; compact?: boolean }) {
   const percentage = Math.min((ratio.value / ratio.threshold.success) * 100, 100);
-  
+
   // Determine zone color
   const getZoneColor = (value: number) => {
     if (value >= ratio.threshold.success) return 'var(--gauge-success)';
@@ -65,10 +69,7 @@ function RatioGauge({ ratio, compact }: { ratio: RatioGaugeData; compact?: boole
 
   return (
     <div className={cn('flex flex-col', compact ? 'gap-1' : 'gap-2')}>
-      <ChartContainer
-        config={RATIOS_CONFIG}
-        className={compact ? 'h-[100px]' : 'h-[140px]'}
-      >
+      <ChartContainer config={RATIOS_CONFIG} className={compact ? 'h-[100px]' : 'h-[140px]'}>
         <RadialBarChart
           data={chartData}
           startAngle={180}
@@ -81,29 +82,25 @@ function RatioGauge({ ratio, compact }: { ratio: RatioGaugeData; compact?: boole
               content={({ viewBox }) => {
                 if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
                   return (
-                    <text
-                      x={viewBox.cx}
-                      y={viewBox.cy}
-                      textAnchor="middle"
-                    >
+                    <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
                       <tspan
                         x={viewBox.cx}
                         y={(viewBox.cy || 0) - 8}
                         className="fill-foreground text-2xl font-bold"
                       >
-                        {ratio.unit === 'ratio' 
+                        {ratio.unit === 'ratio'
                           ? ratio.value.toFixed(2)
                           : ratio.unit === 'percent'
-                          ? `${ratio.value.toFixed(1)}%`
-                          : `${ratio.value.toFixed(0)}d`
-                        }
+                            ? `${ratio.value.toFixed(1)}%`
+                            : `${ratio.value.toFixed(0)}d`}
                       </tspan>
                       <tspan
                         x={viewBox.cx}
                         y={(viewBox.cy || 0) + 12}
                         className="fill-muted-foreground text-xs"
                       >
-                        {ratio.target && `Target: ${ratio.target.toFixed(ratio.unit === 'ratio' ? 2 : 0)}`}
+                        {ratio.target &&
+                          `Target: ${ratio.target.toFixed(ratio.unit === 'ratio' ? 2 : 0)}`}
                       </tspan>
                     </text>
                   );
@@ -111,11 +108,7 @@ function RatioGauge({ ratio, compact }: { ratio: RatioGaugeData; compact?: boole
               }}
             />
           </PolarRadiusAxis>
-          <RadialBar
-            dataKey="value"
-            cornerRadius={compact ? 4 : 6}
-            fill={zoneColor}
-          />
+          <RadialBar dataKey="value" cornerRadius={compact ? 4 : 6} fill={zoneColor} />
         </RadialBarChart>
       </ChartContainer>
       <div className="text-center space-y-1">
@@ -132,14 +125,14 @@ function RatioGauge({ ratio, compact }: { ratio: RatioGaugeData; compact?: boole
 
 /**
  * Financial Ratios Dial Chart
- * 
+ *
  * Enterprise gauges for key financial ratios:
  * - Current Ratio
  * - Quick Ratio
  * - DSO (Days Sales Outstanding)
  * - Debt-to-Equity
  * - Hedge Effectiveness
- * 
+ *
  * Each gauge shows:
  * - Current value
  * - Target (dashed line)
@@ -166,11 +159,9 @@ export function FinancialRatiosChart({
       isEmpty={!data || data.length === 0}
       error={error}
       compact={compact}
+      emptyStateKey="finance.dashboard.financialRatios"
     >
-      <div className={cn(
-        'grid gap-4',
-        compact ? 'grid-cols-2' : 'grid-cols-3 lg:grid-cols-4'
-      )}>
+      <div className={cn('grid gap-4', compact ? 'grid-cols-2' : 'grid-cols-3 lg:grid-cols-4')}>
         {data.map((ratio) => (
           <RatioGauge key={ratio.metricId} ratio={ratio} compact={compact} />
         ))}

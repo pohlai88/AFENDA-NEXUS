@@ -161,7 +161,9 @@ export const getReconciliationSession = cache(async (
 
   const sessions = result.value;
   if (!sessions.length) return { ok: false, error: 'No reconciliation session found for this statement' };
-  return { ok: true, data: sessions[0] };
+  const session = sessions[0];
+  if (!session) return { ok: false, error: 'No reconciliation session found for this statement' };
+  return { ok: true, data: session };
 });
 
 export const getReconciliationStats = cache(async (

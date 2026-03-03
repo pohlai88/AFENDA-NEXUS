@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { ExportMenu } from '@/components/erp/export-menu';
 import { EmptyState } from '@/components/erp/empty-state';
@@ -16,7 +17,10 @@ import {
 import { ReportFilterBar } from '@/features/finance/reports/blocks/report-filter-bar';
 import { getReportFilterData } from '@/features/finance/reports/blocks/report-filter-data';
 import { ReportSavedViews } from '@/features/finance/reports/blocks/report-saved-views';
-import { VarianceAlertsPanel, BudgetVarianceTable } from '@/features/finance/budgets/blocks/budget-variance-blocks';
+import {
+  VarianceAlertsPanel,
+  BudgetVarianceTable,
+} from '@/features/finance/budgets/blocks/budget-variance-blocks';
 import { BarChart3 } from 'lucide-react';
 
 export const metadata = { title: 'Budget Variance Report' };
@@ -25,22 +29,31 @@ interface BudgetVariancePageProps {
   searchParams: Promise<{ ledgerId?: string; periodId?: string }>;
 }
 
-export default async function BudgetVariancePage({ searchParams }: BudgetVariancePageProps) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-  const ledgerId = params.ledgerId ?? '';
-  const periodId = params.periodId ?? '';
-
+async function BudgetVarianceContent({
+  ctx,
+  ledgerId,
+  periodId,
+}: {
+  ctx: RequestContext;
+  ledgerId: string;
+  periodId: string;
+}) {
   const [filterData, ...reportResults] = await Promise.all([
     getReportFilterData(),
     ...(ledgerId && periodId
-      ? [getBudgetVariance(ctx, { ledgerId, periodId }), getVarianceAlerts(ctx, { ledgerId, periodId })]
+      ? [
+          getBudgetVariance(ctx, { ledgerId, periodId }),
+          getVarianceAlerts(ctx, { ledgerId, periodId }),
+        ]
       : []),
   ]);
 
   const varianceResult = (reportResults[0] ?? null) as ApiResult<BudgetVarianceResult> | null;
   const alertsResult = (reportResults[1] ?? null) as ApiResult<VarianceAlertsResult> | null;
-  if (varianceResult && !varianceResult.ok) handleApiError(varianceResult, 'Failed to load budget variance');
-  if (alertsResult && !alertsResult.ok) handleApiError(alertsResult, 'Failed to load variance alerts');
+  if (varianceResult && !varianceResult.ok)
+    handleApiError(varianceResult, 'Failed to load budget variance');
+  if (alertsResult && !alertsResult.ok)
+    handleApiError(alertsResult, 'Failed to load variance alerts');
 
   const data = varianceResult?.ok ? varianceResult.value : null;
   const alerts = alertsResult?.ok ? alertsResult.value : null;
@@ -49,7 +62,11 @@ export default async function BudgetVariancePage({ searchParams }: BudgetVarianc
     <div className="space-y-6">
       <PageHeader
         title="Budget Variance"
-        description={data ? 'Budget vs. actual analysis by account.' : 'Compare budgeted amounts against actual postings.'}
+        description={
+          data
+            ? 'Budget vs. actual analysis by account.'
+            : 'Compare budgeted amounts against actual postings.'
+        }
         breadcrumbs={[
           { label: 'Finance', href: routes.finance.journals },
           { label: 'Reports', href: routes.finance.reports },
@@ -60,19 +77,63 @@ export default async function BudgetVariancePage({ searchParams }: BudgetVarianc
 
       <div className="flex flex-wrap items-end gap-4">
         <Suspense>
-          <ReportFilterBar variant="ledger-period" ledgers={filterData.ledgers} periods={filterData.periods} defaults={{ ledgerId, periodId }} />
+          <ReportFilterBar
+            variant="ledger-period"
+            ledgers={filterData.ledgers}
+            periods={filterData.periods}
+            defaults={{ ledgerId, periodId }}
+          />
         </Suspense>
         <Suspense>
           <ReportSavedViews moduleKey="budget-variance" />
         </Suspense>
       </div>
 
-      {(!ledgerId || !periodId) && <EmptyState contentKey="finance.reports.budgetVariance" variant="firstRun" icon={BarChart3} />}
-      { alerts ? <VarianceAlertsPanel alerts={alerts.alerts} /> : null}
-      {data && data.rows.length === 0 && <EmptyState contentKey="finance.reports.budgetVariance" variant="noResults" icon={BarChart3} />}
+      {(!ledgerId || !periodId) && (
+        <EmptyState
+          contentKey="finance.reports.budgetVariance"
+          constraint="page"
+          variant="firstRun"
+          icon={BarChart3}
+        />
+      )}
+      {alerts ? <VarianceAlertsPanel alerts={alerts.alerts} /> : null}
+      {data && data.rows.length === 0 && (
+        <EmptyState
+          contentKey="finance.reports.budgetVariance"
+          constraint="page"
+          variant="noResults"
+          icon={BarChart3}
+        />
+      )}
       {data && data.rows.length > 0 && (
-        <BudgetVarianceTable rows={data.rows.map(r => ({ accountId: r.accountId, accountCode: r.accountCode, accountName: r.accountName, budgetAmount: Number(r.budgetAmount), actualAmount: Number(r.actualAmount), variance: Number(r.variance), variancePct: r.variancePct }))} totalBudget={Number(data.totalBudget)} totalActual={Number(data.totalActual)} totalVariance={Number(data.totalVariance)} />
+        <BudgetVarianceTable
+          rows={data.rows.map((r) => ({
+            accountId: r.accountId,
+            accountCode: r.accountCode,
+            accountName: r.accountName,
+            budgetAmount: Number(r.budgetAmount),
+            actualAmount: Number(r.actualAmount),
+            variance: Number(r.variance),
+            variancePct: r.variancePct,
+          }))}
+          totalBudget={Number(data.totalBudget)}
+          totalActual={Number(data.totalActual)}
+          totalVariance={Number(data.totalVariance)}
+        />
       )}
     </div>
+  );
+}
+
+export default async function BudgetVariancePage({ searchParams }: BudgetVariancePageProps) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+  const ledgerId = params.ledgerId ?? '';
+  const periodId = params.periodId ?? '';
+
+  return (
+    <Suspense>
+      <BudgetVarianceContent ctx={ctx} ledgerId={ledgerId} periodId={periodId} />
+    </Suspense>
   );
 }

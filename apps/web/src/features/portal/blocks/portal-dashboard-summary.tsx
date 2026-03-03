@@ -48,10 +48,7 @@ function MetricCard({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon
-          className={cn('h-4 w-4 text-muted-foreground', iconClassName)}
-          aria-hidden="true"
-        />
+        <Icon className={cn('h-4 w-4 text-muted-foreground', iconClassName)} aria-hidden="true" />
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{count}</div>
@@ -132,9 +129,9 @@ function CompliancePanel({ items }: { items: PortalComplianceItem[] }) {
       <CardContent>
         <div className="space-y-2">
           {items.map((item) => (
-            <div key={item.itemType} className="flex items-center gap-2 text-sm">
+            <div key={item.id} className="flex items-center gap-2 text-sm">
               <ComplianceIcon status={item.status} />
-              <span className="flex-1">{item.itemType}</span>
+              <span className="flex-1">{item.label ?? item.itemType}</span>
               <StatusBadge status={item.status} showIcon={false} />
             </div>
           ))}

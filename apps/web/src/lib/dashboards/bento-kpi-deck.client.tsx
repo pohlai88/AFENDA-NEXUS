@@ -29,11 +29,7 @@ function useResponsiveCols(): number {
   return cols;
 }
 import { Button } from '@/components/ui/button';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { KPICard } from '@/components/erp/kpi-card';
 import {
   CashFlowChart,
@@ -113,13 +109,18 @@ function computeLayout(
   saved?: WidgetLayoutItem[],
   selectedChartId?: string | null,
   selectedDiagramId?: string | null,
-  cols: number = DEFAULT_COLS,
+  cols: number = DEFAULT_COLS
 ): GridLayoutItem[] {
   const result: GridLayoutItem[] = [];
 
   // Use saved order for items. Flow from (0,0).
-  const savedOrder = (saved ?? []).map((l) => l.i);
-  const allIds = new Set([...widgetIds, ...(selectedChartId ? [selectedChartId] : []), ...(selectedDiagramId ? [selectedDiagramId] : [])]);
+  // Deduplicate savedOrder to prevent duplicate React keys from stale prefs.
+  const savedOrder = [...new Set((saved ?? []).map((l) => l.i))];
+  const allIds = new Set([
+    ...widgetIds,
+    ...(selectedChartId ? [selectedChartId] : []),
+    ...(selectedDiagramId ? [selectedDiagramId] : []),
+  ]);
   const ordered = [...savedOrder.filter((id) => allIds.has(id))];
   for (const id of allIds) {
     if (!ordered.includes(id)) ordered.push(id);
@@ -214,7 +215,7 @@ function validateWidgetLayout(params: {
 function mergeLayoutWithConstraints(
   validated: WidgetLayoutItem[],
   widgetIds: Set<string>,
-  cols: number,
+  cols: number
 ): GridLayoutItem[] {
   return validated.map((item) => {
     const type = widgetType(item.i);
@@ -237,7 +238,7 @@ function _findEmptySlot(
   items: WidgetLayoutItem[],
   excludeId: string,
   cols: number,
-  reserve?: { x: number; y: number; w: number; h: number },
+  reserve?: { x: number; y: number; w: number; h: number }
 ): { x: number; y: number } {
   const occupied = items
     .filter((l) => l.i !== excludeId)
@@ -246,22 +247,18 @@ function _findEmptySlot(
       const h = Math.round((l.h as number) || 1) || 1;
       const cells: [number, number][] = [];
       for (let dy = 0; dy < h; dy++)
-        for (let dx = 0; dx < w; dx++)
-          cells.push([(l.x as number) + dx, (l.y as number) + dy]);
+        for (let dx = 0; dx < w; dx++) cells.push([(l.x as number) + dx, (l.y as number) + dy]);
       return cells;
     });
   const reserved = reserve
     ? (() => {
-      const out: [number, number][] = [];
-      for (let dy = 0; dy < reserve.h; dy++)
-        for (let dx = 0; dx < reserve.w; dx++)
-          out.push([reserve.x + dx, reserve.y + dy]);
-      return out;
-    })()
+        const out: [number, number][] = [];
+        for (let dy = 0; dy < reserve.h; dy++)
+          for (let dx = 0; dx < reserve.w; dx++) out.push([reserve.x + dx, reserve.y + dy]);
+        return out;
+      })()
     : [];
-  const blocked = new Set(
-    [...occupied, ...reserved].map(([a, b]) => `${a},${b}`),
-  );
+  const blocked = new Set([...occupied, ...reserved].map(([a, b]) => `${a},${b}`));
   for (let y = 0; y < 100; y++) {
     for (let x = 0; x < cols; x++) {
       if (!blocked.has(`${x},${y}`)) return { x, y };
@@ -281,7 +278,10 @@ interface BentoKpiDeckProps {
   catalog: KPICatalogEntry[];
   resolvedKpis: KPIResolverResult[];
   prefs: DashboardPrefs;
-  onSavePrefs: (domainId: string, prefs: DashboardPrefs) => Promise<{ ok?: boolean; error?: string } | void>;
+  onSavePrefs: (
+    domainId: string,
+    prefs: DashboardPrefs
+  ) => Promise<{ ok?: boolean; error?: string } | void>;
   configDialog?: React.ReactNode;
   /** Chart slots to render in the same grid. */
   chartSlots?: BentoChartSlot[];
@@ -309,14 +309,14 @@ function BentoKpiDeck({
   const selectedChartId =
     prefs.selectedChartId === '__none__'
       ? null
-      : (prefs.selectedChartId || chartSlots[0]?.id) ?? null;
+      : ((prefs.selectedChartId || chartSlots[0]?.id) ?? null);
   const selectedDiagramId =
     prefs.selectedDiagramId === '__none__'
       ? null
-      : (prefs.selectedDiagramId || diagramSlots[0]?.id) ?? null;
+      : ((prefs.selectedDiagramId || diagramSlots[0]?.id) ?? null);
 
   const computedLayout = React.useMemo(() => {
-    const kpiIds = resolvedKpis.map((d) => d.id);
+    const kpiIds = [...new Set(resolvedKpis.map((d) => d.id))];
     const allWidgetIds = new Set([
       ...kpiIds,
       ...(selectedChartId ? [selectedChartId] : []),
@@ -333,7 +333,13 @@ function BentoKpiDeck({
     if (validatedLayout?.length && allIdsPresent) {
       return mergeLayoutWithConstraints(validatedLayout, allWidgetIds, cols);
     }
-    return computeLayout(kpiIds, validatedLayout ?? undefined, selectedChartId, selectedDiagramId, cols);
+    return computeLayout(
+      kpiIds,
+      validatedLayout ?? undefined,
+      selectedChartId,
+      selectedDiagramId,
+      cols
+    );
   }, [resolvedKpis, prefs.widgetLayout, selectedChartId, selectedDiagramId, cols]);
 
   // Optimistic layout: update immediately on drag/resize, sync from server when widget set or preset changes
@@ -354,7 +360,7 @@ function BentoKpiDeck({
         void onSavePrefs(domainId, { ...prefsRef.current, topCollapsed: !open });
       });
     },
-    [domainId, onSavePrefs],
+    [domainId, onSavePrefs]
   );
 
   const handleLayoutChange = React.useCallback(
@@ -376,7 +382,7 @@ function BentoKpiDeck({
         });
       });
     },
-    [domainId, onSavePrefs],
+    [domainId, onSavePrefs]
   );
 
   const catalogById = new Map(catalog.map((c) => [c.id, c]));
@@ -409,14 +415,8 @@ function BentoKpiDeck({
         <div className="flex items-center gap-2">
           <CollapsibleTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-1 px-2">
-              {isOpen ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-              <span className="text-sm font-medium text-muted-foreground">
-                Key Metrics
-              </span>
+              {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              <span className="text-sm font-medium text-muted-foreground">Key Metrics</span>
             </Button>
           </CollapsibleTrigger>
           {!isOpen && (
@@ -431,9 +431,9 @@ function BentoKpiDeck({
       <CollapsibleContent className="mt-3 w-full min-w-0 overflow-hidden">
         <div className="relative w-full min-w-0 overflow-hidden">
           <ResponsiveGridLayout
-          layout={validLayout}
-          onLayoutChange={(l) => handleLayoutChange([...l])}
-          cols={cols}
+            layout={validLayout}
+            onLayoutChange={(l) => handleLayoutChange([...l])}
+            cols={cols}
             rowHeight={ROW_HEIGHT}
             margin={MARGIN}
             draggableHandle=".react-grid-drag-handle"
@@ -498,10 +498,7 @@ function BentoKpiDeck({
               const data = dataById.get(item.i);
               if (!catalogEntry || !data) return <div key={item.i} />;
               return (
-                <div
-                  key={item.i}
-                  className="group relative flex h-full min-h-0"
-                >
+                <div key={item.i} className="group relative flex h-full min-h-0">
                   <div
                     className="react-grid-drag-handle absolute left-2 top-2 right-auto z-10 cursor-grab rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
                     aria-label="Drag to reorder"
@@ -531,5 +528,11 @@ function BentoKpiDeck({
 }
 BentoKpiDeck.displayName = 'BentoKpiDeck';
 
-export { BentoKpiDeck };
+export {
+  BentoKpiDeck,
+  validateWidgetLayout,
+  computeLayout,
+  mergeLayoutWithConstraints,
+  widgetType,
+};
 export type { BentoKpiDeckProps };

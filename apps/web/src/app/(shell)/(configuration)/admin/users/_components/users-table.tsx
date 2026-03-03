@@ -44,12 +44,12 @@ export function UsersTable({ users: initialUsers }: { users: UserEntry[] }) {
   }
 
   if (users.length === 0) {
-    return <EmptyState contentKey="admin.users" size="sm" />;
+    return <EmptyState contentKey="admin.users" constraint="table" />;
   }
 
   return (
     <div className="space-y-2">
-      { error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <Table>
         <TableCaption className="sr-only">Platform users</TableCaption>
         <TableHeader>

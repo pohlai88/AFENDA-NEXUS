@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import type { RequestContext } from '@afenda/core';
 import { getRequestContext } from '@/lib/auth';
 import { getPaymentRuns } from '@/features/finance/payables/queries/ap-payment-run.queries';
 import { ApPaymentRunTable } from '@/features/finance/payables/blocks/ap-payment-run-table';
@@ -15,13 +16,20 @@ export const metadata = { title: 'Payables — Payment Runs' };
 const STATUS_OPTIONS = ['ALL', 'DRAFT', 'APPROVED', 'EXECUTED', 'CANCELLED'] as const;
 const PAGE_SIZE = 20;
 
-export default async function PaymentRunsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const params = await searchParams;
-  const status = typeof params.status === 'string' ? params.status : undefined;
-  const page = typeof params.page === 'string' ? params.page : '1';
-
-  const ctx = await getRequestContext();
-  const result = await getPaymentRuns(ctx, { status: status === 'ALL' ? undefined : status, page, limit: String(PAGE_SIZE) });
+async function PaymentRunsContent({
+  ctx,
+  status,
+  page,
+}: {
+  ctx: RequestContext;
+  status?: string;
+  page: string;
+}) {
+  const result = await getPaymentRuns(ctx, {
+    status: status === 'ALL' ? undefined : status,
+    page,
+    limit: String(PAGE_SIZE),
+  });
   const runs = result.ok ? result.value.data : [];
   const total = result.ok ? result.value.total : 0;
   const currentPage = result.ok ? result.value.page : 1;
@@ -38,9 +46,16 @@ export default async function PaymentRunsPage({ searchParams }: { searchParams: 
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Payment Runs</h1>
-          <p className="text-sm text-muted-foreground">Manage batch payment processing for approved invoices.</p>
+          <p className="text-sm text-muted-foreground">
+            Manage batch payment processing for approved invoices.
+          </p>
         </div>
-        <Button asChild><Link href={routes.finance.paymentRunNew}><Plus className="mr-2 h-4 w-4" />New Payment Run</Link></Button>
+        <Button asChild>
+          <Link href={routes.finance.paymentRunNew}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Payment Run
+          </Link>
+        </Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -50,17 +65,39 @@ export default async function PaymentRunsPage({ searchParams }: { searchParams: 
           if (s !== 'ALL') sp.set('status', s);
           return (
             <Link key={s} href={`${routes.finance.paymentRuns}?${sp.toString()}`}>
-              <Badge variant={isActive ? 'default' : 'outline'} className="cursor-pointer">{s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}</Badge>
+              <Badge variant={isActive ? 'default' : 'outline'} className="cursor-pointer">
+                {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
+              </Badge>
             </Link>
           );
         })}
       </div>
 
-      <Suspense fallback={<TableSkeleton />}>
-        <ApPaymentRunTable data={runs} />
-      </Suspense>
+      <ApPaymentRunTable data={runs} />
 
-      <Pagination page={currentPage} pageSize={PAGE_SIZE} totalCount={total} buildHref={buildHref} />
+      <Pagination
+        page={currentPage}
+        pageSize={PAGE_SIZE}
+        totalCount={total}
+        buildHref={buildHref}
+      />
     </div>
+  );
+}
+
+export default async function PaymentRunsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const status = typeof params.status === 'string' ? params.status : undefined;
+  const page = typeof params.page === 'string' ? params.page : '1';
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<TableSkeleton />}>
+      <PaymentRunsContent ctx={ctx} status={status} page={page} />
+    </Suspense>
   );
 }

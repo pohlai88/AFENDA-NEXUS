@@ -17,8 +17,8 @@
  *
  * Usage: node tools/scripts/gate-contract-response-drift.mjs
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
+import { join, relative, dirname, resolve } from 'node:path';
 
 const ROOT = process.cwd();
 const WEB_FEATURES = join(ROOT, 'apps', 'web', 'src', 'features');
@@ -44,16 +44,53 @@ function rel(fp) {
   return relative(ROOT, fp).replace(/\\/g, '/');
 }
 
-// ── Extract exported type names from contracts ──────────────────────────────
+// ── Resolve a relative re-export specifier to an absolute file path ─────────
 
-function extractContractExports(content) {
+function resolveReExport(specifier, fromFile) {
+  if (!specifier.startsWith('.')) return null; // external package, skip
+  const dir = dirname(fromFile);
+  // Strip .js extension when resolving to .ts sources
+  const base = specifier.replace(/\.js$/, '');
+  const candidates = [resolve(dir, base + '.ts'), resolve(dir, base + '/index.ts')];
+  for (const c of candidates) {
+    if (existsSync(c)) return c;
+  }
+  return null;
+}
+
+// ── Extract exported type names from contracts, following export * re-exports ─
+
+function extractContractExports(entryFile, visited = new Set()) {
+  if (visited.has(entryFile)) return new Set();
+  visited.add(entryFile);
+
+  let content;
+  try {
+    content = readFileSync(entryFile, 'utf-8');
+  } catch {
+    return new Set();
+  }
+
   const exports = new Set();
-  // Match: export const FooSchema, export type Foo, export interface Foo
-  const re = /export\s+(?:const|type|interface)\s+(\w+)/g;
+
+  // Named exports: export const Foo, export type Foo, export interface Foo
+  const namedRe = /export\s+(?:const|type|interface)\s+(\w+)/g;
   let m;
-  while ((m = re.exec(content))) {
+  while ((m = namedRe.exec(content))) {
     exports.add(m[1]);
   }
+
+  // Wildcard re-exports: export * from './path'
+  const starRe = /export\s+\*\s+from\s+['"]([^'"]+)['"]/g;
+  while ((m = starRe.exec(content))) {
+    const resolved = resolveReExport(m[1], entryFile);
+    if (resolved) {
+      for (const name of extractContractExports(resolved, visited)) {
+        exports.add(name);
+      }
+    }
+  }
+
   return exports;
 }
 
@@ -77,15 +114,13 @@ function extractLocalTypes(content) {
 
 // ── Main ────────────────────────────────────────────────────────────────────
 
-let contractsContent;
+let contractExports;
 try {
-  contractsContent = readFileSync(CONTRACTS_FILE, 'utf-8');
+  contractExports = extractContractExports(CONTRACTS_FILE);
 } catch {
   console.error(`❌ gate:contract-response-drift — Cannot read ${rel(CONTRACTS_FILE)}`);
   process.exit(1);
 }
-
-const contractExports = extractContractExports(contractsContent);
 
 const queryFiles = findFiles(WEB_FEATURES, /\.queries\.ts$/);
 
@@ -133,12 +168,8 @@ for (const fp of queryFiles) {
 
 if (violations.length > 0) {
   console.error('❌ gate:contract-response-drift FAILED\n');
-  console.error(
-    '   Response types defined locally in query files without a corresponding',
-  );
-  console.error(
-    '   Zod schema in @afenda/contracts. This allows frontend/API type drift.\n',
-  );
+  console.error('   Response types defined locally in query files without a corresponding');
+  console.error('   Zod schema in @afenda/contracts. This allows frontend/API type drift.\n');
 
   for (const v of violations) {
     console.error(`  ${v.file}:${v.line}`);
@@ -148,19 +179,17 @@ if (violations.length > 0) {
   }
 
   console.error(
-    `${violations.length} local type(s) in ${queryFiles.length} query file(s) without contract coverage.`,
+    `${violations.length} local type(s) in ${queryFiles.length} query file(s) without contract coverage.`
   );
+  console.error(`Total: ${totalTypes} types scanned, ${exemptions.length} explicitly exempted.`);
   console.error(
-    `Total: ${totalTypes} types scanned, ${exemptions.length} explicitly exempted.`,
-  );
-  console.error(
-    '\nTo exempt a type, add `// @gate-allow-local-type: <reason>` on the line before the export.',
+    '\nTo exempt a type, add `// @gate-allow-local-type: <reason>` on the line before the export.'
   );
   process.exit(1);
 } else {
   console.log('✅ gate:contract-response-drift PASSED');
   console.log(
-    `   ${totalTypes} response type(s) in ${queryFiles.length} query file(s) — all covered by @afenda/contracts.`,
+    `   ${totalTypes} response type(s) in ${queryFiles.length} query file(s) — all covered by @afenda/contracts.`
   );
   if (exemptions.length > 0) {
     console.log(`   ${exemptions.length} type(s) explicitly exempted.`);

@@ -10,7 +10,7 @@
   },
   "files": [
     "src/styles",
-    "ARCHITECTURE.@afenda-design-system.md"
+    "ARCHITECTURE_afenda-design-system.md"
   ],
   "sideEffects": [
     "**/*.css"

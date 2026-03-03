@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import type { RequestContext } from '@afenda/core';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import {
   getProjectById,
@@ -15,9 +16,7 @@ interface BillingPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function BillingPage({ params }: BillingPageProps) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
-
+async function BillingContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const [projectResult, milestonesResult, wipResult] = await Promise.all([
     getProjectById(ctx, id),
     getProjectMilestones(ctx, id),
@@ -29,12 +28,20 @@ export default async function BillingPage({ params }: BillingPageProps) {
   }
 
   return (
+    <BillingWizard
+      project={projectResult.data}
+      milestones={milestonesResult.ok ? milestonesResult.data : []}
+      wip={wipResult.data}
+    />
+  );
+}
+
+export default async function BillingPage({ params }: BillingPageProps) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
     <Suspense fallback={<LoadingSkeleton />}>
-      <BillingWizard
-        project={projectResult.data}
-        milestones={milestonesResult.ok ? milestonesResult.data : []}
-        wip={wipResult.data}
-      />
+      <BillingContent ctx={ctx} id={id} />
     </Suspense>
   );
 }

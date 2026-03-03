@@ -16,6 +16,10 @@ export interface CreateApInvoiceInput {
   readonly poRef: string | null;
   readonly receiptRef: string | null;
   readonly paymentTermsId: string | null;
+  /** CAP-CRDB: document type classification (defaults to STANDARD). */
+  readonly invoiceType?: 'STANDARD' | 'DEBIT_MEMO' | 'CREDIT_MEMO' | 'PREPAYMENT';
+  /** CAP-CRDB: reference to the original invoice for credit/debit notes. */
+  readonly originalInvoiceId?: string | null;
   readonly lines: readonly CreateApInvoiceLineInput[];
 }
 

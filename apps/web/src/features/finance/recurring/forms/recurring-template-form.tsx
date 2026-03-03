@@ -199,6 +199,7 @@ export function RecurringTemplateForm({ ledgers }: RecurringTemplateFormProps) {
                 min="0"
                 placeholder="0.00"
                 className="text-right"
+                aria-label="Debit amount"
               />
               <Input
                 {...form.register(`lines.${index}.credit`, { valueAsNumber: true })}
@@ -207,6 +208,7 @@ export function RecurringTemplateForm({ ledgers }: RecurringTemplateFormProps) {
                 min="0"
                 placeholder="0.00"
                 className="text-right"
+                aria-label="Credit amount"
               />
               <Input
                 {...form.register(`lines.${index}.description`)}

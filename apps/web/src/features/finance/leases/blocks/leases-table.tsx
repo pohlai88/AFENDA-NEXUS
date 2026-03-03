@@ -39,7 +39,7 @@ const assetClassIcons: Record<AssetClass, React.ElementType> = {
 
 function AssetClassIcon({ assetClass }: { assetClass: AssetClass }) {
   const Icon = assetClassIcons[assetClass];
-  return <Icon className="h-4 w-4 text-muted-foreground" />;
+  return <Icon className="h-4 w-4 text-muted-foreground"  aria-hidden="true" />;
 }
 
 function LeaseTermProgress({ lease }: { lease: LeaseContract }) {

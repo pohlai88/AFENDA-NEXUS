@@ -6,7 +6,7 @@ import type { AppError } from '@afenda/core';
  * Maps every domain error code to an appropriate HTTP status.
  * No business validation failure should produce a 5xx response.
  */
-export function mapErrorToStatus(error: AppError): number {
+export function mapErrorToStatus(error: AppError | { code: string }): number {
   switch (error.code) {
     // 400 — Bad Request (input validation failures)
     case 'VALIDATION':
@@ -43,6 +43,8 @@ export function mapErrorToStatus(error: AppError): number {
     case 'AP_PAYMENT_RUN_NOT_APPROVED':
     case 'AP_PAYMENT_RUN_ALREADY_EXECUTED':
     case 'AP_PAYMENT_RUN_NOT_EXECUTED':
+    case 'ESCALATION_ALREADY_ACTIVE':
+    case 'ALREADY_RESOLVED':
       return 409;
 
     // 422 — Unprocessable Entity (domain rule violations)

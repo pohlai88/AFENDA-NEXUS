@@ -83,7 +83,7 @@ function CostCenterNode({ costCenter, level = 0, onSelect }: CostCenterNodeProps
               costCenter.status === 'active' ? 'bg-primary/10' : 'bg-muted'
             )}
           >
-            <Icon className="h-4 w-4 text-primary" />
+            <Icon className="h-4 w-4 text-primary"  aria-hidden="true" />
           </div>
 
           <div className="flex-1 min-w-0">

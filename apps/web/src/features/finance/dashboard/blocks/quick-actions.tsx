@@ -45,7 +45,7 @@ function QuickActionButton({ action }: { action: QuickAction }) {
               action.variant === 'primary' ? 'bg-primary-foreground/10' : 'bg-accent'
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-4 w-4" aria-hidden="true" />
           </div>
           <ArrowRight className="h-4 w-4 opacity-50" />
         </div>
@@ -77,15 +77,12 @@ export function QuickActions({ actions }: QuickActionsProps) {
         <CardContent className="grid grid-cols-2 gap-3">
           {actions.length === 0 ? (
             <EmptyState
+              contentKey="finance.dashboard.quickActions"
               variant="firstRun"
-              size="sm"
-              title="No quick actions"
-              description="Configure quick actions for common tasks."
+              constraint="2x1"
             />
           ) : (
-            actions.map((action) => (
-              <QuickActionButton key={action.id} action={action} />
-            ))
+            actions.map((action) => <QuickActionButton key={action.id} action={action} />)
           )}
         </CardContent>
       </Card>

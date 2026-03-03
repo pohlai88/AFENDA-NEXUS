@@ -1,12 +1,20 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
-import { getDeferredTaxItemById, getDeferredTaxMovements } from '@/features/finance/deferred-tax/queries/deferred-tax.queries';
-import { DeferredTaxDetailHeader, DeferredTaxOverview, DeferredTaxMovements } from '@/features/finance/deferred-tax/blocks/deferred-tax-detail';
+import {
+  getDeferredTaxItemById,
+  getDeferredTaxMovements,
+} from '@/features/finance/deferred-tax/queries/deferred-tax.queries';
+import {
+  DeferredTaxDetailHeader,
+  DeferredTaxOverview,
+  DeferredTaxMovements,
+} from '@/features/finance/deferred-tax/blocks/deferred-tax-detail';
 import { routes } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,8 +34,7 @@ async function MovementsSection({ itemId }: { itemId: string }) {
   return <DeferredTaxMovements movements={result.value.data} />;
 }
 
-export default async function DeferredTaxDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function DeferredTaxDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getDeferredTaxItemById(ctx, id);
 
   if (!result.ok) {
@@ -63,5 +70,15 @@ export default async function DeferredTaxDetailPage({ params }: Props) {
         ]}
       />
     </div>
+  );
+}
+
+export default async function DeferredTaxDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense>
+      <DeferredTaxDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

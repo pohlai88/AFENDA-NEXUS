@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
@@ -14,8 +15,13 @@ interface Props {
   searchParams: Promise<{ page?: string; limit?: string; status?: string }>;
 }
 
-export default async function PrepaymentListPage({ searchParams }: Props) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+async function PrepaymentListContent({
+  ctx,
+  params,
+}: {
+  ctx: RequestContext;
+  params: { page?: string; limit?: string; status?: string };
+}) {
   const result = await getPrepayments(ctx, {
     page: params.page ?? '1',
     limit: params.limit ?? '20',
@@ -29,7 +35,6 @@ export default async function PrepaymentListPage({ searchParams }: Props) {
   const prepayments = result.value.data;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Prepayments"
@@ -42,11 +47,24 @@ export default async function PrepaymentListPage({ searchParams }: Props) {
       />
 
       {prepayments.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No prepayments found. Prepayments are created as AP invoices with type PREPAYMENT.</CardContent></Card>
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            No prepayments found. Prepayments are created as AP invoices with type PREPAYMENT.
+          </CardContent>
+        </Card>
       ) : (
         <PrepaymentListTable prepayments={prepayments} />
       )}
     </div>
-  </Suspense>
+  );
+}
+
+export default async function PrepaymentListPage({ searchParams }: Props) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PrepaymentListContent ctx={ctx} params={params} />
+    </Suspense>
   );
 }

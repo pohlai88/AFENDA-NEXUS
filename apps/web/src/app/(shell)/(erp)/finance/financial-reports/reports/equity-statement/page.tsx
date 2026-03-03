@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { ExportMenu } from '@/components/erp/export-menu';
 import { EmptyState } from '@/components/erp/empty-state';
@@ -23,11 +24,17 @@ interface EquityStatementPageProps {
   }>;
 }
 
-export default async function EquityStatementPage({ searchParams }: EquityStatementPageProps) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-  const ledgerId = params.ledgerId ?? '';
-  const fromPeriodId = params.fromPeriodId ?? '';
-  const toPeriodId = params.toPeriodId ?? '';
+async function EquityStatementContent({
+  ctx,
+  ledgerId,
+  fromPeriodId,
+  toPeriodId,
+}: {
+  ctx: RequestContext;
+  ledgerId: string;
+  fromPeriodId: string;
+  toPeriodId: string;
+}) {
   const [filterData, result] = await Promise.all([
     getReportFilterData(),
     ledgerId && fromPeriodId && toPeriodId
@@ -70,9 +77,34 @@ export default async function EquityStatementPage({ searchParams }: EquityStatem
         </Suspense>
       </div>
 
-      {(!ledgerId || !fromPeriodId || !toPeriodId) && <EmptyState contentKey="finance.reports.equityStatement" variant="firstRun" icon={BarChart3} />}
+      {(!ledgerId || !fromPeriodId || !toPeriodId) && (
+        <EmptyState
+          contentKey="finance.reports.equityStatement"
+          constraint="page"
+          variant="firstRun"
+          icon={BarChart3}
+        />
+      )}
 
-      { data ? <EquityStatementTable data={data} /> : null}
+      {data ? <EquityStatementTable data={data} /> : null}
     </div>
+  );
+}
+
+export default async function EquityStatementPage({ searchParams }: EquityStatementPageProps) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+  const ledgerId = params.ledgerId ?? '';
+  const fromPeriodId = params.fromPeriodId ?? '';
+  const toPeriodId = params.toPeriodId ?? '';
+
+  return (
+    <Suspense>
+      <EquityStatementContent
+        ctx={ctx}
+        ledgerId={ledgerId}
+        fromPeriodId={fromPeriodId}
+        toPeriodId={toPeriodId}
+      />
+    </Suspense>
   );
 }

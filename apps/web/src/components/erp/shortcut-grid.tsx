@@ -28,7 +28,7 @@ function ShortcutCardComponent({ card }: { card: ShortcutCard }) {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-muted-foreground" />
+          <Icon className="h-4 w-4 text-muted-foreground"  aria-hidden="true" />
           <CardTitle className="text-sm">{card.title}</CardTitle>
         </div>
         {card.description && (

@@ -2,10 +2,14 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
+import type { RequestContext } from '@afenda/core';
 import { handleApiError } from '@/lib/api-error.server';
 import { getRecurringTemplate } from '@/features/finance/recurring/queries/recurring.queries';
 import { RecurringTemplateActions } from '@/features/finance/recurring/blocks/recurring-template-actions';
-import { RecurringSummaryBar, RecurringLinesTable } from '@/features/finance/recurring/blocks/recurring-detail-blocks';
+import {
+  RecurringSummaryBar,
+  RecurringLinesTable,
+} from '@/features/finance/recurring/blocks/recurring-detail-blocks';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
@@ -15,8 +19,7 @@ interface RecurringDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function RecurringDetailPage({ params }: RecurringDetailPageProps) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function RecurringDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getRecurringTemplate(ctx, id);
 
   if (!result.ok) {
@@ -27,7 +30,6 @@ export default async function RecurringDetailPage({ params }: RecurringDetailPag
   const template = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title={template.description}
@@ -57,6 +59,15 @@ export default async function RecurringDetailPage({ params }: RecurringDetailPag
 
       <RecurringLinesTable lines={template.lines} />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function RecurringDetailPage({ params }: RecurringDetailPageProps) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <RecurringDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

@@ -71,7 +71,8 @@ export async function LiquidityWaterfallSection() {
     `/api/finance/dashboard?${queryParams.toString()}`
   );
   
-  const data = result.ok ? result.value.charts?.['liquidity-waterfall'] ?? [] : [];
+  const chartData = result.ok ? result.value.charts?.['liquidity-waterfall'] : undefined;
+  const data = Array.isArray(chartData) ? chartData : [];
   const params = {
     range: { from: '2026-01-01', to: '2026-01-31' },
     grain: 'month' as const,
@@ -97,7 +98,8 @@ export async function FinancialRatiosSection() {
     `/api/finance/dashboard?${queryParams.toString()}`
   );
   
-  const data = result.ok ? result.value.charts?.['financial-ratios'] ?? [] : [];
+  const chartData = result.ok ? result.value.charts?.['financial-ratios'] : undefined;
+  const data = Array.isArray(chartData) ? chartData : [];
   const params = {
     range: { from: '2026-01-01', to: '2026-01-31' },
     grain: 'month' as const,
@@ -123,7 +125,8 @@ export async function DSOTrendSection() {
     `/api/finance/dashboard?${queryParams.toString()}`
   );
   
-  const data = result.ok ? result.value.charts?.['dso-trend'] ?? [] : [];
+  const chartData = result.ok ? result.value.charts?.['dso-trend'] : undefined;
+  const data = Array.isArray(chartData) ? chartData : [];
   const params = {
     range: { from: '2025-09-01', to: '2026-01-31' },
     grain: 'month' as const,
@@ -149,7 +152,8 @@ export async function BudgetVarianceSection() {
     `/api/finance/dashboard?${queryParams.toString()}`
   );
   
-  const data = result.ok ? result.value.charts?.['budget-variance'] ?? [] : [];
+  const chartData = result.ok ? result.value.charts?.['budget-variance'] : undefined;
+  const data = Array.isArray(chartData) ? chartData : [];
   const params = {
     range: { from: '2026-01-01', to: '2026-01-31' },
     grain: 'month' as const,
@@ -175,7 +179,8 @@ export async function AssetTreemapSection() {
     `/api/finance/dashboard?${queryParams.toString()}`
   );
   
-  const data = result.ok ? result.value.charts?.['asset-portfolio'] ?? [] : [];
+  const chartData = result.ok ? result.value.charts?.['asset-portfolio'] : undefined;
+  const data = Array.isArray(chartData) ? chartData : [];
   const params = {
     range: { from: '2026-01-01', to: '2026-01-31' },
     grain: 'month' as const,

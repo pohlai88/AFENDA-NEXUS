@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/erp/page-header';
 import { ExportMenu } from '@/components/erp/export-menu';
 import { EmptyState } from '@/components/erp/empty-state';
 import { getRequestContext } from '@/lib/auth';
+import type { RequestContext } from '@afenda/core';
 import { handleApiError } from '@/lib/api-error.server';
 import { getCashFlow } from '@/features/finance/reports/queries/report.queries';
 import { buildCashFlowExport } from '@/features/finance/reports/actions/report-export.actions';
@@ -19,8 +20,13 @@ interface CashFlowPageProps {
   searchParams: Promise<{ ledgerId?: string; fromPeriodId?: string; toPeriodId?: string }>;
 }
 
-export default async function CashFlowPage({ searchParams }: CashFlowPageProps) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+async function CashFlowContent({
+  ctx,
+  params,
+}: {
+  ctx: RequestContext;
+  params: { ledgerId?: string; fromPeriodId?: string; toPeriodId?: string };
+}) {
   const { ledgerId = '', fromPeriodId = '', toPeriodId = '' } = params;
 
   const [filterData, result] = await Promise.all([
@@ -37,7 +43,11 @@ export default async function CashFlowPage({ searchParams }: CashFlowPageProps) 
     <div className="space-y-6">
       <PageHeader
         title="Cash Flow Statement"
-        description={data?.periodRange ? `Cash flows for ${data.periodRange}.` : 'Operating, investing, and financing activities.'}
+        description={
+          data?.periodRange
+            ? `Cash flows for ${data.periodRange}.`
+            : 'Operating, investing, and financing activities.'
+        }
         breadcrumbs={[
           { label: 'Finance', href: routes.finance.journals },
           { label: 'Reports', href: routes.finance.reports },
@@ -48,16 +58,38 @@ export default async function CashFlowPage({ searchParams }: CashFlowPageProps) 
 
       <div className="flex flex-wrap items-end gap-4">
         <Suspense>
-          <ReportFilterBar variant="ledger-period-range" ledgers={filterData.ledgers} periods={filterData.periods} defaults={{ ledgerId, fromPeriodId, toPeriodId }} />
+          <ReportFilterBar
+            variant="ledger-period-range"
+            ledgers={filterData.ledgers}
+            periods={filterData.periods}
+            defaults={{ ledgerId, fromPeriodId, toPeriodId }}
+          />
         </Suspense>
-        <Suspense><ReportSavedViews moduleKey="cash-flow" /></Suspense>
+        <Suspense>
+          <ReportSavedViews moduleKey="cash-flow" />
+        </Suspense>
       </div>
 
       {(!ledgerId || !fromPeriodId || !toPeriodId) && (
-        <EmptyState contentKey="finance.reports.cashFlow" variant="firstRun" icon={Banknote} />
+        <EmptyState
+          contentKey="finance.reports.cashFlow"
+          constraint="page"
+          variant="firstRun"
+          icon={Banknote}
+        />
       )}
 
-      { data ? <CashFlowDisplay data={data} /> : null}
+      {data ? <CashFlowDisplay data={data} /> : null}
     </div>
+  );
+}
+
+export default async function CashFlowPage({ searchParams }: CashFlowPageProps) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<div className="h-96 animate-pulse rounded-md bg-muted" />}>
+      <CashFlowContent ctx={ctx} params={params} />
+    </Suspense>
   );
 }

@@ -139,7 +139,9 @@ export async function run(args) {
     for (const p of outboxResult.patches) {
       if (p.patched) patched.push(p.path);
     }
-    console.log(`   Events: ${outboxResult.files.length} files, ${outboxResult.patches.filter((p) => p.patched).length} patches`);
+    console.log(
+      `   Events: ${outboxResult.files.length} files, ${outboxResult.patches.filter((p) => p.patched).length} patches`
+    );
   }
 
   // ── 6. Test shell ──
@@ -150,10 +152,15 @@ export async function run(args) {
 
   // ── 7. Frontend (optional) ──
   if (spec.frontend) {
+    const specFlag = `--spec ${specPath}`;
     console.log('\n🔧 Frontend generation available via legacy generators:');
-    console.log(`   pnpm gen:screen ${spec.module} ${spec.frontend.featureDir || spec.slice}`);
+    console.log(
+      `   pnpm gen:screen ${spec.module} ${spec.frontend.featureDir || spec.slice} ${specFlag}`
+    );
     console.log(`   pnpm gen:form Create${spec.entity.name}Schema --module ${spec.module}`);
-    console.log(`   pnpm gen:table-ui ${spec.entity.name}ListItem --module ${spec.module}`);
+    console.log(
+      `   pnpm gen:table-ui ${spec.entity.name}ListItem --module ${spec.module} ${specFlag}`
+    );
   }
 
   // ── 8. Checklist ──

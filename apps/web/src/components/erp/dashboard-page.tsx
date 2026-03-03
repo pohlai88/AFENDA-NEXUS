@@ -97,9 +97,11 @@ async function DashboardKPIs({ kpiIds }: { kpiIds: string[] }) {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {kpiData.map((data, i) => (
-        <KPICard key={data.id} catalog={catalog[i] ?? catalog[0]} data={data} />
-      ))}
+      {kpiData.map((data, i) => {
+        const catalogEntry = catalog[i];
+        if (!catalogEntry) return null;
+        return <KPICard key={data.id} catalog={catalogEntry} data={data} />;
+      })}
     </div>
   );
 }

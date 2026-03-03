@@ -90,7 +90,10 @@ export function registerFinanceHandlers(
         `cache:trial-balance:${row.tenantId}:${p.ledgerId}`,
       ];
       await deps.redis.del(...keys);
-      await deps.redis.publish('cache:invalidate', JSON.stringify({ tenantId: row.tenantId, keys }));
+      await deps.redis.publish(
+        'cache:invalidate',
+        JSON.stringify({ tenantId: row.tenantId, keys })
+      );
       logger.info('Balance cache invalidated', { keys });
     }
     if (deps?.resendApiKey && deps?.session) {
@@ -132,7 +135,10 @@ export function registerFinanceHandlers(
         `cache:report:${row.tenantId}:${p.ledgerId}:${p.periodId}`,
       ];
       await deps.redis.del(...keys);
-      await deps.redis.publish('cache:invalidate', JSON.stringify({ tenantId: row.tenantId, keys }));
+      await deps.redis.publish(
+        'cache:invalidate',
+        JSON.stringify({ tenantId: row.tenantId, keys })
+      );
       logger.info('Report caches invalidated', { keys });
     }
   });
@@ -524,5 +530,241 @@ export function registerFinanceHandlers(
         await repo.updateIntegrityFailed(p.documentId);
       });
     }
+  });
+
+  // ─── Portal Case Management Handlers ────────────────────────────────────────
+
+  registry.register('SUPPLIER_CASE_CREATED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier case created — case opened for review', {
+      event: 'SUPPLIER_CASE_CREATED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      caseId: p.caseId,
+      supplierId: p.supplierId,
+      category: p.category,
+    });
+  });
+
+  registry.register('SUPPLIER_CASE_STATUS_CHANGED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier case status changed', {
+      event: 'SUPPLIER_CASE_STATUS_CHANGED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      caseId: p.caseId,
+      fromStatus: p.fromStatus,
+      toStatus: p.toStatus,
+    });
+  });
+
+  registry.register('SUPPLIER_CASE_ASSIGNED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier case assigned to handler', {
+      event: 'SUPPLIER_CASE_ASSIGNED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      caseId: p.caseId,
+      assignedTo: p.assignedTo,
+    });
+  });
+
+  registry.register('SUPPLIER_CASE_RESOLVED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier case resolved', {
+      event: 'SUPPLIER_CASE_RESOLVED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      caseId: p.caseId,
+      resolution: p.resolution,
+    });
+  });
+
+  registry.register('SUPPLIER_CASE_SLA_BREACHED', async (row) => {
+    const p = payload(row);
+    logger.warn('Supplier case SLA breached — escalation may be required', {
+      event: 'SUPPLIER_CASE_SLA_BREACHED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      caseId: p.caseId,
+      breachedAt: p.breachedAt,
+    });
+  });
+
+  registry.register('SUPPLIER_CASE_TIMELINE_ENTRY', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier case timeline entry recorded', {
+      event: 'SUPPLIER_CASE_TIMELINE_ENTRY',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      caseId: p.caseId,
+      entryType: p.entryType,
+    });
+  });
+
+  // ─── Portal Compliance Expiry Handlers ──────────────────────────────────────
+
+  registry.register('SUPPLIER_COMPLIANCE_EXPIRING', async (row) => {
+    const p = payload(row);
+    logger.warn('Supplier compliance document expiring soon', {
+      event: 'SUPPLIER_COMPLIANCE_EXPIRING',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      documentType: p.documentType,
+      expiresAt: p.expiresAt,
+      daysRemaining: p.daysRemaining,
+    });
+  });
+
+  registry.register('SUPPLIER_COMPLIANCE_EXPIRED', async (row) => {
+    const p = payload(row);
+    logger.warn('Supplier compliance document expired', {
+      event: 'SUPPLIER_COMPLIANCE_EXPIRED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      documentType: p.documentType,
+      expiredAt: p.expiredAt,
+    });
+  });
+
+  registry.register('SUPPLIER_COMPLIANCE_RENEWED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier compliance document renewed', {
+      event: 'SUPPLIER_COMPLIANCE_RENEWED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      documentType: p.documentType,
+      newExpiresAt: p.newExpiresAt,
+    });
+  });
+
+  registry.register('SUPPLIER_COMPLIANCE_CASE_CREATED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier compliance case auto-created from expiry alert', {
+      event: 'SUPPLIER_COMPLIANCE_CASE_CREATED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      caseId: p.caseId,
+      documentType: p.documentType,
+    });
+  });
+
+  // ─── Portal Onboarding Wizard Handlers ──────────────────────────────────────
+
+  registry.register('SUPPLIER_ONBOARDING_STARTED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier onboarding wizard started', {
+      event: 'SUPPLIER_ONBOARDING_STARTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      submissionId: p.submissionId,
+    });
+  });
+
+  registry.register('SUPPLIER_ONBOARDING_STEP_SAVED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier onboarding step saved', {
+      event: 'SUPPLIER_ONBOARDING_STEP_SAVED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      step: p.step,
+    });
+  });
+
+  registry.register('SUPPLIER_ONBOARDING_SUBMITTED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier onboarding submitted for review', {
+      event: 'SUPPLIER_ONBOARDING_SUBMITTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      submissionId: p.submissionId,
+    });
+  });
+
+  registry.register('SUPPLIER_ONBOARDING_APPROVED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier onboarding approved — supplier activated', {
+      event: 'SUPPLIER_ONBOARDING_APPROVED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      approvedBy: p.approvedBy,
+    });
+  });
+
+  registry.register('SUPPLIER_ONBOARDING_REJECTED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier onboarding rejected', {
+      event: 'SUPPLIER_ONBOARDING_REJECTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+      rejectedBy: p.rejectedBy,
+      reason: p.reason,
+    });
+  });
+
+  // ─── Portal Invitation Flow Handlers ────────────────────────────────────────
+
+  registry.register('SUPPLIER_INVITED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier invitation sent', {
+      event: 'SUPPLIER_INVITED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      email: p.email,
+      invitationId: p.invitationId,
+      invitedBy: p.invitedBy,
+    });
+  });
+
+  registry.register('SUPPLIER_CREATED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier account created from invitation acceptance', {
+      event: 'SUPPLIER_CREATED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      supplierId: p.supplierId,
+    });
+  });
+
+  registry.register('SUPPLIER_INVITATION_ACCEPTED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier invitation accepted — account activated', {
+      event: 'SUPPLIER_INVITATION_ACCEPTED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      invitationId: p.invitationId,
+      supplierId: p.supplierId,
+    });
+  });
+
+  registry.register('SUPPLIER_INVITATION_REVOKED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier invitation revoked', {
+      event: 'SUPPLIER_INVITATION_REVOKED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      invitationId: p.invitationId,
+      revokedBy: p.revokedBy,
+    });
+  });
+
+  registry.register('SUPPLIER_INVITATION_EXPIRED', async (row) => {
+    const p = payload(row);
+    logger.info('Supplier invitation expired', {
+      event: 'SUPPLIER_INVITATION_EXPIRED',
+      outboxId: row.id,
+      tenantId: row.tenantId,
+      invitationId: p.invitationId,
+      email: p.email,
+    });
   });
 }

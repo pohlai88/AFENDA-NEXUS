@@ -8,7 +8,10 @@ import type { IApPrepaymentRepo } from './prepayment-repo.js';
 import type { ISupplierDocumentRepo } from '../services/supplier-portal-document-vault.js';
 import type { ISupplierDisputeRepo } from '../services/supplier-portal-dispute.js';
 import type { ISupplierNotificationPrefRepo } from '../services/supplier-portal-notifications.js';
-import type { ISupplierComplianceRepo } from '../services/supplier-portal-compliance.js';
+import type {
+  ISupplierComplianceRepo,
+  IComplianceAlertLogRepo,
+} from '../services/supplier-portal-compliance.js';
 import type { IInvoiceAttachmentRepo } from '../entities/invoice-attachment.js';
 import type { IWhtCertificateRepo as IApWhtCertificateRepo } from './wht-certificate-repo.js';
 import type { ISupplierBlockRepo } from './supplier-block-repo.js';
@@ -21,6 +24,22 @@ import type { ISupplierDiversityRepo } from './supplier-diversity-repo.js';
 import type { ISupplierDuplicateRepo } from './supplier-duplicate-repo.js';
 import type { ISupplierCompanyOverrideRepo } from './supplier-company-override-repo.js';
 import type { ISupplierAccountGroupRepo } from './supplier-account-group-repo.js';
+import type { ISupplierCaseRepo, ICaseTimelineRepo } from '../services/supplier-portal-case.js';
+import type { IAuditLogRepo } from '../services/supplier-portal-audit.js';
+import type { IOnboardingSubmissionRepo } from '../services/supplier-portal-onboarding.js';
+import type { ICompanyLocationRepo } from '../services/supplier-portal-location.js';
+import type { IDirectoryRepo } from '../services/supplier-portal-directory.js';
+import type { IInvitationRepo } from '../services/supplier-portal-invitation.js';
+import type { IMessageThreadRepo, IMessageRepo } from '../services/supplier-portal-messaging.js';
+import type { IEscalationRepo } from '../services/supplier-portal-escalation.js';
+import type { IAnnouncementRepo } from '../services/supplier-portal-announcement.js';
+import type { IMeetingRequestRepo } from '../services/supplier-portal-appointment.js';
+import type { IProofChainReader } from '../repos/drizzle-proof-chain-reader.js';
+import type { IProofChainWriter } from '@afenda/supplier-kernel';
+import type { IPaymentStatusFactRepo } from '../services/supplier-portal-payment-tracking.js';
+import type { IEarlyPaymentOfferRepo } from '../services/supplier-portal-scf.js';
+import type { IWebhookSubscriptionRepo } from '../services/supplier-portal-webhook.js';
+import type { ISupplierAssociationRepo } from '../services/supplier-portal-multi-entity.js';
 
 export interface ApDeps {
   readonly apInvoiceRepo: IApInvoiceRepo;
@@ -46,4 +65,24 @@ export interface ApDeps {
   readonly supplierDuplicateRepo?: ISupplierDuplicateRepo;
   readonly supplierCompanyOverrideRepo?: ISupplierCompanyOverrideRepo;
   readonly supplierAccountGroupRepo?: ISupplierAccountGroupRepo;
+  readonly supplierCaseRepo?: ISupplierCaseRepo;
+  readonly caseTimelineRepo?: ICaseTimelineRepo;
+  readonly auditLogRepo?: IAuditLogRepo;
+  readonly onboardingSubmissionRepo?: IOnboardingSubmissionRepo;
+  readonly onboardingRepo?: IOnboardingSubmissionRepo;
+  readonly complianceAlertLogRepo?: IComplianceAlertLogRepo;
+  readonly companyLocationRepo?: ICompanyLocationRepo;
+  readonly directoryRepo?: IDirectoryRepo;
+  readonly invitationRepo?: IInvitationRepo;
+  readonly messageThreadRepo?: IMessageThreadRepo;
+  readonly messageRepo?: IMessageRepo;
+  readonly escalationRepo?: IEscalationRepo;
+  readonly announcementRepo?: IAnnouncementRepo;
+  readonly meetingRequestRepo?: IMeetingRequestRepo;
+  readonly proofChainReader?: IProofChainReader;
+  readonly proofChainWriter?: IProofChainWriter;
+  readonly paymentStatusFactRepo?: IPaymentStatusFactRepo;
+  readonly earlyPaymentOfferRepo?: IEarlyPaymentOfferRepo;
+  readonly webhookRepo?: IWebhookSubscriptionRepo;
+  readonly supplierAssociationRepo?: ISupplierAssociationRepo;
 }

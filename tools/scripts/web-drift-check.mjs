@@ -2,7 +2,7 @@
 /**
  * web-drift-check.mjs — Frontend-specific CI drift gate for @afenda/web.
  *
- * Enforces every rule from ARCHITECTURE.@afenda-web.md and FRONTEND-DEV-PLAN.md.
+ * Enforces every rule from ARCHITECTURE_afenda-web.md and FRONTEND-DEV-PLAN.md.
  * Zero dependencies — uses only Node.js built-ins.
  *
  * Checks:
@@ -32,6 +32,7 @@
  *   W25  next.config.ts best practices — poweredByHeader, optimizePackageImports, etc.
  *   W26  Exception registry audit — stale exemptions for deleted files
  *   W27  EmptyState registry discipline — no hardcoded empty-state strings outside registry
+ *   W28  Stub / TODO / Placeholder audit — surfaces unresolved stubs, TODOs, FIXMEs, mock data
  *
  * Usage:
  *   node tools/scripts/web-drift-check.mjs
@@ -241,7 +242,12 @@ function checkW04() {
   const SUSPECT_PATTERN =
     /(?:interface|type)\s+\w+(?:Payload|Request|Response|Body|Input|Output)\b/;
   const ALLOWED_FILES = ['types.ts', 'api-client.ts']; // lib types are OK
-  const ALLOWED_SUFFIXES = ['-form.tsx']; // form components may define local input shapes
+  // .actions.ts files are server action modules that re-export contract types
+  // as type-only imports. The W04 regex flags `import type { SomePayload }` lines
+  // because the type name matches the Payload/Request/Response pattern even though
+  // the type is not being hand-written — it's imported from @afenda/contracts.
+  // Adding .actions.ts to ALLOWED_SUFFIXES prevents these false positives.
+  const ALLOWED_SUFFIXES = ['-form.tsx', '.queries.ts', '.actions.ts']; // form components, server query files, and server action files may define local input shapes
 
   const featureFiles = collectFiles(join(SRC, 'features'), ['.ts', '.tsx']);
   for (const file of featureFiles) {
@@ -521,6 +527,9 @@ function checkW11() {
   for (const dir of SERVER_ONLY_DIRS) {
     const files = collectFiles(dir, ['.ts', '.tsx']);
     for (const file of files) {
+      // Files with .client.tsx suffix are intentionally client-side
+      if (file.endsWith('.client.tsx')) continue;
+
       const content = readFileSync(file, 'utf-8');
       if (
         content.trimStart().startsWith('"use client"') ||
@@ -638,6 +647,11 @@ function checkW13() {
     'qrcode.react',
     '@radix-ui/react-alert-dialog',
     '@t3-oss/env-nextjs',
+    '@tanstack/react-query',
+    'd3-hierarchy',
+    'd3-sankey',
+    'mermaid',
+    'react-grid-layout',
   ];
 
   const ALLOWED_DEV = [
@@ -745,7 +759,13 @@ function checkW14() {
   // Allowed exceptions:
   // - status-badge uses emerald/blue for status-specific colors
   // - module-sidebar uses per-module accent colors (brand identity)
-  const EXCEPTION_FILES = ['status-badge.tsx', 'module-sidebar.tsx', 'status-colors.ts', 'sidebar-config.ts', 'severity-styles.ts'];
+  const EXCEPTION_FILES = [
+    'status-badge.tsx',
+    'module-sidebar.tsx',
+    'status-colors.ts',
+    'sidebar-config.ts',
+    'severity-styles.ts',
+  ];
   // Also allow in globals.css
   const EXCEPTION_DIRS = ['app/'];
 
@@ -867,7 +887,18 @@ function checkW16() {
 
   // Non-color var prefixes — these are spacing/sizing tokens mapped via
   // --density-*, --radius-*, etc., not via --color-* mappings.
-  const NON_COLOR_PREFIXES = ['spacing-', 'text-size-', 'radius', 'layout-', 'shadow-', 'col-', 'select-', 'scroll-', 'truncate-', 'skeleton-'];
+  const NON_COLOR_PREFIXES = [
+    'spacing-',
+    'text-size-',
+    'radius',
+    'layout-',
+    'shadow-',
+    'col-',
+    'select-',
+    'scroll-',
+    'truncate-',
+    'skeleton-',
+  ];
 
   for (const varName of rootVars) {
     // Skip non-color tokens
@@ -945,17 +976,19 @@ function checkW17() {
 
 function checkW18() {
   const PROHIBITED_NAMES = [
-    'utils.ts', 'utils.tsx',
-    'helpers.ts', 'helpers.tsx',
-    'util.ts', 'util.tsx',
-    'helper.ts', 'helper.tsx',
-    'common.ts', 'common.tsx',
+    'utils.ts',
+    'utils.tsx',
+    'helpers.ts',
+    'helpers.tsx',
+    'util.ts',
+    'util.tsx',
+    'helper.ts',
+    'helper.tsx',
+    'common.ts',
+    'common.tsx',
   ];
 
-  const DIRS_TO_CHECK = [
-    join(SRC, 'features'),
-    join(SRC, 'components/erp'),
-  ];
+  const DIRS_TO_CHECK = [join(SRC, 'features'), join(SRC, 'components/erp')];
 
   for (const dir of DIRS_TO_CHECK) {
     const files = collectFiles(dir, ['.ts', '.tsx']);
@@ -984,15 +1017,16 @@ function checkW19() {
   // Map of raw HTML element → shadcn component it should be replaced with
   const SHADCN_REPLACEMENTS = [
     { pattern: /<input\s/, replacement: '<Input /> from @/components/ui/input', tag: 'input' },
-    { pattern: /<textarea\s/, replacement: '<Textarea /> from @/components/ui/textarea', tag: 'textarea' },
+    {
+      pattern: /<textarea\s/,
+      replacement: '<Textarea /> from @/components/ui/textarea',
+      tag: 'textarea',
+    },
     { pattern: /<select\s/, replacement: '<Select /> from @/components/ui/select', tag: 'select' },
     { pattern: /<table[\s>]/, replacement: '<Table /> from @/components/ui/table', tag: 'table' },
   ];
 
-  const DIRS_TO_CHECK = [
-    join(SRC, 'features'),
-    join(SRC, 'components/erp'),
-  ];
+  const DIRS_TO_CHECK = [join(SRC, 'features'), join(SRC, 'components/erp')];
 
   for (const dir of DIRS_TO_CHECK) {
     const files = collectFiles(dir, ['.tsx']);
@@ -1013,10 +1047,7 @@ function checkW19() {
             if (tag === 'input' && line.includes('getInputProps')) continue;
             // Exempt hidden inputs (type="hidden")
             if (tag === 'input' && line.includes('type="hidden"')) continue;
-            fail(
-              'W19',
-              `${rel}:${i + 1} -- Raw <${tag}> element. Use ${replacement} instead.`
-            );
+            fail('W19', `${rel}:${i + 1} -- Raw <${tag}> element. Use ${replacement} instead.`);
           }
         }
       }
@@ -1030,7 +1061,8 @@ function checkW19() {
 // Exempt: constants.ts (route definitions), test files.
 
 function checkW20() {
-  const ROUTE_PATH_PATTERN = /['"`]\/(?:finance|hrm|crm|boardroom|admin|settings|portal)\/[^'"`\s]*['"`]/;
+  const ROUTE_PATH_PATTERN =
+    /['"`]\/(?:finance|hrm|crm|boardroom|admin|settings|portal)\/[^'"`\s]*['"`]/;
 
   // Files where route path literals are the actual definitions
   const EXEMPT_FILES = [
@@ -1038,6 +1070,7 @@ function checkW20() {
     'lib/modules/module-spec.ts', // module matchers use bare paths
     'lib/kpis/kpi-catalog.ts', // KPI catalog hrefs are route-like definitions
     'lib/tenant-context.server.ts', // server-side redirect/revalidation paths
+    'lib/shortcuts/page-context-actions.ts', // route prefix matchers for keyboard shortcuts
     'features/portal/queries/portal.queries.ts', // API endpoint path builders
   ];
 
@@ -1086,10 +1119,7 @@ function checkW20() {
 // for top-level module dirs only).
 
 function checkW21() {
-  const ROUTE_GROUPS = [
-    join(SRC, 'app/(shell)'),
-    join(SRC, 'app/(portal)'),
-  ];
+  const ROUTE_GROUPS = [join(SRC, 'app/(shell)'), join(SRC, 'app/(portal)')];
 
   function walkRoutes(dir, isTopLevel = false) {
     if (!existsSync(dir)) return;
@@ -1135,6 +1165,31 @@ function checkW21() {
 // Server component page.tsx files that import async child components should
 // wrap them in <Suspense>. Heuristic: if a page.tsx has `await` calls AND
 // does NOT contain `<Suspense`, warn.
+//
+// DIAGNOSIS: Suspense only works with Suspense-enabled data sources (React docs):
+//   ✓ Async Server Components as children inside Suspense
+//   ✓ lazy() for code splitting
+//   ✓ use() hook with promises
+//   ✗ Top-level await that completes BEFORE Suspense renders
+//   ✗ useEffect or event handlers
+//
+// ANTI-PATTERN:
+//   async function Page() {
+//     const data = await fetch(...); // ← Blocks entire component
+//     return <Suspense><Content data={data} /></Suspense>; // ← Does nothing!
+//   }
+//
+// CORRECT PATTERN:
+//   async function Page() {
+//     const ctx = await getContext(); // ← Only critical context
+//     return <Suspense fallback={<Loading />}>
+//       <DataLoader ctx={ctx} /> {/* ← Async child suspends here */}
+//     </Suspense>;
+//   }
+//   async function DataLoader({ ctx }) {
+//     const data = await fetch(...); // ← Suspends inside boundary ✓
+//     return <Content data={data} />;
+//   }
 
 function checkW22() {
   const appDir = join(SRC, 'app');
@@ -1148,18 +1203,94 @@ function checkW22() {
     const rel = relPath(file);
 
     // Only check server components (no "use client")
-    if (content.trimStart().startsWith('"use client"') || content.trimStart().startsWith("'use client'")) continue;
+    if (
+      content.trimStart().startsWith('"use client"') ||
+      content.trimStart().startsWith("'use client'")
+    )
+      continue;
 
     // Check if page uses await (async data fetching)
     const hasAwait = /\bawait\s/.test(content);
     const hasSuspense = /<Suspense/.test(content);
 
-    // If page fetches data and renders child components but has no Suspense
-    if (hasAwait && !hasSuspense) {
-      // Only warn if there are multiple awaits (suggests parallel fetches that could stream)
-      const awaitCount = (content.match(/\bawait\s/g) || []).length;
-      if (awaitCount >= 2) {
-        warn('W22', `${rel} -- ${awaitCount} await calls but no <Suspense> boundary. Consider streaming with Suspense.`);
+    // Advanced check: detect anti-pattern where await is BEFORE Suspense
+    // This means data is loaded before Suspense renders, defeating streaming
+    if (hasAwait) {
+      const awaitMatches = [...content.matchAll(/\bawait\s+([^\n;]+)/g)];
+      const suspenseMatches = [...content.matchAll(/<Suspense[^>]*>/g)];
+
+      // Detect async child component pattern (correct Suspense usage)
+      // Pattern: async function SomethingContent({ ... }) - indicates properly structured streaming
+      const hasAsyncChildComponent = /async\s+function\s+\w+Content\s*\({/.test(content);
+
+      // Find position of first Suspense in the file
+      const firstSuspensePos =
+        suspenseMatches.length > 0 ? content.indexOf(suspenseMatches[0][0]) : Infinity;
+
+      // Exclude awaits inside nested async function declarations
+      // Find all nested async function blocks to exclude their awaits
+      const asyncFunctionRanges = [];
+      const asyncFuncMatches = [...content.matchAll(/async\s+function\s+(\w+)\s*\([^)]*\)\s*\{/g)];
+
+      for (const match of asyncFuncMatches) {
+        const funcName = match[1];
+        // Skip the main page/default export function
+        if (funcName.endsWith('Page') || funcName === 'default') continue;
+
+        // Find the matching closing brace (simplified - assumes function is not nested too deeply)
+        const start = match.index;
+        let depth = 1;
+        let pos = start + match[0].length;
+        while (depth > 0 && pos < content.length) {
+          if (content[pos] === '{') depth++;
+          if (content[pos] === '}') depth--;
+          pos++;
+        }
+        asyncFunctionRanges.push({ start, end: pos });
+      }
+
+      // Filter awaits to only those NOT inside async child components
+      const awaitsInParent = awaitMatches.filter((m) => {
+        return !asyncFunctionRanges.some((range) => m.index >= range.start && m.index <= range.end);
+      });
+
+      // Count awaits that occur BEFORE the first Suspense (in parent scope only)
+      const awaitsBeforeSuspense = awaitsInParent.filter((m) => m.index < firstSuspensePos);
+
+      // Diagnosis: If we have awaits before Suspense in parent scope, that's the anti-pattern
+      // Exception: If using async child component pattern, it's likely correctly structured
+      if (awaitsBeforeSuspense.length >= 2 && hasSuspense && !hasAsyncChildComponent) {
+        const awaitExamples = awaitsBeforeSuspense
+          .slice(0, 2)
+          .map((m) => {
+            const line = content.substring(0, m.index).split('\n').length;
+            const call = m[1].trim().substring(0, 40);
+            return `line ${line}: await ${call}...`;
+          })
+          .join('; ');
+
+        warn(
+          'W22',
+          `${rel} -- ${awaitsBeforeSuspense.length} await calls BEFORE <Suspense> boundary. Data loads before streaming starts.\n` +
+            `      DIAGNOSIS: Top-level awaits block the entire component. By the time React reaches <Suspense>, data is already loaded.\n` +
+            `      EXAMPLES: ${awaitExamples}\n` +
+            `      FIX: Split into async child component:\n` +
+            `           1. Move awaits into separate async function component\n` +
+            `           2. Wrap that component in <Suspense fallback={<Loading />}>\n` +
+            `           3. Parent awaits only critical context (e.g., auth)\n` +
+            `      SEE: docs/SUSPENSE-GUIDE.md for detailed migration guide`
+        );
+      }
+      // If no Suspense at all but multiple awaits
+      else if (!hasSuspense && awaitMatches.length >= 3) {
+        warn(
+          'W22',
+          `${rel} -- ${awaitMatches.length} await calls but no <Suspense> boundary. Consider progressive streaming.\n` +
+            `      DIAGNOSIS: Multiple data fetches could stream in progressively instead of blocking sequentially.\n` +
+            `      FIX: Wrap async child components in nested <Suspense> boundaries for progressive reveal.\n` +
+            `      BENEFIT: Users see page header/nav immediately while data streams in.\n` +
+            `      SEE: docs/SUSPENSE-GUIDE.md - "Pattern 2: Nested Suspense for Granular Streaming"`
+        );
       }
     }
   }
@@ -1182,9 +1313,15 @@ function checkW23() {
     const content = readFileSync(file, 'utf-8');
     const rel = relPath(file);
 
-    const hasMetadata = /export\s+(?:const\s+metadata|async\s+function\s+generateMetadata|function\s+generateMetadata)/.test(content);
+    const hasMetadata =
+      /export\s+(?:const\s+metadata|async\s+function\s+generateMetadata|function\s+generateMetadata)/.test(
+        content
+      );
     if (!hasMetadata) {
-      warn('W23', `${rel} -- No metadata export. Add \`export const metadata\` or \`export async function generateMetadata\` for SEO.`);
+      warn(
+        'W23',
+        `${rel} -- No metadata export. Add \`export const metadata\` or \`export async function generateMetadata\` for SEO.`
+      );
     }
   }
 }
@@ -1214,7 +1351,9 @@ function checkW24() {
       const rel = relPath(file);
 
       // Server Actions ('use server') use console.log as stub tracing — warn only
-      const isServerAction = content.trimStart().startsWith("'use server'") || content.trimStart().startsWith('"use server"');
+      const isServerAction =
+        content.trimStart().startsWith("'use server'") ||
+        content.trimStart().startsWith('"use server"');
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -1255,7 +1394,10 @@ function checkW25() {
   // poweredByHeader: false — security (strip X-Powered-By)
   if (!content.includes('poweredByHeader')) {
     fail('W25', 'next.config.ts missing `poweredByHeader: false`. Leaks X-Powered-By header.');
-  } else if (!content.includes('poweredByHeader: false') && !content.includes('poweredByHeader:false')) {
+  } else if (
+    !content.includes('poweredByHeader: false') &&
+    !content.includes('poweredByHeader:false')
+  ) {
     warn('W25', 'next.config.ts has poweredByHeader but not set to false.');
   }
 
@@ -1271,13 +1413,19 @@ function checkW25() {
   // images.formats should include AVIF
   if (content.includes('formats')) {
     if (!content.includes('avif')) {
-      warn('W25', 'next.config.ts images.formats should include image/avif for optimal compression.');
+      warn(
+        'W25',
+        'next.config.ts images.formats should include image/avif for optimal compression.'
+      );
     }
   }
 
   // reactStrictMode should not be explicitly false
   if (/reactStrictMode\s*:\s*false/.test(content)) {
-    warn('W25', 'next.config.ts has reactStrictMode: false. Recommended: true or omit (default true).');
+    warn(
+      'W25',
+      'next.config.ts has reactStrictMode: false. Recommended: true or omit (default true).'
+    );
   }
 }
 
@@ -1333,6 +1481,7 @@ function checkW27() {
   const SKIP = [
     'empty-state.registry.ts',
     'empty-state.types.ts',
+    'empty-state.generated-keys.ts',
     'empty-state.tsx',
     'data-table.tsx',
   ];
@@ -1344,7 +1493,7 @@ function checkW27() {
 
     // Skip registry, types, component core, tests
     if (SKIP.some((s) => rel.endsWith(s))) continue;
-    if (rel.includes('__tests__')) continue;
+    if (rel.includes('__tests__') || /\.test\.tsx?$/.test(rel)) continue;
 
     const content = readFileSync(file, 'utf-8');
 
@@ -1356,7 +1505,10 @@ function checkW27() {
       const block = esMatch[0];
       if (block.includes('title=') && !block.includes('contentKey=')) {
         const line = content.substring(0, esMatch.index).split('\n').length;
-        fail('W27', `${rel}:${line} -- <EmptyState> uses hardcoded title= without contentKey=. Use contentKey="..." from registry.`);
+        fail(
+          'W27',
+          `${rel}:${line} -- <EmptyState> uses hardcoded title= without contentKey=. Use contentKey="..." from registry.`
+        );
         violations++;
       }
     }
@@ -1366,7 +1518,10 @@ function checkW27() {
       const lines = content.split('\n');
       for (let i = 0; i < lines.length; i++) {
         if (/\bemptyMessage=/.test(lines[i])) {
-          fail('W27', `${rel}:${i + 1} -- emptyMessage= is deprecated. Use emptyState={{ key: "..." }}.`);
+          fail(
+            'W27',
+            `${rel}:${i + 1} -- emptyMessage= is deprecated. Use emptyState={{ key: "..." }}.`
+          );
           violations++;
         }
       }
@@ -1375,7 +1530,10 @@ function checkW27() {
       const lines = content.split('\n');
       for (let i = 0; i < lines.length; i++) {
         if (/\bemptyTitle=/.test(lines[i])) {
-          fail('W27', `${rel}:${i + 1} -- emptyTitle= is deprecated. Use emptyState={{ key: "..." }}.`);
+          fail(
+            'W27',
+            `${rel}:${i + 1} -- emptyTitle= is deprecated. Use emptyState={{ key: "..." }}.`
+          );
           violations++;
         }
       }
@@ -1384,6 +1542,229 @@ function checkW27() {
 
   if (violations === 0) {
     pass('W27', 'No hardcoded empty-state strings found outside registry.');
+  }
+
+  // ── W27b: Cross-validate generated keys ↔ registry entries ──
+  const generatedKeysFile = join(SRC, 'components', 'erp', 'empty-state.generated-keys.ts');
+  const registryFile = join(SRC, 'components', 'erp', 'empty-state.registry.ts');
+
+  if (existsSync(generatedKeysFile) && existsSync(registryFile)) {
+    const gkContent = readFileSync(generatedKeysFile, 'utf-8');
+    const regContent = readFileSync(registryFile, 'utf-8');
+
+    // Extract generated keys from the anchored region
+    const gkStart = gkContent.indexOf('// @afenda-gen:empty-state-keys:start');
+    const gkEnd = gkContent.indexOf('// @afenda-gen:empty-state-keys:end');
+    const generatedKeys = [];
+    if (gkStart !== -1 && gkEnd !== -1) {
+      const region = gkContent.slice(gkStart, gkEnd);
+      const keyPattern = /\|\s*'([^']+)'/g;
+      let km;
+      while ((km = keyPattern.exec(region)) !== null) {
+        generatedKeys.push(km[1]);
+      }
+    }
+
+    // Extract registry entries from the generated anchored region
+    const regStart = regContent.indexOf('// @afenda-gen:empty-state-entries:start');
+    const regEnd = regContent.indexOf('// @afenda-gen:empty-state-entries:end');
+    const registryKeys = [];
+    if (regStart !== -1 && regEnd !== -1) {
+      const region = regContent.slice(regStart, regEnd);
+      const entryPattern = /'([^']+)':\s*\{/g;
+      let em;
+      while ((em = entryPattern.exec(region)) !== null) {
+        registryKeys.push(em[1]);
+      }
+    }
+
+    // Cross-validate
+    let crossViolations = 0;
+    for (const key of generatedKeys) {
+      if (!registryKeys.includes(key)) {
+        fail(
+          'W27',
+          `Generated key "${key}" has no matching registry entry in empty-state.registry.ts.`
+        );
+        crossViolations++;
+      }
+    }
+    for (const key of registryKeys) {
+      if (!generatedKeys.includes(key)) {
+        fail(
+          'W27',
+          `Registry entry "${key}" has no matching key in empty-state.generated-keys.ts.`
+        );
+        crossViolations++;
+      }
+    }
+    if (crossViolations === 0) {
+      pass('W27', 'Generated keys and registry entries are in sync.');
+    }
+  }
+
+  // ── W27c: Deprecated `size=` usage on EmptyState ──
+  // Only flag `size=` on the opening <EmptyState tag itself, not nested elements
+  {
+    let sizeViolations = 0;
+    for (const file of allFiles) {
+      const rel = relative(SRC, file);
+      if (SKIP.some((s) => rel.endsWith(s))) continue;
+      if (rel.includes('__tests__') || /\.test\.tsx?$/.test(rel)) continue;
+
+      const content = readFileSync(file, 'utf-8');
+      // Match <EmptyState props only (before first nested < or self-closing />)
+      // This pattern stops at the first < of a child component or at /> for self-closing
+      const esOpeningTagPattern = /<EmptyState\s+([^<]*?)(?:>|\/>) /g;
+      let m;
+      while ((m = esOpeningTagPattern.exec(content)) !== null) {
+        const propsSection = m[1]; // Just the props, not nested components
+        if (/\bsize=/.test(propsSection)) {
+          const line = content.substring(0, m.index).split('\n').length;
+          warn(
+            'W27',
+            `${rel}:${line} -- <EmptyState> uses deprecated \`size\` prop. Migrate to \`constraint\`.`
+          );
+          sizeViolations++;
+        }
+      }
+    }
+    if (sizeViolations === 0) {
+      pass('W27', 'No deprecated `size` prop usage on <EmptyState>.');
+    }
+  }
+
+  // ── W27d: Redundant className="border-0" alongside constraint= ──
+  {
+    let borderViolations = 0;
+    for (const file of allFiles) {
+      const rel = relative(SRC, file);
+      if (SKIP.some((s) => rel.endsWith(s))) continue;
+      if (rel.includes('__tests__') || /\.test\.tsx?$/.test(rel)) continue;
+
+      const content = readFileSync(file, 'utf-8');
+      const esPattern = /<EmptyState[\s\S]*?(?:\/>|<\/EmptyState>)/g;
+      let m;
+      while ((m = esPattern.exec(content)) !== null) {
+        const block = m[0];
+        if (/\bconstraint=/.test(block) && /border-0/.test(block)) {
+          const line = content.substring(0, m.index).split('\n').length;
+          warn(
+            'W27',
+            `${rel}:${line} -- <EmptyState> has \`constraint\` with redundant \`border-0\` className. The tier handles border policy.`
+          );
+          borderViolations++;
+        }
+      }
+    }
+    if (borderViolations === 0) {
+      pass('W27', 'No redundant border-0 overrides alongside constraint prop.');
+    }
+  }
+}
+
+// ─── W28: Stub / TODO / Placeholder Audit ───────────────────────────────────
+// Surfaces every unresolved stub, TODO, FIXME, HACK, mock-data constant, and
+// "not implemented" throw so CI dashboards give clear visibility into
+// incomplete code that needs resolution before production.
+//
+// Emits WARN (not FAIL) — stubs are expected during development but must be
+// tracked so nothing ships to production unresolved.
+
+function checkW28() {
+  const allFiles = collectFiles(SRC, ['.ts', '.tsx', '.mjs']);
+
+  // Files that are allowed to contain stubs/TODOs without warnings
+  const SKIP = [
+    '__tests__/',
+    '.test.',
+    '.spec.',
+    'test-utils',
+    'setup.ts', // test setup legitimately stubs window APIs
+  ];
+
+  /** @type {Map<string, { file: string; line: number; text: string; category: string }[]>} */
+  const findings = new Map();
+
+  function record(category, file, lineNum, lineText) {
+    if (!findings.has(category)) findings.set(category, []);
+    findings.get(category).push({
+      file: relPath(file),
+      line: lineNum,
+      text: lineText.trim().substring(0, 120),
+    });
+  }
+
+  for (const file of allFiles) {
+    const rel = relPath(file);
+
+    // Skip test files
+    if (SKIP.some((s) => rel.includes(s))) continue;
+
+    const content = readFileSync(file, 'utf-8');
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const num = i + 1;
+
+      // ── Category 1: TODO / FIXME / HACK / XXX comments ──
+      if (/\/\/\s*(TODO|FIXME|HACK|XXX)\b/i.test(line)) {
+        const tag = line.match(/\/\/\s*(TODO|FIXME|HACK|XXX)\b/i)[1].toUpperCase();
+        record(tag, file, num, line);
+        continue; // Don't double-count
+      }
+
+      // ── Category 2: STUB_ prefixed constants or variables ──
+      if (/\bSTUB_[A-Z_]+\b/.test(line)) {
+        record('STUB_CONSTANT', file, num, line);
+        continue;
+      }
+
+      // ── Category 3: KPI stub template usage ──
+      if (/template:\s*['"]stub['"]/.test(line)) {
+        record('KPI_STUB', file, num, line);
+        continue;
+      }
+
+      // ── Category 4: throw new Error('not implemented') ──
+      if (/throw\s+new\s+Error\s*\(\s*['"]not\s+implemented/i.test(line)) {
+        record('NOT_IMPLEMENTED', file, num, line);
+        continue;
+      }
+
+      // ── Category 5: Console.warn about stubs ──
+      if (/console\.\w+\s*\(\s*['"][^'"]*\bSTUB\b/i.test(line)) {
+        record('STUB_WARNING', file, num, line);
+        continue;
+      }
+    }
+
+    // ── Category 6: Mock data files (file-level, not line-level) ──
+    const basename = file.split(/[\\/]/).pop();
+    if (/^mock[-.]/.test(basename) && !rel.includes('__tests__')) {
+      record('MOCK_DATA_FILE', file, 0, `File: ${basename}`);
+    }
+  }
+
+  // Emit results
+  let totalFindings = 0;
+  for (const [category, items] of findings) {
+    totalFindings += items.length;
+    for (const item of items) {
+      const loc = item.line > 0 ? `${item.file}:${item.line}` : item.file;
+      warn('W28', `[${category}] ${loc} -- ${item.text}`);
+    }
+  }
+
+  if (totalFindings === 0) {
+    pass('W28', 'No stubs, TODOs, or placeholders found.');
+  } else {
+    // Summary line
+    const cats = [...findings.entries()]
+      .map(([cat, items]) => `${cat}(${items.length})`)
+      .join(', ');
+    warn('W28', `SUMMARY: ${totalFindings} unresolved items — ${cats}`);
   }
 }
 
@@ -1398,7 +1779,7 @@ function main() {
   if (!JSON_MODE) {
     console.log('+--------------------------------------------------------------+');
     console.log('|  @afenda/web -- Frontend Drift Gate                          |');
-    console.log('|  27 checks - ARCHITECTURE.@afenda-web.md enforcement         |');
+    console.log('|  28 checks - ARCHITECTURE_afenda-web.md enforcement          |');
     console.log('+--------------------------------------------------------------+\n');
   }
 
@@ -1430,6 +1811,7 @@ function main() {
     { id: 'W25', name: 'next.config.ts best practices', fn: checkW25 },
     { id: 'W26', name: 'Exception registry audit', fn: checkW26 },
     { id: 'W27', name: 'EmptyState registry discipline', fn: checkW27 },
+    { id: 'W28', name: 'Stub / TODO / Placeholder audit', fn: checkW28 },
   ];
 
   for (const check of checks) {

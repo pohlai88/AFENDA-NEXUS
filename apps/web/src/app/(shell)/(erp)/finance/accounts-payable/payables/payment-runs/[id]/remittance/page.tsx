@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import type { RequestContext } from '@afenda/core';
 import { getRequestContext } from '@/lib/auth';
 import { getRemittanceAdvice } from '@/features/finance/payables/queries/ap-payment-run.queries';
 import { ApRemittanceView } from '@/features/finance/payables/blocks/ap-remittance-view';
@@ -12,18 +13,12 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Payables — Payment Runs — Remittance' };
 
-export default async function PaymentRunRemittancePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function PaymentRunRemittanceContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getRemittanceAdvice(ctx, id);
 
   if (!result.ok) notFound();
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon">
@@ -43,6 +38,19 @@ export default async function PaymentRunRemittancePage({
         </CardContent>
       </Card>
     </div>
-  </Suspense>
+  );
+}
+
+export default async function PaymentRunRemittancePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PaymentRunRemittanceContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

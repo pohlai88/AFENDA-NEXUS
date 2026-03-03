@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { ApPaymentForm } from '@/features/finance/payables/forms/ap-payment-form';
 import { getRequestContext } from '@/lib/auth';
@@ -10,8 +11,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Record Payment' };
 
-export default async function PayablePayPage({ params }: { params: Promise<{ id: string }> }) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function PayablePayContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getApInvoice(ctx, id);
 
   if (!result.ok) {
@@ -22,7 +22,6 @@ export default async function PayablePayPage({ params }: { params: Promise<{ id:
   const invoice = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Record Payment"
@@ -39,6 +38,15 @@ export default async function PayablePayPage({ params }: { params: Promise<{ id:
         <ApPaymentForm invoice={invoice} />
       </div>
     </div>
-  </Suspense>
+  );
+}
+
+export default async function PayablePayPage({ params }: { params: Promise<{ id: string }> }) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PayablePayContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

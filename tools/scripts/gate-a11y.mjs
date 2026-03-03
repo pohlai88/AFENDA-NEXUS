@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * gate:a11y — Accessibility validation gate for React/Next.js components
- * 
+ *
  * Checks:
  *   A11Y-01: Images must have alt text
  *   A11Y-02: Interactive elements must have accessible labels
@@ -9,10 +9,10 @@
  *   A11Y-04: Form inputs must have associated labels
  *   A11Y-05: Links must have descriptive text (not "click here")
  *   A11Y-06: Heading hierarchy must be sequential
- * 
+ *
  * Usage: node tools/scripts/gate-a11y.mjs
  * Auto-fix: node tools/scripts/gate-a11y.mjs --fix
- * 
+ *
  * Reference: WCAG 2.1 Level AA compliance
  */
 
@@ -61,13 +61,14 @@ const PATTERNS = [
     autoFix: (match) => {
       // Insert alt="" before the closing >
       return match.replace(/>$/, ' alt="" />');
-    }
+    },
   },
   {
     id: 'A11Y-02',
     name: 'Button with only icon, no aria-label',
     // Match: <button> or <Button> with Icon but no text and no aria-label
-    regex: /<(button|Button)[^>]*>[\s\n]*<(Icon|Lucide|[A-Z]\w*Icon)[^>]*\/>[\s\n]*<\/(button|Button)>/g,
+    regex:
+      /<(button|Button)[^>]*>[\s\n]*<(Icon|Lucide|[A-Z]\w*Icon)[^>]*\/>[\s\n]*<\/(button|Button)>/g,
     check: (match, fullLine) => !match.includes('aria-label') && !match.includes('aria-labelledby'),
     hint: 'Add aria-label: <button aria-label="Delete" onClick={...}><Icon name="trash" /></button>',
     autoFix: (match) => {
@@ -75,7 +76,7 @@ const PATTERNS = [
       const iconMatch = match.match(/name=["']([^"']+)["']/);
       const label = iconMatch ? iconMatch[1].replace(/-/g, ' ') : 'action';
       return match.replace(/<(button|Button)/, `<$1 aria-label="${label}"`);
-    }
+    },
   },
   {
     id: 'A11Y-03',
@@ -93,8 +94,16 @@ const PATTERNS = [
     check: (match, fullLine, context) => {
       // Skip if it has aria-label, aria-labelledby, or is wrapped in <label>
       if (match.includes('aria-label') || match.includes('aria-labelledby')) return false;
-      // Check if <label> appears nearby (within 3 lines before)
-      return !context.includes('<label') && !context.includes('<Label');
+      // The regex may stop at '>' inside arrow fns; check the full source line too
+      if (fullLine.includes('aria-label') || fullLine.includes('aria-labelledby')) return false;
+      // Check surrounding context (before+after) for aria-label on other lines of multi-line JSX
+      if (context.includes('aria-label') || context.includes('aria-labelledby')) return false;
+      // Check if <label>, <Label>, or <FormLabel> appears nearby
+      return (
+        !context.includes('<label') &&
+        !context.includes('<Label') &&
+        !context.includes('<FormLabel')
+      );
     },
     hint: 'Add <label> or aria-label: <label htmlFor="email">Email</label><input id="email" type="email" />',
   },
@@ -113,7 +122,7 @@ const PATTERNS = [
     hint: 'Add aria-hidden to decorative icons: <Icon name="chevron" aria-hidden="true" />',
     autoFix: (match) => {
       return match.replace(/\/>$/, ' aria-hidden="true" />');
-    }
+    },
   },
 ];
 
@@ -129,30 +138,32 @@ for (const file of walkTsx(WEB_SRC)) {
   for (const { id, name, regex, check, hint, autoFix: fixFn } of PATTERNS) {
     let match;
     regex.lastIndex = 0; // Reset regex state
-    
+
     while ((match = regex.exec(content)) !== null) {
       const matchStart = match.index;
       const lineNumber = content.substring(0, matchStart).split('\n').length;
       const line = lines[lineNumber - 1];
-      
+
       // Skip comments
       if (/^\s*\/\//.test(line) || /^\s*\*/.test(line)) continue;
-      
-      // Get context (3 lines before)
-      const contextLines = lines.slice(Math.max(0, lineNumber - 4), lineNumber).join('\n');
-      
+
+      // Get context (6 lines before + 6 lines after for multi-line JSX)
+      const contextLines = lines
+        .slice(Math.max(0, lineNumber - 7), Math.min(lines.length, lineNumber + 6))
+        .join('\n');
+
       // Apply custom check if provided
       if (check && !check(match[0], line, contextLines)) continue;
-      
-      failures.push({ 
-        gate: id, 
-        file: r, 
-        line: lineNumber, 
-        name, 
+
+      failures.push({
+        gate: id,
+        file: r,
+        line: lineNumber,
+        name,
         hint,
-        match: match[0]
+        match: match[0],
       });
-      
+
       // Auto-fix if enabled and fixFn provided
       if (autoFix && fixFn) {
         const fixed = fixFn(match[0]);
@@ -162,7 +173,7 @@ for (const file of walkTsx(WEB_SRC)) {
       }
     }
   }
-  
+
   // Write fixes
   if (modified) {
     writeFileSync(file, newContent, 'utf-8');

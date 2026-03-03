@@ -97,6 +97,13 @@ export const apInvoiceStatusEnum = pgEnum('ap_invoice_status', [
   'CANCELLED',
 ]);
 
+export const apInvoiceTypeEnum = pgEnum('ap_invoice_type', [
+  'STANDARD',
+  'DEBIT_MEMO',
+  'CREDIT_MEMO',
+  'PREPAYMENT',
+]);
+
 export const paymentRunStatusEnum = pgEnum('payment_run_status', [
   'DRAFT',
   'APPROVED',
@@ -544,6 +551,14 @@ export const complianceItemTypeEnum = pgEnum('compliance_item_type', [
   'TRADE_LICENSE',
 ]);
 
+/** Alert thresholds for compliance expiry monitoring (Phase 1.1.3 CAP-COMPL). */
+export const complianceAlertTypeEnum = pgEnum('compliance_alert_type', [
+  'EXPIRING_30D',
+  'EXPIRING_14D',
+  'EXPIRING_7D',
+  'EXPIRED',
+]);
+
 export const whtIncomeTypeEnum = pgEnum('wht_income_type', [
   'ROYALTIES',
   'INTEREST',
@@ -586,6 +601,15 @@ export const supplierOnboardingStatusEnum = pgEnum('supplier_onboarding_status',
   'ACTIVE',
   'SUSPENDED',
   'INACTIVE',
+]);
+
+/** Wizard steps for supplier onboarding (Phase 1.1.2 CAP-ONB). */
+export const onboardingStepEnum = pgEnum('onboarding_step', [
+  'company_info',
+  'bank_details',
+  'kyc_documents',
+  'tax_registration',
+  'review',
 ]);
 
 export const supplierAccountGroupEnum = pgEnum('supplier_account_group', [
@@ -706,4 +730,185 @@ export const supplierDuplicateStatusEnum = pgEnum('supplier_duplicate_status', [
   'CONFIRMED_DUPLICATE',
   'DISMISSED',
   'MERGED',
+]);
+
+// ─── Portal Case Management enums (Phase 1.1 — SP-4001) ─────────────────
+
+export const caseStatusEnum = pgEnum('case_status', [
+  'DRAFT',
+  'SUBMITTED',
+  'ASSIGNED',
+  'IN_PROGRESS',
+  'AWAITING_INFO',
+  'RESOLVED',
+  'CLOSED',
+  'REOPENED',
+]);
+
+export const caseCategoryEnum = pgEnum('case_category', [
+  'PAYMENT',
+  'INVOICE',
+  'COMPLIANCE',
+  'DELIVERY',
+  'QUALITY',
+  'ONBOARDING',
+  'GENERAL',
+  'ESCALATION',
+]);
+
+export const casePriorityEnum = pgEnum('case_priority', ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
+
+export const caseTimelineEntryTypeEnum = pgEnum('case_timeline_entry_type', [
+  'status',
+  'message',
+  'attachment',
+  'escalation',
+  'sla_breach',
+  'payment',
+  'match',
+  'system',
+]);
+
+/** Entity types that can be linked to a case (separate from document linkedEntityType). */
+export const caseLinkedEntityTypeEnum = pgEnum('case_linked_entity_type', [
+  'INVOICE',
+  'PAYMENT',
+  'DOCUMENT',
+  'COMPLIANCE',
+  'PO',
+]);
+
+/** Actor types in portal context — who performed the action. */
+export const portalActorTypeEnum = pgEnum('portal_actor_type', ['SUPPLIER', 'BUYER', 'SYSTEM']);
+
+/** Proof chain event types — every auditable portal action. */
+export const proofEventTypeEnum = pgEnum('proof_event_type', [
+  'MESSAGE_SENT',
+  'MESSAGE_READ',
+  'CASE_CREATED',
+  'CASE_STATUS_CHANGED',
+  'CASE_ASSIGNED',
+  'CASE_RESOLVED',
+  'CASE_REOPENED',
+  'ESCALATION_TRIGGERED',
+  'ESCALATION_RESOLVED',
+  'DOCUMENT_UPLOADED',
+  'DOCUMENT_SHARED',
+  'DOCUMENT_SIGNED',
+  'BANK_ACCOUNT_PROPOSED',
+  'BANK_ACCOUNT_APPROVED',
+  'BANK_ACCOUNT_REJECTED',
+  'PAYMENT_STATUS_CHANGED',
+  'INVOICE_SUBMITTED',
+  'INVOICE_STATUS_CHANGED',
+  'COMPLIANCE_UPLOADED',
+  'COMPLIANCE_VERIFIED',
+  'COMPLIANCE_RENEWED',
+  'ONBOARDING_SUBMITTED',
+  'ONBOARDING_APPROVED',
+  'ONBOARDING_REJECTED',
+  'DAILY_ANCHOR',
+]);
+
+// ─── Portal Location & Directory Enums (Phase 1.1.5-1.1.6) ─────────────────
+
+export const locationTypeEnum = pgEnum('location_type', [
+  'HQ',
+  'WAREHOUSE',
+  'BILLING',
+  'SHIPPING',
+  'BRANCH',
+]);
+
+export const departmentEnum = pgEnum('department', [
+  'ACCOUNTS_PAYABLE',
+  'PROCUREMENT',
+  'COMPLIANCE',
+  'FINANCE_MANAGEMENT',
+  'EXECUTIVE',
+  'OPERATIONS',
+  'LEGAL',
+]);
+
+/** Invitation status for supplier portal invitations (Phase 1.1.7 CAP-INV). */
+export const invitationStatusEnum = pgEnum('invitation_status', [
+  'PENDING', // Sent, awaiting acceptance
+  'ACCEPTED', // Supplier clicked link and started onboarding
+  'EXPIRED', // Token expired (default: 7 days)
+  'REVOKED', // Buyer cancelled invitation
+]);
+
+/** Message sender type for portal messaging (Phase 1.2.1 CAP-MSG). */
+export const senderTypeEnum = pgEnum('sender_type', ['SUPPLIER', 'BUYER']);
+
+/** Escalation status for CAP-SOS breakglass workflow (Phase 1.2.2 P19). */
+export const escalationStatusEnum = pgEnum('escalation_status', [
+  'ESCALATION_REQUESTED', // Supplier triggered SOS; awaiting assignment
+  'ESCALATION_ASSIGNED', // Buyer has assigned an escalation contact
+  'ESCALATION_IN_PROGRESS', // Contact is actively working the escalation
+  'ESCALATION_RESOLVED', // Issue resolved; proof chain entry created
+]);
+
+/** Announcement severity for CAP-ANNOUNCE dashboard banners (Phase 1.2.3 P24). */
+export const announcementSeverityEnum = pgEnum('announcement_severity', [
+  'INFO', // General information, blue banner
+  'WARNING', // Attention required, amber banner
+  'CRITICAL', // Urgent action required, red banner
+]);
+
+/** Meeting request status lifecycle for CAP-APPT (Phase 1.2.6 P27). */
+export const meetingRequestStatusEnum = pgEnum('meeting_request_status', [
+  'REQUESTED', // Supplier submitted proposed times; awaiting buyer confirmation
+  'CONFIRMED', // Buyer accepted one of the proposed slots
+  'COMPLETED', // Meeting has taken place
+  'CANCELLED', // Cancelled by either party
+]);
+
+/** Meeting type for CAP-APPT. */
+export const meetingTypeEnum = pgEnum('meeting_type', [
+  'VIRTUAL', // Video / phone call
+  'IN_PERSON', // Physical meeting at buyer or supplier site
+]);
+
+// ─── CAP-PAY-ETA (P2): Payment Status Fact ──────────────────────────────────
+
+/**
+ * Payment stage enum for SP-3005 supplier_payment_status_fact table.
+ * State machine: SCHEDULED → APPROVED → PROCESSING → SENT → CLEARED
+ * Hold/Rejected are terminal side-states (see SP-4002 payment-stage-machine.ts).
+ */
+export const paymentStageEnum = pgEnum('payment_stage', [
+  'SCHEDULED', // Included in upcoming payment run
+  'APPROVED', // Approved for payment — financial controls passed
+  'PROCESSING', // Submitted to bank / in transit
+  'SENT', // Confirmed sent by bank
+  'CLEARED', // Bank confirms cleared in recipient account (terminal)
+  'ON_HOLD', // Suspended — hold_reason indicates why
+  'REJECTED', // Rejected by bank or internal controls (terminal)
+]);
+
+/**
+ * Source of the payment stage update. Higher precedence overrides lower.
+ * Precedence: BANK_FILE > ERP > MANUAL_OVERRIDE.
+ */
+export const paymentSourceEnum = pgEnum('payment_source', [
+  'BANK_FILE', // Parsed bank statement or MT file — highest precedence
+  'ERP', // Payment run scheduled by ERP system
+  'MANUAL_OVERRIDE', // AP clerk override — lowest precedence
+]);
+
+/**
+ * Hold reason taxonomy (internal codes).
+ * Supplier sees supplier_visible_label from Status Dictionary (SP-1003).
+ * Gate SP-8025 asserts raw hold reasons never reach supplier-facing UI.
+ */
+export const holdReasonEnum = pgEnum('hold_reason', [
+  'APPROVAL_PENDING', // Supplier sees: "Awaiting internal approval"
+  'COMPLIANCE_EXPIRED', // Supplier sees: "Compliance document expired"
+  'MISMATCH_3WAY', // Supplier sees: "Invoice under review"
+  'BANK_REJECTED', // Supplier sees: "Bank processing issue"
+  'TAX_VALIDATION_FAILED', // Supplier sees: "Tax registration issue"
+  'PAYMENT_RUN_NOT_SCHEDULED', // Supplier sees: "Not yet scheduled for payment"
+  'MANUAL_HOLD', // Supplier sees: "Under review"
+  'FRAUD_SUSPICION', // Supplier sees: "Verification pending" — NEVER expose internally
 ]);

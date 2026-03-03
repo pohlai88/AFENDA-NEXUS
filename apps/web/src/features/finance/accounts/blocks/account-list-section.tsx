@@ -14,7 +14,12 @@ type Params = { type?: string; active?: string; q?: string; page?: string; limit
 
 export async function AccountListSection({ params }: { params: Params }) {
   const ctx = await getRequestContext();
-  const result = await getAccounts(ctx, { type: params.type, active: params.active, page: params.page ?? '1', limit: params.limit ?? '50' });
+  const result = await getAccounts(ctx, {
+    type: params.type,
+    active: params.active,
+    page: params.page ?? '1',
+    limit: params.limit ?? '50',
+  });
   if (!result.ok) handleApiError(result, 'Failed to load accounts');
   const { data: accounts, total, page, limit } = result.value;
 
@@ -30,8 +35,17 @@ export async function AccountListSection({ params }: { params: Params }) {
         searchPlaceholder="Search accounts…"
         preserveParams={{ active: params.active }}
       />
-      {accounts.length > 0 ? <AccountTable data={accounts} /> : <EmptyState contentKey="finance.accounts" icon={List} />}
-      <Pagination page={page} pageSize={limit} totalCount={total} buildHref={(p) => buildListHref(routes.finance.accounts, params, p)} />
+      {accounts.length > 0 ? (
+        <AccountTable data={accounts} />
+      ) : (
+        <EmptyState contentKey="finance.accounts" constraint="table" icon={List} />
+      )}
+      <Pagination
+        page={page}
+        pageSize={limit}
+        totalCount={total}
+        buildHref={(p) => buildListHref(routes.finance.accounts, params, p)}
+      />
     </>
   );
 }

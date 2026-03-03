@@ -21,9 +21,7 @@ export function toKebab(str) {
 
 /** kebab-case or PascalCase → PascalCase */
 export function toPascal(str) {
-  return str
-    .replace(/(^|[-_])([a-z])/g, (_, _sep, ch) => ch.toUpperCase())
-    .replace(/[-_]/g, '');
+  return str.replace(/(^|[-_])([a-z])/g, (_, _sep, ch) => ch.toUpperCase()).replace(/[-_]/g, '');
 }
 
 /** PascalCase or kebab-case → camelCase */
@@ -47,9 +45,25 @@ export function toSnake(str) {
 
 /** PascalCase → Title Case: "ArInvoice" → "AR Invoice" */
 export function toTitleCase(str) {
-  return str
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+  return str.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+}
+
+/**
+ * Naive English pluralisation — no external dependency.
+ * Handles common suffixes; override with `displayPlural` in spec for edge cases.
+ *
+ * @param {string} word  Singular noun (e.g. "Invoice", "Entry", "Tax")
+ * @returns {string}     Pluralised form
+ */
+export function pluralize(word) {
+  if (!word) return word;
+  if (word.endsWith('y') && !/[aeiou]y$/i.test(word)) {
+    return word.slice(0, -1) + 'ies';
+  }
+  if (/(?:s|x|z|ch|sh)$/i.test(word)) {
+    return word + 'es';
+  }
+  return word + 's';
 }
 
 // ─── File I/O ────────────────────────────────────────────────────────────────
@@ -180,7 +194,7 @@ export function nextMigrationFilename(migrationsDir, name) {
  * @param {string} insertion   Line(s) to insert
  * @returns {{ patched: boolean, reason?: string }}
  */
-export function patchAnchoredRegion(filePath, regionName, insertion) {
+export function patchAnchoredRegion(filePath, regionName, insertion, dedupKey) {
   if (!existsSync(filePath)) {
     return { patched: false, reason: `File not found: ${filePath}` };
   }
@@ -196,10 +210,13 @@ export function patchAnchoredRegion(filePath, regionName, insertion) {
     return { patched: false, reason: `Anchored region '${regionName}' not found in ${filePath}` };
   }
 
-  // Check if insertion already present (exact line match)
+  // Check if insertion already present.
+  // When a dedupKey is provided (e.g. the registry key string), use it for the
+  // check instead of the full insertion text. This is formatter-resilient —
+  // prettier may reformat the inserted code but the key string survives.
   const regionContent = content.slice(startIdx, endIdx);
-  const trimmedInsertion = insertion.trim();
-  if (regionContent.includes(trimmedInsertion)) {
+  const needle = dedupKey || insertion.trim();
+  if (regionContent.includes(needle)) {
     return { patched: false, reason: 'Already present' };
   }
 
@@ -208,7 +225,8 @@ export function patchAnchoredRegion(filePath, regionName, insertion) {
   const after = content.slice(endIdx);
 
   // Ensure insertion ends with newline and proper indentation
-  const insertionLine = trimmedInsertion.endsWith('\n') ? trimmedInsertion : trimmedInsertion + '\n';
+  const trimmed = insertion.trim();
+  const insertionLine = trimmed.endsWith('\n') ? trimmed : trimmed + '\n';
   const indent = '  '; // Match typical 2-space indent in registry objects
 
   const newContent = before + indent + insertionLine + after;
@@ -243,6 +261,75 @@ export function runFormatter(filePaths, root) {
 }
 
 // ─── Printing Helpers ────────────────────────────────────────────────────────
+
+// ─── Empty State Registry Patching ───────────────────────────────────────────
+
+/**
+ * Patch both the generated-keys type file and the registry file
+ * to add a new EmptyState key + entry.
+ *
+ * This function is idempotent — re-running with the same key is a no-op.
+ *
+ * @param {{
+ *   registryKey: string;
+ *   displayName: string;
+ *   displayPlural: string;
+ *   description?: string;
+ *   root: string;
+ * }} opts
+ * @returns {{ keysPatched: boolean; registryPatched: boolean }}
+ */
+export function patchEmptyStateRegistry({
+  registryKey,
+  displayName,
+  displayPlural,
+  description,
+  root,
+}) {
+  const webSrc = join(root, 'apps', 'web', 'src', 'components', 'erp');
+  const keysFile = join(webSrc, 'empty-state.generated-keys.ts');
+  const registryFile = join(webSrc, 'empty-state.registry.ts');
+
+  const desc = description || `Create your first ${displayName} to get started.`;
+
+  // 1. Patch generated keys file — add union member
+  const keyInsertion = `| '${registryKey}'`;
+  const keysResult = patchAnchoredRegion(keysFile, 'empty-state-keys', keyInsertion, registryKey);
+
+  // 2. Patch registry file — add full entry
+  const entryInsertion = `'${registryKey}': {
+    firstRun: {
+      title: 'No ${displayPlural.toLowerCase()} yet',
+      description: '${desc.replace(/'/g, "\\'")}',
+      ctaLabel: 'Create ${displayName}',
+    },
+    noResults: {
+      title: 'No matching ${displayPlural.toLowerCase()}',
+      description: 'Try adjusting your search or filters.',
+    },
+  },`;
+  const registryResult = patchAnchoredRegion(
+    registryFile,
+    'empty-state-entries',
+    entryInsertion,
+    registryKey
+  );
+
+  // 3. Format touched files
+  const filesToFormat = [];
+  if (keysResult.patched) filesToFormat.push(keysFile);
+  if (registryResult.patched) filesToFormat.push(registryFile);
+  if (filesToFormat.length > 0) {
+    runFormatter(filesToFormat, root);
+  }
+
+  return {
+    keysPatched: keysResult.patched,
+    registryPatched: registryResult.patched,
+  };
+}
+
+// ─── Printing Helpers (continued) ────────────────────────────────────────────
 
 /**
  * Print a coloured summary of generator results.

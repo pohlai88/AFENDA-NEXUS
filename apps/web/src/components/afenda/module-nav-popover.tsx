@@ -14,11 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/erp/empty-state';
 import { getIcon } from '@/lib/modules/icon-map';
@@ -50,16 +46,21 @@ function fuzzyMatch(query: string, text: string): boolean {
  * Returns the module whose href matches the pathname, or the first segment
  * (e.g. /finance/... → finance). Falls back to home when at root.
  */
-function getCurrentModule(pathname: string, modules: ClientModuleWithNav[]): ClientModuleWithNav | null {
+function getCurrentModule(
+  pathname: string,
+  modules: ClientModuleWithNav[]
+): ClientModuleWithNav | null {
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length === 0) {
     return modules.find((m) => m.href === '/' || m.id === 'home') ?? modules[0] ?? null;
   }
   const firstSeg = segments[0];
-  return modules.find((m) => {
-    const modSeg = m.href.split('/').filter(Boolean)[0];
-    return modSeg === firstSeg || m.id === firstSeg;
-  }) ?? null;
+  return (
+    modules.find((m) => {
+      const modSeg = m.href.split('/').filter(Boolean)[0];
+      return modSeg === firstSeg || m.id === firstSeg;
+    }) ?? null
+  );
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -83,12 +84,12 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
 
   const currentModule = React.useMemo(
     () => getCurrentModule(pathname, modules),
-    [pathname, modules],
+    [pathname, modules]
   );
 
   const allNavGroups = React.useMemo(
     () => currentModule?.navGroups ?? [],
-    [currentModule?.navGroups],
+    [currentModule?.navGroups]
   );
 
   const navGroups = React.useMemo(() => {
@@ -98,11 +99,10 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
     return allNavGroups
       .map((group) => {
         const filteredItems = (group.items ?? []).filter(
-          (item) =>
-            fuzzyMatch(q, item.title) || fuzzyMatch(q, group.title),
+          (item) => fuzzyMatch(q, item.title) || fuzzyMatch(q, group.title)
         );
         if (filteredItems.length === 0 && !fuzzyMatch(q, group.title)) return null;
-        return { ...group, items: filteredItems.length > 0 ? filteredItems : group.items ?? [] };
+        return { ...group, items: filteredItems.length > 0 ? filteredItems : (group.items ?? []) };
       })
       .filter((g): g is NavGroup => g !== null);
   }, [allNavGroups, searchQuery]);
@@ -110,7 +110,13 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
   const hasAnyItems = navGroups.some((g) => (g.items ?? []).length > 0);
 
   return (
-    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setSearchQuery(''); }}>
+    <Popover
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setSearchQuery('');
+      }}
+    >
       <Tooltip>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
@@ -135,7 +141,10 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
           </PopoverTitle>
           <div className="mt-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Search
+                className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
               <Input
                 placeholder="Search navigation…"
                 value={searchQuery}
@@ -148,27 +157,14 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
         </PopoverHeader>
         {!hasAnyItems ? (
           <EmptyState
-            title={searchQuery.trim() ? 'No matches' : 'No navigation items'}
-            description={
-              searchQuery.trim()
-                ? 'Try a different search term.'
-                : 'No navigation items for this module.'
-            }
+            contentKey="shell.moduleNav"
             icon={Navigation2}
-            variant="noResults"
-            size="sm"
-            animate={false}
-            className="border-0 py-8"
+            variant={searchQuery.trim() ? 'noResults' : 'firstRun'}
+            constraint="1x2"
           />
         ) : (
-          <ScrollArea
-            className={cn(SCROLL_MAX_H, 'h-[min(70vh,24rem)]')}
-            type="auto"
-          >
-            <nav
-              className="flex flex-col gap-1 py-3 pr-4 pl-3"
-              aria-label="Module navigation"
-            >
+          <ScrollArea className={cn(SCROLL_MAX_H, 'h-[min(70vh,24rem)]')} type="auto">
+            <nav className="flex flex-col gap-1 py-3 pr-4 pl-3" aria-label="Module navigation">
               {navGroups.map((group, idx) => (
                 <React.Fragment key={group.title}>
                   <ModuleNavGroup
@@ -176,9 +172,7 @@ function ModuleNavPopover({ modules }: ModuleNavPopoverProps) {
                     pathname={pathname}
                     onNavigate={() => setOpen(false)}
                   />
-                  {idx < navGroups.length - 1 && (
-                    <Separator className="my-1" />
-                  )}
+                  {idx < navGroups.length - 1 && <Separator className="my-1" />}
                 </React.Fragment>
               ))}
             </nav>
@@ -220,7 +214,7 @@ function ModuleNavGroup({ group, pathname, onNavigate }: ModuleNavGroupProps) {
                 onClick={onNavigate}
                 className={cn(
                   'flex min-w-0 items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground',
-                  isActive && 'bg-accent font-medium text-accent-foreground',
+                  isActive && 'bg-accent font-medium text-accent-foreground'
                 )}
               >
                 <ItemIcon className="size-4 shrink-0 text-muted-foreground" />

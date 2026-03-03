@@ -298,7 +298,7 @@ function AfendaCommandPalette({ modules, open, onOpenChange, onOpenShortcuts, en
                         if (result.href) navigate(result.href);
                       }}
                     >
-                      <Icon className={cn(ICON, 'mr-2')} />
+                      <Icon className={cn(ICON, 'mr-2')}  aria-hidden="true" />
                       <div className="flex min-w-0 flex-1 items-center gap-2">
                         <span className="truncate">{result.title}</span>
                         {result.subtitle && (
@@ -349,7 +349,7 @@ function AfendaCommandPalette({ modules, open, onOpenChange, onOpenShortcuts, en
                     value={`action:${action.title}`}
                     onSelect={() => handleAction(action)}
                   >
-                    <Icon className={cn(ICON, 'mr-2')} />
+                    <Icon className={cn(ICON, 'mr-2')}  aria-hidden="true" />
                     <span>{action.title}</span>
                     {action.shortcut && <ActionShortcutKbd keys={action.shortcut} />}
                   </CommandItem>
@@ -377,7 +377,7 @@ function AfendaCommandPalette({ modules, open, onOpenChange, onOpenShortcuts, en
                 value={`nav:${mod.label}`}
                 onSelect={() => navigate(mod.href)}
               >
-                <Icon className={cn(ICON, 'mr-2')} />
+                <Icon className={cn(ICON, 'mr-2')}  aria-hidden="true" />
                 <span>{mod.label}</span>
               </CommandItem>
             );

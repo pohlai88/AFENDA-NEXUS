@@ -14,7 +14,11 @@ type Params = { active?: string; q?: string; page?: string; limit?: string };
 
 export async function RecurringListSection({ params }: { params: Params }) {
   const ctx = await getRequestContext();
-  const result = await getRecurringTemplates(ctx, { active: params.active, page: params.page ?? '1', limit: params.limit ?? '25' });
+  const result = await getRecurringTemplates(ctx, {
+    active: params.active,
+    page: params.page ?? '1',
+    limit: params.limit ?? '25',
+  });
   if (!result.ok) handleApiError(result, 'Failed to load recurring templates');
   const { data: templates, total, page, limit } = result.value;
 
@@ -29,8 +33,17 @@ export async function RecurringListSection({ params }: { params: Params }) {
         currentSearch={params.q}
         searchPlaceholder="Search templates…"
       />
-      {templates.length === 0 ? <EmptyState contentKey="finance.recurring" icon={RefreshCw} /> : <RecurringTemplateTable data={templates} />}
-      <Pagination page={page} pageSize={limit} totalCount={total} buildHref={(p) => buildListHref(routes.finance.recurring, params, p)} />
+      {templates.length === 0 ? (
+        <EmptyState contentKey="finance.recurring" constraint="table" icon={RefreshCw} />
+      ) : (
+        <RecurringTemplateTable data={templates} />
+      )}
+      <Pagination
+        page={page}
+        pageSize={limit}
+        totalCount={total}
+        buildHref={(p) => buildListHref(routes.finance.recurring, params, p)}
+      />
     </>
   );
 }

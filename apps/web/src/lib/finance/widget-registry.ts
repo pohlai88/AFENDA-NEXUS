@@ -17,7 +17,7 @@ import { CashFlowSankeyChart } from '@/features/finance/dashboard/blocks/cash-fl
 /**
  * Widget Registry - All available dashboard widgets
  */
-export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
+export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec<unknown>> = {
   'liquidity-waterfall': {
     meta: {
       id: 'liquidity-waterfall',
@@ -29,7 +29,14 @@ export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
       defaultH: 2,
       drilldown: { kind: 'report', reportId: 'cashflow' },
     },
-    component: LiquidityWaterfallChart,
+    component: LiquidityWaterfallChart as unknown as React.ComponentType<{
+      data: unknown;
+      params: import('@/components/charts').ChartParams;
+      compact?: boolean;
+      gridW?: number;
+      gridH?: number;
+      onDrilldown?: (target: import('@/components/charts').DrilldownTarget) => void;
+    }>,
   },
 
   'financial-ratios': {
@@ -42,7 +49,14 @@ export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
       defaultW: 4,
       defaultH: 2,
     },
-    component: FinancialRatiosChart,
+    component: FinancialRatiosChart as unknown as React.ComponentType<{
+      data: unknown;
+      params: import('@/components/charts').ChartParams;
+      compact?: boolean;
+      gridW?: number;
+      gridH?: number;
+      onDrilldown?: (target: import('@/components/charts').DrilldownTarget) => void;
+    }>,
   },
 
   'dso-trend': {
@@ -56,7 +70,14 @@ export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
       defaultH: 1,
       drilldown: { kind: 'report', reportId: 'ar-aging' },
     },
-    component: DSOTrendChart,
+    component: DSOTrendChart as unknown as React.ComponentType<{
+      data: unknown;
+      params: import('@/components/charts').ChartParams;
+      compact?: boolean;
+      gridW?: number;
+      gridH?: number;
+      onDrilldown?: (target: import('@/components/charts').DrilldownTarget) => void;
+    }>,
   },
 
   'budget-variance': {
@@ -70,7 +91,14 @@ export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
       defaultH: 2,
       drilldown: { kind: 'report', reportId: 'trial-balance' },
     },
-    component: BudgetVarianceChart,
+    component: BudgetVarianceChart as unknown as React.ComponentType<{
+      data: unknown;
+      params: import('@/components/charts').ChartParams;
+      compact?: boolean;
+      gridW?: number;
+      gridH?: number;
+      onDrilldown?: (target: import('@/components/charts').DrilldownTarget) => void;
+    }>,
   },
 
   'asset-portfolio': {
@@ -84,7 +112,14 @@ export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
       defaultH: 2,
       drilldown: { kind: 'list', entity: 'asset' },
     },
-    component: AssetTreemapChart,
+    component: AssetTreemapChart as unknown as React.ComponentType<{
+      data: unknown;
+      params: import('@/components/charts').ChartParams;
+      compact?: boolean;
+      gridW?: number;
+      gridH?: number;
+      onDrilldown?: (target: import('@/components/charts').DrilldownTarget) => void;
+    }>,
   },
 
   'tax-liability': {
@@ -98,7 +133,14 @@ export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
       defaultH: 2,
       drilldown: { kind: 'report', reportId: 'trial-balance' },
     },
-    component: TaxLiabilityChart,
+    component: TaxLiabilityChart as unknown as React.ComponentType<{
+      data: unknown;
+      params: import('@/components/charts').ChartParams;
+      compact?: boolean;
+      gridW?: number;
+      gridH?: number;
+      onDrilldown?: (target: import('@/components/charts').DrilldownTarget) => void;
+    }>,
   },
 
   'working-capital': {
@@ -112,7 +154,14 @@ export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
       defaultH: 2,
       drilldown: { kind: 'report', reportId: 'balance-sheet' },
     },
-    component: WorkingCapitalChart,
+    component: WorkingCapitalChart as unknown as React.ComponentType<{
+      data: unknown;
+      params: import('@/components/charts').ChartParams;
+      compact?: boolean;
+      gridW?: number;
+      gridH?: number;
+      onDrilldown?: (target: import('@/components/charts').DrilldownTarget) => void;
+    }>,
   },
 
   'cash-flow-sankey': {
@@ -126,7 +175,14 @@ export const FINANCE_WIDGET_REGISTRY: Record<string, WidgetSpec> = {
       defaultH: 2,
       drilldown: { kind: 'report', reportId: 'cashflow' },
     },
-    component: CashFlowSankeyChart,
+    component: CashFlowSankeyChart as unknown as React.ComponentType<{
+      data: unknown;
+      params: import('@/components/charts').ChartParams;
+      compact?: boolean;
+      gridW?: number;
+      gridH?: number;
+      onDrilldown?: (target: import('@/components/charts').DrilldownTarget) => void;
+    }>,
   },
 };
 

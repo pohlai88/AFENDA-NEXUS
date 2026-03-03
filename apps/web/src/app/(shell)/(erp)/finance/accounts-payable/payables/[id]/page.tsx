@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { AuditPanel } from '@/components/erp/audit-panel';
@@ -10,9 +11,15 @@ import { ApInvoiceLinesTable } from '@/features/finance/payables/blocks/ap-invoi
 import { ApInvoiceActions } from '@/features/finance/payables/blocks/ap-invoice-actions';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
-import { getApInvoice, getInvoiceEarlyDiscount } from '@/features/finance/payables/queries/ap.queries';
+import {
+  getApInvoice,
+  getInvoiceEarlyDiscount,
+} from '@/features/finance/payables/queries/ap.queries';
 import { getApInvoiceAuditAction } from '@/features/finance/payables/actions/ap.actions';
-import { getInvoiceTimeline, getInvoiceHolds } from '@/features/finance/payables/queries/ap-hold.queries';
+import {
+  getInvoiceTimeline,
+  getInvoiceHolds,
+} from '@/features/finance/payables/queries/ap-hold.queries';
 import { ApInvoiceTimeline } from '@/features/finance/payables/blocks/ap-invoice-timeline';
 import { ApHoldTable } from '@/features/finance/payables/blocks/ap-hold-table';
 import { routes } from '@/lib/constants';
@@ -27,10 +34,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${r.value.invoiceNumber} | Payables | Finance` };
 }
 
-export default async function PayableDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function PayableDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getApInvoice(ctx, id);
-  if (!result.ok) { if (result.error.statusCode === 404) notFound(); handleApiError(result, 'Failed to load payable invoice'); }
+  if (!result.ok) {
+    if (result.error.statusCode === 404) notFound();
+    handleApiError(result, 'Failed to load payable invoice');
+  }
   const inv = result.value;
 
   const [audit, timeline, holds, earlyDiscountResult] = await Promise.all([
@@ -45,9 +54,15 @@ export default async function PayableDetailPage({ params }: Props) {
   const earlyDiscount = earlyDiscountResult.ok ? earlyDiscountResult.value : null;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
-      <PageHeader title={inv.invoiceNumber} breadcrumbs={[{ label: 'Finance' }, { label: 'Payables', href: routes.finance.payables }, { label: inv.invoiceNumber }]} />
+      <PageHeader
+        title={inv.invoiceNumber}
+        breadcrumbs={[
+          { label: 'Finance' },
+          { label: 'Payables', href: routes.finance.payables },
+          { label: inv.invoiceNumber },
+        ]}
+      />
 
       <BusinessDocument
         header={
@@ -57,15 +72,43 @@ export default async function PayableDetailPage({ params }: Props) {
           </div>
         }
         tabs={[
-          { value: 'lines', label: 'Lines', content: <ApInvoiceLinesTable lines={inv.lines} currency={inv.currencyCode} totalAmount={inv.totalAmount} totalTax={inv.totalTax} /> },
-          { value: 'timeline', label: 'Timeline', content: <ApInvoiceTimeline entries={timelineEntries} /> },
-          { value: 'holds', label: `Holds (${holdEntries.length})`, content: <ApHoldTable data={holdEntries} /> },
+          {
+            value: 'lines',
+            label: 'Lines',
+            content: (
+              <ApInvoiceLinesTable
+                lines={inv.lines}
+                currency={inv.currencyCode}
+                totalAmount={inv.totalAmount}
+                totalTax={inv.totalTax}
+              />
+            ),
+          },
+          {
+            value: 'timeline',
+            label: 'Timeline',
+            content: <ApInvoiceTimeline entries={timelineEntries} />,
+          },
+          {
+            value: 'holds',
+            label: `Holds (${holdEntries.length})`,
+            content: <ApHoldTable data={holdEntries} />,
+          },
           { value: 'audit', label: 'Audit Trail', content: <AuditPanel entries={auditEntries} /> },
         ]}
         defaultTab="lines"
         rightRail={<ApInvoiceActions invoiceId={inv.id} status={inv.status} />}
       />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function PayableDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PayableDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

@@ -29,23 +29,23 @@ const SCHEMA_INDEX = join(ROOT, 'packages', 'db', 'src', 'schema', 'index.ts');
 
 // Properties that exist on domain entities but NOT in DB (computed, embedded, etc.)
 const KNOWN_ENTITY_ONLY_PROPS = new Set([
-  'lines',         // Child entities composed by repo
-  'items',         // Child entities composed by repo
-  'legs',          // IC transaction legs
-  'movements',     // Asset movements
-  'allocations',   // Payment allocations
-  'entries',       // Nested entries
-  'steps',         // Approval steps
-  'details',       // Computed detail objects
-  'children',      // Nested child records
-  'schedules',     // Embedded schedules
+  'lines', // Child entities composed by repo
+  'items', // Child entities composed by repo
+  'legs', // IC transaction legs
+  'movements', // Asset movements
+  'allocations', // Payment allocations
+  'entries', // Nested entries
+  'steps', // Approval steps
+  'details', // Computed detail objects
+  'children', // Nested child records
+  'schedules', // Embedded schedules
 ]);
 
 // DB columns that may not map to entity properties (infrastructure concerns)
 const KNOWN_DB_ONLY_COLS = new Set([
-  'currencyId',    // Entity uses Money branded type which embeds currency
+  'currencyId', // Entity uses Money branded type which embeds currency
   'correlationId', // Infrastructure concern
-  'eventId',       // Outbox infrastructure
+  'eventId', // Outbox infrastructure
 ]);
 
 function findFiles(dir, pattern, results = []) {
@@ -78,9 +78,7 @@ function extractEntityInterfaces(content) {
     const line = lines[i];
 
     // Match: export interface ApInvoice {
-    const ifaceMatch = line.match(
-      /^export\s+interface\s+(\w+)(?:\s+extends\s+\w+)?\s*\{/,
-    );
+    const ifaceMatch = line.match(/^export\s+interface\s+(\w+)(?:\s+extends\s+\w+)?\s*\{/);
     if (ifaceMatch && !current) {
       current = { name: ifaceMatch[1], props: [], line: i + 1 };
       depth = 1;
@@ -92,9 +90,7 @@ function extractEntityInterfaces(content) {
       depth -= (line.match(/\}/g) || []).length;
 
       // Extract property: readonly id: string;
-      const propMatch = line.match(
-        /^\s*(?:readonly\s+)?(\w+)\s*[?:]?\s*:/,
-      );
+      const propMatch = line.match(/^\s*(?:readonly\s+)?(\w+)\s*[?:]?\s*:/);
       if (propMatch && depth > 0) {
         current.props.push(propMatch[1]);
       }
@@ -117,14 +113,21 @@ function extractTableDefinitions(content) {
   let current = null;
   let depth = 0;
   let inFirstArg = false;
+  // ⚠ Split-line table definition support:
+  // erp.ts uses a Prettier-formatted split-line syntax:
+  //   export const apInvoices = erpSchema
+  //     .table('ap_invoices', { ... })
+  // The naive single-line regex misses this. pendingTableName buffers the
+  // const name from line N so it can be matched with .table( on line N+1.
+  // Without this, extractTableDefinitions() returns 0 tables and the gate
+  // reports 0% alignment even when the schema is fully correct.
+  let pendingTableName = null; // buffers name when const and .table( are on separate lines
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Match: export const apInvoices = erpSchema.table(
-    const tableMatch = line.match(
-      /^export\s+const\s+(\w+)\s*=\s*\w+\.table\(/,
-    );
+    // Match inline: export const apInvoices = erpSchema.table(
+    const tableMatch = line.match(/^export\s+const\s+(\w+)\s*=\s*\w+\.table\(/);
     if (tableMatch && !current) {
       current = { name: tableMatch[1], columns: [], line: i + 1 };
       depth = 0;
@@ -132,6 +135,26 @@ function extractTableDefinitions(content) {
       // Count opening parens on this line
       depth += (line.match(/\(/g) || []).length;
       depth -= (line.match(/\)/g) || []).length;
+      continue;
+    }
+
+    // Match split-line: export const apInvoices = erpSchema   (next line has .table()
+    const pendingMatch = line.match(/^export\s+const\s+(\w+)\s*=\s*\w+\s*$/);
+    if (pendingMatch && !current) {
+      pendingTableName = pendingMatch[1];
+      continue;
+    }
+
+    // If we have a pending name and the next non-blank line has .table(
+    if (pendingTableName) {
+      if (/^\s*\.table\s*\(/.test(line)) {
+        current = { name: pendingTableName, columns: [], line: i + 1 };
+        depth = 0;
+        inFirstArg = false;
+        depth += (line.match(/\(/g) || []).length;
+        depth -= (line.match(/\)/g) || []).length;
+      }
+      pendingTableName = null;
       continue;
     }
 
@@ -294,7 +317,7 @@ if (warnings.length > 0) {
 if (totalEntities > 0 && matchedEntities === 0) {
   console.error('❌ gate:schema-entity-alignment FAILED');
   console.error(
-    '   No entity interfaces matched any DB table. Naming convention may have changed.',
+    '   No entity interfaces matched any DB table. Naming convention may have changed.'
   );
   process.exit(1);
 }
@@ -305,15 +328,13 @@ const matchRate = matchedEntities / Math.max(totalEntities, 1);
 if (matchRate < 0.4 && totalEntities > 5) {
   console.error('❌ gate:schema-entity-alignment FAILED');
   console.error(
-    `   Only ${matchedEntities}/${totalEntities} entities (${(matchRate * 100).toFixed(0)}%) matched DB tables.`,
+    `   Only ${matchedEntities}/${totalEntities} entities (${(matchRate * 100).toFixed(0)}%) matched DB tables.`
   );
-  console.error(
-    '   Entity↔table naming convention may have diverged. Expected ≥40% match rate.',
-  );
+  console.error('   Entity↔table naming convention may have diverged. Expected ≥40% match rate.');
   process.exit(1);
 }
 
 console.log('✅ gate:schema-entity-alignment PASSED');
 console.log(
-  `   ${matchedEntities}/${totalEntities} entities aligned with DB tables. ${warnings.length} column-level warning(s).`,
+  `   ${matchedEntities}/${totalEntities} entities aligned with DB tables. ${warnings.length} column-level warning(s).`
 );

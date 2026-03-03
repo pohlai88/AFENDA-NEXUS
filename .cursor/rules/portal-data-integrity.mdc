@@ -1,0 +1,156 @@
+---
+description: Data model invariants for portal tables — RLS, timeline, proof chain, state machines
+globs:
+  [
+    'packages/db/src/schema/portal-*',
+    'packages/modules/finance/src/slices/ap/services/supplier-portal-*',
+    'packages/modules/finance/src/slices/ap/repos/**',
+  ]
+alwaysApply: false
+---
+
+# Portal Data Integrity Rules
+
+---
+
+## 1. RLS Invariant
+
+### SP-DB-01: Every portal table must have tenant_id + RLS
+
+```typescript
+// ✅ Required on all portal tables
+export const supplierCase = pgTable('supplier_case', {
+  tenantId: uuid('tenant_id').notNull(),
+  // ...
+});
+// + pgPolicy attached
+```
+
+Enforced by `gate-db-module.mjs`.
+
+---
+
+## 2. Case Timeline — Single Storage Truth
+
+### SP-DB-02: Timeline is append-only
+
+`supplier_case_timeline` rows are **never updated or deleted**. Corrections
+are new entries (type: `system`, content: "Correction to entry X").
+
+### SP-DB-03: Timeline references source entities, not copies
+
+```typescript
+// ✅ Timeline entry references source
+{
+  entry_type: 'message',
+  ref_id: messageId,       // FK to supplier_message.id
+  ref_type: 'supplier_message',
+  content: { summary: 'Message from J.Smith' },  // summary only
+}
+
+// ❌ Wrong — full message body duplicated in timeline
+{
+  entry_type: 'message',
+  content: { body: fullMessageText, attachments: [...] },
+}
+```
+
+### SP-DB-04: No parallel timeline tables
+
+There is **one** timeline table: `supplier_case_timeline`. Do not create
+`supplier_message_timeline`, `supplier_document_history`, or any other
+activity-stream table. Other tables remain source entities.
+
+---
+
+## 3. Payment Status — Append-Only Facts
+
+### SP-DB-05: Payment status is a fact table (never UPDATE)
+
+`supplier_payment_status_fact` is append-only. To change status, insert a new
+row. Previous rows remain as history.
+
+### SP-DB-06: State machine — no impossible transitions
+
+Valid transitions (enforce in domain logic, test with property tests):
+
+```
+SCHEDULED → APPROVED → PROCESSING → SENT → CLEARED
+     ↓          ↓           ↓         ↓
+  ON_HOLD    ON_HOLD     ON_HOLD   REJECTED
+     ↓          ↓           ↓
+  (back to previous stage when hold lifts)
+```
+
+Never allow: `CLEARED → SCHEDULED`, `REJECTED → SENT`, etc.
+
+### SP-DB-07: Source precedence
+
+When conflicting stage updates arrive:
+`BANK_FILE` > `ERP` > `MANUAL_OVERRIDE`
+
+A bank file update overrides a manual override. Enforce at the service layer.
+
+---
+
+## 4. Proof Chain
+
+### SP-DB-08: Chain position is strictly sequential per tenant
+
+`chain_position` is a monotonically increasing bigint per `tenant_id`. No gaps.
+Property test (SP-8022) asserts this.
+
+### SP-DB-09: Required indexes for proof chain
+
+```sql
+-- Scoped verification (e.g., "all proof entries for case X")
+CREATE INDEX idx_proof_entity ON portal_communication_proof
+  (tenant_id, entity_type, entity_id);
+
+-- Full-chain integrity check
+CREATE INDEX idx_proof_chain ON portal_communication_proof
+  (tenant_id, chain_position);
+```
+
+---
+
+## 5. Case Lifecycle
+
+### SP-DB-10: Case status transitions
+
+Valid lifecycle:
+
+```
+DRAFT → SUBMITTED → ASSIGNED → IN_PROGRESS → AWAITING_INFO → RESOLVED → CLOSED
+                                                                  ↑          ↓
+                                                                  └── REOPENED
+```
+
+`CLOSED` → `REOPENED` is allowed (creates new timeline entry). `RESOLVED` →
+`REOPENED` is allowed. Other backward transitions are forbidden.
+
+### SP-DB-11: CASE ticket format
+
+Auto-generated: `CASE-{TENANT_SHORT}-{YYYY}-{SEQ}`
+Example: `CASE-AFD-2026-00142`
+
+Enforced by `SP-1008` (Case ID generator). Never hardcode ticket numbers.
+
+---
+
+## 6. Bulk Upload
+
+### SP-DB-12: Row fingerprint is deterministic
+
+```typescript
+fingerprint = SHA256(
+  supplier_id + invoice_number + invoice_date + amount + currency + vendor_reference
+);
+```
+
+Same invoice re-uploaded → same fingerprint. Used for dedupe detection.
+
+### SP-DB-13: Dedupe policy is per-upload, not global
+
+Each bulk upload specifies: `SKIP_DUPLICATES` | `UPDATE_DRAFT` | `REJECT_CONFLICTS`.
+Default: `SKIP_DUPLICATES`.

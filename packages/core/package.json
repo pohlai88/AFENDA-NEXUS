@@ -15,7 +15,7 @@
   },
   "files": [
     "dist",
-    "ARCHITECTURE.@afenda-core.md"
+    "ARCHITECTURE_afenda-core.md"
   ],
   "sideEffects": false,
   "scripts": {

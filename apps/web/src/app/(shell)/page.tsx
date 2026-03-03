@@ -9,7 +9,18 @@ import { resolveAttentionSummary } from '@/lib/attention/attention-registry.serv
 import { getRequestContext } from '@/lib/auth';
 import { formatMoney, formatRelativeTime } from '@/lib/format';
 import { getDashboardSummary } from '@/features/finance/dashboard/queries/dashboard.queries';
-import { DollarSign, ArrowUpRight, ArrowDownLeft, CalendarDays, Activity, AlertTriangle } from 'lucide-react';
+import {
+  fetchCashFlowChart,
+  fetchArAgingDiagram,
+} from '@/lib/dashboards/dashboard-chart-data.server';
+import {
+  DollarSign,
+  ArrowUpRight,
+  ArrowDownLeft,
+  CalendarDays,
+  Activity,
+  AlertTriangle,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import type { Metadata } from 'next';
@@ -45,8 +56,9 @@ function SummarySkeleton() {
 // ─── Async Summary (streams in after layout + KPIs) ───────────────────────────
 // async-parallel: fetch summary and attention in parallel to eliminate waterfall
 
-async function HomeSummary() {
-  const ctx = await getRequestContext();
+import type { RequestContext } from '@afenda/core';
+
+async function HomeSummary({ ctx }: { ctx: RequestContext }) {
   const [summaryResult, attentionResult] = await Promise.all([
     getDashboardSummary(ctx),
     resolveAttentionSummary(ctx).catch(() => null),
@@ -165,42 +177,42 @@ async function HomeSummary() {
         </Card>
 
         <Card className="lg:col-span-2">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-4 w-4" aria-hidden="true" />
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentActivity.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              No recent activity to display.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {recentActivity.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="flex items-start justify-between gap-4 rounded-md border p-3"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{formatEventType(entry.eventType)}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground truncate font-mono">
-                      {entry.id}
-                    </p>
-                  </div>
-                  <time
-                    className="shrink-0 text-xs text-muted-foreground"
-                    dateTime={entry.createdAt}
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-4 w-4" aria-hidden="true" />
+              Recent Activity
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentActivity.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                No recent activity to display.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {recentActivity.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-start justify-between gap-4 rounded-md border p-3"
                   >
-                    {formatRelativeTime(entry.createdAt)}
-                  </time>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">{formatEventType(entry.eventType)}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground truncate font-mono">
+                        {entry.id}
+                      </p>
+                    </div>
+                    <time
+                      className="shrink-0 text-xs text-muted-foreground"
+                      dateTime={entry.createdAt}
+                    >
+                      {formatRelativeTime(entry.createdAt)}
+                    </time>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </>
   );
@@ -217,15 +229,39 @@ function formatEventType(eventType: string): string {
 
 // ─── Main Page (streams summary via Suspense) ──────────────────────────────────
 
-export default function HomePage() {
+async function HomeContent({ ctx }: { ctx: RequestContext }) {
+  const [cashFlowData, arAgingData] = await Promise.all([
+    fetchCashFlowChart(ctx).catch(() => undefined),
+    fetchArAgingDiagram(ctx)
+      .then((buckets) => buckets.map((b) => ({ bucket: b.range, amount: b.amount })))
+      .catch(() => undefined),
+  ]);
+
   return (
     <div className="space-y-6">
       <PageHeader title="Dashboard" description="Overview of your financial operations." />
       <ModuleDashboard scope={{ type: 'module', id: 'home' }} />
       <Suspense fallback={<SummarySkeleton />}>
-        <HomeSummary />
+        <HomeSummary ctx={ctx} />
       </Suspense>
-      <DashboardWidgets />
+      <DashboardWidgets
+        cashFlowData={cashFlowData?.map((d) => ({
+          month: d.month,
+          inflow: d.inflows,
+          outflow: d.outflows,
+        }))}
+        arAgingData={arAgingData}
+      />
     </div>
+  );
+}
+
+export default async function HomePage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<SummarySkeleton />}>
+      <HomeContent ctx={ctx} />
+    </Suspense>
   );
 }

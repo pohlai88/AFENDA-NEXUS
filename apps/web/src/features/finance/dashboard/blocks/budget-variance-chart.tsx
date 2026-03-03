@@ -1,21 +1,27 @@
 'use client';
 
 import { ChartCard } from '@/components/charts/chart-card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, LabelList } from 'recharts';
 import { formatChartValue } from './chart-utils';
 import type { ChartParams, DrilldownTarget } from '@/components/charts';
+import { cn } from '@/lib/utils';
 
 /**
  * Budget variance data point
  */
 interface BudgetVarianceDataPoint {
-  category: string;         // GL account or department
+  category: string; // GL account or department
   actual: number;
   budget: number;
-  variance: number;         // actual - budget
-  variancePercent: number;  // (actual - budget) / budget
-  polarity: 'favorable' | 'unfavorable';  // Context-aware (revenue: over=good, expense: under=good)
+  variance: number; // actual - budget
+  variancePercent: number; // (actual - budget) / budget
+  polarity: 'favorable' | 'unfavorable'; // Context-aware (revenue: over=good, expense: under=good)
 }
 
 interface BudgetVarianceChartProps {
@@ -29,6 +35,9 @@ interface BudgetVarianceChartProps {
   isLoading?: boolean;
   error?: Error | null;
   type?: 'revenue' | 'expense';
+  _params?: unknown;
+  _gridW?: number;
+  _gridH?: number;
 }
 
 const VARIANCE_CONFIG = {
@@ -40,14 +49,14 @@ const VARIANCE_CONFIG = {
 
 /**
  * Budget vs Actual Variance Chart
- * 
+ *
  * Enterprise budget variance analysis:
  * - Actual vs Budget (grouped bars)
  * - Variance bars with polarity-aware coloring
  * - Revenue: over budget = favorable (green)
  * - Expense: under budget = favorable (green)
  * - Variance % labels
- * 
+ *
  * Drilldown: GL trial balance filtered by account
  */
 export function BudgetVarianceChart({
@@ -62,7 +71,9 @@ export function BudgetVarianceChart({
   error,
   type = 'expense',
 }: BudgetVarianceChartProps) {
-  const margin = compact ? { top: 20, right: 8, left: 0, bottom: 8 } : { top: 20, right: 10, left: 0, bottom: 0 };
+  const margin = compact
+    ? { top: 20, right: 8, left: 0, bottom: 8 }
+    : { top: 20, right: 10, left: 0, bottom: 0 };
   const tickFontSize = compact ? 10 : 12;
 
   return (
@@ -74,6 +85,7 @@ export function BudgetVarianceChart({
       isEmpty={!data || data.length === 0}
       error={error}
       compact={compact}
+      emptyStateKey="finance.dashboard.budgetVariance"
     >
       <ChartContainer
         config={VARIANCE_CONFIG}
@@ -127,10 +139,15 @@ export function BudgetVarianceChart({
                       </div>
                       <div className="flex w-full items-center justify-between gap-4">
                         <span className="text-muted-foreground">Variance:</span>
-                        <span className={`font-mono font-medium tabular-nums ${
-                          payload.polarity === 'favorable' ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {formatChartValue(payload.variance)} ({payload.variancePercent > 0 ? '+' : ''}{payload.variancePercent.toFixed(1)}%)
+                        <span
+                          className={cn(
+                            'font-mono font-medium tabular-nums',
+                            payload.polarity === 'favorable' ? 'text-success' : 'text-destructive'
+                          )}
+                        >
+                          {formatChartValue(payload.variance)} (
+                          {payload.variancePercent > 0 ? '+' : ''}
+                          {payload.variancePercent.toFixed(1)}%)
                         </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
@@ -150,14 +167,15 @@ export function BudgetVarianceChart({
             fillOpacity={0.3}
           />
           {/* Actual (foreground with polarity color) */}
-          <Bar
-            dataKey="actual"
-            radius={[0, 4, 4, 0]}
-          >
+          <Bar dataKey="actual" radius={[0, 4, 4, 0]}>
             {data.map((entry) => (
               <Cell
                 key={`cell-${entry.category}`}
-                fill={entry.polarity === 'favorable' ? VARIANCE_CONFIG.favorable.color : VARIANCE_CONFIG.unfavorable.color}
+                fill={
+                  entry.polarity === 'favorable'
+                    ? VARIANCE_CONFIG.favorable.color
+                    : VARIANCE_CONFIG.unfavorable.color
+                }
               />
             ))}
             <LabelList

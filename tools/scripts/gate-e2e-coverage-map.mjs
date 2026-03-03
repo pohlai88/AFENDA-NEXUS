@@ -50,9 +50,7 @@ function extractRoutePath(pageFile) {
   //   → /portal/disputes
   // e.g. apps/web/src/app/(shell)/finance/journals/page.tsx
   //   → /finance/journals
-  const match = r.match(
-    /apps\/web\/src\/app\/\([^)]+\)\/(.+)\/page\.tsx$/,
-  );
+  const match = r.match(/apps\/web\/src\/app\/\([^)]+\)\/(.+)\/page\.tsx$/);
   if (!match) return null;
 
   const routeSegments = match[1].replace(/\\/g, '/');
@@ -104,15 +102,46 @@ function extractTestUrls(specContent) {
     // Remove regex-specific chars: $, ^, (?...), etc.
     rawPath = rawPath
       .replace(/\\\//g, '/') // unescape forward slashes
-      .replace(/\$$/g, '')   // remove trailing anchor
-      .replace(/^\^/g, '')   // remove leading anchor
+      .replace(/\$$/g, '') // remove trailing anchor
+      .replace(/^\^/g, '') // remove leading anchor
       .replace(/\(\?[^)]*\)/g, '') // remove non-capturing groups
-      .replace(/\/+$/g, '');  // remove trailing slashes
+      .replace(/\/+$/g, ''); // remove trailing slashes
     if (rawPath.startsWith('/')) {
       urls.add(rawPath);
     }
   }
   return urls;
+}
+
+// ── Route-prefix exemptions via config ───────────────────────────────────────
+// apps/web/.e2e-exempt-routes — one route prefix + reason per line:
+//   /(erp)/finance — E2E tests backlogged; scaffolded routes only
+//   /portal — Supplier portal E2E backlogged
+
+const EXEMPT_ROUTES_FILE = join(ROOT, 'apps', 'web', '.e2e-exempt-routes');
+const prefixExemptions = [];
+
+if (existsSync(EXEMPT_ROUTES_FILE)) {
+  const lines = readFileSync(EXEMPT_ROUTES_FILE, 'utf-8').split('\n');
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line || line.startsWith('#')) continue;
+    const [prefix, ...rest] = line.split('—');
+    const trimmedPrefix = prefix.trim();
+    const reason = rest.join('—').trim() || 'exempt via .e2e-exempt-routes';
+    if (trimmedPrefix.startsWith('/')) {
+      prefixExemptions.push({ prefix: trimmedPrefix, reason });
+    }
+  }
+}
+
+function isRouteExemptByPrefix(routePath) {
+  for (const { prefix, reason } of prefixExemptions) {
+    if (routePath === prefix || routePath.startsWith(prefix + '/')) {
+      return reason;
+    }
+  }
+  return null;
 }
 
 // ── Main ────────────────────────────────────────────────────────────────────
@@ -126,10 +155,18 @@ for (const pf of pageFiles) {
   const routePath = extractRoutePath(pf);
   if (!routePath) continue;
 
+  // Check file-level @e2e-exempt comment
   const content = readFileSync(pf, 'utf-8');
   const exemptMatch = content.match(/@e2e-exempt:\s*(.+)/);
   if (exemptMatch) {
     exemptions.push({ route: routePath, reason: exemptMatch[1].trim() });
+    continue;
+  }
+
+  // Check route-prefix exemption from config
+  const prefixReason = isRouteExemptByPrefix(routePath);
+  if (prefixReason) {
+    exemptions.push({ route: routePath, reason: prefixReason });
     continue;
   }
 
@@ -163,9 +200,7 @@ const coverage = [];
 for (const tlr of topLevelRoutes) {
   // Check if any E2E spec navigates to this route or a sub-route
   const hasE2E = [...testedUrls].some((url) => url.startsWith(tlr));
-  const matchingSpec = [...specMap.entries()].find(([url]) =>
-    url.startsWith(tlr),
-  );
+  const matchingSpec = [...specMap.entries()].find(([url]) => url.startsWith(tlr));
 
   coverage.push({
     route: tlr,
@@ -200,27 +235,19 @@ if (exemptions.length > 0) {
 
 if (uncovered.length > 0) {
   console.error('❌ gate:e2e-coverage-map FAILED\n');
-  console.error(
-    `  ${uncovered.length} top-level route(s) have no E2E test coverage:\n`,
-  );
+  console.error(`  ${uncovered.length} top-level route(s) have no E2E test coverage:\n`);
   for (const u of uncovered) {
     console.error(`    ${u.route} [${u.group}]`);
   }
+  console.error(`\n  Add Playwright specs under apps/e2e/tests/ that navigate to these routes.`);
+  console.error(`  To exempt a page, add \`// @e2e-exempt: <reason>\` in its page.tsx.\n`);
   console.error(
-    `\n  Add Playwright specs under apps/e2e/tests/ that navigate to these routes.`,
-  );
-  console.error(
-    `  To exempt a page, add \`// @e2e-exempt: <reason>\` in its page.tsx.\n`,
-  );
-  console.error(
-    `── Summary: ${covered.length}/${coverage.length} routes covered, ${exemptions.length} exempted ──`,
+    `── Summary: ${covered.length}/${coverage.length} routes covered, ${exemptions.length} exempted ──`
   );
   process.exit(1);
 } else {
   console.log('✅ gate:e2e-coverage-map PASSED');
-  console.log(
-    `   ${covered.length}/${coverage.length} top-level routes have E2E coverage.`,
-  );
+  console.log(`   ${covered.length}/${coverage.length} top-level routes have E2E coverage.`);
   if (exemptions.length > 0) {
     console.log(`   ${exemptions.length} route(s) explicitly exempted.`);
   }

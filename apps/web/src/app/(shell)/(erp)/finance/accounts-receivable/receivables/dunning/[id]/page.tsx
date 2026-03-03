@@ -1,12 +1,16 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { getDunningRun } from '@/features/finance/receivables/queries/dunning.queries';
-import { DunningRunHeader, DunningLettersTable } from '@/features/finance/receivables/blocks/dunning-detail-blocks';
+import {
+  DunningRunHeader,
+  DunningLettersTable,
+} from '@/features/finance/receivables/blocks/dunning-detail-blocks';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
@@ -19,8 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `Dunning ${result.value.runDate} | Finance` };
 }
 
-export default async function DunningRunDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function DunningRunDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getDunningRun(ctx, id);
 
   if (!result.ok) {
@@ -31,7 +34,6 @@ export default async function DunningRunDetailPage({ params }: Props) {
   const run = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title={`Dunning Run — ${run.runDate}`}
@@ -53,6 +55,15 @@ export default async function DunningRunDetailPage({ params }: Props) {
         ]}
       />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function DunningRunDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <DunningRunDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

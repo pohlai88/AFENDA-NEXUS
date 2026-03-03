@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import type { RequestContext } from '@afenda/core';
 import { getRequestContext } from '@/lib/auth';
 import { getSuppliers } from '@/features/finance/payables/queries/ap-supplier.queries';
 import { ApSupplierTable } from '@/features/finance/payables/blocks/ap-supplier-table';
@@ -14,18 +15,20 @@ export const metadata = { title: 'Payables — Suppliers' };
 
 const PAGE_SIZE = 20;
 
-export default async function SuppliersPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const params = await searchParams;
-  const status = typeof params.status === 'string' ? params.status : undefined;
-  const q = typeof params.q === 'string' ? params.q : undefined;
-  const page = typeof params.page === 'string' ? params.page : '1';
+interface SuppliersContentProps {
+  ctx: RequestContext;
+  status?: string;
+  q?: string;
+  page: string;
+}
 
-  const ctx = await getRequestContext();
-  const result = await getSuppliers(ctx, { status: status === 'ALL' ? undefined : status, q, page, limit: String(PAGE_SIZE) });
+async function SuppliersContent({ ctx, status, q, page }: SuppliersContentProps) {
+  const result = await getSuppliers(ctx, {
+    status: status === 'ALL' ? undefined : status,
+    q,
+    page,
+    limit: String(PAGE_SIZE),
+  });
 
   const suppliers = result.ok ? result.value.data : [];
   const total = result.ok ? result.value.total : 0;
@@ -36,18 +39,21 @@ export default async function SuppliersPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Suppliers</h1>
-          <p className="text-sm text-muted-foreground">Manage supplier master data, sites, and bank accounts.</p>
+          <p className="text-sm text-muted-foreground">
+            Manage supplier master data, sites, and bank accounts.
+          </p>
         </div>
         <Button asChild>
-          <Link href={routes.finance.supplierNew}><Plus className="mr-2 h-4 w-4" />New Supplier</Link>
+          <Link href={routes.finance.supplierNew}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Supplier
+          </Link>
         </Button>
       </div>
 
       <SupplierFilters currentStatus={status} q={q} />
 
-      <Suspense fallback={<TableSkeleton />}>
-        <ApSupplierTable data={suppliers} />
-      </Suspense>
+      <ApSupplierTable data={suppliers} />
 
       <Pagination
         page={currentPage}
@@ -62,5 +68,23 @@ export default async function SuppliersPage({
         }}
       />
     </div>
+  );
+}
+
+export default async function SuppliersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const status = typeof params.status === 'string' ? params.status : undefined;
+  const q = typeof params.q === 'string' ? params.q : undefined;
+  const page = typeof params.page === 'string' ? params.page : '1';
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<TableSkeleton />}>
+      <SuppliersContent ctx={ctx} status={status} q={q} page={page} />
+    </Suspense>
   );
 }

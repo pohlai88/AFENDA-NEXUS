@@ -67,12 +67,7 @@ export function ApHoldTable({ data }: ApHoldTableProps) {
   }
 
   if (data.length === 0) {
-    return (
-      <EmptyState
-        contentKey="finance.payables.holds"
-        icon={ShieldAlert}
-      />
-    );
+    return <EmptyState contentKey="finance.payables.holds" constraint="table" icon={ShieldAlert} />;
   }
 
   return (
@@ -156,8 +151,8 @@ export function ApHoldTable({ data }: ApHoldTableProps) {
           <DialogHeader>
             <DialogTitle>Release Hold</DialogTitle>
             <DialogDescription>
-              Release the {releaseTarget && HOLD_TYPE_LABELS[releaseTarget.holdType]} hold on invoice{' '}
-              {releaseTarget?.invoiceNumber}.
+              Release the {releaseTarget && HOLD_TYPE_LABELS[releaseTarget.holdType]} hold on
+              invoice {releaseTarget?.invoiceNumber}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -178,18 +173,11 @@ export function ApHoldTable({ data }: ApHoldTableProps) {
             </p>
           )}
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setReleaseTarget(null)}
-              disabled={isPending}
-            >
+            <Button variant="outline" onClick={() => setReleaseTarget(null)} disabled={isPending}>
               Cancel
             </Button>
-            <Button
-              onClick={handleRelease}
-              disabled={isPending || !releaseReason.trim()}
-            >
-              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            <Button onClick={handleRelease} disabled={isPending || !releaseReason.trim()}>
+              {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Release Hold
             </Button>
           </DialogFooter>

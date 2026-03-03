@@ -5,7 +5,6 @@ import { getPlannedFeatures } from './roadmap-registry';
 import type { NavGroup } from '@/lib/constants';
 import type { AttentionItem } from '@/lib/attention/attention.types';
 import type { FeatureMetricMap } from './module-map.types';
-import type { ModuleId } from './roadmap-registry';
 
 // ─── Module Map (Feature Grid) ───────────────────────────────────────────────
 //
@@ -32,18 +31,8 @@ interface FeatureGridProps {
 }
 
 function FeatureGrid({ navGroups, moduleId, attentionItems, featureMetrics }: FeatureGridProps) {
-  // #region agent log
-  // eslint-disable-next-line no-restricted-syntax
-  fetch('http://127.0.0.1:7877/ingest/5572b893-09bf-4986-bb0f-a54b06329d22',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b56243'},body:JSON.stringify({sessionId:'b56243',location:'feature-grid.tsx:34',message:'FeatureGrid entry',data:{navGroupsCount:navGroups?.length||0,moduleId,attentionCount:attentionItems?.length||0,metricsKeys:Object.keys(featureMetrics||{}).length,navGroupsSample:navGroups?.slice(0,2).map(g=>({featureId:g.featureId,title:g.title,itemsCount:g.items?.length||0}))},timestamp:Date.now(),hypothesisId:'H1,H2'})}).catch(()=>{});
-  // #endregion
-  
   // Derive active feature cards from nav groups
   const shortcuts = deriveShortcuts(navGroups);
-  
-  // #region agent log
-  // eslint-disable-next-line no-restricted-syntax
-  fetch('http://127.0.0.1:7877/ingest/5572b893-09bf-4986-bb0f-a54b06329d22',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b56243'},body:JSON.stringify({sessionId:'b56243',location:'feature-grid.tsx:43',message:'Shortcuts derived',data:{shortcutsCount:shortcuts.length,shortcutsSample:shortcuts.slice(0,2).map(s=>({featureId:s.featureId,title:s.title,itemsCount:s.items?.length||0}))},timestamp:Date.now(),hypothesisId:'H2,H3'})}).catch(()=>{});
-  // #endregion
 
   // Group attention by featureId
   const attentionByFeature = new Map<string, AttentionItem[]>();
@@ -65,12 +54,7 @@ function FeatureGrid({ navGroups, moduleId, attentionItems, featureMetrics }: Fe
 
   // Get planned features (exclude active)
   const activeFeatureIds = new Set(shortcuts.map((s) => s.featureId));
-  const plannedFeatures = getPlannedFeatures(moduleId as ModuleId, activeFeatureIds);
-
-  // #region agent log
-  // eslint-disable-next-line no-restricted-syntax
-  fetch('http://127.0.0.1:7877/ingest/5572b893-09bf-4986-bb0f-a54b06329d22',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b56243'},body:JSON.stringify({sessionId:'b56243',location:'feature-grid.tsx:60',message:'Before render decision',data:{shortcutsCount:shortcuts.length,plannedCount:plannedFeatures.length,willRenderActive:shortcuts.length>0,willRenderPlanned:plannedFeatures.length>0},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
-  // #endregion
+  const plannedFeatures = getPlannedFeatures(moduleId, activeFeatureIds);
 
   return (
     <div className="space-y-6">

@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import type { RequestContext } from '@afenda/core';
 import { getRequestContext } from '@/lib/auth';
 import { getPaymentRun } from '@/features/finance/payables/queries/ap-payment-run.queries';
 import { ApPaymentRunItemsTable } from '@/features/finance/payables/blocks/ap-payment-run-items-table';
@@ -12,19 +13,13 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Payables — Payment Runs — Items' };
 
-export default async function PaymentRunItemsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function PaymentRunItemsContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getPaymentRun(ctx, id);
 
   if (!result.ok) notFound();
   const run = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="icon">
@@ -32,17 +27,15 @@ export default async function PaymentRunItemsPage({
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <span className="text-sm text-muted-foreground">
-          {run.runNumber} — Items
-        </span>
+        <span className="text-sm text-muted-foreground">{run.runNumber} — Items</span>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Add Invoices to Payment Run</CardTitle>
           <CardDescription>
-            Select unpaid invoices to include in {run.runNumber}.
-            Invoices must be approved and denominated in {run.currencyCode}.
+            Select unpaid invoices to include in {run.runNumber}. Invoices must be approved and
+            denominated in {run.currencyCode}.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -56,6 +49,15 @@ export default async function PaymentRunItemsPage({
         </CardContent>
       </Card>
     </div>
-  </Suspense>
+  );
+}
+
+export default async function PaymentRunItemsPage({ params }: { params: Promise<{ id: string }> }) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PaymentRunItemsContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

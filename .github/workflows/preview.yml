@@ -115,25 +115,11 @@ jobs:
       - name: DB schema drift check
         run: pnpm db:ci
 
-      - name: Test directory convention check
-        run: pnpm check:test-dir
-
-      # Domain invariant gates
-      - name: Frontend quality gate (FE-GATE-01–05)
-        run: node tools/scripts/gate-frontend-quality.mjs
-
-      - name: Money safety gate
-        run: node tools/scripts/gate-money-safety.mjs
-
-      - name: Currency safety gate
-        run: node tools/scripts/gate-currency-safety.mjs
-
-      - name: Kernel invariants gate (G-KRN-01–05)
-        run: node tools/scripts/gate-kernel-invariants.mjs
-
-      - name: Dependency audit (high+critical)
-        run: pnpm audit --audit-level=high
-        continue-on-error: true
+      # Run all 40 CI gates in parallel (same coverage as main CI pipeline)
+      - name: Run all gates in parallel (40 gates)
+        run: node tools/scripts/run-gates-parallel.mjs
+        env:
+          CI: true
 
       - name: Run migrations on preview branch
         run: pnpm --filter @afenda/db db:migrate

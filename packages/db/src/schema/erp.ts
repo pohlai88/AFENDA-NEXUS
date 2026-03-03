@@ -20,6 +20,7 @@ import { erpSchema } from './_schemas';
 import {
   accountTypeEnum,
   apInvoiceStatusEnum,
+  apInvoiceTypeEnum,
   contractStatusEnum,
   counterpartyTypeEnum,
   documentTypeEnum,
@@ -121,1496 +122,1806 @@ import { moneyBigint, pkId, tenantCol, timestamps } from './_common';
 
 // ─── erp.currency ───────────────────────────────────────────────────────────
 
-export const currencies = erpSchema.table(
-  'currency',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    code: varchar('code', { length: 3 }).notNull(),
-    name: text('name').notNull(),
-    symbol: varchar('symbol', { length: 5 }).notNull(),
-    decimalPlaces: smallint('decimal_places').notNull().default(2),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_currency_code_tenant').on(t.tenantId, t.code),
-    check('chk_currency_decimal_places', sql`${t.decimalPlaces} >= 0 AND ${t.decimalPlaces} <= 4`),
-  ]
-).enableRLS();
+export const currencies = erpSchema
+  .table(
+    'currency',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      code: varchar('code', { length: 3 }).notNull(),
+      name: text('name').notNull(),
+      symbol: varchar('symbol', { length: 5 }).notNull(),
+      decimalPlaces: smallint('decimal_places').notNull().default(2),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_currency_code_tenant').on(t.tenantId, t.code),
+      check(
+        'chk_currency_decimal_places',
+        sql`${t.decimalPlaces} >= 0 AND ${t.decimalPlaces} <= 4`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.fiscal_year ────────────────────────────────────────────────────────
 
-export const fiscalYears = erpSchema.table(
-  'fiscal_year',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    name: varchar('name', { length: 50 }).notNull(),
-    startDate: timestamp('start_date', { withTimezone: true }).notNull(),
-    endDate: timestamp('end_date', { withTimezone: true }).notNull(),
-    isClosed: boolean('is_closed').notNull().default(false),
-    ...timestamps(),
-  },
-  (t) => [uniqueIndex('uq_fiscal_year_name_tenant').on(t.tenantId, t.name)]
-).enableRLS();
+export const fiscalYears = erpSchema
+  .table(
+    'fiscal_year',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      name: varchar('name', { length: 50 }).notNull(),
+      startDate: timestamp('start_date', { withTimezone: true }).notNull(),
+      endDate: timestamp('end_date', { withTimezone: true }).notNull(),
+      isClosed: boolean('is_closed').notNull().default(false),
+      ...timestamps(),
+    },
+    (t) => [uniqueIndex('uq_fiscal_year_name_tenant').on(t.tenantId, t.name)]
+  )
+  .enableRLS();
 
 // ─── erp.fiscal_period ──────────────────────────────────────────────────────
 
-export const fiscalPeriods = erpSchema.table(
-  'fiscal_period',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    fiscalYearId: uuid('fiscal_year_id').notNull().references(() => fiscalYears.id, { onDelete: 'restrict' }),
-    name: varchar('name', { length: 50 }).notNull(),
-    periodNumber: smallint('period_number').notNull(),
-    startDate: timestamp('start_date', { withTimezone: true }).notNull(),
-    endDate: timestamp('end_date', { withTimezone: true }).notNull(),
-    status: periodStatusEnum('status').notNull().default('OPEN'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_fiscal_period_year_num_tenant').on(t.tenantId, t.fiscalYearId, t.periodNumber),
-    index('idx_fiscal_period_status').on(t.tenantId, t.status),
-    check('chk_fiscal_period_number_positive', sql`${t.periodNumber} > 0`),
-  ]
-).enableRLS();
+export const fiscalPeriods = erpSchema
+  .table(
+    'fiscal_period',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      fiscalYearId: uuid('fiscal_year_id')
+        .notNull()
+        .references(() => fiscalYears.id, { onDelete: 'restrict' }),
+      name: varchar('name', { length: 50 }).notNull(),
+      periodNumber: smallint('period_number').notNull(),
+      startDate: timestamp('start_date', { withTimezone: true }).notNull(),
+      endDate: timestamp('end_date', { withTimezone: true }).notNull(),
+      status: periodStatusEnum('status').notNull().default('OPEN'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_fiscal_period_year_num_tenant').on(
+        t.tenantId,
+        t.fiscalYearId,
+        t.periodNumber
+      ),
+      index('idx_fiscal_period_status').on(t.tenantId, t.status),
+      check('chk_fiscal_period_number_positive', sql`${t.periodNumber} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.account ────────────────────────────────────────────────────────────
 
-export const accounts = erpSchema.table(
-  'account',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    code: varchar('code', { length: 20 }).notNull(),
-    name: text('name').notNull(),
-    accountType: accountTypeEnum('account_type').notNull(),
-    parentId: uuid('parent_id').references((): AnyPgColumn => accounts.id, { onDelete: 'set null' }),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_account_code_tenant').on(t.tenantId, t.code),
-    index('idx_account_type_tenant').on(t.tenantId, t.accountType),
-    index('idx_account_parent').on(t.tenantId, t.parentId),
-  ]
-).enableRLS();
+export const accounts = erpSchema
+  .table(
+    'account',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      code: varchar('code', { length: 20 }).notNull(),
+      name: text('name').notNull(),
+      accountType: accountTypeEnum('account_type').notNull(),
+      parentId: uuid('parent_id').references((): AnyPgColumn => accounts.id, {
+        onDelete: 'set null',
+      }),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_account_code_tenant').on(t.tenantId, t.code),
+      index('idx_account_type_tenant').on(t.tenantId, t.accountType),
+      index('idx_account_parent').on(t.tenantId, t.parentId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ledger ─────────────────────────────────────────────────────────────
 
-export const ledgers = erpSchema.table(
-  'ledger',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    name: text('name').notNull(),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    isDefault: boolean('is_default').notNull().default(false),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [uniqueIndex('uq_ledger_name_company_tenant').on(t.tenantId, t.companyId, t.name)]
-).enableRLS();
+export const ledgers = erpSchema
+  .table(
+    'ledger',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      name: text('name').notNull(),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      isDefault: boolean('is_default').notNull().default(false),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [uniqueIndex('uq_ledger_name_company_tenant').on(t.tenantId, t.companyId, t.name)]
+  )
+  .enableRLS();
 
 // ─── erp.gl_journal ─────────────────────────────────────────────────────────
 
-export const glJournals = erpSchema.table(
-  'gl_journal',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    ledgerId: uuid('ledger_id').notNull().references(() => ledgers.id, { onDelete: 'restrict' }),
-    fiscalPeriodId: uuid('fiscal_period_id').notNull().references(() => fiscalPeriods.id, { onDelete: 'restrict' }),
-    journalNumber: varchar('journal_number', { length: 30 }).notNull(),
-    documentType: documentTypeEnum('document_type').notNull().default('JOURNAL'),
-    status: journalStatusEnum('status').notNull().default('DRAFT'),
-    description: text('description'),
-    postingDate: timestamp('posting_date', { withTimezone: true }).notNull(),
-    reversalOfId: uuid('reversal_of_id').references((): AnyPgColumn => glJournals.id, { onDelete: 'set null' }),
-    reversedById: uuid('reversed_by_id').references((): AnyPgColumn => glJournals.id, { onDelete: 'set null' }),
-    postedAt: timestamp('posted_at', { withTimezone: true }),
-    postedBy: uuid('posted_by'),
-    metadata: jsonb('metadata').notNull().default({}),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_journal_number_ledger_tenant').on(t.tenantId, t.ledgerId, t.journalNumber),
-    index('idx_journal_status_tenant').on(t.tenantId, t.status),
-    index('idx_journal_posting_date_tenant').on(t.tenantId, t.postingDate),
-    index('idx_journal_period_tenant').on(t.tenantId, t.fiscalPeriodId),
-  ]
-).enableRLS();
+export const glJournals = erpSchema
+  .table(
+    'gl_journal',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      ledgerId: uuid('ledger_id')
+        .notNull()
+        .references(() => ledgers.id, { onDelete: 'restrict' }),
+      fiscalPeriodId: uuid('fiscal_period_id')
+        .notNull()
+        .references(() => fiscalPeriods.id, { onDelete: 'restrict' }),
+      journalNumber: varchar('journal_number', { length: 30 }).notNull(),
+      documentType: documentTypeEnum('document_type').notNull().default('JOURNAL'),
+      status: journalStatusEnum('status').notNull().default('DRAFT'),
+      description: text('description'),
+      postingDate: timestamp('posting_date', { withTimezone: true }).notNull(),
+      reversalOfId: uuid('reversal_of_id').references((): AnyPgColumn => glJournals.id, {
+        onDelete: 'set null',
+      }),
+      reversedById: uuid('reversed_by_id').references((): AnyPgColumn => glJournals.id, {
+        onDelete: 'set null',
+      }),
+      postedAt: timestamp('posted_at', { withTimezone: true }),
+      postedBy: uuid('posted_by'),
+      metadata: jsonb('metadata').notNull().default({}),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_journal_number_ledger_tenant').on(t.tenantId, t.ledgerId, t.journalNumber),
+      index('idx_journal_status_tenant').on(t.tenantId, t.status),
+      index('idx_journal_posting_date_tenant').on(t.tenantId, t.postingDate),
+      index('idx_journal_period_tenant').on(t.tenantId, t.fiscalPeriodId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.gl_journal_line ────────────────────────────────────────────────────
 
-export const glJournalLines = erpSchema.table(
-  'gl_journal_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    journalId: uuid('journal_id').notNull().references(() => glJournals.id, { onDelete: 'cascade' }),
-    lineNumber: smallint('line_number').notNull(),
-    accountId: uuid('account_id').notNull().references(() => accounts.id, { onDelete: 'restrict' }),
-    description: text('description'),
-    debit: moneyBigint('debit')
-      .notNull()
-      .default(sql`0`),
-    credit: moneyBigint('credit')
-      .notNull()
-      .default(sql`0`),
-    currencyCode: varchar('currency_code', { length: 3 }),
-    baseCurrencyDebit: moneyBigint('base_currency_debit')
-      .notNull()
-      .default(sql`0`),
-    baseCurrencyCredit: moneyBigint('base_currency_credit')
-      .notNull()
-      .default(sql`0`),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_journal_line_num_tenant').on(t.tenantId, t.journalId, t.lineNumber),
-    index('idx_journal_line_account_tenant').on(t.tenantId, t.accountId),
-    check('chk_journal_line_debit_credit', sql`(${t.debit} = 0) <> (${t.credit} = 0)`),
-    check('chk_gl_line_amounts_nonneg', sql`${t.debit} >= 0 AND ${t.credit} >= 0 AND ${t.baseCurrencyDebit} >= 0 AND ${t.baseCurrencyCredit} >= 0`),
-  ]
-).enableRLS();
+export const glJournalLines = erpSchema
+  .table(
+    'gl_journal_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      journalId: uuid('journal_id')
+        .notNull()
+        .references(() => glJournals.id, { onDelete: 'cascade' }),
+      lineNumber: smallint('line_number').notNull(),
+      accountId: uuid('account_id')
+        .notNull()
+        .references(() => accounts.id, { onDelete: 'restrict' }),
+      description: text('description'),
+      debit: moneyBigint('debit')
+        .notNull()
+        .default(sql`0`),
+      credit: moneyBigint('credit')
+        .notNull()
+        .default(sql`0`),
+      currencyCode: varchar('currency_code', { length: 3 }),
+      baseCurrencyDebit: moneyBigint('base_currency_debit')
+        .notNull()
+        .default(sql`0`),
+      baseCurrencyCredit: moneyBigint('base_currency_credit')
+        .notNull()
+        .default(sql`0`),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_journal_line_num_tenant').on(t.tenantId, t.journalId, t.lineNumber),
+      index('idx_journal_line_account_tenant').on(t.tenantId, t.accountId),
+      check('chk_journal_line_debit_credit', sql`(${t.debit} = 0) <> (${t.credit} = 0)`),
+      check(
+        'chk_gl_line_amounts_nonneg',
+        sql`${t.debit} >= 0 AND ${t.credit} >= 0 AND ${t.baseCurrencyDebit} >= 0 AND ${t.baseCurrencyCredit} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.gl_balance (composite PK — no surrogate) ──────────────────────────
 
-export const glBalances = erpSchema.table(
-  'gl_balance',
-  {
-    tenantId: uuid('tenant_id').notNull(),
-    ledgerId: uuid('ledger_id').notNull(),
-    accountId: uuid('account_id').notNull(),
-    fiscalYear: varchar('fiscal_year', { length: 10 }).notNull(),
-    fiscalPeriod: smallint('fiscal_period').notNull(),
-    debitBalance: moneyBigint('debit_balance')
-      .notNull()
-      .default(sql`0`),
-    creditBalance: moneyBigint('credit_balance')
-      .notNull()
-      .default(sql`0`),
-    ...timestamps(),
-  },
-  (t) => [
-    primaryKey({
-      columns: [t.tenantId, t.ledgerId, t.accountId, t.fiscalYear, t.fiscalPeriod],
-    }),
-    index('idx_gl_balance_account_tenant').on(t.tenantId, t.accountId),
-    check('chk_gl_bal_amounts_nonneg', sql`${t.debitBalance} >= 0 AND ${t.creditBalance} >= 0`),
-  ]
-).enableRLS();
+export const glBalances = erpSchema
+  .table(
+    'gl_balance',
+    {
+      tenantId: uuid('tenant_id').notNull(),
+      ledgerId: uuid('ledger_id').notNull(),
+      accountId: uuid('account_id').notNull(),
+      fiscalYear: varchar('fiscal_year', { length: 10 }).notNull(),
+      fiscalPeriod: smallint('fiscal_period').notNull(),
+      debitBalance: moneyBigint('debit_balance')
+        .notNull()
+        .default(sql`0`),
+      creditBalance: moneyBigint('credit_balance')
+        .notNull()
+        .default(sql`0`),
+      ...timestamps(),
+    },
+    (t) => [
+      primaryKey({
+        columns: [t.tenantId, t.ledgerId, t.accountId, t.fiscalYear, t.fiscalPeriod],
+      }),
+      index('idx_gl_balance_account_tenant').on(t.tenantId, t.accountId),
+      check('chk_gl_bal_amounts_nonneg', sql`${t.debitBalance} >= 0 AND ${t.creditBalance} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.fx_rate ───────────────────────────────────────────────────────────
 
-export const fxRates = erpSchema.table(
-  'fx_rate',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    fromCurrencyId: uuid('from_currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    toCurrencyId: uuid('to_currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    rate: text('rate').notNull(),
-    effectiveDate: timestamp('effective_date', { withTimezone: true }).notNull(),
-    expiresAt: timestamp('expires_at', { withTimezone: true }),
-    source: varchar('source', { length: 50 }).notNull().default('MANUAL'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_fx_rate_pair_date_tenant').on(
-      t.tenantId,
-      t.fromCurrencyId,
-      t.toCurrencyId,
-      t.effectiveDate
-    ),
-    index('idx_fx_rate_effective_tenant').on(t.tenantId, t.effectiveDate),
-  ]
-).enableRLS();
+export const fxRates = erpSchema
+  .table(
+    'fx_rate',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      fromCurrencyId: uuid('from_currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      toCurrencyId: uuid('to_currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      rate: text('rate').notNull(),
+      effectiveDate: timestamp('effective_date', { withTimezone: true }).notNull(),
+      expiresAt: timestamp('expires_at', { withTimezone: true }),
+      source: varchar('source', { length: 50 }).notNull().default('MANUAL'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_fx_rate_pair_date_tenant').on(
+        t.tenantId,
+        t.fromCurrencyId,
+        t.toCurrencyId,
+        t.effectiveDate
+      ),
+      index('idx_fx_rate_effective_tenant').on(t.tenantId, t.effectiveDate),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.counterparty ───────────────────────────────────────────────────────
 
-export const counterparties = erpSchema.table(
-  'counterparty',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    code: varchar('code', { length: 20 }).notNull(),
-    name: text('name').notNull(),
-    counterpartyType: counterpartyTypeEnum('counterparty_type').notNull(),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_counterparty_code_tenant').on(t.tenantId, t.code),
-    index('idx_counterparty_type').on(t.tenantId, t.counterpartyType),
-  ]
-).enableRLS();
+export const counterparties = erpSchema
+  .table(
+    'counterparty',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      code: varchar('code', { length: 20 }).notNull(),
+      name: text('name').notNull(),
+      counterpartyType: counterpartyTypeEnum('counterparty_type').notNull(),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_counterparty_code_tenant').on(t.tenantId, t.code),
+      index('idx_counterparty_type').on(t.tenantId, t.counterpartyType),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ic_agreement ───────────────────────────────────────────────────────
 
-export const icAgreements = erpSchema.table(
-  'ic_agreement',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    sellerCompanyId: uuid('seller_company_id').notNull(),
-    buyerCompanyId: uuid('buyer_company_id').notNull(),
-    pricing: icPricingEnum('pricing').notNull().default('COST'),
-    markupPercent: smallint('markup_percent'),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ic_agreement_pair_tenant').on(t.tenantId, t.sellerCompanyId, t.buyerCompanyId),
-  ]
-).enableRLS();
+export const icAgreements = erpSchema
+  .table(
+    'ic_agreement',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      sellerCompanyId: uuid('seller_company_id').notNull(),
+      buyerCompanyId: uuid('buyer_company_id').notNull(),
+      pricing: icPricingEnum('pricing').notNull().default('COST'),
+      markupPercent: smallint('markup_percent'),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ic_agreement_pair_tenant').on(
+        t.tenantId,
+        t.sellerCompanyId,
+        t.buyerCompanyId
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ic_transaction ─────────────────────────────────────────────────────
 
-export const icTransactions = erpSchema.table(
-  'ic_transaction',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    agreementId: uuid('agreement_id').notNull().references(() => icAgreements.id, { onDelete: 'restrict' }),
-    transactionDate: timestamp('transaction_date', { withTimezone: true }).notNull(),
-    amount: moneyBigint('amount').notNull(),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    settlementStatus: icSettlementStatusEnum('settlement_status').notNull().default('PENDING'),
-    description: text('description'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_ic_tx_agreement_tenant').on(t.tenantId, t.agreementId),
-    index('idx_ic_tx_status_tenant').on(t.tenantId, t.settlementStatus),
-    check('chk_ic_txn_amount_nonneg', sql`${t.amount} >= 0`),
-  ]
-).enableRLS();
+export const icTransactions = erpSchema
+  .table(
+    'ic_transaction',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      agreementId: uuid('agreement_id')
+        .notNull()
+        .references(() => icAgreements.id, { onDelete: 'restrict' }),
+      transactionDate: timestamp('transaction_date', { withTimezone: true }).notNull(),
+      amount: moneyBigint('amount').notNull(),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      settlementStatus: icSettlementStatusEnum('settlement_status').notNull().default('PENDING'),
+      description: text('description'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_ic_tx_agreement_tenant').on(t.tenantId, t.agreementId),
+      index('idx_ic_tx_status_tenant').on(t.tenantId, t.settlementStatus),
+      check('chk_ic_txn_amount_nonneg', sql`${t.amount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ic_transaction_leg ─────────────────────────────────────────────────
 
-export const icTransactionLegs = erpSchema.table(
-  'ic_transaction_leg',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    transactionId: uuid('transaction_id').notNull().references(() => icTransactions.id, { onDelete: 'cascade' }),
-    companyId: uuid('company_id').notNull(),
-    side: icLegSideEnum('side').notNull(),
-    journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
-    ...timestamps(),
-  },
-  (t) => [uniqueIndex('uq_ic_leg_tx_side_tenant').on(t.tenantId, t.transactionId, t.side)]
-).enableRLS();
+export const icTransactionLegs = erpSchema
+  .table(
+    'ic_transaction_leg',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      transactionId: uuid('transaction_id')
+        .notNull()
+        .references(() => icTransactions.id, { onDelete: 'cascade' }),
+      companyId: uuid('company_id').notNull(),
+      side: icLegSideEnum('side').notNull(),
+      journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
+      ...timestamps(),
+    },
+    (t) => [uniqueIndex('uq_ic_leg_tx_side_tenant').on(t.tenantId, t.transactionId, t.side)]
+  )
+  .enableRLS();
 
 // ─── erp.recurring_template ────────────────────────────────────────────────
 
-export const recurringTemplates = erpSchema.table(
-  'recurring_template',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    ledgerId: uuid('ledger_id').notNull().references(() => ledgers.id, { onDelete: 'restrict' }),
-    description: text('description').notNull(),
-    lineTemplate: jsonb('line_template').notNull(),
-    frequency: recurringFrequencyEnum('frequency').notNull(),
-    nextRunDate: timestamp('next_run_date', { withTimezone: true }).notNull(),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_recurring_template_tenant_active').on(t.tenantId, t.isActive),
-    index('idx_recurring_template_next_run')
-      .on(t.tenantId, t.nextRunDate)
-      .where(sql`is_active = true`),
-  ]
-).enableRLS();
+export const recurringTemplates = erpSchema
+  .table(
+    'recurring_template',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      ledgerId: uuid('ledger_id')
+        .notNull()
+        .references(() => ledgers.id, { onDelete: 'restrict' }),
+      description: text('description').notNull(),
+      lineTemplate: jsonb('line_template').notNull(),
+      frequency: recurringFrequencyEnum('frequency').notNull(),
+      nextRunDate: timestamp('next_run_date', { withTimezone: true }).notNull(),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_recurring_template_tenant_active').on(t.tenantId, t.isActive),
+      index('idx_recurring_template_next_run')
+        .on(t.tenantId, t.nextRunDate)
+        .where(sql`is_active = true`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.budget_entry ──────────────────────────────────────────────────────
 
-export const budgetEntries = erpSchema.table(
-  'budget_entry',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    ledgerId: uuid('ledger_id').notNull().references(() => ledgers.id, { onDelete: 'restrict' }),
-    accountId: uuid('account_id').notNull().references(() => accounts.id, { onDelete: 'restrict' }),
-    periodId: uuid('period_id').notNull().references(() => fiscalPeriods.id, { onDelete: 'restrict' }),
-    budgetAmount: moneyBigint('budget_amount').notNull(),
-    version: integer('version').notNull().default(1),
-    versionNote: text('version_note'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_budget_entry_tenant_ledger_account_period').on(
-      t.tenantId,
-      t.ledgerId,
-      t.accountId,
-      t.periodId
-    ),
-    check('chk_budget_amount_nonneg', sql`${t.budgetAmount} >= 0`),
-  ]
-).enableRLS();
+export const budgetEntries = erpSchema
+  .table(
+    'budget_entry',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      ledgerId: uuid('ledger_id')
+        .notNull()
+        .references(() => ledgers.id, { onDelete: 'restrict' }),
+      accountId: uuid('account_id')
+        .notNull()
+        .references(() => accounts.id, { onDelete: 'restrict' }),
+      periodId: uuid('period_id')
+        .notNull()
+        .references(() => fiscalPeriods.id, { onDelete: 'restrict' }),
+      budgetAmount: moneyBigint('budget_amount').notNull(),
+      version: integer('version').notNull().default(1),
+      versionNote: text('version_note'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_budget_entry_tenant_ledger_account_period').on(
+        t.tenantId,
+        t.ledgerId,
+        t.accountId,
+        t.periodId
+      ),
+      check('chk_budget_amount_nonneg', sql`${t.budgetAmount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ic_settlement (A-22) ────────────────────────────────────────────────
 
-export const icSettlements = erpSchema.table(
-  'ic_settlement',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    settlementNumber: varchar('settlement_number', { length: 30 }).notNull(),
-    agreementId: uuid('agreement_id').notNull().references(() => icAgreements.id, { onDelete: 'restrict' }),
-    method: settlementMethodEnum('method').notNull(),
-    status: settlementStatusEnum('status').notNull().default('DRAFT'),
-    settlementDate: timestamp('settlement_date', { withTimezone: true }).notNull(),
-    totalAmount: moneyBigint('total_amount').notNull(),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
-    confirmedBy: uuid('confirmed_by'),
-    metadata: jsonb('metadata').notNull().default({}),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ic_settlement_number_tenant').on(t.tenantId, t.settlementNumber),
-    index('idx_ic_settlement_agreement_tenant').on(t.tenantId, t.agreementId),
-    index('idx_ic_settlement_status_tenant').on(t.tenantId, t.status),
-    check('chk_ic_settle_total_nonneg', sql`${t.totalAmount} >= 0`),
-  ]
-).enableRLS();
+export const icSettlements = erpSchema
+  .table(
+    'ic_settlement',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      settlementNumber: varchar('settlement_number', { length: 30 }).notNull(),
+      agreementId: uuid('agreement_id')
+        .notNull()
+        .references(() => icAgreements.id, { onDelete: 'restrict' }),
+      method: settlementMethodEnum('method').notNull(),
+      status: settlementStatusEnum('status').notNull().default('DRAFT'),
+      settlementDate: timestamp('settlement_date', { withTimezone: true }).notNull(),
+      totalAmount: moneyBigint('total_amount').notNull(),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+      confirmedBy: uuid('confirmed_by'),
+      metadata: jsonb('metadata').notNull().default({}),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ic_settlement_number_tenant').on(t.tenantId, t.settlementNumber),
+      index('idx_ic_settlement_agreement_tenant').on(t.tenantId, t.agreementId),
+      index('idx_ic_settlement_status_tenant').on(t.tenantId, t.status),
+      check('chk_ic_settle_total_nonneg', sql`${t.totalAmount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ic_settlement_line (links settlement to IC transactions) ───────────
 
-export const icSettlementLines = erpSchema.table(
-  'ic_settlement_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    settlementId: uuid('settlement_id').notNull().references(() => icSettlements.id, { onDelete: 'cascade' }),
-    transactionId: uuid('transaction_id').notNull().references(() => icTransactions.id, { onDelete: 'restrict' }),
-    amount: moneyBigint('amount').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ic_settlement_line_tx_tenant').on(t.tenantId, t.settlementId, t.transactionId),
-    index('idx_ic_settlement_line_settlement').on(t.tenantId, t.settlementId),
-    check('chk_ic_settle_line_amt_nonneg', sql`${t.amount} >= 0`),
-  ]
-).enableRLS();
+export const icSettlementLines = erpSchema
+  .table(
+    'ic_settlement_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      settlementId: uuid('settlement_id')
+        .notNull()
+        .references(() => icSettlements.id, { onDelete: 'cascade' }),
+      transactionId: uuid('transaction_id')
+        .notNull()
+        .references(() => icTransactions.id, { onDelete: 'restrict' }),
+      amount: moneyBigint('amount').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ic_settlement_line_tx_tenant').on(
+        t.tenantId,
+        t.settlementId,
+        t.transactionId
+      ),
+      index('idx_ic_settlement_line_settlement').on(t.tenantId, t.settlementId),
+      check('chk_ic_settle_line_amt_nonneg', sql`${t.amount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.revenue_contract (A-24) ────────────────────────────────────────────
 
-export const revenueContracts = erpSchema.table(
-  'revenue_contract',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    contractNumber: varchar('contract_number', { length: 50 }).notNull(),
-    customerName: text('customer_name').notNull(),
-    totalAmount: moneyBigint('total_amount').notNull(),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    recognitionMethod: recognitionMethodEnum('recognition_method').notNull(),
-    startDate: timestamp('start_date', { withTimezone: true }).notNull(),
-    endDate: timestamp('end_date', { withTimezone: true }).notNull(),
-    deferredAccountId: uuid('deferred_account_id').notNull().references(() => accounts.id, { onDelete: 'restrict' }),
-    revenueAccountId: uuid('revenue_account_id').notNull().references(() => accounts.id, { onDelete: 'restrict' }),
-    status: contractStatusEnum('status').notNull().default('ACTIVE'),
-    recognizedToDate: moneyBigint('recognized_to_date')
-      .notNull()
-      .default(sql`0`),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_revenue_contract_number_tenant').on(t.tenantId, t.contractNumber),
-    index('idx_revenue_contract_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_revenue_contract_status_tenant').on(t.tenantId, t.status),
-    check('chk_rev_contract_amounts_nonneg', sql`${t.totalAmount} >= 0 AND ${t.recognizedToDate} >= 0`),
-  ]
-).enableRLS();
+export const revenueContracts = erpSchema
+  .table(
+    'revenue_contract',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      contractNumber: varchar('contract_number', { length: 50 }).notNull(),
+      customerName: text('customer_name').notNull(),
+      totalAmount: moneyBigint('total_amount').notNull(),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      recognitionMethod: recognitionMethodEnum('recognition_method').notNull(),
+      startDate: timestamp('start_date', { withTimezone: true }).notNull(),
+      endDate: timestamp('end_date', { withTimezone: true }).notNull(),
+      deferredAccountId: uuid('deferred_account_id')
+        .notNull()
+        .references(() => accounts.id, { onDelete: 'restrict' }),
+      revenueAccountId: uuid('revenue_account_id')
+        .notNull()
+        .references(() => accounts.id, { onDelete: 'restrict' }),
+      status: contractStatusEnum('status').notNull().default('ACTIVE'),
+      recognizedToDate: moneyBigint('recognized_to_date')
+        .notNull()
+        .default(sql`0`),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_revenue_contract_number_tenant').on(t.tenantId, t.contractNumber),
+      index('idx_revenue_contract_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_revenue_contract_status_tenant').on(t.tenantId, t.status),
+      check(
+        'chk_rev_contract_amounts_nonneg',
+        sql`${t.totalAmount} >= 0 AND ${t.recognizedToDate} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.recognition_milestone ──────────────────────────────────────────────
 
-export const recognitionMilestones = erpSchema.table(
-  'recognition_milestone',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    contractId: uuid('contract_id').notNull().references(() => revenueContracts.id, { onDelete: 'cascade' }),
-    description: text('description').notNull(),
-    amount: moneyBigint('amount').notNull(),
-    targetDate: timestamp('target_date', { withTimezone: true }).notNull(),
-    completedDate: timestamp('completed_date', { withTimezone: true }),
-    isCompleted: boolean('is_completed').notNull().default(false),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_recognition_milestone_contract_tenant').on(t.tenantId, t.contractId),
-    check('chk_rev_milestone_amt_nonneg', sql`${t.amount} >= 0`),
-  ]
-).enableRLS();
+export const recognitionMilestones = erpSchema
+  .table(
+    'recognition_milestone',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      contractId: uuid('contract_id')
+        .notNull()
+        .references(() => revenueContracts.id, { onDelete: 'cascade' }),
+      description: text('description').notNull(),
+      amount: moneyBigint('amount').notNull(),
+      targetDate: timestamp('target_date', { withTimezone: true }).notNull(),
+      completedDate: timestamp('completed_date', { withTimezone: true }),
+      isCompleted: boolean('is_completed').notNull().default(false),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_recognition_milestone_contract_tenant').on(t.tenantId, t.contractId),
+      check('chk_rev_milestone_amt_nonneg', sql`${t.amount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.classification_rule_set (A-18) ─────────────────────────────────────
 
-export const classificationRuleSets = erpSchema.table(
-  'classification_rule_set',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    standard: reportingStandardEnum('standard').notNull(),
-    version: integer('version').notNull().default(1),
-    name: varchar('name', { length: 100 }).notNull(),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_classification_rule_set_tenant_standard_version').on(
-      t.tenantId,
-      t.standard,
-      t.version
-    ),
-  ]
-).enableRLS();
+export const classificationRuleSets = erpSchema
+  .table(
+    'classification_rule_set',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      standard: reportingStandardEnum('standard').notNull(),
+      version: integer('version').notNull().default(1),
+      name: varchar('name', { length: 100 }).notNull(),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_classification_rule_set_tenant_standard_version').on(
+        t.tenantId,
+        t.standard,
+        t.version
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.classification_rule ────────────────────────────────────────────────
 
-export const classificationRules = erpSchema.table(
-  'classification_rule',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    ruleSetId: uuid('rule_set_id').notNull().references(() => classificationRuleSets.id, { onDelete: 'cascade' }),
-    accountType: accountTypeEnum('account_type').notNull(),
-    pattern: varchar('pattern', { length: 100 }).notNull(),
-    category: varchar('category', { length: 100 }).notNull(),
-    priority: smallint('priority').notNull().default(0),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_classification_rule_set_tenant').on(t.tenantId, t.ruleSetId),
-    index('idx_classification_rule_type_tenant').on(t.tenantId, t.accountType),
-  ]
-).enableRLS();
+export const classificationRules = erpSchema
+  .table(
+    'classification_rule',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      ruleSetId: uuid('rule_set_id')
+        .notNull()
+        .references(() => classificationRuleSets.id, { onDelete: 'cascade' }),
+      accountType: accountTypeEnum('account_type').notNull(),
+      pattern: varchar('pattern', { length: 100 }).notNull(),
+      category: varchar('category', { length: 100 }).notNull(),
+      priority: smallint('priority').notNull().default(0),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_classification_rule_set_tenant').on(t.tenantId, t.ruleSetId),
+      index('idx_classification_rule_type_tenant').on(t.tenantId, t.accountType),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.payment_terms_template ──────────────────────────────────────────────
 
-export const paymentTermsTemplates = erpSchema.table(
-  'payment_terms_template',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    code: varchar('code', { length: 20 }).notNull(),
-    name: text('name').notNull(),
-    netDays: smallint('net_days').notNull(),
-    discountPercent: smallint('discount_percent').notNull().default(0),
-    discountDays: smallint('discount_days').notNull().default(0),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_payment_terms_code_tenant').on(t.tenantId, t.code),
-    check('chk_pay_terms_days_positive', sql`${t.netDays} > 0`),
-    check('chk_pay_terms_discount_range', sql`${t.discountPercent} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const paymentTermsTemplates = erpSchema
+  .table(
+    'payment_terms_template',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      code: varchar('code', { length: 20 }).notNull(),
+      name: text('name').notNull(),
+      netDays: smallint('net_days').notNull(),
+      discountPercent: smallint('discount_percent').notNull().default(0),
+      discountDays: smallint('discount_days').notNull().default(0),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_payment_terms_code_tenant').on(t.tenantId, t.code),
+      check('chk_pay_terms_days_positive', sql`${t.netDays} > 0`),
+      check('chk_pay_terms_discount_range', sql`${t.discountPercent} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier ───────────────────────────────────────────────────────────
 
-export const suppliers = erpSchema.table(
-  'supplier',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    code: varchar('code', { length: 20 }).notNull(),
-    name: text('name').notNull(),
-    tradingName: varchar('trading_name', { length: 200 }),
-    registrationNumber: varchar('registration_number', { length: 50 }),
-    countryOfIncorporation: varchar('country_of_incorporation', { length: 3 }),
-    legalForm: varchar('legal_form', { length: 50 }),
-    taxId: varchar('tax_id', { length: 50 }),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    defaultPaymentTermsId: uuid('default_payment_terms_id').references(() => paymentTermsTemplates.id, { onDelete: 'set null' }),
-    defaultPaymentMethod: paymentMethodTypeEnum('default_payment_method'),
-    whtRateId: uuid('wht_rate_id'),
-    remittanceEmail: varchar('remittance_email', { length: 255 }),
-    status: supplierStatusEnum('status').notNull().default('ACTIVE'),
-    onboardingStatus: supplierOnboardingStatusEnum('onboarding_status')
-      .notNull()
-      .default('ACTIVE'),
-    accountGroup: supplierAccountGroupEnum('account_group').notNull().default('TRADE'),
-    category: supplierCategoryEnum('category').notNull().default('GOODS'),
-    industryCode: varchar('industry_code', { length: 20 }),
-    industryDescription: varchar('industry_description', { length: 200 }),
-    parentSupplierId: uuid('parent_supplier_id').references((): AnyPgColumn => suppliers.id, { onDelete: 'set null' }),
-    isGroupHeader: boolean('is_group_header').notNull().default(false),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_supplier_code_tenant').on(t.tenantId, t.companyId, t.code),
-    index('idx_supplier_status_tenant').on(t.tenantId, t.status),
-    index('idx_supplier_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_supplier_parent').on(t.tenantId, t.parentSupplierId),
-    index('idx_supplier_account_group').on(t.tenantId, t.accountGroup),
-    index('idx_supplier_category').on(t.tenantId, t.category),
-    index('idx_supplier_onboarding').on(t.tenantId, t.onboardingStatus),
-  ]
-).enableRLS();
+export const suppliers = erpSchema
+  .table(
+    'supplier',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      code: varchar('code', { length: 20 }).notNull(),
+      name: text('name').notNull(),
+      tradingName: varchar('trading_name', { length: 200 }),
+      registrationNumber: varchar('registration_number', { length: 50 }),
+      countryOfIncorporation: varchar('country_of_incorporation', { length: 3 }),
+      legalForm: varchar('legal_form', { length: 50 }),
+      taxId: varchar('tax_id', { length: 50 }),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      defaultPaymentTermsId: uuid('default_payment_terms_id').references(
+        () => paymentTermsTemplates.id,
+        { onDelete: 'set null' }
+      ),
+      defaultPaymentMethod: paymentMethodTypeEnum('default_payment_method'),
+      whtRateId: uuid('wht_rate_id'),
+      remittanceEmail: varchar('remittance_email', { length: 255 }),
+      status: supplierStatusEnum('status').notNull().default('ACTIVE'),
+      onboardingStatus: supplierOnboardingStatusEnum('onboarding_status')
+        .notNull()
+        .default('ACTIVE'),
+      accountGroup: supplierAccountGroupEnum('account_group').notNull().default('TRADE'),
+      category: supplierCategoryEnum('category').notNull().default('GOODS'),
+      industryCode: varchar('industry_code', { length: 20 }),
+      industryDescription: varchar('industry_description', { length: 200 }),
+      parentSupplierId: uuid('parent_supplier_id').references((): AnyPgColumn => suppliers.id, {
+        onDelete: 'set null',
+      }),
+      isGroupHeader: boolean('is_group_header').notNull().default(false),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_supplier_code_tenant').on(t.tenantId, t.companyId, t.code),
+      index('idx_supplier_status_tenant').on(t.tenantId, t.status),
+      index('idx_supplier_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_supplier_parent').on(t.tenantId, t.parentSupplierId),
+      index('idx_supplier_account_group').on(t.tenantId, t.accountGroup),
+      index('idx_supplier_category').on(t.tenantId, t.category),
+      index('idx_supplier_onboarding').on(t.tenantId, t.onboardingStatus),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_site ──────────────────────────────────────────────────────
 
-export const supplierSites = erpSchema.table(
-  'supplier_site',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    siteCode: varchar('site_code', { length: 20 }).notNull(),
-    name: text('name').notNull(),
-    addressLine1: text('address_line1').notNull(),
-    addressLine2: text('address_line2'),
-    city: varchar('city', { length: 100 }).notNull(),
-    region: varchar('region', { length: 100 }),
-    postalCode: varchar('postal_code', { length: 20 }),
-    countryCode: varchar('country_code', { length: 3 }).notNull(),
-    isPrimary: boolean('is_primary').notNull().default(false),
-    isPaySite: boolean('is_pay_site').notNull().default(false),
-    isPurchasingSite: boolean('is_purchasing_site').notNull().default(false),
-    isRemitTo: boolean('is_remit_to').notNull().default(false),
-    contactName: varchar('contact_name', { length: 200 }),
-    contactEmail: varchar('contact_email', { length: 255 }),
-    contactPhone: varchar('contact_phone', { length: 50 }),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_supplier_site_code').on(t.tenantId, t.supplierId, t.siteCode),
-    index('idx_supplier_site_supplier').on(t.tenantId, t.supplierId),
-  ]
-).enableRLS();
+export const supplierSites = erpSchema
+  .table(
+    'supplier_site',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      siteCode: varchar('site_code', { length: 20 }).notNull(),
+      name: text('name').notNull(),
+      addressLine1: text('address_line1').notNull(),
+      addressLine2: text('address_line2'),
+      city: varchar('city', { length: 100 }).notNull(),
+      region: varchar('region', { length: 100 }),
+      postalCode: varchar('postal_code', { length: 20 }),
+      countryCode: varchar('country_code', { length: 3 }).notNull(),
+      isPrimary: boolean('is_primary').notNull().default(false),
+      isPaySite: boolean('is_pay_site').notNull().default(false),
+      isPurchasingSite: boolean('is_purchasing_site').notNull().default(false),
+      isRemitTo: boolean('is_remit_to').notNull().default(false),
+      contactName: varchar('contact_name', { length: 200 }),
+      contactEmail: varchar('contact_email', { length: 255 }),
+      contactPhone: varchar('contact_phone', { length: 50 }),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_supplier_site_code').on(t.tenantId, t.supplierId, t.siteCode),
+      index('idx_supplier_site_supplier').on(t.tenantId, t.supplierId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_bank_account ──────────────────────────────────────────────
 
-export const supplierBankAccounts = erpSchema.table(
-  'supplier_bank_account',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    siteId: uuid('site_id').references(() => supplierSites.id, { onDelete: 'set null' }),
-    bankName: varchar('bank_name', { length: 200 }).notNull(),
-    accountName: varchar('account_name', { length: 200 }).notNull(),
-    accountNumber: varchar('account_number', { length: 50 }).notNull(),
-    iban: varchar('iban', { length: 34 }),
-    swiftBic: varchar('swift_bic', { length: 11 }),
-    localBankCode: varchar('local_bank_code', { length: 20 }),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    isPrimary: boolean('is_primary').notNull().default(false),
-    isVerified: boolean('is_verified').notNull().default(false),
-    verifiedBy: uuid('verified_by'),
-    verifiedAt: timestamp('verified_at', { withTimezone: true }),
-    verificationMethod: varchar('verification_method', { length: 50 }),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [index('idx_supplier_bank_supplier').on(t.tenantId, t.supplierId)]
-).enableRLS();
+export const supplierBankAccounts = erpSchema
+  .table(
+    'supplier_bank_account',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      siteId: uuid('site_id').references(() => supplierSites.id, { onDelete: 'set null' }),
+      bankName: varchar('bank_name', { length: 200 }).notNull(),
+      accountName: varchar('account_name', { length: 200 }).notNull(),
+      accountNumber: varchar('account_number', { length: 50 }).notNull(),
+      iban: varchar('iban', { length: 34 }),
+      swiftBic: varchar('swift_bic', { length: 11 }),
+      localBankCode: varchar('local_bank_code', { length: 20 }),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      isPrimary: boolean('is_primary').notNull().default(false),
+      isVerified: boolean('is_verified').notNull().default(false),
+      verifiedBy: uuid('verified_by'),
+      verifiedAt: timestamp('verified_at', { withTimezone: true }),
+      verificationMethod: varchar('verification_method', { length: 50 }),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [index('idx_supplier_bank_supplier').on(t.tenantId, t.supplierId)]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_user ─────────────────────────────────────────────────────
 
-export const supplierUsers = erpSchema.table(
-  'supplier_user',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id').notNull(),
-    isPrimary: boolean('is_primary').notNull().default(false),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_supplier_user').on(t.tenantId, t.supplierId, t.userId),
-    index('idx_supplier_user_user').on(t.tenantId, t.userId),
-  ]
-).enableRLS();
+export const supplierUsers = erpSchema
+  .table(
+    'supplier_user',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      userId: uuid('user_id').notNull(),
+      isPrimary: boolean('is_primary').notNull().default(false),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_supplier_user').on(t.tenantId, t.supplierId, t.userId),
+      index('idx_supplier_user_user').on(t.tenantId, t.userId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ap_invoice ──────────────────────────────────────────────────────────
 
-export const apInvoices = erpSchema.table(
-  'ap_invoice',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'restrict' }),
-    ledgerId: uuid('ledger_id').notNull().references(() => ledgers.id, { onDelete: 'restrict' }),
-    invoiceNumber: varchar('invoice_number', { length: 50 }).notNull(),
-    supplierRef: varchar('supplier_ref', { length: 100 }),
-    invoiceDate: timestamp('invoice_date', { withTimezone: true }).notNull(),
-    dueDate: timestamp('due_date', { withTimezone: true }).notNull(),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    totalAmount: moneyBigint('total_amount').notNull(),
-    paidAmount: moneyBigint('paid_amount')
-      .notNull()
-      .default(sql`0`),
-    status: apInvoiceStatusEnum('status').notNull().default('DRAFT'),
-    description: text('description'),
-    poRef: varchar('po_ref', { length: 50 }),
-    receiptRef: varchar('receipt_ref', { length: 50 }),
-    paymentTermsId: uuid('payment_terms_id').references(() => paymentTermsTemplates.id, { onDelete: 'set null' }),
-    journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ap_invoice_number_tenant').on(t.tenantId, t.companyId, t.invoiceNumber),
-    index('idx_ap_invoice_supplier_tenant').on(t.tenantId, t.supplierId),
-    index('idx_ap_invoice_status_tenant').on(t.tenantId, t.status),
-    index('idx_ap_invoice_due_date_tenant').on(t.tenantId, t.dueDate),
-    index('idx_ap_invoice_date').on(t.tenantId, t.invoiceDate),
-    index('idx_ap_invoice_company_status').on(t.tenantId, t.companyId, t.status),
-    check('chk_ap_inv_amounts_nonneg', sql`${t.totalAmount} >= 0 AND ${t.paidAmount} >= 0`),
-    check('chk_ap_paid_lte_total', sql`${t.paidAmount} <= ${t.totalAmount}`),
-  ]
-).enableRLS();
+export const apInvoices = erpSchema
+  .table(
+    'ap_invoice',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'restrict' }),
+      ledgerId: uuid('ledger_id')
+        .notNull()
+        .references(() => ledgers.id, { onDelete: 'restrict' }),
+      invoiceNumber: varchar('invoice_number', { length: 50 }).notNull(),
+      supplierRef: varchar('supplier_ref', { length: 100 }),
+      invoiceDate: timestamp('invoice_date', { withTimezone: true }).notNull(),
+      dueDate: timestamp('due_date', { withTimezone: true }).notNull(),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      totalAmount: moneyBigint('total_amount').notNull(),
+      paidAmount: moneyBigint('paid_amount')
+        .notNull()
+        .default(sql`0`),
+      status: apInvoiceStatusEnum('status').notNull().default('DRAFT'),
+      /** CAP-CRDB: document type — STANDARD / CREDIT_MEMO / DEBIT_MEMO / PREPAYMENT. */
+      invoiceType: apInvoiceTypeEnum('invoice_type').notNull().default('STANDARD'),
+      /** CAP-CRDB: original invoice FK for credit/debit notes. */
+      originalInvoiceId: uuid('original_invoice_id').references((): AnyPgColumn => apInvoices.id, {
+        onDelete: 'set null',
+      }),
+      description: text('description'),
+      poRef: varchar('po_ref', { length: 50 }),
+      receiptRef: varchar('receipt_ref', { length: 50 }),
+      paymentTermsId: uuid('payment_terms_id').references(() => paymentTermsTemplates.id, {
+        onDelete: 'set null',
+      }),
+      journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ap_invoice_number_tenant').on(t.tenantId, t.companyId, t.invoiceNumber),
+      index('idx_ap_invoice_supplier_tenant').on(t.tenantId, t.supplierId),
+      index('idx_ap_invoice_status_tenant').on(t.tenantId, t.status),
+      index('idx_ap_invoice_due_date_tenant').on(t.tenantId, t.dueDate),
+      index('idx_ap_invoice_date').on(t.tenantId, t.invoiceDate),
+      index('idx_ap_invoice_company_status').on(t.tenantId, t.companyId, t.status),
+      check('chk_ap_inv_amounts_nonneg', sql`${t.totalAmount} >= 0 AND ${t.paidAmount} >= 0`),
+      check('chk_ap_paid_lte_total', sql`${t.paidAmount} <= ${t.totalAmount}`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ap_invoice_line ─────────────────────────────────────────────────────
 
-export const apInvoiceLines = erpSchema.table(
-  'ap_invoice_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    invoiceId: uuid('invoice_id').notNull().references(() => apInvoices.id, { onDelete: 'cascade' }),
-    lineNumber: smallint('line_number').notNull(),
-    accountId: uuid('account_id').notNull().references(() => accounts.id, { onDelete: 'restrict' }),
-    description: text('description'),
-    quantity: integer('quantity').notNull().default(1),
-    unitPrice: moneyBigint('unit_price').notNull(),
-    amount: moneyBigint('amount').notNull(),
-    taxAmount: moneyBigint('tax_amount')
-      .notNull()
-      .default(sql`0`),
-    whtIncomeType: whtIncomeTypeEnum('wht_income_type'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ap_invoice_line_num_tenant').on(t.tenantId, t.invoiceId, t.lineNumber),
-    index('idx_ap_invoice_line_account_tenant').on(t.tenantId, t.accountId),
-    check('chk_ap_line_amounts_nonneg', sql`${t.unitPrice} >= 0 AND ${t.amount} >= 0 AND ${t.taxAmount} >= 0`),
-    check('chk_ap_line_qty_positive', sql`${t.quantity} > 0`),
-  ]
-).enableRLS();
+export const apInvoiceLines = erpSchema
+  .table(
+    'ap_invoice_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      invoiceId: uuid('invoice_id')
+        .notNull()
+        .references(() => apInvoices.id, { onDelete: 'cascade' }),
+      lineNumber: smallint('line_number').notNull(),
+      accountId: uuid('account_id')
+        .notNull()
+        .references(() => accounts.id, { onDelete: 'restrict' }),
+      description: text('description'),
+      quantity: integer('quantity').notNull().default(1),
+      unitPrice: moneyBigint('unit_price').notNull(),
+      amount: moneyBigint('amount').notNull(),
+      taxAmount: moneyBigint('tax_amount')
+        .notNull()
+        .default(sql`0`),
+      whtIncomeType: whtIncomeTypeEnum('wht_income_type'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ap_invoice_line_num_tenant').on(t.tenantId, t.invoiceId, t.lineNumber),
+      index('idx_ap_invoice_line_account_tenant').on(t.tenantId, t.accountId),
+      check(
+        'chk_ap_line_amounts_nonneg',
+        sql`${t.unitPrice} >= 0 AND ${t.amount} >= 0 AND ${t.taxAmount} >= 0`
+      ),
+      check('chk_ap_line_qty_positive', sql`${t.quantity} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ap_hold ───────────────────────────────────────────────────────────
 
-export const apHolds = erpSchema.table(
-  'ap_hold',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    invoiceId: uuid('invoice_id').notNull().references(() => apInvoices.id, { onDelete: 'cascade' }),
-    holdType: apHoldTypeEnum('hold_type').notNull(),
-    holdReason: text('hold_reason').notNull(),
-    holdDate: timestamp('hold_date', { withTimezone: true })
-      .notNull()
-      .default(sql`now()`),
-    releaseDate: timestamp('release_date', { withTimezone: true }),
-    releasedBy: uuid('released_by'),
-    releaseReason: text('release_reason'),
-    status: apHoldStatusEnum('status').notNull().default('ACTIVE'),
-    createdBy: uuid('created_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_ap_hold_invoice_tenant').on(t.tenantId, t.invoiceId),
-    index('idx_ap_hold_status_tenant').on(t.tenantId, t.status),
-    index('idx_ap_hold_type_tenant').on(t.tenantId, t.holdType),
-  ]
-).enableRLS();
+export const apHolds = erpSchema
+  .table(
+    'ap_hold',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      invoiceId: uuid('invoice_id')
+        .notNull()
+        .references(() => apInvoices.id, { onDelete: 'cascade' }),
+      holdType: apHoldTypeEnum('hold_type').notNull(),
+      holdReason: text('hold_reason').notNull(),
+      holdDate: timestamp('hold_date', { withTimezone: true })
+        .notNull()
+        .default(sql`now()`),
+      releaseDate: timestamp('release_date', { withTimezone: true }),
+      releasedBy: uuid('released_by'),
+      releaseReason: text('release_reason'),
+      status: apHoldStatusEnum('status').notNull().default('ACTIVE'),
+      createdBy: uuid('created_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_ap_hold_invoice_tenant').on(t.tenantId, t.invoiceId),
+      index('idx_ap_hold_status_tenant').on(t.tenantId, t.status),
+      index('idx_ap_hold_type_tenant').on(t.tenantId, t.holdType),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ap_payment_run ──────────────────────────────────────────────────────
 
-export const apPaymentRuns = erpSchema.table(
-  'ap_payment_run',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    runNumber: varchar('run_number', { length: 30 }).notNull(),
-    runDate: timestamp('run_date', { withTimezone: true }).notNull(),
-    cutoffDate: timestamp('cutoff_date', { withTimezone: true }).notNull(),
-    currencyId: uuid('currency_id').notNull().references(() => currencies.id, { onDelete: 'restrict' }),
-    totalAmount: moneyBigint('total_amount')
-      .notNull()
-      .default(sql`0`),
-    status: paymentRunStatusEnum('status').notNull().default('DRAFT'),
-    executedAt: timestamp('executed_at', { withTimezone: true }),
-    executedBy: uuid('executed_by'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ap_payment_run_number_tenant').on(t.tenantId, t.companyId, t.runNumber),
-    index('idx_ap_payment_run_status_tenant').on(t.tenantId, t.status),
-    index('idx_ap_payment_run_date').on(t.tenantId, t.runDate),
-    check('chk_ap_payrun_total_nonneg', sql`${t.totalAmount} >= 0`),
-  ]
-).enableRLS();
+export const apPaymentRuns = erpSchema
+  .table(
+    'ap_payment_run',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      runNumber: varchar('run_number', { length: 30 }).notNull(),
+      runDate: timestamp('run_date', { withTimezone: true }).notNull(),
+      cutoffDate: timestamp('cutoff_date', { withTimezone: true }).notNull(),
+      currencyId: uuid('currency_id')
+        .notNull()
+        .references(() => currencies.id, { onDelete: 'restrict' }),
+      totalAmount: moneyBigint('total_amount')
+        .notNull()
+        .default(sql`0`),
+      status: paymentRunStatusEnum('status').notNull().default('DRAFT'),
+      executedAt: timestamp('executed_at', { withTimezone: true }),
+      executedBy: uuid('executed_by'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ap_payment_run_number_tenant').on(t.tenantId, t.companyId, t.runNumber),
+      index('idx_ap_payment_run_status_tenant').on(t.tenantId, t.status),
+      index('idx_ap_payment_run_date').on(t.tenantId, t.runDate),
+      check('chk_ap_payrun_total_nonneg', sql`${t.totalAmount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ap_payment_run_item ─────────────────────────────────────────────────
 
-export const apPaymentRunItems = erpSchema.table(
-  'ap_payment_run_item',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    paymentRunId: uuid('payment_run_id').notNull().references(() => apPaymentRuns.id, { onDelete: 'cascade' }),
-    invoiceId: uuid('invoice_id').notNull().references(() => apInvoices.id, { onDelete: 'restrict' }),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'restrict' }),
-    amount: moneyBigint('amount').notNull(),
-    discountAmount: moneyBigint('discount_amount')
-      .notNull()
-      .default(sql`0`),
-    netAmount: moneyBigint('net_amount').notNull(),
-    journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ap_payment_run_item_invoice_tenant').on(
-      t.tenantId,
-      t.paymentRunId,
-      t.invoiceId
-    ),
-    index('idx_ap_payment_run_item_run_tenant').on(t.tenantId, t.paymentRunId),
-    index('idx_ap_run_item_supplier').on(t.tenantId, t.supplierId),
-    check('chk_ap_payitem_amounts_nonneg', sql`${t.amount} >= 0 AND ${t.discountAmount} >= 0 AND ${t.netAmount} >= 0`),
-  ]
-).enableRLS();
+export const apPaymentRunItems = erpSchema
+  .table(
+    'ap_payment_run_item',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      paymentRunId: uuid('payment_run_id')
+        .notNull()
+        .references(() => apPaymentRuns.id, { onDelete: 'cascade' }),
+      invoiceId: uuid('invoice_id')
+        .notNull()
+        .references(() => apInvoices.id, { onDelete: 'restrict' }),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'restrict' }),
+      amount: moneyBigint('amount').notNull(),
+      discountAmount: moneyBigint('discount_amount')
+        .notNull()
+        .default(sql`0`),
+      netAmount: moneyBigint('net_amount').notNull(),
+      journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ap_payment_run_item_invoice_tenant').on(
+        t.tenantId,
+        t.paymentRunId,
+        t.invoiceId
+      ),
+      index('idx_ap_payment_run_item_run_tenant').on(t.tenantId, t.paymentRunId),
+      index('idx_ap_run_item_supplier').on(t.tenantId, t.supplierId),
+      check(
+        'chk_ap_payitem_amounts_nonneg',
+        sql`${t.amount} >= 0 AND ${t.discountAmount} >= 0 AND ${t.netAmount} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── AR Sub-Ledger ─────────────────────────────────────────────────────────
 
-export const arInvoices = erpSchema.table(
-  'ar_invoice',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    customerId: uuid('customer_id').notNull(),
-    ledgerId: uuid('ledger_id').notNull().references(() => ledgers.id, { onDelete: 'restrict' }),
-    invoiceNumber: varchar('invoice_number', { length: 50 }).notNull(),
-    customerRef: varchar('customer_ref', { length: 100 }),
-    invoiceDate: timestamp('invoice_date', { withTimezone: true }).notNull(),
-    dueDate: timestamp('due_date', { withTimezone: true }).notNull(),
-    totalAmount: moneyBigint('total_amount')
-      .notNull()
-      .default(sql`0`),
-    paidAmount: moneyBigint('paid_amount')
-      .notNull()
-      .default(sql`0`),
-    status: arInvoiceStatusEnum('status').notNull().default('DRAFT'),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    description: text('description'),
-    paymentTermsId: uuid('payment_terms_id').references(() => paymentTermsTemplates.id, { onDelete: 'set null' }),
-    journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ar_invoice_number_tenant').on(t.tenantId, t.invoiceNumber),
-    index('idx_ar_invoice_customer_tenant').on(t.tenantId, t.customerId),
-    index('idx_ar_invoice_status_tenant').on(t.tenantId, t.status),
-    index('idx_ar_invoice_due_date_tenant').on(t.tenantId, t.dueDate),
-    index('idx_ar_invoice_company').on(t.tenantId, t.companyId),
-    index('idx_ar_invoice_date').on(t.tenantId, t.invoiceDate),
-    check('chk_ar_inv_amounts_nonneg', sql`${t.totalAmount} >= 0 AND ${t.paidAmount} >= 0`),
-    check('chk_ar_paid_lte_total', sql`${t.paidAmount} <= ${t.totalAmount}`),
-  ]
-).enableRLS();
+export const arInvoices = erpSchema
+  .table(
+    'ar_invoice',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      customerId: uuid('customer_id').notNull(),
+      ledgerId: uuid('ledger_id')
+        .notNull()
+        .references(() => ledgers.id, { onDelete: 'restrict' }),
+      invoiceNumber: varchar('invoice_number', { length: 50 }).notNull(),
+      customerRef: varchar('customer_ref', { length: 100 }),
+      invoiceDate: timestamp('invoice_date', { withTimezone: true }).notNull(),
+      dueDate: timestamp('due_date', { withTimezone: true }).notNull(),
+      totalAmount: moneyBigint('total_amount')
+        .notNull()
+        .default(sql`0`),
+      paidAmount: moneyBigint('paid_amount')
+        .notNull()
+        .default(sql`0`),
+      status: arInvoiceStatusEnum('status').notNull().default('DRAFT'),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      description: text('description'),
+      paymentTermsId: uuid('payment_terms_id').references(() => paymentTermsTemplates.id, {
+        onDelete: 'set null',
+      }),
+      journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ar_invoice_number_tenant').on(t.tenantId, t.invoiceNumber),
+      index('idx_ar_invoice_customer_tenant').on(t.tenantId, t.customerId),
+      index('idx_ar_invoice_status_tenant').on(t.tenantId, t.status),
+      index('idx_ar_invoice_due_date_tenant').on(t.tenantId, t.dueDate),
+      index('idx_ar_invoice_company').on(t.tenantId, t.companyId),
+      index('idx_ar_invoice_date').on(t.tenantId, t.invoiceDate),
+      check('chk_ar_inv_amounts_nonneg', sql`${t.totalAmount} >= 0 AND ${t.paidAmount} >= 0`),
+      check('chk_ar_paid_lte_total', sql`${t.paidAmount} <= ${t.totalAmount}`),
+    ]
+  )
+  .enableRLS();
 
-export const arInvoiceLines = erpSchema.table(
-  'ar_invoice_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    invoiceId: uuid('invoice_id').notNull().references(() => arInvoices.id, { onDelete: 'cascade' }),
-    lineNumber: smallint('line_number').notNull(),
-    accountId: uuid('account_id').notNull().references(() => accounts.id, { onDelete: 'restrict' }),
-    description: text('description'),
-    quantity: integer('quantity').notNull().default(1),
-    unitPrice: moneyBigint('unit_price').notNull(),
-    amount: moneyBigint('amount').notNull(),
-    taxAmount: moneyBigint('tax_amount')
-      .notNull()
-      .default(sql`0`),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ar_invoice_line_tenant').on(t.tenantId, t.invoiceId, t.lineNumber),
-    index('idx_ar_invoice_line_invoice_tenant').on(t.tenantId, t.invoiceId),
-    index('idx_ar_invoice_line_account').on(t.tenantId, t.accountId),
-    check('chk_ar_line_amounts_nonneg', sql`${t.unitPrice} >= 0 AND ${t.amount} >= 0 AND ${t.taxAmount} >= 0`),
-    check('chk_ar_line_qty_positive', sql`${t.quantity} > 0`),
-  ]
-).enableRLS();
+export const arInvoiceLines = erpSchema
+  .table(
+    'ar_invoice_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      invoiceId: uuid('invoice_id')
+        .notNull()
+        .references(() => arInvoices.id, { onDelete: 'cascade' }),
+      lineNumber: smallint('line_number').notNull(),
+      accountId: uuid('account_id')
+        .notNull()
+        .references(() => accounts.id, { onDelete: 'restrict' }),
+      description: text('description'),
+      quantity: integer('quantity').notNull().default(1),
+      unitPrice: moneyBigint('unit_price').notNull(),
+      amount: moneyBigint('amount').notNull(),
+      taxAmount: moneyBigint('tax_amount')
+        .notNull()
+        .default(sql`0`),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ar_invoice_line_tenant').on(t.tenantId, t.invoiceId, t.lineNumber),
+      index('idx_ar_invoice_line_invoice_tenant').on(t.tenantId, t.invoiceId),
+      index('idx_ar_invoice_line_account').on(t.tenantId, t.accountId),
+      check(
+        'chk_ar_line_amounts_nonneg',
+        sql`${t.unitPrice} >= 0 AND ${t.amount} >= 0 AND ${t.taxAmount} >= 0`
+      ),
+      check('chk_ar_line_qty_positive', sql`${t.quantity} > 0`),
+    ]
+  )
+  .enableRLS();
 
-export const arPaymentAllocations = erpSchema.table(
-  'ar_payment_allocation',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    customerId: uuid('customer_id').notNull(),
-    paymentDate: timestamp('payment_date', { withTimezone: true }).notNull(),
-    paymentRef: varchar('payment_ref', { length: 100 }).notNull(),
-    totalAmount: moneyBigint('total_amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_ar_payment_allocation_customer_tenant').on(t.tenantId, t.customerId),
-    index('idx_ar_payment_alloc_date').on(t.tenantId, t.paymentDate),
-    check('chk_ar_pmt_total_nonneg', sql`${t.totalAmount} >= 0`),
-  ]
-).enableRLS();
+export const arPaymentAllocations = erpSchema
+  .table(
+    'ar_payment_allocation',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      customerId: uuid('customer_id').notNull(),
+      paymentDate: timestamp('payment_date', { withTimezone: true }).notNull(),
+      paymentRef: varchar('payment_ref', { length: 100 }).notNull(),
+      totalAmount: moneyBigint('total_amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_ar_payment_allocation_customer_tenant').on(t.tenantId, t.customerId),
+      index('idx_ar_payment_alloc_date').on(t.tenantId, t.paymentDate),
+      check('chk_ar_pmt_total_nonneg', sql`${t.totalAmount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
-export const arAllocationItems = erpSchema.table(
-  'ar_allocation_item',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    paymentAllocationId: uuid('payment_allocation_id').notNull().references(() => arPaymentAllocations.id, { onDelete: 'cascade' }),
-    invoiceId: uuid('invoice_id').notNull().references(() => arInvoices.id, { onDelete: 'restrict' }),
-    allocatedAmount: moneyBigint('allocated_amount').notNull(),
-    journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ar_allocation_item_tenant').on(t.tenantId, t.paymentAllocationId, t.invoiceId),
-    index('idx_ar_allocation_item_alloc_tenant').on(t.tenantId, t.paymentAllocationId),
-    index('idx_ar_alloc_item_invoice').on(t.tenantId, t.invoiceId),
-    check('chk_ar_alloc_amt_nonneg', sql`${t.allocatedAmount} >= 0`),
-  ]
-).enableRLS();
+export const arAllocationItems = erpSchema
+  .table(
+    'ar_allocation_item',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      paymentAllocationId: uuid('payment_allocation_id')
+        .notNull()
+        .references(() => arPaymentAllocations.id, { onDelete: 'cascade' }),
+      invoiceId: uuid('invoice_id')
+        .notNull()
+        .references(() => arInvoices.id, { onDelete: 'restrict' }),
+      allocatedAmount: moneyBigint('allocated_amount').notNull(),
+      journalId: uuid('journal_id').references(() => glJournals.id, { onDelete: 'set null' }),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ar_allocation_item_tenant').on(
+        t.tenantId,
+        t.paymentAllocationId,
+        t.invoiceId
+      ),
+      index('idx_ar_allocation_item_alloc_tenant').on(t.tenantId, t.paymentAllocationId),
+      index('idx_ar_alloc_item_invoice').on(t.tenantId, t.invoiceId),
+      check('chk_ar_alloc_amt_nonneg', sql`${t.allocatedAmount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
-export const dunningRuns = erpSchema.table(
-  'dunning_run',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    runDate: timestamp('run_date', { withTimezone: true }).notNull(),
-    status: dunningRunStatusEnum('status').notNull().default('DRAFT'),
-    ...timestamps(),
-  },
-  (t) => [index('idx_dunning_run_status_tenant').on(t.tenantId, t.status)]
-).enableRLS();
+export const dunningRuns = erpSchema
+  .table(
+    'dunning_run',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      runDate: timestamp('run_date', { withTimezone: true }).notNull(),
+      status: dunningRunStatusEnum('status').notNull().default('DRAFT'),
+      ...timestamps(),
+    },
+    (t) => [index('idx_dunning_run_status_tenant').on(t.tenantId, t.status)]
+  )
+  .enableRLS();
 
-export const dunningLetters = erpSchema.table(
-  'dunning_letter',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    dunningRunId: uuid('dunning_run_id').notNull().references(() => dunningRuns.id, { onDelete: 'cascade' }),
-    customerId: uuid('customer_id').notNull(),
-    level: smallint('level').notNull(),
-    invoiceIds: jsonb('invoice_ids')
-      .notNull()
-      .default(sql`'[]'::jsonb`),
-    totalOverdue: moneyBigint('total_overdue').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    sentAt: timestamp('sent_at', { withTimezone: true }),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_dunning_letter_run_tenant').on(t.tenantId, t.dunningRunId),
-    index('idx_dunning_letter_customer_tenant').on(t.tenantId, t.customerId),
-    check('chk_dunning_overdue_nonneg', sql`${t.totalOverdue} >= 0`),
-    check('chk_dunning_level_positive', sql`${t.level} > 0`),
-  ]
-).enableRLS();
+export const dunningLetters = erpSchema
+  .table(
+    'dunning_letter',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      dunningRunId: uuid('dunning_run_id')
+        .notNull()
+        .references(() => dunningRuns.id, { onDelete: 'cascade' }),
+      customerId: uuid('customer_id').notNull(),
+      level: smallint('level').notNull(),
+      invoiceIds: jsonb('invoice_ids')
+        .notNull()
+        .default(sql`'[]'::jsonb`),
+      totalOverdue: moneyBigint('total_overdue').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      sentAt: timestamp('sent_at', { withTimezone: true }),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_dunning_letter_run_tenant').on(t.tenantId, t.dunningRunId),
+      index('idx_dunning_letter_customer_tenant').on(t.tenantId, t.customerId),
+      check('chk_dunning_overdue_nonneg', sql`${t.totalOverdue} >= 0`),
+      check('chk_dunning_level_positive', sql`${t.level} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.tax_code ──────────────────────────────────────────────────────────
 
-export const taxCodes = erpSchema.table(
-  'tax_code',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    code: varchar('code', { length: 20 }).notNull(),
-    name: text('name').notNull(),
-    description: text('description'),
-    jurisdictionLevel: jurisdictionLevelEnum('jurisdiction_level').notNull(),
-    countryCode: varchar('country_code', { length: 2 }).notNull(),
-    stateCode: varchar('state_code', { length: 10 }),
-    cityCode: varchar('city_code', { length: 20 }),
-    parentId: uuid('parent_id'),
-    isCompound: boolean('is_compound').notNull().default(false),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_tax_code_tenant_code').on(t.tenantId, t.code),
-    index('idx_tax_code_country_tenant').on(t.tenantId, t.countryCode),
-    index('idx_tax_code_parent').on(t.tenantId, t.parentId),
-  ]
-).enableRLS();
+export const taxCodes = erpSchema
+  .table(
+    'tax_code',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      code: varchar('code', { length: 20 }).notNull(),
+      name: text('name').notNull(),
+      description: text('description'),
+      jurisdictionLevel: jurisdictionLevelEnum('jurisdiction_level').notNull(),
+      countryCode: varchar('country_code', { length: 2 }).notNull(),
+      stateCode: varchar('state_code', { length: 10 }),
+      cityCode: varchar('city_code', { length: 20 }),
+      parentId: uuid('parent_id'),
+      isCompound: boolean('is_compound').notNull().default(false),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_tax_code_tenant_code').on(t.tenantId, t.code),
+      index('idx_tax_code_country_tenant').on(t.tenantId, t.countryCode),
+      index('idx_tax_code_parent').on(t.tenantId, t.parentId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.tax_rate ──────────────────────────────────────────────────────────
 
-export const taxRates = erpSchema.table(
-  'tax_rate',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    taxCodeId: uuid('tax_code_id').notNull().references(() => taxCodes.id, { onDelete: 'cascade' }),
-    name: text('name').notNull(),
-    ratePercent: smallint('rate_percent').notNull(),
-    type: taxRateTypeEnum('type').notNull(),
-    jurisdictionCode: varchar('jurisdiction_code', { length: 20 }).notNull(),
-    effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
-    effectiveTo: timestamp('effective_to', { withTimezone: true }),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_tax_rate_code_tenant').on(t.tenantId, t.taxCodeId),
-    index('idx_tax_rate_jurisdiction_tenant').on(t.tenantId, t.jurisdictionCode),
-    index('idx_tax_rate_effective').on(t.tenantId, t.effectiveFrom),
-    check('chk_tax_rate_pct_range', sql`${t.ratePercent} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const taxRates = erpSchema
+  .table(
+    'tax_rate',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      taxCodeId: uuid('tax_code_id')
+        .notNull()
+        .references(() => taxCodes.id, { onDelete: 'cascade' }),
+      name: text('name').notNull(),
+      ratePercent: smallint('rate_percent').notNull(),
+      type: taxRateTypeEnum('type').notNull(),
+      jurisdictionCode: varchar('jurisdiction_code', { length: 20 }).notNull(),
+      effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
+      effectiveTo: timestamp('effective_to', { withTimezone: true }),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_tax_rate_code_tenant').on(t.tenantId, t.taxCodeId),
+      index('idx_tax_rate_jurisdiction_tenant').on(t.tenantId, t.jurisdictionCode),
+      index('idx_tax_rate_effective').on(t.tenantId, t.effectiveFrom),
+      check('chk_tax_rate_pct_range', sql`${t.ratePercent} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.tax_return_period ─────────────────────────────────────────────────
 
-export const taxReturnPeriods = erpSchema.table(
-  'tax_return_period',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    taxType: varchar('tax_type', { length: 20 }).notNull(),
-    jurisdictionCode: varchar('jurisdiction_code', { length: 20 }).notNull(),
-    periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
-    periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
-    outputTax: moneyBigint('output_tax')
-      .notNull()
-      .default(sql`0`),
-    inputTax: moneyBigint('input_tax')
-      .notNull()
-      .default(sql`0`),
-    netPayable: moneyBigint('net_payable')
-      .notNull()
-      .default(sql`0`),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    status: taxReturnStatusEnum('status').notNull().default('DRAFT'),
-    filedAt: timestamp('filed_at', { withTimezone: true }),
-    filedBy: uuid('filed_by'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_tax_return_jurisdiction_tenant').on(t.tenantId, t.jurisdictionCode),
-    index('idx_tax_return_status_tenant').on(t.tenantId, t.status),
-    check('chk_tax_return_amounts_nonneg', sql`${t.outputTax} >= 0 AND ${t.inputTax} >= 0`),
-  ]
-).enableRLS();
+export const taxReturnPeriods = erpSchema
+  .table(
+    'tax_return_period',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      taxType: varchar('tax_type', { length: 20 }).notNull(),
+      jurisdictionCode: varchar('jurisdiction_code', { length: 20 }).notNull(),
+      periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
+      periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
+      outputTax: moneyBigint('output_tax')
+        .notNull()
+        .default(sql`0`),
+      inputTax: moneyBigint('input_tax')
+        .notNull()
+        .default(sql`0`),
+      netPayable: moneyBigint('net_payable')
+        .notNull()
+        .default(sql`0`),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      status: taxReturnStatusEnum('status').notNull().default('DRAFT'),
+      filedAt: timestamp('filed_at', { withTimezone: true }),
+      filedBy: uuid('filed_by'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_tax_return_jurisdiction_tenant').on(t.tenantId, t.jurisdictionCode),
+      index('idx_tax_return_status_tenant').on(t.tenantId, t.status),
+      check('chk_tax_return_amounts_nonneg', sql`${t.outputTax} >= 0 AND ${t.inputTax} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.wht_certificate ──────────────────────────────────────────────────
 
-export const whtCertificates = erpSchema.table(
-  'wht_certificate',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    payeeId: uuid('payee_id').notNull(),
-    payeeName: text('payee_name').notNull(),
-    payeeType: varchar('payee_type', { length: 20 }).notNull(),
-    countryCode: varchar('country_code', { length: 2 }).notNull(),
-    incomeType: varchar('income_type', { length: 50 }).notNull(),
-    grossAmount: moneyBigint('gross_amount').notNull(),
-    whtAmount: moneyBigint('wht_amount').notNull(),
-    netAmount: moneyBigint('net_amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    rateApplied: smallint('rate_applied').notNull(),
-    treatyRate: smallint('treaty_rate'),
-    certificateNumber: varchar('certificate_number', { length: 50 }).notNull(),
-    issueDate: timestamp('issue_date', { withTimezone: true }).notNull(),
-    taxPeriodStart: timestamp('tax_period_start', { withTimezone: true }).notNull(),
-    taxPeriodEnd: timestamp('tax_period_end', { withTimezone: true }).notNull(),
-    relatedInvoiceId: uuid('related_invoice_id'),
-    relatedPaymentId: uuid('related_payment_id'),
-    status: whtCertificateStatusEnum('status').notNull().default('DRAFT'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_wht_cert_number_tenant').on(t.tenantId, t.certificateNumber),
-    index('idx_wht_cert_payee_tenant').on(t.tenantId, t.payeeId),
-    index('idx_wht_cert_status_tenant').on(t.tenantId, t.status),
-    check('chk_wht_amounts_nonneg', sql`${t.grossAmount} >= 0 AND ${t.whtAmount} >= 0 AND ${t.netAmount} >= 0`),
-    check('chk_wht_rate_range', sql`${t.rateApplied} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const whtCertificates = erpSchema
+  .table(
+    'wht_certificate',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      payeeId: uuid('payee_id').notNull(),
+      payeeName: text('payee_name').notNull(),
+      payeeType: varchar('payee_type', { length: 20 }).notNull(),
+      countryCode: varchar('country_code', { length: 2 }).notNull(),
+      incomeType: varchar('income_type', { length: 50 }).notNull(),
+      grossAmount: moneyBigint('gross_amount').notNull(),
+      whtAmount: moneyBigint('wht_amount').notNull(),
+      netAmount: moneyBigint('net_amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      rateApplied: smallint('rate_applied').notNull(),
+      treatyRate: smallint('treaty_rate'),
+      certificateNumber: varchar('certificate_number', { length: 50 }).notNull(),
+      issueDate: timestamp('issue_date', { withTimezone: true }).notNull(),
+      taxPeriodStart: timestamp('tax_period_start', { withTimezone: true }).notNull(),
+      taxPeriodEnd: timestamp('tax_period_end', { withTimezone: true }).notNull(),
+      relatedInvoiceId: uuid('related_invoice_id'),
+      relatedPaymentId: uuid('related_payment_id'),
+      status: whtCertificateStatusEnum('status').notNull().default('DRAFT'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_wht_cert_number_tenant').on(t.tenantId, t.certificateNumber),
+      index('idx_wht_cert_payee_tenant').on(t.tenantId, t.payeeId),
+      index('idx_wht_cert_status_tenant').on(t.tenantId, t.status),
+      check(
+        'chk_wht_amounts_nonneg',
+        sql`${t.grossAmount} >= 0 AND ${t.whtAmount} >= 0 AND ${t.netAmount} >= 0`
+      ),
+      check('chk_wht_rate_range', sql`${t.rateApplied} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.asset ─────────────────────────────────────────────────────────────
 
-export const assets = erpSchema.table(
-  'asset',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    assetNumber: varchar('asset_number', { length: 50 }).notNull(),
-    name: text('name').notNull(),
-    description: text('description'),
-    categoryCode: varchar('category_code', { length: 20 }).notNull(),
-    acquisitionDate: timestamp('acquisition_date', { withTimezone: true }).notNull(),
-    acquisitionCost: moneyBigint('acquisition_cost').notNull(),
-    residualValue: moneyBigint('residual_value').notNull(),
-    usefulLifeMonths: smallint('useful_life_months').notNull(),
-    depreciationMethod: depreciationMethodEnum('depreciation_method').notNull(),
-    accumulatedDepreciation: moneyBigint('accumulated_depreciation')
-      .notNull()
-      .default(sql`0`),
-    netBookValue: moneyBigint('net_book_value').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    locationCode: varchar('location_code', { length: 20 }),
-    costCenterId: uuid('cost_center_id'),
-    glAccountId: uuid('gl_account_id').notNull(),
-    depreciationAccountId: uuid('depreciation_account_id').notNull(),
-    accumulatedDepreciationAccountId: uuid('accumulated_depreciation_account_id').notNull(),
-    status: assetStatusEnum('status').notNull().default('ACTIVE'),
-    disposedAt: timestamp('disposed_at', { withTimezone: true }),
-    disposalProceeds: moneyBigint('disposal_proceeds'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_asset_number_tenant').on(t.tenantId, t.assetNumber),
-    index('idx_asset_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_asset_status_tenant').on(t.tenantId, t.status),
-    index('idx_asset_category').on(t.tenantId, t.categoryCode),
-    check('chk_asset_amounts_nonneg', sql`${t.acquisitionCost} >= 0 AND ${t.residualValue} >= 0 AND ${t.accumulatedDepreciation} >= 0 AND ${t.netBookValue} >= 0`),
-    check('chk_asset_useful_life_positive', sql`${t.usefulLifeMonths} > 0`),
-  ]
-).enableRLS();
+export const assets = erpSchema
+  .table(
+    'asset',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      assetNumber: varchar('asset_number', { length: 50 }).notNull(),
+      name: text('name').notNull(),
+      description: text('description'),
+      categoryCode: varchar('category_code', { length: 20 }).notNull(),
+      acquisitionDate: timestamp('acquisition_date', { withTimezone: true }).notNull(),
+      acquisitionCost: moneyBigint('acquisition_cost').notNull(),
+      residualValue: moneyBigint('residual_value').notNull(),
+      usefulLifeMonths: smallint('useful_life_months').notNull(),
+      depreciationMethod: depreciationMethodEnum('depreciation_method').notNull(),
+      accumulatedDepreciation: moneyBigint('accumulated_depreciation')
+        .notNull()
+        .default(sql`0`),
+      netBookValue: moneyBigint('net_book_value').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      locationCode: varchar('location_code', { length: 20 }),
+      costCenterId: uuid('cost_center_id'),
+      glAccountId: uuid('gl_account_id').notNull(),
+      depreciationAccountId: uuid('depreciation_account_id').notNull(),
+      accumulatedDepreciationAccountId: uuid('accumulated_depreciation_account_id').notNull(),
+      status: assetStatusEnum('status').notNull().default('ACTIVE'),
+      disposedAt: timestamp('disposed_at', { withTimezone: true }),
+      disposalProceeds: moneyBigint('disposal_proceeds'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_asset_number_tenant').on(t.tenantId, t.assetNumber),
+      index('idx_asset_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_asset_status_tenant').on(t.tenantId, t.status),
+      index('idx_asset_category').on(t.tenantId, t.categoryCode),
+      check(
+        'chk_asset_amounts_nonneg',
+        sql`${t.acquisitionCost} >= 0 AND ${t.residualValue} >= 0 AND ${t.accumulatedDepreciation} >= 0 AND ${t.netBookValue} >= 0`
+      ),
+      check('chk_asset_useful_life_positive', sql`${t.usefulLifeMonths} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.depreciation_schedule ─────────────────────────────────────────────
 
-export const depreciationSchedules = erpSchema.table(
-  'depreciation_schedule',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    assetId: uuid('asset_id').notNull().references(() => assets.id, { onDelete: 'cascade' }),
-    componentId: uuid('component_id'),
-    periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
-    periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
-    depreciationAmount: moneyBigint('depreciation_amount').notNull(),
-    accumulatedDepreciation: moneyBigint('accumulated_depreciation').notNull(),
-    netBookValue: moneyBigint('net_book_value').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    journalId: uuid('journal_id'),
-    isPosted: boolean('is_posted').notNull().default(false),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_depr_schedule_asset_tenant').on(t.tenantId, t.assetId),
-    index('idx_depr_schedule_posted_tenant').on(t.tenantId, t.isPosted),
-    index('idx_depr_schedule_period').on(t.tenantId, t.periodStart, t.periodEnd),
-    check('chk_depr_amounts_nonneg', sql`${t.depreciationAmount} >= 0 AND ${t.accumulatedDepreciation} >= 0 AND ${t.netBookValue} >= 0`),
-  ]
-).enableRLS();
+export const depreciationSchedules = erpSchema
+  .table(
+    'depreciation_schedule',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      assetId: uuid('asset_id')
+        .notNull()
+        .references(() => assets.id, { onDelete: 'cascade' }),
+      componentId: uuid('component_id'),
+      periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
+      periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
+      depreciationAmount: moneyBigint('depreciation_amount').notNull(),
+      accumulatedDepreciation: moneyBigint('accumulated_depreciation').notNull(),
+      netBookValue: moneyBigint('net_book_value').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      journalId: uuid('journal_id'),
+      isPosted: boolean('is_posted').notNull().default(false),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_depr_schedule_asset_tenant').on(t.tenantId, t.assetId),
+      index('idx_depr_schedule_posted_tenant').on(t.tenantId, t.isPosted),
+      index('idx_depr_schedule_period').on(t.tenantId, t.periodStart, t.periodEnd),
+      check(
+        'chk_depr_amounts_nonneg',
+        sql`${t.depreciationAmount} >= 0 AND ${t.accumulatedDepreciation} >= 0 AND ${t.netBookValue} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.asset_movement ────────────────────────────────────────────────────
 
-export const assetMovements = erpSchema.table(
-  'asset_movement',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    assetId: uuid('asset_id').notNull().references(() => assets.id, { onDelete: 'cascade' }),
-    movementType: assetMovementTypeEnum('movement_type').notNull(),
-    movementDate: timestamp('movement_date', { withTimezone: true }).notNull(),
-    amount: moneyBigint('amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    description: text('description'),
-    fromCompanyId: uuid('from_company_id'),
-    toCompanyId: uuid('to_company_id'),
-    journalId: uuid('journal_id'),
-    createdBy: uuid('created_by').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [
-    index('idx_asset_movement_asset_tenant').on(t.tenantId, t.assetId),
-    index('idx_asset_movement_type_tenant').on(t.tenantId, t.movementType),
-    check('chk_asset_mvmt_amt_nonneg', sql`${t.amount} >= 0`),
-  ]
-).enableRLS();
+export const assetMovements = erpSchema
+  .table(
+    'asset_movement',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      assetId: uuid('asset_id')
+        .notNull()
+        .references(() => assets.id, { onDelete: 'cascade' }),
+      movementType: assetMovementTypeEnum('movement_type').notNull(),
+      movementDate: timestamp('movement_date', { withTimezone: true }).notNull(),
+      amount: moneyBigint('amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      description: text('description'),
+      fromCompanyId: uuid('from_company_id'),
+      toCompanyId: uuid('to_company_id'),
+      journalId: uuid('journal_id'),
+      createdBy: uuid('created_by').notNull(),
+      createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    },
+    (t) => [
+      index('idx_asset_movement_asset_tenant').on(t.tenantId, t.assetId),
+      index('idx_asset_movement_type_tenant').on(t.tenantId, t.movementType),
+      check('chk_asset_mvmt_amt_nonneg', sql`${t.amount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.bank_statement ────────────────────────────────────────────────────
 
-export const bankStatements = erpSchema.table(
-  'bank_statement',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    bankAccountId: uuid('bank_account_id').notNull(),
-    bankAccountName: text('bank_account_name').notNull(),
-    statementDate: timestamp('statement_date', { withTimezone: true }).notNull(),
-    periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
-    periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
-    openingBalance: moneyBigint('opening_balance').notNull(),
-    closingBalance: moneyBigint('closing_balance').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    format: statementFormatEnum('format').notNull(),
-    lineCount: smallint('line_count').notNull().default(0),
-    importedAt: timestamp('imported_at', { withTimezone: true }).notNull().defaultNow(),
-    importedBy: uuid('imported_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_bank_stmt_account_tenant').on(t.tenantId, t.bankAccountId),
-    index('idx_bank_stmt_date').on(t.tenantId, t.statementDate),
-    check('chk_bank_stmt_linecount_nonneg', sql`${t.lineCount} >= 0`),
-  ]
-).enableRLS();
+export const bankStatements = erpSchema
+  .table(
+    'bank_statement',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      bankAccountId: uuid('bank_account_id').notNull(),
+      bankAccountName: text('bank_account_name').notNull(),
+      statementDate: timestamp('statement_date', { withTimezone: true }).notNull(),
+      periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
+      periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
+      openingBalance: moneyBigint('opening_balance').notNull(),
+      closingBalance: moneyBigint('closing_balance').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      format: statementFormatEnum('format').notNull(),
+      lineCount: smallint('line_count').notNull().default(0),
+      importedAt: timestamp('imported_at', { withTimezone: true }).notNull().defaultNow(),
+      importedBy: uuid('imported_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_bank_stmt_account_tenant').on(t.tenantId, t.bankAccountId),
+      index('idx_bank_stmt_date').on(t.tenantId, t.statementDate),
+      check('chk_bank_stmt_linecount_nonneg', sql`${t.lineCount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.bank_statement_line ───────────────────────────────────────────────
 
-export const bankStatementLines = erpSchema.table(
-  'bank_statement_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    statementId: uuid('statement_id').notNull().references(() => bankStatements.id, { onDelete: 'cascade' }),
-    lineNumber: smallint('line_number').notNull(),
-    transactionDate: timestamp('transaction_date', { withTimezone: true }).notNull(),
-    valueDate: timestamp('value_date', { withTimezone: true }),
-    transactionType: varchar('transaction_type', { length: 10 }).notNull(),
-    amount: moneyBigint('amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    reference: varchar('reference', { length: 100 }),
-    description: text('description').notNull(),
-    payeeOrPayer: text('payee_or_payer'),
-    bankReference: varchar('bank_reference', { length: 100 }),
-    matchStatus: bankLineMatchStatusEnum('match_status').notNull().default('UNMATCHED'),
-    matchId: uuid('match_id'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_bank_line_stmt_tenant').on(t.tenantId, t.statementId),
-    index('idx_bank_line_status_tenant').on(t.tenantId, t.matchStatus),
-    index('idx_bank_line_date').on(t.tenantId, t.transactionDate),
-  ]
-).enableRLS();
+export const bankStatementLines = erpSchema
+  .table(
+    'bank_statement_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      statementId: uuid('statement_id')
+        .notNull()
+        .references(() => bankStatements.id, { onDelete: 'cascade' }),
+      lineNumber: smallint('line_number').notNull(),
+      transactionDate: timestamp('transaction_date', { withTimezone: true }).notNull(),
+      valueDate: timestamp('value_date', { withTimezone: true }),
+      transactionType: varchar('transaction_type', { length: 10 }).notNull(),
+      amount: moneyBigint('amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      reference: varchar('reference', { length: 100 }),
+      description: text('description').notNull(),
+      payeeOrPayer: text('payee_or_payer'),
+      bankReference: varchar('bank_reference', { length: 100 }),
+      matchStatus: bankLineMatchStatusEnum('match_status').notNull().default('UNMATCHED'),
+      matchId: uuid('match_id'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_bank_line_stmt_tenant').on(t.tenantId, t.statementId),
+      index('idx_bank_line_status_tenant').on(t.tenantId, t.matchStatus),
+      index('idx_bank_line_date').on(t.tenantId, t.transactionDate),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.bank_match ────────────────────────────────────────────────────────
 
-export const bankMatches = erpSchema.table(
-  'bank_match',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    statementLineId: uuid('statement_line_id').notNull().references(() => bankStatementLines.id, { onDelete: 'cascade' }),
-    journalId: uuid('journal_id'),
-    sourceDocumentId: uuid('source_document_id'),
-    sourceDocumentType: varchar('source_document_type', { length: 30 }),
-    matchType: bankMatchTypeEnum('match_type').notNull(),
-    confidence: bankMatchConfidenceEnum('confidence').notNull(),
-    confidenceScore: smallint('confidence_score').notNull(),
-    matchedAmount: moneyBigint('matched_amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    matchedAt: timestamp('matched_at', { withTimezone: true }).notNull().defaultNow(),
-    matchedBy: uuid('matched_by'),
-    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
-    confirmedBy: uuid('confirmed_by'),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [
-    index('idx_bank_match_line_tenant').on(t.tenantId, t.statementLineId),
-    check('chk_bank_match_amt_nonneg', sql`${t.matchedAmount} >= 0`),
-    check('chk_bank_match_confidence', sql`${t.confidenceScore} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const bankMatches = erpSchema
+  .table(
+    'bank_match',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      statementLineId: uuid('statement_line_id')
+        .notNull()
+        .references(() => bankStatementLines.id, { onDelete: 'cascade' }),
+      journalId: uuid('journal_id'),
+      sourceDocumentId: uuid('source_document_id'),
+      sourceDocumentType: varchar('source_document_type', { length: 30 }),
+      matchType: bankMatchTypeEnum('match_type').notNull(),
+      confidence: bankMatchConfidenceEnum('confidence').notNull(),
+      confidenceScore: smallint('confidence_score').notNull(),
+      matchedAmount: moneyBigint('matched_amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      matchedAt: timestamp('matched_at', { withTimezone: true }).notNull().defaultNow(),
+      matchedBy: uuid('matched_by'),
+      confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+      confirmedBy: uuid('confirmed_by'),
+      createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    },
+    (t) => [
+      index('idx_bank_match_line_tenant').on(t.tenantId, t.statementLineId),
+      check('chk_bank_match_amt_nonneg', sql`${t.matchedAmount} >= 0`),
+      check('chk_bank_match_confidence', sql`${t.confidenceScore} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.bank_reconciliation ───────────────────────────────────────────────
 
-export const bankReconciliations = erpSchema.table(
-  'bank_reconciliation',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    bankAccountId: uuid('bank_account_id').notNull(),
-    periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
-    periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
-    statementBalance: moneyBigint('statement_balance').notNull(),
-    glBalance: moneyBigint('gl_balance').notNull(),
-    adjustedStatementBalance: moneyBigint('adjusted_statement_balance').notNull(),
-    adjustedGlBalance: moneyBigint('adjusted_gl_balance').notNull(),
-    outstandingChecks: moneyBigint('outstanding_checks')
-      .notNull()
-      .default(sql`0`),
-    depositsInTransit: moneyBigint('deposits_in_transit')
-      .notNull()
-      .default(sql`0`),
-    difference: moneyBigint('difference')
-      .notNull()
-      .default(sql`0`),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    status: reconciliationStatusEnum('status').notNull().default('IN_PROGRESS'),
-    matchedCount: smallint('matched_count').notNull().default(0),
-    unmatchedCount: smallint('unmatched_count').notNull().default(0),
-    signedOffAt: timestamp('signed_off_at', { withTimezone: true }),
-    signedOffBy: uuid('signed_off_by'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_bank_recon_account_tenant').on(t.tenantId, t.bankAccountId),
-    index('idx_bank_recon_status_tenant').on(t.tenantId, t.status),
-    check('chk_bank_recon_amounts_nonneg', sql`${t.outstandingChecks} >= 0 AND ${t.depositsInTransit} >= 0`),
-    check('chk_bank_recon_counts_nonneg', sql`${t.matchedCount} >= 0 AND ${t.unmatchedCount} >= 0`),
-  ]
-).enableRLS();
+export const bankReconciliations = erpSchema
+  .table(
+    'bank_reconciliation',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      bankAccountId: uuid('bank_account_id').notNull(),
+      periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
+      periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
+      statementBalance: moneyBigint('statement_balance').notNull(),
+      glBalance: moneyBigint('gl_balance').notNull(),
+      adjustedStatementBalance: moneyBigint('adjusted_statement_balance').notNull(),
+      adjustedGlBalance: moneyBigint('adjusted_gl_balance').notNull(),
+      outstandingChecks: moneyBigint('outstanding_checks')
+        .notNull()
+        .default(sql`0`),
+      depositsInTransit: moneyBigint('deposits_in_transit')
+        .notNull()
+        .default(sql`0`),
+      difference: moneyBigint('difference')
+        .notNull()
+        .default(sql`0`),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      status: reconciliationStatusEnum('status').notNull().default('IN_PROGRESS'),
+      matchedCount: smallint('matched_count').notNull().default(0),
+      unmatchedCount: smallint('unmatched_count').notNull().default(0),
+      signedOffAt: timestamp('signed_off_at', { withTimezone: true }),
+      signedOffBy: uuid('signed_off_by'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_bank_recon_account_tenant').on(t.tenantId, t.bankAccountId),
+      index('idx_bank_recon_status_tenant').on(t.tenantId, t.status),
+      check(
+        'chk_bank_recon_amounts_nonneg',
+        sql`${t.outstandingChecks} >= 0 AND ${t.depositsInTransit} >= 0`
+      ),
+      check(
+        'chk_bank_recon_counts_nonneg',
+        sql`${t.matchedCount} >= 0 AND ${t.unmatchedCount} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.credit_limit ──────────────────────────────────────────────────────
 
-export const creditLimits = erpSchema.table(
-  'credit_limit',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    customerId: uuid('customer_id').notNull(),
-    companyId: uuid('company_id').notNull(),
-    creditLimit: moneyBigint('credit_limit').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    currentExposure: moneyBigint('current_exposure')
-      .notNull()
-      .default(sql`0`),
-    availableCredit: moneyBigint('available_credit')
-      .notNull()
-      .default(sql`0`),
-    status: creditStatusEnum('status').notNull().default('ACTIVE'),
-    approvedBy: uuid('approved_by'),
-    approvedAt: timestamp('approved_at', { withTimezone: true }),
-    effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
-    effectiveTo: timestamp('effective_to', { withTimezone: true }),
-    lastReviewDate: timestamp('last_review_date', { withTimezone: true }),
-    nextReviewDate: timestamp('next_review_date', { withTimezone: true }),
-    riskRating: varchar('risk_rating', { length: 10 }),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_credit_limit_customer_tenant').on(t.tenantId, t.customerId),
-    index('idx_credit_limit_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_credit_limit_status_tenant').on(t.tenantId, t.status),
-    check('chk_credit_amounts_nonneg', sql`${t.creditLimit} >= 0 AND ${t.currentExposure} >= 0 AND ${t.availableCredit} >= 0`),
-  ]
-).enableRLS();
+export const creditLimits = erpSchema
+  .table(
+    'credit_limit',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      customerId: uuid('customer_id').notNull(),
+      companyId: uuid('company_id').notNull(),
+      creditLimit: moneyBigint('credit_limit').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      currentExposure: moneyBigint('current_exposure')
+        .notNull()
+        .default(sql`0`),
+      availableCredit: moneyBigint('available_credit')
+        .notNull()
+        .default(sql`0`),
+      status: creditStatusEnum('status').notNull().default('ACTIVE'),
+      approvedBy: uuid('approved_by'),
+      approvedAt: timestamp('approved_at', { withTimezone: true }),
+      effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
+      effectiveTo: timestamp('effective_to', { withTimezone: true }),
+      lastReviewDate: timestamp('last_review_date', { withTimezone: true }),
+      nextReviewDate: timestamp('next_review_date', { withTimezone: true }),
+      riskRating: varchar('risk_rating', { length: 10 }),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_credit_limit_customer_tenant').on(t.tenantId, t.customerId),
+      index('idx_credit_limit_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_credit_limit_status_tenant').on(t.tenantId, t.status),
+      check(
+        'chk_credit_amounts_nonneg',
+        sql`${t.creditLimit} >= 0 AND ${t.currentExposure} >= 0 AND ${t.availableCredit} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.credit_review ─────────────────────────────────────────────────────
 
-export const creditReviews = erpSchema.table(
-  'credit_review',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    creditLimitId: uuid('credit_limit_id').notNull().references(() => creditLimits.id, { onDelete: 'cascade' }),
-    customerId: uuid('customer_id').notNull(),
-    reviewDate: timestamp('review_date', { withTimezone: true }).notNull(),
-    previousLimit: moneyBigint('previous_limit').notNull(),
-    proposedLimit: moneyBigint('proposed_limit').notNull(),
-    approvedLimit: moneyBigint('approved_limit').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    outcome: reviewOutcomeEnum('outcome').notNull(),
-    riskRating: varchar('risk_rating', { length: 10 }),
-    notes: text('notes'),
-    reviewedBy: uuid('reviewed_by').notNull(),
-    approvedBy: uuid('approved_by'),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [
-    index('idx_credit_review_limit_tenant').on(t.tenantId, t.creditLimitId),
-    index('idx_credit_review_customer_tenant').on(t.tenantId, t.customerId),
-    check('chk_credit_review_amounts_nonneg', sql`${t.previousLimit} >= 0 AND ${t.proposedLimit} >= 0 AND ${t.approvedLimit} >= 0`),
-  ]
-).enableRLS();
+export const creditReviews = erpSchema
+  .table(
+    'credit_review',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      creditLimitId: uuid('credit_limit_id')
+        .notNull()
+        .references(() => creditLimits.id, { onDelete: 'cascade' }),
+      customerId: uuid('customer_id').notNull(),
+      reviewDate: timestamp('review_date', { withTimezone: true }).notNull(),
+      previousLimit: moneyBigint('previous_limit').notNull(),
+      proposedLimit: moneyBigint('proposed_limit').notNull(),
+      approvedLimit: moneyBigint('approved_limit').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      outcome: reviewOutcomeEnum('outcome').notNull(),
+      riskRating: varchar('risk_rating', { length: 10 }),
+      notes: text('notes'),
+      reviewedBy: uuid('reviewed_by').notNull(),
+      approvedBy: uuid('approved_by'),
+      createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    },
+    (t) => [
+      index('idx_credit_review_limit_tenant').on(t.tenantId, t.creditLimitId),
+      index('idx_credit_review_customer_tenant').on(t.tenantId, t.customerId),
+      check(
+        'chk_credit_review_amounts_nonneg',
+        sql`${t.previousLimit} >= 0 AND ${t.proposedLimit} >= 0 AND ${t.approvedLimit} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.expense_claim ─────────────────────────────────────────────────────
 
-export const expenseClaims = erpSchema.table(
-  'expense_claim',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    employeeId: uuid('employee_id').notNull(),
-    claimNumber: varchar('claim_number', { length: 50 }).notNull(),
-    description: text('description').notNull(),
-    claimDate: timestamp('claim_date', { withTimezone: true }).notNull(),
-    totalAmount: moneyBigint('total_amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    baseCurrencyAmount: moneyBigint('base_currency_amount').notNull(),
-    status: expenseClaimStatusEnum('status').notNull().default('DRAFT'),
-    submittedAt: timestamp('submitted_at', { withTimezone: true }),
-    approvedBy: uuid('approved_by'),
-    approvedAt: timestamp('approved_at', { withTimezone: true }),
-    rejectionReason: text('rejection_reason'),
-    reimbursedAt: timestamp('reimbursed_at', { withTimezone: true }),
-    apInvoiceId: uuid('ap_invoice_id'),
-    lineCount: smallint('line_count').notNull().default(0),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_expense_claim_number_tenant').on(t.tenantId, t.claimNumber),
-    index('idx_expense_claim_employee_tenant').on(t.tenantId, t.employeeId),
-    index('idx_expense_claim_status_tenant').on(t.tenantId, t.status),
-    index('idx_expense_claim_company').on(t.tenantId, t.companyId),
-    check('chk_expense_claim_amounts_nonneg', sql`${t.totalAmount} >= 0 AND ${t.baseCurrencyAmount} >= 0`),
-    check('chk_expense_claim_linecount_nonneg', sql`${t.lineCount} >= 0`),
-  ]
-).enableRLS();
+export const expenseClaims = erpSchema
+  .table(
+    'expense_claim',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      employeeId: uuid('employee_id').notNull(),
+      claimNumber: varchar('claim_number', { length: 50 }).notNull(),
+      description: text('description').notNull(),
+      claimDate: timestamp('claim_date', { withTimezone: true }).notNull(),
+      totalAmount: moneyBigint('total_amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      baseCurrencyAmount: moneyBigint('base_currency_amount').notNull(),
+      status: expenseClaimStatusEnum('status').notNull().default('DRAFT'),
+      submittedAt: timestamp('submitted_at', { withTimezone: true }),
+      approvedBy: uuid('approved_by'),
+      approvedAt: timestamp('approved_at', { withTimezone: true }),
+      rejectionReason: text('rejection_reason'),
+      reimbursedAt: timestamp('reimbursed_at', { withTimezone: true }),
+      apInvoiceId: uuid('ap_invoice_id'),
+      lineCount: smallint('line_count').notNull().default(0),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_expense_claim_number_tenant').on(t.tenantId, t.claimNumber),
+      index('idx_expense_claim_employee_tenant').on(t.tenantId, t.employeeId),
+      index('idx_expense_claim_status_tenant').on(t.tenantId, t.status),
+      index('idx_expense_claim_company').on(t.tenantId, t.companyId),
+      check(
+        'chk_expense_claim_amounts_nonneg',
+        sql`${t.totalAmount} >= 0 AND ${t.baseCurrencyAmount} >= 0`
+      ),
+      check('chk_expense_claim_linecount_nonneg', sql`${t.lineCount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.expense_claim_line ────────────────────────────────────────────────
 
-export const expenseClaimLines = erpSchema.table(
-  'expense_claim_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    claimId: uuid('claim_id').notNull().references(() => expenseClaims.id, { onDelete: 'cascade' }),
-    lineNumber: smallint('line_number').notNull(),
-    expenseDate: timestamp('expense_date', { withTimezone: true }).notNull(),
-    category: expenseCategoryEnum('category').notNull(),
-    description: text('description').notNull(),
-    amount: moneyBigint('amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    baseCurrencyAmount: moneyBigint('base_currency_amount').notNull(),
-    receiptRef: varchar('receipt_ref', { length: 200 }),
-    glAccountId: uuid('gl_account_id').notNull(),
-    costCenterId: uuid('cost_center_id'),
-    projectId: uuid('project_id'),
-    isBillable: boolean('is_billable').notNull().default(false),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_expense_line_claim_tenant').on(t.tenantId, t.claimId),
-    check('chk_expense_line_amounts_nonneg', sql`${t.amount} >= 0 AND ${t.baseCurrencyAmount} >= 0`),
-  ]
-).enableRLS();
+export const expenseClaimLines = erpSchema
+  .table(
+    'expense_claim_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      claimId: uuid('claim_id')
+        .notNull()
+        .references(() => expenseClaims.id, { onDelete: 'cascade' }),
+      lineNumber: smallint('line_number').notNull(),
+      expenseDate: timestamp('expense_date', { withTimezone: true }).notNull(),
+      category: expenseCategoryEnum('category').notNull(),
+      description: text('description').notNull(),
+      amount: moneyBigint('amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      baseCurrencyAmount: moneyBigint('base_currency_amount').notNull(),
+      receiptRef: varchar('receipt_ref', { length: 200 }),
+      glAccountId: uuid('gl_account_id').notNull(),
+      costCenterId: uuid('cost_center_id'),
+      projectId: uuid('project_id'),
+      isBillable: boolean('is_billable').notNull().default(false),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_expense_line_claim_tenant').on(t.tenantId, t.claimId),
+      check(
+        'chk_expense_line_amounts_nonneg',
+        sql`${t.amount} >= 0 AND ${t.baseCurrencyAmount} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.expense_policy ────────────────────────────────────────────────────
 
-export const expensePolicies = erpSchema.table(
-  'expense_policy',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    name: text('name').notNull(),
-    category: varchar('category', { length: 30 }).notNull(),
-    maxAmountPerItem: moneyBigint('max_amount_per_item').notNull(),
-    maxAmountPerClaim: moneyBigint('max_amount_per_claim').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    requiresReceipt: boolean('requires_receipt').notNull().default(true),
-    requiresApproval: boolean('requires_approval').notNull().default(true),
-    perDiemRate: moneyBigint('per_diem_rate'),
-    mileageRateBps: smallint('mileage_rate_bps'),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_expense_policy_company_tenant').on(t.tenantId, t.companyId),
-    check('chk_expense_policy_amounts_nonneg', sql`${t.maxAmountPerItem} >= 0 AND ${t.maxAmountPerClaim} >= 0`),
-  ]
-).enableRLS();
+export const expensePolicies = erpSchema
+  .table(
+    'expense_policy',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      name: text('name').notNull(),
+      category: varchar('category', { length: 30 }).notNull(),
+      maxAmountPerItem: moneyBigint('max_amount_per_item').notNull(),
+      maxAmountPerClaim: moneyBigint('max_amount_per_claim').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      requiresReceipt: boolean('requires_receipt').notNull().default(true),
+      requiresApproval: boolean('requires_approval').notNull().default(true),
+      perDiemRate: moneyBigint('per_diem_rate'),
+      mileageRateBps: smallint('mileage_rate_bps'),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_expense_policy_company_tenant').on(t.tenantId, t.companyId),
+      check(
+        'chk_expense_policy_amounts_nonneg',
+        sql`${t.maxAmountPerItem} >= 0 AND ${t.maxAmountPerClaim} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.project ───────────────────────────────────────────────────────────
 
-export const projects = erpSchema.table(
-  'project',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    projectCode: varchar('project_code', { length: 30 }).notNull(),
-    name: text('name').notNull(),
-    description: text('description'),
-    customerId: uuid('customer_id'),
-    managerId: uuid('manager_id').notNull(),
-    status: projectStatusEnum('status').notNull().default('PLANNING'),
-    billingType: billingTypeEnum('billing_type').notNull(),
-    budgetAmount: moneyBigint('budget_amount').notNull(),
-    actualCost: moneyBigint('actual_cost')
-      .notNull()
-      .default(sql`0`),
-    billedAmount: moneyBigint('billed_amount')
-      .notNull()
-      .default(sql`0`),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    startDate: timestamp('start_date', { withTimezone: true }).notNull(),
-    endDate: timestamp('end_date', { withTimezone: true }),
-    completionPct: smallint('completion_pct').notNull().default(0),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_project_code_tenant').on(t.tenantId, t.projectCode),
-    index('idx_project_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_project_status_tenant').on(t.tenantId, t.status),
-    index('idx_project_manager').on(t.tenantId, t.managerId),
-    check('chk_project_amounts_nonneg', sql`${t.budgetAmount} >= 0 AND ${t.actualCost} >= 0 AND ${t.billedAmount} >= 0`),
-    check('chk_project_completion_range', sql`${t.completionPct} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const projects = erpSchema
+  .table(
+    'project',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      projectCode: varchar('project_code', { length: 30 }).notNull(),
+      name: text('name').notNull(),
+      description: text('description'),
+      customerId: uuid('customer_id'),
+      managerId: uuid('manager_id').notNull(),
+      status: projectStatusEnum('status').notNull().default('PLANNING'),
+      billingType: billingTypeEnum('billing_type').notNull(),
+      budgetAmount: moneyBigint('budget_amount').notNull(),
+      actualCost: moneyBigint('actual_cost')
+        .notNull()
+        .default(sql`0`),
+      billedAmount: moneyBigint('billed_amount')
+        .notNull()
+        .default(sql`0`),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      startDate: timestamp('start_date', { withTimezone: true }).notNull(),
+      endDate: timestamp('end_date', { withTimezone: true }),
+      completionPct: smallint('completion_pct').notNull().default(0),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_project_code_tenant').on(t.tenantId, t.projectCode),
+      index('idx_project_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_project_status_tenant').on(t.tenantId, t.status),
+      index('idx_project_manager').on(t.tenantId, t.managerId),
+      check(
+        'chk_project_amounts_nonneg',
+        sql`${t.budgetAmount} >= 0 AND ${t.actualCost} >= 0 AND ${t.billedAmount} >= 0`
+      ),
+      check('chk_project_completion_range', sql`${t.completionPct} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.project_cost_line ─────────────────────────────────────────────────
 
-export const projectCostLines = erpSchema.table(
-  'project_cost_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
-    lineNumber: smallint('line_number').notNull(),
-    costDate: timestamp('cost_date', { withTimezone: true }).notNull(),
-    category: costCategoryEnum('category').notNull(),
-    description: text('description').notNull(),
-    amount: moneyBigint('amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    glAccountId: uuid('gl_account_id').notNull(),
-    journalId: uuid('journal_id'),
-    employeeId: uuid('employee_id'),
-    isBillable: boolean('is_billable').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_project_cost_project_tenant').on(t.tenantId, t.projectId),
-    check('chk_proj_cost_amt_nonneg', sql`${t.amount} >= 0`),
-  ]
-).enableRLS();
+export const projectCostLines = erpSchema
+  .table(
+    'project_cost_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      projectId: uuid('project_id')
+        .notNull()
+        .references(() => projects.id, { onDelete: 'cascade' }),
+      lineNumber: smallint('line_number').notNull(),
+      costDate: timestamp('cost_date', { withTimezone: true }).notNull(),
+      category: costCategoryEnum('category').notNull(),
+      description: text('description').notNull(),
+      amount: moneyBigint('amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      glAccountId: uuid('gl_account_id').notNull(),
+      journalId: uuid('journal_id'),
+      employeeId: uuid('employee_id'),
+      isBillable: boolean('is_billable').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_project_cost_project_tenant').on(t.tenantId, t.projectId),
+      check('chk_proj_cost_amt_nonneg', sql`${t.amount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.project_billing ──────────────────────────────────────────────────
 
-export const projectBillings = erpSchema.table(
-  'project_billing',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
-    billingDate: timestamp('billing_date', { withTimezone: true }).notNull(),
-    description: text('description').notNull(),
-    amount: moneyBigint('amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    status: billingStatusEnum('status').notNull().default('DRAFT'),
-    milestoneRef: varchar('milestone_ref', { length: 100 }),
-    arInvoiceId: uuid('ar_invoice_id'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_project_billing_project_tenant').on(t.tenantId, t.projectId),
-    check('chk_proj_billing_amt_nonneg', sql`${t.amount} >= 0`),
-  ]
-).enableRLS();
+export const projectBillings = erpSchema
+  .table(
+    'project_billing',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      projectId: uuid('project_id')
+        .notNull()
+        .references(() => projects.id, { onDelete: 'cascade' }),
+      billingDate: timestamp('billing_date', { withTimezone: true }).notNull(),
+      description: text('description').notNull(),
+      amount: moneyBigint('amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      status: billingStatusEnum('status').notNull().default('DRAFT'),
+      milestoneRef: varchar('milestone_ref', { length: 100 }),
+      arInvoiceId: uuid('ar_invoice_id'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_project_billing_project_tenant').on(t.tenantId, t.projectId),
+      check('chk_proj_billing_amt_nonneg', sql`${t.amount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Phase 4: Lease Accounting (IFRS 16)
@@ -1618,101 +1929,123 @@ export const projectBillings = erpSchema.table(
 
 // ─── erp.lease_contract ───────────────────────────────────────────────────
 
-export const leaseContracts = erpSchema.table(
-  'lease_contract',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    leaseNumber: varchar('lease_number', { length: 50 }).notNull(),
-    description: text('description').notNull(),
-    lesseeOrLessor: lesseeOrLessorEnum('lessee_or_lessor').notNull().default('LESSEE'),
-    leaseType: leaseTypeEnum('lease_type').notNull().default('OPERATING'),
-    status: leaseStatusEnum('status').notNull().default('DRAFT'),
-    counterpartyId: uuid('counterparty_id').notNull(),
-    counterpartyName: varchar('counterparty_name', { length: 200 }).notNull(),
-    assetDescription: text('asset_description').notNull(),
-    commencementDate: timestamp('commencement_date', { withTimezone: true }).notNull(),
-    endDate: timestamp('end_date', { withTimezone: true }).notNull(),
-    leaseTermMonths: integer('lease_term_months').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    monthlyPayment: moneyBigint('monthly_payment').notNull(),
-    annualEscalationBps: integer('annual_escalation_bps').notNull().default(0),
-    discountRateBps: integer('discount_rate_bps').notNull(),
-    rouAssetAmount: moneyBigint('rou_asset_amount').notNull().default(0n),
-    leaseLiabilityAmount: moneyBigint('lease_liability_amount').notNull().default(0n),
-    isShortTerm: boolean('is_short_term').notNull().default(false),
-    isLowValue: boolean('is_low_value').notNull().default(false),
-    createdBy: uuid('created_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_lease_contract_number_tenant').on(t.tenantId, t.leaseNumber),
-    index('idx_lease_contract_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_lease_contract_status').on(t.tenantId, t.status),
-    check('chk_lease_amounts_nonneg', sql`${t.monthlyPayment} >= 0 AND ${t.rouAssetAmount} >= 0 AND ${t.leaseLiabilityAmount} >= 0`),
-    check('chk_lease_term_positive', sql`${t.leaseTermMonths} > 0`),
-    check('chk_lease_discount_positive', sql`${t.discountRateBps} > 0`),
-  ]
-).enableRLS();
+export const leaseContracts = erpSchema
+  .table(
+    'lease_contract',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      leaseNumber: varchar('lease_number', { length: 50 }).notNull(),
+      description: text('description').notNull(),
+      lesseeOrLessor: lesseeOrLessorEnum('lessee_or_lessor').notNull().default('LESSEE'),
+      leaseType: leaseTypeEnum('lease_type').notNull().default('OPERATING'),
+      status: leaseStatusEnum('status').notNull().default('DRAFT'),
+      counterpartyId: uuid('counterparty_id').notNull(),
+      counterpartyName: varchar('counterparty_name', { length: 200 }).notNull(),
+      assetDescription: text('asset_description').notNull(),
+      commencementDate: timestamp('commencement_date', { withTimezone: true }).notNull(),
+      endDate: timestamp('end_date', { withTimezone: true }).notNull(),
+      leaseTermMonths: integer('lease_term_months').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      monthlyPayment: moneyBigint('monthly_payment').notNull(),
+      annualEscalationBps: integer('annual_escalation_bps').notNull().default(0),
+      discountRateBps: integer('discount_rate_bps').notNull(),
+      rouAssetAmount: moneyBigint('rou_asset_amount').notNull().default(0n),
+      leaseLiabilityAmount: moneyBigint('lease_liability_amount').notNull().default(0n),
+      isShortTerm: boolean('is_short_term').notNull().default(false),
+      isLowValue: boolean('is_low_value').notNull().default(false),
+      createdBy: uuid('created_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_lease_contract_number_tenant').on(t.tenantId, t.leaseNumber),
+      index('idx_lease_contract_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_lease_contract_status').on(t.tenantId, t.status),
+      check(
+        'chk_lease_amounts_nonneg',
+        sql`${t.monthlyPayment} >= 0 AND ${t.rouAssetAmount} >= 0 AND ${t.leaseLiabilityAmount} >= 0`
+      ),
+      check('chk_lease_term_positive', sql`${t.leaseTermMonths} > 0`),
+      check('chk_lease_discount_positive', sql`${t.discountRateBps} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.lease_schedule ───────────────────────────────────────────────────
 
-export const leaseSchedules = erpSchema.table(
-  'lease_schedule',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    leaseContractId: uuid('lease_contract_id').notNull().references(() => leaseContracts.id, { onDelete: 'cascade' }),
-    periodNumber: integer('period_number').notNull(),
-    paymentDate: timestamp('payment_date', { withTimezone: true }).notNull(),
-    paymentAmount: moneyBigint('payment_amount').notNull(),
-    principalPortion: moneyBigint('principal_portion').notNull(),
-    interestPortion: moneyBigint('interest_portion').notNull(),
-    openingLiability: moneyBigint('opening_liability').notNull(),
-    closingLiability: moneyBigint('closing_liability').notNull(),
-    rouDepreciation: moneyBigint('rou_depreciation').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_lease_schedule_contract_tenant').on(t.tenantId, t.leaseContractId),
-    index('idx_lease_schedule_payment').on(t.tenantId, t.paymentDate),
-    check('chk_lease_sched_amounts_nonneg', sql`${t.paymentAmount} >= 0 AND ${t.principalPortion} >= 0 AND ${t.interestPortion} >= 0 AND ${t.openingLiability} >= 0 AND ${t.closingLiability} >= 0 AND ${t.rouDepreciation} >= 0`),
-    check('chk_lease_sched_period_positive', sql`${t.periodNumber} > 0`),
-  ]
-).enableRLS();
+export const leaseSchedules = erpSchema
+  .table(
+    'lease_schedule',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      leaseContractId: uuid('lease_contract_id')
+        .notNull()
+        .references(() => leaseContracts.id, { onDelete: 'cascade' }),
+      periodNumber: integer('period_number').notNull(),
+      paymentDate: timestamp('payment_date', { withTimezone: true }).notNull(),
+      paymentAmount: moneyBigint('payment_amount').notNull(),
+      principalPortion: moneyBigint('principal_portion').notNull(),
+      interestPortion: moneyBigint('interest_portion').notNull(),
+      openingLiability: moneyBigint('opening_liability').notNull(),
+      closingLiability: moneyBigint('closing_liability').notNull(),
+      rouDepreciation: moneyBigint('rou_depreciation').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_lease_schedule_contract_tenant').on(t.tenantId, t.leaseContractId),
+      index('idx_lease_schedule_payment').on(t.tenantId, t.paymentDate),
+      check(
+        'chk_lease_sched_amounts_nonneg',
+        sql`${t.paymentAmount} >= 0 AND ${t.principalPortion} >= 0 AND ${t.interestPortion} >= 0 AND ${t.openingLiability} >= 0 AND ${t.closingLiability} >= 0 AND ${t.rouDepreciation} >= 0`
+      ),
+      check('chk_lease_sched_period_positive', sql`${t.periodNumber} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.lease_modification ───────────────────────────────────────────────
 
-export const leaseModifications = erpSchema.table(
-  'lease_modification',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    leaseContractId: uuid('lease_contract_id').notNull().references(() => leaseContracts.id, { onDelete: 'cascade' }),
-    modificationDate: timestamp('modification_date', { withTimezone: true }).notNull(),
-    modificationType: leaseModificationTypeEnum('modification_type').notNull(),
-    description: text('description').notNull(),
-    previousLeaseTermMonths: integer('previous_lease_term_months').notNull(),
-    newLeaseTermMonths: integer('new_lease_term_months').notNull(),
-    previousMonthlyPayment: moneyBigint('previous_monthly_payment').notNull(),
-    newMonthlyPayment: moneyBigint('new_monthly_payment').notNull(),
-    previousDiscountRateBps: integer('previous_discount_rate_bps').notNull(),
-    newDiscountRateBps: integer('new_discount_rate_bps').notNull(),
-    liabilityAdjustment: moneyBigint('liability_adjustment').notNull(),
-    rouAssetAdjustment: moneyBigint('rou_asset_adjustment').notNull(),
-    gainLossOnModification: moneyBigint('gain_loss_on_modification').notNull().default(0n),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    modifiedBy: uuid('modified_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_lease_modification_contract_tenant').on(t.tenantId, t.leaseContractId),
-    check('chk_lease_mod_amounts_nonneg', sql`${t.previousMonthlyPayment} >= 0 AND ${t.newMonthlyPayment} >= 0`),
-    check('chk_lease_mod_terms_positive', sql`${t.previousLeaseTermMonths} > 0 AND ${t.newLeaseTermMonths} > 0 AND ${t.previousDiscountRateBps} > 0 AND ${t.newDiscountRateBps} > 0`),
-  ]
-).enableRLS();
+export const leaseModifications = erpSchema
+  .table(
+    'lease_modification',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      leaseContractId: uuid('lease_contract_id')
+        .notNull()
+        .references(() => leaseContracts.id, { onDelete: 'cascade' }),
+      modificationDate: timestamp('modification_date', { withTimezone: true }).notNull(),
+      modificationType: leaseModificationTypeEnum('modification_type').notNull(),
+      description: text('description').notNull(),
+      previousLeaseTermMonths: integer('previous_lease_term_months').notNull(),
+      newLeaseTermMonths: integer('new_lease_term_months').notNull(),
+      previousMonthlyPayment: moneyBigint('previous_monthly_payment').notNull(),
+      newMonthlyPayment: moneyBigint('new_monthly_payment').notNull(),
+      previousDiscountRateBps: integer('previous_discount_rate_bps').notNull(),
+      newDiscountRateBps: integer('new_discount_rate_bps').notNull(),
+      liabilityAdjustment: moneyBigint('liability_adjustment').notNull(),
+      rouAssetAdjustment: moneyBigint('rou_asset_adjustment').notNull(),
+      gainLossOnModification: moneyBigint('gain_loss_on_modification').notNull().default(0n),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      modifiedBy: uuid('modified_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_lease_modification_contract_tenant').on(t.tenantId, t.leaseContractId),
+      check(
+        'chk_lease_mod_amounts_nonneg',
+        sql`${t.previousMonthlyPayment} >= 0 AND ${t.newMonthlyPayment} >= 0`
+      ),
+      check(
+        'chk_lease_mod_terms_positive',
+        sql`${t.previousLeaseTermMonths} > 0 AND ${t.newLeaseTermMonths} > 0 AND ${t.previousDiscountRateBps} > 0 AND ${t.newDiscountRateBps} > 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Phase 4: Provisions (IAS 37)
@@ -1720,59 +2053,68 @@ export const leaseModifications = erpSchema.table(
 
 // ─── erp.provision ────────────────────────────────────────────────────────
 
-export const provisions = erpSchema.table(
-  'provision',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    provisionNumber: varchar('provision_number', { length: 50 }).notNull(),
-    description: text('description').notNull(),
-    provisionType: provisionTypeEnum('provision_type').notNull(),
-    status: provisionStatusEnum('status').notNull().default('ACTIVE'),
-    recognitionDate: timestamp('recognition_date', { withTimezone: true }).notNull(),
-    expectedSettlementDate: timestamp('expected_settlement_date', { withTimezone: true }),
-    initialAmount: moneyBigint('initial_amount').notNull(),
-    currentAmount: moneyBigint('current_amount').notNull(),
-    discountRateBps: integer('discount_rate_bps').notNull().default(0),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    glAccountId: uuid('gl_account_id'),
-    isContingentLiability: boolean('is_contingent_liability').notNull().default(false),
-    contingentLiabilityNote: text('contingent_liability_note'),
-    createdBy: uuid('created_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_provision_number_tenant').on(t.tenantId, t.provisionNumber),
-    index('idx_provision_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_provision_type_status').on(t.tenantId, t.provisionType, t.status),
-    check('chk_provision_amounts_nonneg', sql`${t.initialAmount} >= 0 AND ${t.currentAmount} >= 0`),
-  ]
-).enableRLS();
+export const provisions = erpSchema
+  .table(
+    'provision',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      provisionNumber: varchar('provision_number', { length: 50 }).notNull(),
+      description: text('description').notNull(),
+      provisionType: provisionTypeEnum('provision_type').notNull(),
+      status: provisionStatusEnum('status').notNull().default('ACTIVE'),
+      recognitionDate: timestamp('recognition_date', { withTimezone: true }).notNull(),
+      expectedSettlementDate: timestamp('expected_settlement_date', { withTimezone: true }),
+      initialAmount: moneyBigint('initial_amount').notNull(),
+      currentAmount: moneyBigint('current_amount').notNull(),
+      discountRateBps: integer('discount_rate_bps').notNull().default(0),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      glAccountId: uuid('gl_account_id'),
+      isContingentLiability: boolean('is_contingent_liability').notNull().default(false),
+      contingentLiabilityNote: text('contingent_liability_note'),
+      createdBy: uuid('created_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_provision_number_tenant').on(t.tenantId, t.provisionNumber),
+      index('idx_provision_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_provision_type_status').on(t.tenantId, t.provisionType, t.status),
+      check(
+        'chk_provision_amounts_nonneg',
+        sql`${t.initialAmount} >= 0 AND ${t.currentAmount} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.provision_movement ───────────────────────────────────────────────
 
-export const provisionMovements = erpSchema.table(
-  'provision_movement',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    provisionId: uuid('provision_id').notNull().references(() => provisions.id, { onDelete: 'cascade' }),
-    movementDate: timestamp('movement_date', { withTimezone: true }).notNull(),
-    movementType: provisionMovementTypeEnum('movement_type').notNull(),
-    amount: moneyBigint('amount').notNull(),
-    balanceAfter: moneyBigint('balance_after').notNull(),
-    description: text('description').notNull(),
-    journalId: uuid('journal_id'),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    createdBy: uuid('created_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_provision_movement_provision_tenant').on(t.tenantId, t.provisionId),
-    check('chk_provision_mvmt_nonneg', sql`${t.amount} >= 0 AND ${t.balanceAfter} >= 0`),
-  ]
-).enableRLS();
+export const provisionMovements = erpSchema
+  .table(
+    'provision_movement',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      provisionId: uuid('provision_id')
+        .notNull()
+        .references(() => provisions.id, { onDelete: 'cascade' }),
+      movementDate: timestamp('movement_date', { withTimezone: true }).notNull(),
+      movementType: provisionMovementTypeEnum('movement_type').notNull(),
+      amount: moneyBigint('amount').notNull(),
+      balanceAfter: moneyBigint('balance_after').notNull(),
+      description: text('description').notNull(),
+      journalId: uuid('journal_id'),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      createdBy: uuid('created_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_provision_movement_provision_tenant').on(t.tenantId, t.provisionId),
+      check('chk_provision_mvmt_nonneg', sql`${t.amount} >= 0 AND ${t.balanceAfter} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Phase 4: Treasury & Cash Management
@@ -1780,435 +2122,510 @@ export const provisionMovements = erpSchema.table(
 
 // ─── erp.cash_forecast ────────────────────────────────────────────────────
 
-export const cashForecasts = erpSchema.table(
-  'cash_forecast',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    forecastDate: timestamp('forecast_date', { withTimezone: true }).notNull(),
-    forecastType: forecastTypeEnum('forecast_type').notNull(),
-    description: text('description').notNull(),
-    amount: moneyBigint('amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    probability: integer('probability').notNull().default(100),
-    sourceDocumentId: uuid('source_document_id'),
-    sourceDocumentType: varchar('source_document_type', { length: 50 }),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_cash_forecast_company_date').on(t.tenantId, t.companyId, t.forecastDate),
-    index('idx_cash_forecast_type').on(t.tenantId, t.forecastType),
-    check('chk_cash_forecast_probability', sql`${t.probability} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const cashForecasts = erpSchema
+  .table(
+    'cash_forecast',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      forecastDate: timestamp('forecast_date', { withTimezone: true }).notNull(),
+      forecastType: forecastTypeEnum('forecast_type').notNull(),
+      description: text('description').notNull(),
+      amount: moneyBigint('amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      probability: integer('probability').notNull().default(100),
+      sourceDocumentId: uuid('source_document_id'),
+      sourceDocumentType: varchar('source_document_type', { length: 50 }),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_cash_forecast_company_date').on(t.tenantId, t.companyId, t.forecastDate),
+      index('idx_cash_forecast_type').on(t.tenantId, t.forecastType),
+      check('chk_cash_forecast_probability', sql`${t.probability} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.covenant ─────────────────────────────────────────────────────────
 
-export const covenants = erpSchema.table(
-  'covenant',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    lenderId: uuid('lender_id').notNull(),
-    lenderName: varchar('lender_name', { length: 200 }).notNull(),
-    covenantType: covenantTypeEnum('covenant_type').notNull(),
-    description: text('description').notNull(),
-    thresholdValue: integer('threshold_value').notNull(),
-    currentValue: integer('current_value'),
-    status: covenantStatusEnum('status').notNull().default('COMPLIANT'),
-    testFrequency: varchar('test_frequency', { length: 20 }).notNull().default('QUARTERLY'),
-    lastTestDate: timestamp('last_test_date', { withTimezone: true }),
-    nextTestDate: timestamp('next_test_date', { withTimezone: true }),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_covenant_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_covenant_status').on(t.tenantId, t.status),
-  ]
-).enableRLS();
+export const covenants = erpSchema
+  .table(
+    'covenant',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      lenderId: uuid('lender_id').notNull(),
+      lenderName: varchar('lender_name', { length: 200 }).notNull(),
+      covenantType: covenantTypeEnum('covenant_type').notNull(),
+      description: text('description').notNull(),
+      thresholdValue: integer('threshold_value').notNull(),
+      currentValue: integer('current_value'),
+      status: covenantStatusEnum('status').notNull().default('COMPLIANT'),
+      testFrequency: varchar('test_frequency', { length: 20 }).notNull().default('QUARTERLY'),
+      lastTestDate: timestamp('last_test_date', { withTimezone: true }),
+      nextTestDate: timestamp('next_test_date', { withTimezone: true }),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_covenant_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_covenant_status').on(t.tenantId, t.status),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ic_loan ──────────────────────────────────────────────────────────
 
-export const icLoans = erpSchema.table(
-  'ic_loan',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    lenderCompanyId: uuid('lender_company_id').notNull(),
-    borrowerCompanyId: uuid('borrower_company_id').notNull(),
-    loanNumber: varchar('loan_number', { length: 50 }).notNull(),
-    description: text('description').notNull(),
-    principalAmount: moneyBigint('principal_amount').notNull(),
-    outstandingBalance: moneyBigint('outstanding_balance').notNull(),
-    interestRateBps: integer('interest_rate_bps').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    startDate: timestamp('start_date', { withTimezone: true }).notNull(),
-    maturityDate: timestamp('maturity_date', { withTimezone: true }).notNull(),
-    status: icLoanStatusEnum('status').notNull().default('ACTIVE'),
-    icAgreementId: uuid('ic_agreement_id'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_ic_loan_number_tenant').on(t.tenantId, t.loanNumber),
-    index('idx_ic_loan_lender_tenant').on(t.tenantId, t.lenderCompanyId),
-    index('idx_ic_loan_borrower_tenant').on(t.tenantId, t.borrowerCompanyId),
-    check('chk_ic_loan_amounts_nonneg', sql`${t.principalAmount} >= 0 AND ${t.outstandingBalance} >= 0`),
-  ]
-).enableRLS();
+export const icLoans = erpSchema
+  .table(
+    'ic_loan',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      lenderCompanyId: uuid('lender_company_id').notNull(),
+      borrowerCompanyId: uuid('borrower_company_id').notNull(),
+      loanNumber: varchar('loan_number', { length: 50 }).notNull(),
+      description: text('description').notNull(),
+      principalAmount: moneyBigint('principal_amount').notNull(),
+      outstandingBalance: moneyBigint('outstanding_balance').notNull(),
+      interestRateBps: integer('interest_rate_bps').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      startDate: timestamp('start_date', { withTimezone: true }).notNull(),
+      maturityDate: timestamp('maturity_date', { withTimezone: true }).notNull(),
+      status: icLoanStatusEnum('status').notNull().default('ACTIVE'),
+      icAgreementId: uuid('ic_agreement_id'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_ic_loan_number_tenant').on(t.tenantId, t.loanNumber),
+      index('idx_ic_loan_lender_tenant').on(t.tenantId, t.lenderCompanyId),
+      index('idx_ic_loan_borrower_tenant').on(t.tenantId, t.borrowerCompanyId),
+      check(
+        'chk_ic_loan_amounts_nonneg',
+        sql`${t.principalAmount} >= 0 AND ${t.outstandingBalance} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── Phase 5: Cost Accounting ─────────────────────────────────────────────
 
 // ─── erp.cost_center ──────────────────────────────────────────────────────
 
-export const costCenters = erpSchema.table(
-  'cost_center',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    code: varchar('code', { length: 30 }).notNull(),
-    name: varchar('name', { length: 200 }).notNull(),
-    parentId: uuid('parent_id'),
-    level: smallint('level').notNull().default(0),
-    status: costCenterStatusEnum('status').notNull().default('ACTIVE'),
-    managerId: uuid('manager_id'),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
-    effectiveTo: timestamp('effective_to', { withTimezone: true }),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_cost_center_code_tenant').on(t.tenantId, t.companyId, t.code),
-    index('idx_cost_center_parent').on(t.tenantId, t.parentId),
-    index('idx_cost_center_company').on(t.tenantId, t.companyId),
-    index('idx_cost_center_status').on(t.tenantId, t.status),
-    check('chk_cost_center_level_nonneg', sql`${t.level} >= 0`),
-  ]
-).enableRLS();
+export const costCenters = erpSchema
+  .table(
+    'cost_center',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      code: varchar('code', { length: 30 }).notNull(),
+      name: varchar('name', { length: 200 }).notNull(),
+      parentId: uuid('parent_id'),
+      level: smallint('level').notNull().default(0),
+      status: costCenterStatusEnum('status').notNull().default('ACTIVE'),
+      managerId: uuid('manager_id'),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
+      effectiveTo: timestamp('effective_to', { withTimezone: true }),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_cost_center_code_tenant').on(t.tenantId, t.companyId, t.code),
+      index('idx_cost_center_parent').on(t.tenantId, t.parentId),
+      index('idx_cost_center_company').on(t.tenantId, t.companyId),
+      index('idx_cost_center_status').on(t.tenantId, t.status),
+      check('chk_cost_center_level_nonneg', sql`${t.level} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.cost_driver ──────────────────────────────────────────────────────
 
-export const costDrivers = erpSchema.table(
-  'cost_driver',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    code: varchar('code', { length: 30 }).notNull(),
-    name: varchar('name', { length: 200 }).notNull(),
-    driverType: driverTypeEnum('driver_type').notNull(),
-    unitOfMeasure: varchar('unit_of_measure', { length: 30 }).notNull(),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_cost_driver_code_tenant').on(t.tenantId, t.companyId, t.code),
-    index('idx_cost_driver_company').on(t.tenantId, t.companyId),
-  ]
-).enableRLS();
+export const costDrivers = erpSchema
+  .table(
+    'cost_driver',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      code: varchar('code', { length: 30 }).notNull(),
+      name: varchar('name', { length: 200 }).notNull(),
+      driverType: driverTypeEnum('driver_type').notNull(),
+      unitOfMeasure: varchar('unit_of_measure', { length: 30 }).notNull(),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_cost_driver_code_tenant').on(t.tenantId, t.companyId, t.code),
+      index('idx_cost_driver_company').on(t.tenantId, t.companyId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.cost_driver_value ────────────────────────────────────────────────
 
-export const costDriverValues = erpSchema.table(
-  'cost_driver_value',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    driverId: uuid('driver_id').notNull().references(() => costDrivers.id, { onDelete: 'cascade' }),
-    costCenterId: uuid('cost_center_id').notNull().references(() => costCenters.id, { onDelete: 'cascade' }),
-    periodId: uuid('period_id').notNull(),
-    quantity: moneyBigint('quantity').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_cost_driver_value_unique').on(
-      t.tenantId,
-      t.driverId,
-      t.costCenterId,
-      t.periodId
-    ),
-    index('idx_cost_driver_value_period').on(t.tenantId, t.periodId),
-    check('chk_cost_driver_qty_nonneg', sql`${t.quantity} >= 0`),
-  ]
-).enableRLS();
+export const costDriverValues = erpSchema
+  .table(
+    'cost_driver_value',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      driverId: uuid('driver_id')
+        .notNull()
+        .references(() => costDrivers.id, { onDelete: 'cascade' }),
+      costCenterId: uuid('cost_center_id')
+        .notNull()
+        .references(() => costCenters.id, { onDelete: 'cascade' }),
+      periodId: uuid('period_id').notNull(),
+      quantity: moneyBigint('quantity').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_cost_driver_value_unique').on(
+        t.tenantId,
+        t.driverId,
+        t.costCenterId,
+        t.periodId
+      ),
+      index('idx_cost_driver_value_period').on(t.tenantId, t.periodId),
+      check('chk_cost_driver_qty_nonneg', sql`${t.quantity} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.cost_allocation_run ──────────────────────────────────────────────
 
-export const costAllocationRuns = erpSchema.table(
-  'cost_allocation_run',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    periodId: uuid('period_id').notNull(),
-    method: allocationMethodEnum('method').notNull(),
-    status: allocationRunStatusEnum('status').notNull().default('DRAFT'),
-    totalAllocated: moneyBigint('total_allocated').notNull().default(0n),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    lineCount: integer('line_count').notNull().default(0),
-    executedBy: uuid('executed_by').notNull(),
-    executedAt: timestamp('executed_at', { withTimezone: true }),
-    reversedAt: timestamp('reversed_at', { withTimezone: true }),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_cost_alloc_run_period').on(t.tenantId, t.companyId, t.periodId),
-    index('idx_cost_alloc_run_status').on(t.tenantId, t.status),
-    check('chk_cost_alloc_run_nonneg', sql`${t.totalAllocated} >= 0 AND ${t.lineCount} >= 0`),
-  ]
-).enableRLS();
+export const costAllocationRuns = erpSchema
+  .table(
+    'cost_allocation_run',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      periodId: uuid('period_id').notNull(),
+      method: allocationMethodEnum('method').notNull(),
+      status: allocationRunStatusEnum('status').notNull().default('DRAFT'),
+      totalAllocated: moneyBigint('total_allocated').notNull().default(0n),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      lineCount: integer('line_count').notNull().default(0),
+      executedBy: uuid('executed_by').notNull(),
+      executedAt: timestamp('executed_at', { withTimezone: true }),
+      reversedAt: timestamp('reversed_at', { withTimezone: true }),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_cost_alloc_run_period').on(t.tenantId, t.companyId, t.periodId),
+      index('idx_cost_alloc_run_status').on(t.tenantId, t.status),
+      check('chk_cost_alloc_run_nonneg', sql`${t.totalAllocated} >= 0 AND ${t.lineCount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.cost_allocation_line ─────────────────────────────────────────────
 
-export const costAllocationLines = erpSchema.table(
-  'cost_allocation_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    runId: uuid('run_id').notNull().references(() => costAllocationRuns.id, { onDelete: 'cascade' }),
-    fromCostCenterId: uuid('from_cost_center_id').notNull().references(() => costCenters.id, { onDelete: 'restrict' }),
-    toCostCenterId: uuid('to_cost_center_id').notNull().references(() => costCenters.id, { onDelete: 'restrict' }),
-    driverId: uuid('driver_id').notNull().references(() => costDrivers.id, { onDelete: 'restrict' }),
-    amount: moneyBigint('amount').notNull(),
-    driverQuantity: moneyBigint('driver_quantity').notNull(),
-    allocationRate: moneyBigint('allocation_rate').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_cost_alloc_line_run').on(t.tenantId, t.runId),
-    index('idx_cost_alloc_line_from').on(t.tenantId, t.fromCostCenterId),
-    index('idx_cost_alloc_line_to').on(t.tenantId, t.toCostCenterId),
-    check('chk_cost_alloc_line_nonneg', sql`${t.amount} >= 0 AND ${t.driverQuantity} >= 0 AND ${t.allocationRate} >= 0`),
-  ]
-).enableRLS();
+export const costAllocationLines = erpSchema
+  .table(
+    'cost_allocation_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      runId: uuid('run_id')
+        .notNull()
+        .references(() => costAllocationRuns.id, { onDelete: 'cascade' }),
+      fromCostCenterId: uuid('from_cost_center_id')
+        .notNull()
+        .references(() => costCenters.id, { onDelete: 'restrict' }),
+      toCostCenterId: uuid('to_cost_center_id')
+        .notNull()
+        .references(() => costCenters.id, { onDelete: 'restrict' }),
+      driverId: uuid('driver_id')
+        .notNull()
+        .references(() => costDrivers.id, { onDelete: 'restrict' }),
+      amount: moneyBigint('amount').notNull(),
+      driverQuantity: moneyBigint('driver_quantity').notNull(),
+      allocationRate: moneyBigint('allocation_rate').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_cost_alloc_line_run').on(t.tenantId, t.runId),
+      index('idx_cost_alloc_line_from').on(t.tenantId, t.fromCostCenterId),
+      index('idx_cost_alloc_line_to').on(t.tenantId, t.toCostCenterId),
+      check(
+        'chk_cost_alloc_line_nonneg',
+        sql`${t.amount} >= 0 AND ${t.driverQuantity} >= 0 AND ${t.allocationRate} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── Phase 6: Consolidation ──────────────────────────────────────────────
 
 // ─── erp.group_entity ────────────────────────────────────────────────────
 
-export const groupEntities = erpSchema.table(
-  'group_entity',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    name: varchar('name', { length: 200 }).notNull(),
-    entityType: groupEntityTypeEnum('entity_type').notNull(),
-    parentEntityId: uuid('parent_entity_id'),
-    baseCurrency: varchar('base_currency', { length: 3 }).notNull(),
-    countryCode: varchar('country_code', { length: 3 }).notNull(),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_group_entity_company_tenant').on(t.tenantId, t.companyId),
-    index('idx_group_entity_parent').on(t.tenantId, t.parentEntityId),
-  ]
-).enableRLS();
+export const groupEntities = erpSchema
+  .table(
+    'group_entity',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      name: varchar('name', { length: 200 }).notNull(),
+      entityType: groupEntityTypeEnum('entity_type').notNull(),
+      parentEntityId: uuid('parent_entity_id'),
+      baseCurrency: varchar('base_currency', { length: 3 }).notNull(),
+      countryCode: varchar('country_code', { length: 3 }).notNull(),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_group_entity_company_tenant').on(t.tenantId, t.companyId),
+      index('idx_group_entity_parent').on(t.tenantId, t.parentEntityId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ownership_record ────────────────────────────────────────────────
 
-export const ownershipRecords = erpSchema.table(
-  'ownership_record',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    parentEntityId: uuid('parent_entity_id').notNull().references(() => groupEntities.id, { onDelete: 'cascade' }),
-    childEntityId: uuid('child_entity_id').notNull().references(() => groupEntities.id, { onDelete: 'cascade' }),
-    ownershipPctBps: integer('ownership_pct_bps').notNull(),
-    votingPctBps: integer('voting_pct_bps').notNull(),
-    effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
-    effectiveTo: timestamp('effective_to', { withTimezone: true }),
-    acquisitionDate: timestamp('acquisition_date', { withTimezone: true }).notNull(),
-    acquisitionCost: moneyBigint('acquisition_cost').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_ownership_parent_tenant').on(t.tenantId, t.parentEntityId),
-    index('idx_ownership_child_tenant').on(t.tenantId, t.childEntityId),
-    index('idx_ownership_effective').on(t.tenantId, t.effectiveFrom, t.effectiveTo),
-    check('chk_ownership_cost_nonneg', sql`${t.acquisitionCost} >= 0`),
-    check('chk_ownership_pct_bps_range', sql`${t.ownershipPctBps} BETWEEN 0 AND 10000 AND ${t.votingPctBps} BETWEEN 0 AND 10000`),
-  ]
-).enableRLS();
+export const ownershipRecords = erpSchema
+  .table(
+    'ownership_record',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      parentEntityId: uuid('parent_entity_id')
+        .notNull()
+        .references(() => groupEntities.id, { onDelete: 'cascade' }),
+      childEntityId: uuid('child_entity_id')
+        .notNull()
+        .references(() => groupEntities.id, { onDelete: 'cascade' }),
+      ownershipPctBps: integer('ownership_pct_bps').notNull(),
+      votingPctBps: integer('voting_pct_bps').notNull(),
+      effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
+      effectiveTo: timestamp('effective_to', { withTimezone: true }),
+      acquisitionDate: timestamp('acquisition_date', { withTimezone: true }).notNull(),
+      acquisitionCost: moneyBigint('acquisition_cost').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_ownership_parent_tenant').on(t.tenantId, t.parentEntityId),
+      index('idx_ownership_child_tenant').on(t.tenantId, t.childEntityId),
+      index('idx_ownership_effective').on(t.tenantId, t.effectiveFrom, t.effectiveTo),
+      check('chk_ownership_cost_nonneg', sql`${t.acquisitionCost} >= 0`),
+      check(
+        'chk_ownership_pct_bps_range',
+        sql`${t.ownershipPctBps} BETWEEN 0 AND 10000 AND ${t.votingPctBps} BETWEEN 0 AND 10000`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.goodwill ────────────────────────────────────────────────────────
 
-export const goodwills = erpSchema.table(
-  'goodwill',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    ownershipRecordId: uuid('ownership_record_id').notNull(),
-    childEntityId: uuid('child_entity_id').notNull(),
-    acquisitionDate: timestamp('acquisition_date', { withTimezone: true }).notNull(),
-    considerationPaid: moneyBigint('consideration_paid').notNull(),
-    fairValueNetAssets: moneyBigint('fair_value_net_assets').notNull(),
-    nciAtAcquisition: moneyBigint('nci_at_acquisition').notNull(),
-    goodwillAmount: moneyBigint('goodwill_amount').notNull(),
-    accumulatedImpairment: moneyBigint('accumulated_impairment').notNull().default(0n),
-    carryingAmount: moneyBigint('carrying_amount').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    status: goodwillStatusEnum('status').notNull().default('ACTIVE'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_goodwill_child_tenant').on(t.tenantId, t.childEntityId),
-    index('idx_goodwill_ownership').on(t.tenantId, t.ownershipRecordId),
-    check('chk_goodwill_amounts_nonneg', sql`${t.considerationPaid} >= 0 AND ${t.fairValueNetAssets} >= 0 AND ${t.nciAtAcquisition} >= 0 AND ${t.goodwillAmount} >= 0 AND ${t.accumulatedImpairment} >= 0 AND ${t.carryingAmount} >= 0`),
-  ]
-).enableRLS();
+export const goodwills = erpSchema
+  .table(
+    'goodwill',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      ownershipRecordId: uuid('ownership_record_id').notNull(),
+      childEntityId: uuid('child_entity_id').notNull(),
+      acquisitionDate: timestamp('acquisition_date', { withTimezone: true }).notNull(),
+      considerationPaid: moneyBigint('consideration_paid').notNull(),
+      fairValueNetAssets: moneyBigint('fair_value_net_assets').notNull(),
+      nciAtAcquisition: moneyBigint('nci_at_acquisition').notNull(),
+      goodwillAmount: moneyBigint('goodwill_amount').notNull(),
+      accumulatedImpairment: moneyBigint('accumulated_impairment').notNull().default(0n),
+      carryingAmount: moneyBigint('carrying_amount').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      status: goodwillStatusEnum('status').notNull().default('ACTIVE'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_goodwill_child_tenant').on(t.tenantId, t.childEntityId),
+      index('idx_goodwill_ownership').on(t.tenantId, t.ownershipRecordId),
+      check(
+        'chk_goodwill_amounts_nonneg',
+        sql`${t.considerationPaid} >= 0 AND ${t.fairValueNetAssets} >= 0 AND ${t.nciAtAcquisition} >= 0 AND ${t.goodwillAmount} >= 0 AND ${t.accumulatedImpairment} >= 0 AND ${t.carryingAmount} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── Phase 7: IFRS Specialist Modules ─────────────────────────────────────
 
 // ─── erp.intangible_asset ─────────────────────────────────────────────────
 
-export const intangibleAssets = erpSchema.table(
-  'intangible_asset',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    assetNumber: varchar('asset_number', { length: 30 }).notNull(),
-    name: varchar('name', { length: 200 }).notNull(),
-    description: text('description'),
-    category: intangibleCategoryEnum('category').notNull(),
-    usefulLifeType: usefulLifeTypeEnum('useful_life_type').notNull(),
-    acquisitionDate: timestamp('acquisition_date', { withTimezone: true }).notNull(),
-    acquisitionCost: moneyBigint('acquisition_cost').notNull(),
-    residualValue: moneyBigint('residual_value').notNull().default(0n),
-    usefulLifeMonths: integer('useful_life_months'),
-    accumulatedAmortization: moneyBigint('accumulated_amortization').notNull().default(0n),
-    netBookValue: moneyBigint('net_book_value').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    glAccountId: uuid('gl_account_id').notNull(),
-    amortizationAccountId: uuid('amortization_account_id').notNull(),
-    accumulatedAmortizationAccountId: uuid('accumulated_amortization_account_id').notNull(),
-    status: intangibleAssetStatusEnum('status').notNull().default('ACTIVE'),
-    isInternallyGenerated: boolean('is_internally_generated').notNull().default(false),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('idx_intangible_asset_number').on(t.tenantId, t.companyId, t.assetNumber),
-    index('idx_intangible_company').on(t.tenantId, t.companyId),
-    index('idx_intangible_category').on(t.tenantId, t.category),
-    check('chk_intangible_amounts_nonneg', sql`${t.acquisitionCost} >= 0 AND ${t.residualValue} >= 0 AND ${t.accumulatedAmortization} >= 0 AND ${t.netBookValue} >= 0`),
-  ]
-).enableRLS();
+export const intangibleAssets = erpSchema
+  .table(
+    'intangible_asset',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      assetNumber: varchar('asset_number', { length: 30 }).notNull(),
+      name: varchar('name', { length: 200 }).notNull(),
+      description: text('description'),
+      category: intangibleCategoryEnum('category').notNull(),
+      usefulLifeType: usefulLifeTypeEnum('useful_life_type').notNull(),
+      acquisitionDate: timestamp('acquisition_date', { withTimezone: true }).notNull(),
+      acquisitionCost: moneyBigint('acquisition_cost').notNull(),
+      residualValue: moneyBigint('residual_value').notNull().default(0n),
+      usefulLifeMonths: integer('useful_life_months'),
+      accumulatedAmortization: moneyBigint('accumulated_amortization').notNull().default(0n),
+      netBookValue: moneyBigint('net_book_value').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      glAccountId: uuid('gl_account_id').notNull(),
+      amortizationAccountId: uuid('amortization_account_id').notNull(),
+      accumulatedAmortizationAccountId: uuid('accumulated_amortization_account_id').notNull(),
+      status: intangibleAssetStatusEnum('status').notNull().default('ACTIVE'),
+      isInternallyGenerated: boolean('is_internally_generated').notNull().default(false),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('idx_intangible_asset_number').on(t.tenantId, t.companyId, t.assetNumber),
+      index('idx_intangible_company').on(t.tenantId, t.companyId),
+      index('idx_intangible_category').on(t.tenantId, t.category),
+      check(
+        'chk_intangible_amounts_nonneg',
+        sql`${t.acquisitionCost} >= 0 AND ${t.residualValue} >= 0 AND ${t.accumulatedAmortization} >= 0 AND ${t.netBookValue} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.financial_instrument ─────────────────────────────────────────────
 
-export const financialInstruments = erpSchema.table(
-  'financial_instrument',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    instrumentType: instrumentTypeEnum('instrument_type').notNull(),
-    classification: instrumentClassificationEnum('classification').notNull(),
-    fairValueLevel: fairValueLevelEnum('fair_value_level'),
-    nominalAmount: moneyBigint('nominal_amount').notNull(),
-    carryingAmount: moneyBigint('carrying_amount').notNull(),
-    fairValue: moneyBigint('fair_value'),
-    effectiveInterestRateBps: integer('effective_interest_rate_bps').notNull(),
-    contractualRateBps: integer('contractual_rate_bps').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    maturityDate: timestamp('maturity_date', { withTimezone: true }),
-    counterpartyId: uuid('counterparty_id').notNull(),
-    glAccountId: uuid('gl_account_id').notNull(),
-    isDerecognized: boolean('is_derecognized').notNull().default(false),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_fin_instrument_company').on(t.tenantId, t.companyId),
-    index('idx_fin_instrument_type').on(t.tenantId, t.instrumentType),
-    index('idx_fin_instrument_classification').on(t.tenantId, t.classification),
-    check('chk_fin_instr_amounts_nonneg', sql`${t.nominalAmount} >= 0 AND ${t.carryingAmount} >= 0`),
-  ]
-).enableRLS();
+export const financialInstruments = erpSchema
+  .table(
+    'financial_instrument',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      instrumentType: instrumentTypeEnum('instrument_type').notNull(),
+      classification: instrumentClassificationEnum('classification').notNull(),
+      fairValueLevel: fairValueLevelEnum('fair_value_level'),
+      nominalAmount: moneyBigint('nominal_amount').notNull(),
+      carryingAmount: moneyBigint('carrying_amount').notNull(),
+      fairValue: moneyBigint('fair_value'),
+      effectiveInterestRateBps: integer('effective_interest_rate_bps').notNull(),
+      contractualRateBps: integer('contractual_rate_bps').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      maturityDate: timestamp('maturity_date', { withTimezone: true }),
+      counterpartyId: uuid('counterparty_id').notNull(),
+      glAccountId: uuid('gl_account_id').notNull(),
+      isDerecognized: boolean('is_derecognized').notNull().default(false),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_fin_instrument_company').on(t.tenantId, t.companyId),
+      index('idx_fin_instrument_type').on(t.tenantId, t.instrumentType),
+      index('idx_fin_instrument_classification').on(t.tenantId, t.classification),
+      check(
+        'chk_fin_instr_amounts_nonneg',
+        sql`${t.nominalAmount} >= 0 AND ${t.carryingAmount} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.hedge_relationship ───────────────────────────────────────────────
 
-export const hedgeRelationships = erpSchema.table(
-  'hedge_relationship',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    hedgeType: hedgeTypeEnum('hedge_type').notNull(),
-    hedgingInstrumentId: uuid('hedging_instrument_id').notNull(),
-    hedgedItemId: uuid('hedged_item_id').notNull(),
-    hedgedRisk: varchar('hedged_risk', { length: 100 }).notNull(),
-    hedgeRatio: integer('hedge_ratio').notNull().default(10000),
-    designationDate: timestamp('designation_date', { withTimezone: true }).notNull(),
-    status: hedgeStatusEnum('status').notNull().default('DESIGNATED'),
-    discontinuationDate: timestamp('discontinuation_date', { withTimezone: true }),
-    discontinuationReason: text('discontinuation_reason'),
-    ociReserveBalance: moneyBigint('oci_reserve_balance').notNull().default(0n),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_hedge_company').on(t.tenantId, t.companyId),
-    index('idx_hedge_instrument').on(t.tenantId, t.hedgingInstrumentId),
-    index('idx_hedge_status').on(t.tenantId, t.status),
-    check('chk_hedge_ratio_nonneg', sql`${t.hedgeRatio} >= 0`),
-  ]
-).enableRLS();
+export const hedgeRelationships = erpSchema
+  .table(
+    'hedge_relationship',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      hedgeType: hedgeTypeEnum('hedge_type').notNull(),
+      hedgingInstrumentId: uuid('hedging_instrument_id').notNull(),
+      hedgedItemId: uuid('hedged_item_id').notNull(),
+      hedgedRisk: varchar('hedged_risk', { length: 100 }).notNull(),
+      hedgeRatio: integer('hedge_ratio').notNull().default(10000),
+      designationDate: timestamp('designation_date', { withTimezone: true }).notNull(),
+      status: hedgeStatusEnum('status').notNull().default('DESIGNATED'),
+      discontinuationDate: timestamp('discontinuation_date', { withTimezone: true }),
+      discontinuationReason: text('discontinuation_reason'),
+      ociReserveBalance: moneyBigint('oci_reserve_balance').notNull().default(0n),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_hedge_company').on(t.tenantId, t.companyId),
+      index('idx_hedge_instrument').on(t.tenantId, t.hedgingInstrumentId),
+      index('idx_hedge_status').on(t.tenantId, t.status),
+      check('chk_hedge_ratio_nonneg', sql`${t.hedgeRatio} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.deferred_tax_item ────────────────────────────────────────────────
 
-export const deferredTaxItems = erpSchema.table(
-  'deferred_tax_item',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    itemName: varchar('item_name', { length: 200 }).notNull(),
-    origin: varchar('origin', { length: 50 }).notNull(),
-    carryingAmount: moneyBigint('carrying_amount').notNull(),
-    taxBase: moneyBigint('tax_base').notNull(),
-    temporaryDifference: moneyBigint('temporary_difference').notNull(),
-    taxRateBps: integer('tax_rate_bps').notNull(),
-    deferredTaxAsset: moneyBigint('deferred_tax_asset').notNull().default(0n),
-    deferredTaxLiability: moneyBigint('deferred_tax_liability').notNull().default(0n),
-    isRecognized: boolean('is_recognized').notNull().default(true),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    periodId: uuid('period_id').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_deferred_tax_company').on(t.tenantId, t.companyId),
-    index('idx_deferred_tax_period').on(t.tenantId, t.periodId),
-    check('chk_deferred_tax_nonneg', sql`${t.deferredTaxAsset} >= 0 AND ${t.deferredTaxLiability} >= 0`),
-  ]
-).enableRLS();
+export const deferredTaxItems = erpSchema
+  .table(
+    'deferred_tax_item',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      itemName: varchar('item_name', { length: 200 }).notNull(),
+      origin: varchar('origin', { length: 50 }).notNull(),
+      carryingAmount: moneyBigint('carrying_amount').notNull(),
+      taxBase: moneyBigint('tax_base').notNull(),
+      temporaryDifference: moneyBigint('temporary_difference').notNull(),
+      taxRateBps: integer('tax_rate_bps').notNull(),
+      deferredTaxAsset: moneyBigint('deferred_tax_asset').notNull().default(0n),
+      deferredTaxLiability: moneyBigint('deferred_tax_liability').notNull().default(0n),
+      isRecognized: boolean('is_recognized').notNull().default(true),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      periodId: uuid('period_id').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_deferred_tax_company').on(t.tenantId, t.companyId),
+      index('idx_deferred_tax_period').on(t.tenantId, t.periodId),
+      check(
+        'chk_deferred_tax_nonneg',
+        sql`${t.deferredTaxAsset} >= 0 AND ${t.deferredTaxLiability} >= 0`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.tp_policy ────────────────────────────────────────────────────────
 
-export const tpPolicies = erpSchema.table(
-  'tp_policy',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    policyName: varchar('policy_name', { length: 200 }).notNull(),
-    method: varchar('method', { length: 30 }).notNull(),
-    benchmarkLowBps: integer('benchmark_low_bps').notNull(),
-    benchmarkMedianBps: integer('benchmark_median_bps').notNull(),
-    benchmarkHighBps: integer('benchmark_high_bps').notNull(),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_tp_policy_company').on(t.tenantId, t.companyId),
-    check('chk_tp_benchmarks_nonneg', sql`${t.benchmarkLowBps} >= 0 AND ${t.benchmarkMedianBps} >= 0 AND ${t.benchmarkHighBps} >= 0`),
-    check('chk_tp_benchmark_ordering', sql`${t.benchmarkLowBps} <= ${t.benchmarkMedianBps} AND ${t.benchmarkMedianBps} <= ${t.benchmarkHighBps}`),
-  ]
-).enableRLS();
+export const tpPolicies = erpSchema
+  .table(
+    'tp_policy',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      policyName: varchar('policy_name', { length: 200 }).notNull(),
+      method: varchar('method', { length: 30 }).notNull(),
+      benchmarkLowBps: integer('benchmark_low_bps').notNull(),
+      benchmarkMedianBps: integer('benchmark_median_bps').notNull(),
+      benchmarkHighBps: integer('benchmark_high_bps').notNull(),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_tp_policy_company').on(t.tenantId, t.companyId),
+      check(
+        'chk_tp_benchmarks_nonneg',
+        sql`${t.benchmarkLowBps} >= 0 AND ${t.benchmarkMedianBps} >= 0 AND ${t.benchmarkHighBps} >= 0`
+      ),
+      check(
+        'chk_tp_benchmark_ordering',
+        sql`${t.benchmarkLowBps} <= ${t.benchmarkMedianBps} AND ${t.benchmarkMedianBps} <= ${t.benchmarkHighBps}`
+      ),
+    ]
+  )
+  .enableRLS();
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Gap remediation tables — 0006
@@ -2217,781 +2634,905 @@ export const tpPolicies = erpSchema.table(
 // ─── erp.payment_terms_line ───────────────────────────────────────────────
 // Multi-installment payment schedule lines (AP-05)
 
-export const paymentTermsLines = erpSchema.table(
-  'payment_terms_line',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    templateId: uuid('template_id').notNull(),
-    lineNumber: smallint('line_number').notNull(),
-    dueDays: smallint('due_days').notNull(),
-    percentageOfTotal: smallint('percentage_of_total').notNull(),
-    discountPercentBps: integer('discount_percent_bps').notNull().default(0),
-    discountDays: smallint('discount_days').notNull().default(0),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_payment_terms_line_template').on(t.tenantId, t.templateId),
-    uniqueIndex('uq_payment_terms_line_order').on(t.tenantId, t.templateId, t.lineNumber),
-    check('chk_pay_terms_line_days_positive', sql`${t.dueDays} > 0`),
-    check('chk_pay_terms_line_pct_range', sql`${t.percentageOfTotal} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const paymentTermsLines = erpSchema
+  .table(
+    'payment_terms_line',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      templateId: uuid('template_id').notNull(),
+      lineNumber: smallint('line_number').notNull(),
+      dueDays: smallint('due_days').notNull(),
+      percentageOfTotal: smallint('percentage_of_total').notNull(),
+      discountPercentBps: integer('discount_percent_bps').notNull().default(0),
+      discountDays: smallint('discount_days').notNull().default(0),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_payment_terms_line_template').on(t.tenantId, t.templateId),
+      uniqueIndex('uq_payment_terms_line_order').on(t.tenantId, t.templateId, t.lineNumber),
+      check('chk_pay_terms_line_days_positive', sql`${t.dueDays} > 0`),
+      check('chk_pay_terms_line_pct_range', sql`${t.percentageOfTotal} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.asset_component ─────────────────────────────────────────────────
 // Component accounting for fixed assets (FA-04)
 
-export const assetComponents = erpSchema.table(
-  'asset_component',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    assetId: uuid('asset_id').notNull().references(() => assets.id, { onDelete: 'cascade' }),
-    componentName: varchar('component_name', { length: 200 }).notNull(),
-    acquisitionCost: moneyBigint('acquisition_cost').notNull(),
-    residualValue: moneyBigint('residual_value').notNull().default(0n),
-    usefulLifeMonths: smallint('useful_life_months').notNull(),
-    depreciationMethod: depreciationMethodEnum('depreciation_method').notNull(),
-    accumulatedDepreciation: moneyBigint('accumulated_depreciation').notNull().default(0n),
-    netBookValue: moneyBigint('net_book_value').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_asset_component_asset').on(t.tenantId, t.assetId),
-    check('chk_asset_comp_amounts_nonneg', sql`${t.acquisitionCost} >= 0 AND ${t.residualValue} >= 0 AND ${t.accumulatedDepreciation} >= 0 AND ${t.netBookValue} >= 0`),
-    check('chk_asset_comp_life_positive', sql`${t.usefulLifeMonths} > 0`),
-  ]
-).enableRLS();
+export const assetComponents = erpSchema
+  .table(
+    'asset_component',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      assetId: uuid('asset_id')
+        .notNull()
+        .references(() => assets.id, { onDelete: 'cascade' }),
+      componentName: varchar('component_name', { length: 200 }).notNull(),
+      acquisitionCost: moneyBigint('acquisition_cost').notNull(),
+      residualValue: moneyBigint('residual_value').notNull().default(0n),
+      usefulLifeMonths: smallint('useful_life_months').notNull(),
+      depreciationMethod: depreciationMethodEnum('depreciation_method').notNull(),
+      accumulatedDepreciation: moneyBigint('accumulated_depreciation').notNull().default(0n),
+      netBookValue: moneyBigint('net_book_value').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull().default('USD'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_asset_component_asset').on(t.tenantId, t.assetId),
+      check(
+        'chk_asset_comp_amounts_nonneg',
+        sql`${t.acquisitionCost} >= 0 AND ${t.residualValue} >= 0 AND ${t.accumulatedDepreciation} >= 0 AND ${t.netBookValue} >= 0`
+      ),
+      check('chk_asset_comp_life_positive', sql`${t.usefulLifeMonths} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.accounting_event ────────────────────────────────────────────────
 // SLA event store (SLA-01)
 
-export const accountingEvents = erpSchema.table(
-  'accounting_event',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    eventType: varchar('event_type', { length: 100 }).notNull(),
-    sourceDocumentType: varchar('source_document_type', { length: 50 }).notNull(),
-    sourceDocumentId: uuid('source_document_id').notNull(),
-    eventDate: timestamp('event_date', { withTimezone: true }).notNull(),
-    payload: jsonb('payload').notNull(),
-    status: accountingEventStatusEnum('status').notNull().default('PENDING'),
-    processedAt: timestamp('processed_at', { withTimezone: true }),
-    errorMessage: text('error_message'),
-    journalId: uuid('journal_id'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_accounting_event_company').on(t.tenantId, t.companyId),
-    index('idx_accounting_event_type').on(t.tenantId, t.eventType),
-    index('idx_accounting_event_status').on(t.tenantId, t.status),
-    index('idx_accounting_event_source').on(t.tenantId, t.sourceDocumentType, t.sourceDocumentId),
-    index('idx_accounting_event_date').on(t.tenantId, t.eventDate),
-  ]
-).enableRLS();
+export const accountingEvents = erpSchema
+  .table(
+    'accounting_event',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      eventType: varchar('event_type', { length: 100 }).notNull(),
+      sourceDocumentType: varchar('source_document_type', { length: 50 }).notNull(),
+      sourceDocumentId: uuid('source_document_id').notNull(),
+      eventDate: timestamp('event_date', { withTimezone: true }).notNull(),
+      payload: jsonb('payload').notNull(),
+      status: accountingEventStatusEnum('status').notNull().default('PENDING'),
+      processedAt: timestamp('processed_at', { withTimezone: true }),
+      errorMessage: text('error_message'),
+      journalId: uuid('journal_id'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_accounting_event_company').on(t.tenantId, t.companyId),
+      index('idx_accounting_event_type').on(t.tenantId, t.eventType),
+      index('idx_accounting_event_status').on(t.tenantId, t.status),
+      index('idx_accounting_event_source').on(t.tenantId, t.sourceDocumentType, t.sourceDocumentId),
+      index('idx_accounting_event_date').on(t.tenantId, t.eventDate),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.mapping_rule ────────────────────────────────────────────────────
 // SLA mapping rules: event → journal template (SLA-02)
 
-export const mappingRules = erpSchema.table(
-  'mapping_rule',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id').notNull(),
-    ruleName: varchar('rule_name', { length: 200 }).notNull(),
-    eventType: varchar('event_type', { length: 100 }).notNull(),
-    priority: smallint('priority').notNull().default(0),
-    conditionExpression: text('condition_expression'),
-    journalTemplate: jsonb('journal_template').notNull(),
-    targetLedgerId: uuid('target_ledger_id'),
-    status: mappingRuleStatusEnum('status').notNull().default('DRAFT'),
-    versionId: uuid('version_id'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_mapping_rule_company').on(t.tenantId, t.companyId),
-    index('idx_mapping_rule_event').on(t.tenantId, t.eventType),
-    index('idx_mapping_rule_status').on(t.tenantId, t.status),
-  ]
-).enableRLS();
+export const mappingRules = erpSchema
+  .table(
+    'mapping_rule',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id').notNull(),
+      ruleName: varchar('rule_name', { length: 200 }).notNull(),
+      eventType: varchar('event_type', { length: 100 }).notNull(),
+      priority: smallint('priority').notNull().default(0),
+      conditionExpression: text('condition_expression'),
+      journalTemplate: jsonb('journal_template').notNull(),
+      targetLedgerId: uuid('target_ledger_id'),
+      status: mappingRuleStatusEnum('status').notNull().default('DRAFT'),
+      versionId: uuid('version_id'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_mapping_rule_company').on(t.tenantId, t.companyId),
+      index('idx_mapping_rule_event').on(t.tenantId, t.eventType),
+      index('idx_mapping_rule_status').on(t.tenantId, t.status),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.mapping_rule_version ────────────────────────────────────────────
 // Mapping version lifecycle: draft → published → deprecated (SLA-05)
 
-export const mappingRuleVersions = erpSchema.table(
-  'mapping_rule_version',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    ruleId: uuid('rule_id').notNull().references(() => mappingRules.id, { onDelete: 'cascade' }),
-    versionNumber: smallint('version_number').notNull(),
-    status: mappingRuleStatusEnum('status').notNull().default('DRAFT'),
-    journalTemplate: jsonb('journal_template').notNull(),
-    conditionExpression: text('condition_expression'),
-    publishedAt: timestamp('published_at', { withTimezone: true }),
-    publishedBy: uuid('published_by'),
-    deprecatedAt: timestamp('deprecated_at', { withTimezone: true }),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_mapping_rule_version_rule').on(t.tenantId, t.ruleId),
-    uniqueIndex('uq_mapping_rule_version').on(t.tenantId, t.ruleId, t.versionNumber),
-  ]
-).enableRLS();
+export const mappingRuleVersions = erpSchema
+  .table(
+    'mapping_rule_version',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      ruleId: uuid('rule_id')
+        .notNull()
+        .references(() => mappingRules.id, { onDelete: 'cascade' }),
+      versionNumber: smallint('version_number').notNull(),
+      status: mappingRuleStatusEnum('status').notNull().default('DRAFT'),
+      journalTemplate: jsonb('journal_template').notNull(),
+      conditionExpression: text('condition_expression'),
+      publishedAt: timestamp('published_at', { withTimezone: true }),
+      publishedBy: uuid('published_by'),
+      deprecatedAt: timestamp('deprecated_at', { withTimezone: true }),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_mapping_rule_version_rule').on(t.tenantId, t.ruleId),
+      uniqueIndex('uq_mapping_rule_version').on(t.tenantId, t.ruleId, t.versionNumber),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.fair_value_measurement ──────────────────────────────────────────
 // Fair value hierarchy records (FI-03)
 
-export const fairValueMeasurements = erpSchema.table(
-  'fair_value_measurement',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    instrumentId: uuid('instrument_id').notNull().references(() => financialInstruments.id, { onDelete: 'restrict' }),
-    measurementDate: timestamp('measurement_date', { withTimezone: true }).notNull(),
-    fairValueLevel: fairValueLevelEnum('fair_value_level').notNull(),
-    fairValue: moneyBigint('fair_value').notNull(),
-    previousFairValue: moneyBigint('previous_fair_value'),
-    valuationMethod: varchar('valuation_method', { length: 100 }),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    gainOrLoss: moneyBigint('gain_or_loss'),
-    isRecognizedInPL: boolean('is_recognized_in_pl').notNull().default(true),
-    journalId: uuid('journal_id'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_fvm_instrument').on(t.tenantId, t.instrumentId),
-    index('idx_fvm_date').on(t.tenantId, t.measurementDate),
-    index('idx_fvm_level').on(t.tenantId, t.fairValueLevel),
-    check('chk_fair_value_nonneg', sql`${t.fairValue} >= 0`),
-  ]
-).enableRLS();
+export const fairValueMeasurements = erpSchema
+  .table(
+    'fair_value_measurement',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      instrumentId: uuid('instrument_id')
+        .notNull()
+        .references(() => financialInstruments.id, { onDelete: 'restrict' }),
+      measurementDate: timestamp('measurement_date', { withTimezone: true }).notNull(),
+      fairValueLevel: fairValueLevelEnum('fair_value_level').notNull(),
+      fairValue: moneyBigint('fair_value').notNull(),
+      previousFairValue: moneyBigint('previous_fair_value'),
+      valuationMethod: varchar('valuation_method', { length: 100 }),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      gainOrLoss: moneyBigint('gain_or_loss'),
+      isRecognizedInPL: boolean('is_recognized_in_pl').notNull().default(true),
+      journalId: uuid('journal_id'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_fvm_instrument').on(t.tenantId, t.instrumentId),
+      index('idx_fvm_date').on(t.tenantId, t.measurementDate),
+      index('idx_fvm_level').on(t.tenantId, t.fairValueLevel),
+      check('chk_fair_value_nonneg', sql`${t.fairValue} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.hedge_effectiveness_test ────────────────────────────────────────
 // Hedge effectiveness testing records (HA-02)
 
-export const hedgeEffectivenessTests = erpSchema.table(
-  'hedge_effectiveness_test',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    hedgeRelationshipId: uuid('hedge_relationship_id').notNull().references(() => hedgeRelationships.id, { onDelete: 'cascade' }),
-    testDate: timestamp('test_date', { withTimezone: true }).notNull(),
-    testMethod: hedgeTestMethodEnum('test_method').notNull(),
-    result: hedgeTestResultEnum('result').notNull(),
-    effectivenessRatioBps: integer('effectiveness_ratio_bps').notNull(),
-    hedgedItemFairValueChange: moneyBigint('hedged_item_fv_change').notNull(),
-    hedgingInstrumentFairValueChange: moneyBigint('hedging_instrument_fv_change').notNull(),
-    ineffectivePortionAmount: moneyBigint('ineffective_portion_amount').notNull().default(0n),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    notes: text('notes'),
-    journalId: uuid('journal_id'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_hedge_test_relationship').on(t.tenantId, t.hedgeRelationshipId),
-    index('idx_hedge_test_date').on(t.tenantId, t.testDate),
-    index('idx_hedge_test_result').on(t.tenantId, t.result),
-  ]
-).enableRLS();
+export const hedgeEffectivenessTests = erpSchema
+  .table(
+    'hedge_effectiveness_test',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      hedgeRelationshipId: uuid('hedge_relationship_id')
+        .notNull()
+        .references(() => hedgeRelationships.id, { onDelete: 'cascade' }),
+      testDate: timestamp('test_date', { withTimezone: true }).notNull(),
+      testMethod: hedgeTestMethodEnum('test_method').notNull(),
+      result: hedgeTestResultEnum('result').notNull(),
+      effectivenessRatioBps: integer('effectiveness_ratio_bps').notNull(),
+      hedgedItemFairValueChange: moneyBigint('hedged_item_fv_change').notNull(),
+      hedgingInstrumentFairValueChange: moneyBigint('hedging_instrument_fv_change').notNull(),
+      ineffectivePortionAmount: moneyBigint('ineffective_portion_amount').notNull().default(0n),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      notes: text('notes'),
+      journalId: uuid('journal_id'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_hedge_test_relationship').on(t.tenantId, t.hedgeRelationshipId),
+      index('idx_hedge_test_date').on(t.tenantId, t.testDate),
+      index('idx_hedge_test_result').on(t.tenantId, t.result),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.tp_benchmark ────────────────────────────────────────────────────
 // Transfer pricing benchmarks (TP-02)
 
-export const tpBenchmarks = erpSchema.table(
-  'tp_benchmark',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    policyId: uuid('policy_id').notNull(),
-    benchmarkYear: smallint('benchmark_year').notNull(),
-    method: tpMethodEnum('method').notNull(),
-    comparableCount: smallint('comparable_count').notNull(),
-    interquartileRangeLowBps: integer('interquartile_range_low_bps').notNull(),
-    interquartileRangeMedianBps: integer('interquartile_range_median_bps').notNull(),
-    interquartileRangeHighBps: integer('interquartile_range_high_bps').notNull(),
-    dataSource: varchar('data_source', { length: 200 }),
-    notes: text('notes'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_tp_benchmark_policy').on(t.tenantId, t.policyId),
-    uniqueIndex('uq_tp_benchmark_year').on(t.tenantId, t.policyId, t.benchmarkYear),
-    check('chk_tp_iqr_nonneg', sql`${t.interquartileRangeLowBps} >= 0 AND ${t.interquartileRangeMedianBps} >= 0 AND ${t.interquartileRangeHighBps} >= 0`),
-    check('chk_tp_iqr_ordering', sql`${t.interquartileRangeLowBps} <= ${t.interquartileRangeMedianBps} AND ${t.interquartileRangeMedianBps} <= ${t.interquartileRangeHighBps}`),
-    check('chk_tp_comparable_positive', sql`${t.comparableCount} > 0`),
-  ]
-).enableRLS();
+export const tpBenchmarks = erpSchema
+  .table(
+    'tp_benchmark',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      policyId: uuid('policy_id').notNull(),
+      benchmarkYear: smallint('benchmark_year').notNull(),
+      method: tpMethodEnum('method').notNull(),
+      comparableCount: smallint('comparable_count').notNull(),
+      interquartileRangeLowBps: integer('interquartile_range_low_bps').notNull(),
+      interquartileRangeMedianBps: integer('interquartile_range_median_bps').notNull(),
+      interquartileRangeHighBps: integer('interquartile_range_high_bps').notNull(),
+      dataSource: varchar('data_source', { length: 200 }),
+      notes: text('notes'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_tp_benchmark_policy').on(t.tenantId, t.policyId),
+      uniqueIndex('uq_tp_benchmark_year').on(t.tenantId, t.policyId, t.benchmarkYear),
+      check(
+        'chk_tp_iqr_nonneg',
+        sql`${t.interquartileRangeLowBps} >= 0 AND ${t.interquartileRangeMedianBps} >= 0 AND ${t.interquartileRangeHighBps} >= 0`
+      ),
+      check(
+        'chk_tp_iqr_ordering',
+        sql`${t.interquartileRangeLowBps} <= ${t.interquartileRangeMedianBps} AND ${t.interquartileRangeMedianBps} <= ${t.interquartileRangeHighBps}`
+      ),
+      check('chk_tp_comparable_positive', sql`${t.comparableCount} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.match_tolerance (C5 gap-close) ─────────────────────────────────────
 
-export const matchTolerances = erpSchema.table(
-  'match_tolerance',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    scope: toleranceScopeEnum('scope').notNull(),
-    scopeEntityId: uuid('scope_entity_id'),
-    companyId: uuid('company_id'),
-    toleranceBps: integer('tolerance_bps').notNull(),
-    quantityTolerancePercent: integer('quantity_tolerance_percent').notNull().default(0),
-    autoHold: boolean('auto_hold').notNull().default(true),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_match_tolerance_tenant').on(t.tenantId),
-    index('idx_match_tolerance_scope').on(t.tenantId, t.scope),
-    check('chk_match_tol_qty_range', sql`${t.quantityTolerancePercent} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const matchTolerances = erpSchema
+  .table(
+    'match_tolerance',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      scope: toleranceScopeEnum('scope').notNull(),
+      scopeEntityId: uuid('scope_entity_id'),
+      companyId: uuid('company_id'),
+      toleranceBps: integer('tolerance_bps').notNull(),
+      quantityTolerancePercent: integer('quantity_tolerance_percent').notNull().default(0),
+      autoHold: boolean('auto_hold').notNull().default(true),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_match_tolerance_tenant').on(t.tenantId),
+      index('idx_match_tolerance_scope').on(t.tenantId, t.scope),
+      check('chk_match_tol_qty_range', sql`${t.quantityTolerancePercent} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ap_prepayment (B6 gap-close) ───────────────────────────────────────
 
-export const apPrepayments = erpSchema.table(
-  'ap_prepayment',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    invoiceId: uuid('invoice_id').notNull(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'restrict' }),
-    totalAmount: moneyBigint('total_amount').notNull(),
-    appliedAmount: moneyBigint('applied_amount').notNull().default(0n),
-    unappliedBalance: moneyBigint('unapplied_balance').notNull(),
-    currencyCode: varchar('currency_code', { length: 3 }).notNull(),
-    status: apPrepaymentStatusEnum('status').notNull().default('OPEN'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_ap_prepayment_supplier').on(t.tenantId, t.supplierId),
-    index('idx_ap_prepayment_invoice').on(t.tenantId, t.invoiceId),
-    index('idx_ap_prepayment_status').on(t.tenantId, t.status),
-    check('chk_prepay_amounts_nonneg', sql`${t.totalAmount} >= 0 AND ${t.appliedAmount} >= 0 AND ${t.unappliedBalance} >= 0`),
-    check('chk_prepay_applied_lte_total', sql`${t.appliedAmount} <= ${t.totalAmount}`),
-  ]
-).enableRLS();
+export const apPrepayments = erpSchema
+  .table(
+    'ap_prepayment',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      invoiceId: uuid('invoice_id').notNull(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'restrict' }),
+      totalAmount: moneyBigint('total_amount').notNull(),
+      appliedAmount: moneyBigint('applied_amount').notNull().default(0n),
+      unappliedBalance: moneyBigint('unapplied_balance').notNull(),
+      currencyCode: varchar('currency_code', { length: 3 }).notNull(),
+      status: apPrepaymentStatusEnum('status').notNull().default('OPEN'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_ap_prepayment_supplier').on(t.tenantId, t.supplierId),
+      index('idx_ap_prepayment_invoice').on(t.tenantId, t.invoiceId),
+      index('idx_ap_prepayment_status').on(t.tenantId, t.status),
+      check(
+        'chk_prepay_amounts_nonneg',
+        sql`${t.totalAmount} >= 0 AND ${t.appliedAmount} >= 0 AND ${t.unappliedBalance} >= 0`
+      ),
+      check('chk_prepay_applied_lte_total', sql`${t.appliedAmount} <= ${t.totalAmount}`),
+    ]
+  )
+  .enableRLS();
 
-export const apPrepaymentApplications = erpSchema.table(
-  'ap_prepayment_application',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    prepaymentId: uuid('prepayment_id').notNull().references(() => apPrepayments.id, { onDelete: 'cascade' }),
-    targetInvoiceId: uuid('target_invoice_id').notNull().references(() => apInvoices.id, { onDelete: 'restrict' }),
-    amount: moneyBigint('amount').notNull(),
-    appliedBy: uuid('applied_by').notNull(),
-    appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_ap_prepay_app_prepayment').on(t.tenantId, t.prepaymentId),
-    index('idx_ap_prepay_app_invoice').on(t.tenantId, t.targetInvoiceId),
-    check('chk_prepay_app_amt_nonneg', sql`${t.amount} >= 0`),
-  ]
-).enableRLS();
+export const apPrepaymentApplications = erpSchema
+  .table(
+    'ap_prepayment_application',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      prepaymentId: uuid('prepayment_id')
+        .notNull()
+        .references(() => apPrepayments.id, { onDelete: 'cascade' }),
+      targetInvoiceId: uuid('target_invoice_id')
+        .notNull()
+        .references(() => apInvoices.id, { onDelete: 'restrict' }),
+      amount: moneyBigint('amount').notNull(),
+      appliedBy: uuid('applied_by').notNull(),
+      appliedAt: timestamp('applied_at', { withTimezone: true }).notNull().defaultNow(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_ap_prepay_app_prepayment').on(t.tenantId, t.prepaymentId),
+      index('idx_ap_prepay_app_invoice').on(t.tenantId, t.targetInvoiceId),
+      check('chk_prepay_app_amt_nonneg', sql`${t.amount} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_document (N8 gap-close) ───────────────────────────────────
 
-export const supplierDocuments = erpSchema.table(
-  'supplier_document',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    category: supplierDocumentCategoryEnum('category').notNull(),
-    title: varchar('title', { length: 255 }).notNull(),
-    description: text('description'),
-    fileName: varchar('file_name', { length: 255 }).notNull(),
-    mimeType: varchar('mime_type', { length: 100 }).notNull(),
-    fileSizeBytes: integer('file_size_bytes').notNull(),
-    checksumSha256: varchar('checksum_sha256', { length: 64 }).notNull(),
-    expiresAt: timestamp('expires_at', { withTimezone: true }),
-    uploadedBy: uuid('uploaded_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_doc_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_doc_category').on(t.tenantId, t.category),
-    check('chk_supplier_doc_size_positive', sql`${t.fileSizeBytes} > 0`),
-  ]
-).enableRLS();
+export const supplierDocuments = erpSchema
+  .table(
+    'supplier_document',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      category: supplierDocumentCategoryEnum('category').notNull(),
+      title: varchar('title', { length: 255 }).notNull(),
+      description: text('description'),
+      fileName: varchar('file_name', { length: 255 }).notNull(),
+      mimeType: varchar('mime_type', { length: 100 }).notNull(),
+      fileSizeBytes: integer('file_size_bytes').notNull(),
+      checksumSha256: varchar('checksum_sha256', { length: 64 }).notNull(),
+      expiresAt: timestamp('expires_at', { withTimezone: true }),
+      uploadedBy: uuid('uploaded_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_doc_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_doc_category').on(t.tenantId, t.category),
+      check('chk_supplier_doc_size_positive', sql`${t.fileSizeBytes} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_dispute (N9 gap-close) ────────────────────────────────────
 
-export const supplierDisputes = erpSchema.table(
-  'supplier_dispute',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    invoiceId: uuid('invoice_id'),
-    paymentRunId: uuid('payment_run_id'),
-    category: disputeCategoryEnum('category').notNull(),
-    subject: varchar('subject', { length: 255 }).notNull(),
-    description: text('description').notNull(),
-    status: disputeStatusEnum('status').notNull().default('OPEN'),
-    resolution: text('resolution'),
-    resolvedBy: uuid('resolved_by'),
-    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
-    createdBy: uuid('created_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_dispute_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_dispute_status').on(t.tenantId, t.status),
-  ]
-).enableRLS();
+export const supplierDisputes = erpSchema
+  .table(
+    'supplier_dispute',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      invoiceId: uuid('invoice_id'),
+      paymentRunId: uuid('payment_run_id'),
+      category: disputeCategoryEnum('category').notNull(),
+      subject: varchar('subject', { length: 255 }).notNull(),
+      description: text('description').notNull(),
+      status: disputeStatusEnum('status').notNull().default('OPEN'),
+      resolution: text('resolution'),
+      resolvedBy: uuid('resolved_by'),
+      resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+      createdBy: uuid('created_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_dispute_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_dispute_status').on(t.tenantId, t.status),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_notification_pref (N10 gap-close) ─────────────────────────
 
-export const supplierNotificationPrefs = erpSchema.table(
-  'supplier_notification_pref',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    channel: varchar('channel', { length: 20 }).notNull(),
-    endpoint: varchar('endpoint', { length: 500 }).notNull(),
-    invoiceStatusChanges: boolean('invoice_status_changes').notNull().default(true),
-    paymentNotifications: boolean('payment_notifications').notNull().default(true),
-    disputeUpdates: boolean('dispute_updates').notNull().default(true),
-    complianceAlerts: boolean('compliance_alerts').notNull().default(true),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [uniqueIndex('uq_supplier_notif_pref').on(t.tenantId, t.supplierId, t.channel)]
-).enableRLS();
+export const supplierNotificationPrefs = erpSchema
+  .table(
+    'supplier_notification_pref',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      channel: varchar('channel', { length: 20 }).notNull(),
+      endpoint: varchar('endpoint', { length: 500 }).notNull(),
+      invoiceStatusChanges: boolean('invoice_status_changes').notNull().default(true),
+      paymentNotifications: boolean('payment_notifications').notNull().default(true),
+      disputeUpdates: boolean('dispute_updates').notNull().default(true),
+      complianceAlerts: boolean('compliance_alerts').notNull().default(true),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [uniqueIndex('uq_supplier_notif_pref').on(t.tenantId, t.supplierId, t.channel)]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_compliance_item (N11 gap-close) ───────────────────────────
 
-export const supplierComplianceItems = erpSchema.table(
-  'supplier_compliance_item',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    itemType: complianceItemTypeEnum('item_type').notNull(),
-    label: varchar('label', { length: 255 }).notNull(),
-    isCompliant: boolean('is_compliant').notNull().default(false),
-    expiresAt: timestamp('expires_at', { withTimezone: true }),
-    documentId: uuid('document_id'),
-    notes: text('notes'),
-    verifiedBy: uuid('verified_by'),
-    verifiedAt: timestamp('verified_at', { withTimezone: true }),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_compliance_supplier').on(t.tenantId, t.supplierId),
-    uniqueIndex('uq_supplier_compliance_type').on(t.tenantId, t.supplierId, t.itemType),
-  ]
-).enableRLS();
+export const supplierComplianceItems = erpSchema
+  .table(
+    'supplier_compliance_item',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      itemType: complianceItemTypeEnum('item_type').notNull(),
+      label: varchar('label', { length: 255 }).notNull(),
+      isCompliant: boolean('is_compliant').notNull().default(false),
+      expiresAt: timestamp('expires_at', { withTimezone: true }),
+      documentId: uuid('document_id'),
+      notes: text('notes'),
+      verifiedBy: uuid('verified_by'),
+      verifiedAt: timestamp('verified_at', { withTimezone: true }),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_compliance_supplier').on(t.tenantId, t.supplierId),
+      uniqueIndex('uq_supplier_compliance_type').on(t.tenantId, t.supplierId, t.itemType),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.ocr_job (B3 OCR Pipeline) ──────────────────────────────────────────
 
-export const ocrJobs = erpSchema.table(
-  'ocr_job',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    checksum: varchar('checksum', { length: 64 }).notNull(),
-    fileSize: bigint('file_size', { mode: 'number' }),
-    mimeType: varchar('mime_type', { length: 100 }),
-    status: ocrJobStatusEnum('status').notNull().default('CLAIMED'),
-    storageKey: text('storage_key'),
-    providerName: varchar('provider_name', { length: 100 }),
-    externalRef: text('external_ref'),
-    confidence: ocrConfidenceLevelEnum('confidence'),
-    invoiceId: uuid('invoice_id').references(() => apInvoices.id, { onDelete: 'set null' }),
-    errorReason: ocrFailureReasonEnum('error_reason'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_ocr_job_tenant_checksum').on(t.tenantId, t.checksum),
-    index('idx_ocr_job_tenant_status').on(t.tenantId, t.status),
-  ]
-).enableRLS();
+export const ocrJobs = erpSchema
+  .table(
+    'ocr_job',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      checksum: varchar('checksum', { length: 64 }).notNull(),
+      fileSize: bigint('file_size', { mode: 'number' }),
+      mimeType: varchar('mime_type', { length: 100 }),
+      status: ocrJobStatusEnum('status').notNull().default('CLAIMED'),
+      storageKey: text('storage_key'),
+      providerName: varchar('provider_name', { length: 100 }),
+      externalRef: text('external_ref'),
+      confidence: ocrConfidenceLevelEnum('confidence'),
+      invoiceId: uuid('invoice_id').references(() => apInvoices.id, { onDelete: 'set null' }),
+      errorReason: ocrFailureReasonEnum('error_reason'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_ocr_job_tenant_checksum').on(t.tenantId, t.checksum),
+      index('idx_ocr_job_tenant_status').on(t.tenantId, t.status),
+    ]
+  )
+  .enableRLS();
 
 // ─── Supplier MDM tables ────────────────────────────────────────────────────
 
 // ─── erp.supplier_account_group_config (A3) ─────────────────────────────────
 
-export const supplierAccountGroupConfigs = erpSchema.table(
-  'supplier_account_group_config',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    accountGroup: supplierAccountGroupEnum('account_group').notNull(),
-    label: varchar('label', { length: 100 }).notNull(),
-    requiresApproval: boolean('requires_approval').notNull().default(false),
-    requiresTaxVerification: boolean('requires_tax_verification').notNull().default(false),
-    requiresBankVerification: boolean('requires_bank_verification').notNull().default(false),
-    allowOneTimeUse: boolean('allow_one_time_use').notNull().default(false),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_supplier_acct_group_config').on(t.tenantId, t.accountGroup),
-  ]
-).enableRLS();
+export const supplierAccountGroupConfigs = erpSchema
+  .table(
+    'supplier_account_group_config',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      accountGroup: supplierAccountGroupEnum('account_group').notNull(),
+      label: varchar('label', { length: 100 }).notNull(),
+      requiresApproval: boolean('requires_approval').notNull().default(false),
+      requiresTaxVerification: boolean('requires_tax_verification').notNull().default(false),
+      requiresBankVerification: boolean('requires_bank_verification').notNull().default(false),
+      allowOneTimeUse: boolean('allow_one_time_use').notNull().default(false),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [uniqueIndex('uq_supplier_acct_group_config').on(t.tenantId, t.accountGroup)]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_company_override (B5) ─────────────────────────────────────
 
-export const supplierCompanyOverrides = erpSchema.table(
-  'supplier_company_override',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    companyId: uuid('company_id').notNull(),
-    defaultPaymentTermsId: uuid('default_payment_terms_id'),
-    defaultPaymentMethod: paymentMethodTypeEnum('default_payment_method'),
-    defaultCurrencyId: uuid('default_currency_id'),
-    tolerancePercent: numeric('tolerance_percent', { precision: 5, scale: 2 }),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_supplier_company_override').on(t.tenantId, t.supplierId, t.companyId),
-    index('idx_supplier_co_override_supplier').on(t.tenantId, t.supplierId),
-    check('chk_supplier_override_tolerance', sql`${t.tolerancePercent} BETWEEN 0 AND 100`),
-  ]
-).enableRLS();
+export const supplierCompanyOverrides = erpSchema
+  .table(
+    'supplier_company_override',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      companyId: uuid('company_id').notNull(),
+      defaultPaymentTermsId: uuid('default_payment_terms_id'),
+      defaultPaymentMethod: paymentMethodTypeEnum('default_payment_method'),
+      defaultCurrencyId: uuid('default_currency_id'),
+      tolerancePercent: numeric('tolerance_percent', { precision: 5, scale: 2 }),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_supplier_company_override').on(t.tenantId, t.supplierId, t.companyId),
+      index('idx_supplier_co_override_supplier').on(t.tenantId, t.supplierId),
+      check('chk_supplier_override_tolerance', sql`${t.tolerancePercent} BETWEEN 0 AND 100`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_block (B6) ────────────────────────────────────────────────
 
-export const supplierBlocks = erpSchema.table(
-  'supplier_block',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    blockType: supplierBlockTypeEnum('block_type').notNull(),
-    scope: supplierBlockScopeEnum('scope').notNull(),
-    companyId: uuid('company_id'),
-    siteId: uuid('site_id'),
-    reasonCode: varchar('reason_code', { length: 50 }).notNull(),
-    reason: text('reason').notNull(),
-    effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
-    effectiveUntil: timestamp('effective_until', { withTimezone: true }),
-    blockedBy: uuid('blocked_by').notNull(),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_block_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_block_active').on(t.tenantId, t.supplierId, t.isActive),
-  ]
-).enableRLS();
+export const supplierBlocks = erpSchema
+  .table(
+    'supplier_block',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      blockType: supplierBlockTypeEnum('block_type').notNull(),
+      scope: supplierBlockScopeEnum('scope').notNull(),
+      companyId: uuid('company_id'),
+      siteId: uuid('site_id'),
+      reasonCode: varchar('reason_code', { length: 50 }).notNull(),
+      reason: text('reason').notNull(),
+      effectiveFrom: timestamp('effective_from', { withTimezone: true }).notNull(),
+      effectiveUntil: timestamp('effective_until', { withTimezone: true }),
+      blockedBy: uuid('blocked_by').notNull(),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_block_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_block_active').on(t.tenantId, t.supplierId, t.isActive),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_block_history (B7) ────────────────────────────────────────
 
-export const supplierBlockHistory = erpSchema.table(
-  'supplier_block_history',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull(),
-    blockId: uuid('block_id').notNull().references(() => supplierBlocks.id, { onDelete: 'cascade' }),
-    action: supplierBlockActionEnum('action').notNull(),
-    blockType: supplierBlockTypeEnum('block_type').notNull(),
-    scope: supplierBlockScopeEnum('scope').notNull(),
-    companyId: uuid('company_id'),
-    siteId: uuid('site_id'),
-    reason: text('reason').notNull(),
-    performedBy: uuid('performed_by').notNull(),
-    performedAt: timestamp('performed_at', { withTimezone: true })
-      .notNull()
-      .default(sql`now()`),
-  },
-  (t) => [
-    index('idx_supplier_block_hist_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_block_hist_block').on(t.tenantId, t.blockId),
-  ]
-).enableRLS();
+export const supplierBlockHistory = erpSchema
+  .table(
+    'supplier_block_history',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id').notNull(),
+      blockId: uuid('block_id')
+        .notNull()
+        .references(() => supplierBlocks.id, { onDelete: 'cascade' }),
+      action: supplierBlockActionEnum('action').notNull(),
+      blockType: supplierBlockTypeEnum('block_type').notNull(),
+      scope: supplierBlockScopeEnum('scope').notNull(),
+      companyId: uuid('company_id'),
+      siteId: uuid('site_id'),
+      reason: text('reason').notNull(),
+      performedBy: uuid('performed_by').notNull(),
+      performedAt: timestamp('performed_at', { withTimezone: true })
+        .notNull()
+        .default(sql`now()`),
+    },
+    (t) => [
+      index('idx_supplier_block_hist_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_block_hist_block').on(t.tenantId, t.blockId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_blacklist (B8) ────────────────────────────────────────────
 
-export const supplierBlacklists = erpSchema.table(
-  'supplier_blacklist',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    justification: text('justification').notNull(),
-    blacklistedBy: uuid('blacklisted_by').notNull(),
-    blacklistedAt: timestamp('blacklisted_at', { withTimezone: true })
-      .notNull()
-      .default(sql`now()`),
-    validFrom: timestamp('valid_from', { withTimezone: true })
-      .notNull()
-      .default(sql`now()`),
-    validUntil: timestamp('valid_until', { withTimezone: true }),
-    reversalApprovedBy: uuid('reversal_approved_by'),
-    reversalApprovedAt: timestamp('reversal_approved_at', { withTimezone: true }),
-    reversalReason: text('reversal_reason'),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_blacklist_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_blacklist_active').on(t.tenantId, t.supplierId, t.isActive),
-  ]
-).enableRLS();
+export const supplierBlacklists = erpSchema
+  .table(
+    'supplier_blacklist',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      justification: text('justification').notNull(),
+      blacklistedBy: uuid('blacklisted_by').notNull(),
+      blacklistedAt: timestamp('blacklisted_at', { withTimezone: true })
+        .notNull()
+        .default(sql`now()`),
+      validFrom: timestamp('valid_from', { withTimezone: true })
+        .notNull()
+        .default(sql`now()`),
+      validUntil: timestamp('valid_until', { withTimezone: true }),
+      reversalApprovedBy: uuid('reversal_approved_by'),
+      reversalApprovedAt: timestamp('reversal_approved_at', { withTimezone: true }),
+      reversalReason: text('reversal_reason'),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_blacklist_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_blacklist_active').on(t.tenantId, t.supplierId, t.isActive),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_tax_registration (C9) ─────────────────────────────────────
 
-export const supplierTaxRegistrations = erpSchema.table(
-  'supplier_tax_registration',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    taxType: supplierTaxTypeEnum('tax_type').notNull(),
-    registrationNumber: varchar('registration_number', { length: 50 }).notNull(),
-    issuingCountry: varchar('issuing_country', { length: 3 }).notNull(),
-    validFrom: timestamp('valid_from', { withTimezone: true }),
-    validUntil: timestamp('valid_until', { withTimezone: true }),
-    isVerified: boolean('is_verified').notNull().default(false),
-    verifiedBy: uuid('verified_by'),
-    verifiedAt: timestamp('verified_at', { withTimezone: true }),
-    isPrimary: boolean('is_primary').notNull().default(false),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_tax_reg_supplier').on(t.tenantId, t.supplierId),
-    uniqueIndex('uq_supplier_tax_reg').on(t.tenantId, t.supplierId, t.taxType, t.issuingCountry),
-  ]
-).enableRLS();
+export const supplierTaxRegistrations = erpSchema
+  .table(
+    'supplier_tax_registration',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      taxType: supplierTaxTypeEnum('tax_type').notNull(),
+      registrationNumber: varchar('registration_number', { length: 50 }).notNull(),
+      issuingCountry: varchar('issuing_country', { length: 3 }).notNull(),
+      validFrom: timestamp('valid_from', { withTimezone: true }),
+      validUntil: timestamp('valid_until', { withTimezone: true }),
+      isVerified: boolean('is_verified').notNull().default(false),
+      verifiedBy: uuid('verified_by'),
+      verifiedAt: timestamp('verified_at', { withTimezone: true }),
+      isPrimary: boolean('is_primary').notNull().default(false),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_tax_reg_supplier').on(t.tenantId, t.supplierId),
+      uniqueIndex('uq_supplier_tax_reg').on(t.tenantId, t.supplierId, t.taxType, t.issuingCountry),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_legal_document (C11) ──────────────────────────────────────
 
-export const supplierLegalDocuments = erpSchema.table(
-  'supplier_legal_document',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    docType: supplierLegalDocTypeEnum('doc_type').notNull(),
-    documentNumber: varchar('document_number', { length: 100 }),
-    issuingAuthority: varchar('issuing_authority', { length: 200 }),
-    issueDate: timestamp('issue_date', { withTimezone: true }),
-    expiryDate: timestamp('expiry_date', { withTimezone: true }),
-    storageKey: text('storage_key'),
-    checksumSha256: varchar('checksum_sha256', { length: 64 }),
-    status: supplierLegalDocStatusEnum('status').notNull().default('PENDING'),
-    rejectionReason: text('rejection_reason'),
-    verifiedBy: uuid('verified_by'),
-    verifiedAt: timestamp('verified_at', { withTimezone: true }),
-    uploadedBy: uuid('uploaded_by').notNull(),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_legal_doc_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_legal_doc_type').on(t.tenantId, t.supplierId, t.docType),
-  ]
-).enableRLS();
+export const supplierLegalDocuments = erpSchema
+  .table(
+    'supplier_legal_document',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      docType: supplierLegalDocTypeEnum('doc_type').notNull(),
+      documentNumber: varchar('document_number', { length: 100 }),
+      issuingAuthority: varchar('issuing_authority', { length: 200 }),
+      issueDate: timestamp('issue_date', { withTimezone: true }),
+      expiryDate: timestamp('expiry_date', { withTimezone: true }),
+      storageKey: text('storage_key'),
+      checksumSha256: varchar('checksum_sha256', { length: 64 }),
+      status: supplierLegalDocStatusEnum('status').notNull().default('PENDING'),
+      rejectionReason: text('rejection_reason'),
+      verifiedBy: uuid('verified_by'),
+      verifiedAt: timestamp('verified_at', { withTimezone: true }),
+      uploadedBy: uuid('uploaded_by').notNull(),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_legal_doc_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_legal_doc_type').on(t.tenantId, t.supplierId, t.docType),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_doc_requirement (C12) ─────────────────────────────────────
 
-export const supplierDocRequirements = erpSchema.table(
-  'supplier_doc_requirement',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    accountGroup: supplierAccountGroupEnum('account_group').notNull(),
-    docType: supplierLegalDocTypeEnum('doc_type').notNull(),
-    isMandatory: boolean('is_mandatory').notNull().default(true),
-    countryCode: varchar('country_code', { length: 3 }),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_supplier_doc_req').on(t.tenantId, t.accountGroup, t.docType, t.countryCode),
-    index('idx_supplier_doc_req_group').on(t.tenantId, t.accountGroup),
-  ]
-).enableRLS();
+export const supplierDocRequirements = erpSchema
+  .table(
+    'supplier_doc_requirement',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      accountGroup: supplierAccountGroupEnum('account_group').notNull(),
+      docType: supplierLegalDocTypeEnum('doc_type').notNull(),
+      isMandatory: boolean('is_mandatory').notNull().default(true),
+      countryCode: varchar('country_code', { length: 3 }),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_supplier_doc_req').on(t.tenantId, t.accountGroup, t.docType, t.countryCode),
+      index('idx_supplier_doc_req_group').on(t.tenantId, t.accountGroup),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_eval_template (D15) ───────────────────────────────────────
 
-export const supplierEvalTemplates = erpSchema.table(
-  'supplier_eval_template',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    companyId: uuid('company_id'),
-    version: integer('version').notNull().default(1),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_eval_tpl_tenant').on(t.tenantId, t.isActive),
-  ]
-).enableRLS();
+export const supplierEvalTemplates = erpSchema
+  .table(
+    'supplier_eval_template',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      companyId: uuid('company_id'),
+      version: integer('version').notNull().default(1),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [index('idx_supplier_eval_tpl_tenant').on(t.tenantId, t.isActive)]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_eval_criteria (D14) ───────────────────────────────────────
 
-export const supplierEvalCriteria = erpSchema.table(
-  'supplier_eval_criteria',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    templateId: uuid('template_id').notNull().references(() => supplierEvalTemplates.id, { onDelete: 'cascade' }),
-    code: varchar('code', { length: 50 }).notNull(),
-    name: varchar('name', { length: 200 }).notNull(),
-    description: text('description'),
-    weight: smallint('weight').notNull(),
-    maxScore: smallint('max_score').notNull().default(5),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_supplier_eval_criteria_code').on(t.tenantId, t.templateId, t.code),
-    index('idx_supplier_eval_criteria_tpl').on(t.tenantId, t.templateId),
-    check('chk_supplier_eval_criteria_positive', sql`${t.weight} > 0 AND ${t.maxScore} > 0`),
-  ]
-).enableRLS();
+export const supplierEvalCriteria = erpSchema
+  .table(
+    'supplier_eval_criteria',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      templateId: uuid('template_id')
+        .notNull()
+        .references(() => supplierEvalTemplates.id, { onDelete: 'cascade' }),
+      code: varchar('code', { length: 50 }).notNull(),
+      name: varchar('name', { length: 200 }).notNull(),
+      description: text('description'),
+      weight: smallint('weight').notNull(),
+      maxScore: smallint('max_score').notNull().default(5),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_supplier_eval_criteria_code').on(t.tenantId, t.templateId, t.code),
+      index('idx_supplier_eval_criteria_tpl').on(t.tenantId, t.templateId),
+      check('chk_supplier_eval_criteria_positive', sql`${t.weight} > 0 AND ${t.maxScore} > 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_evaluation (D14) ──────────────────────────────────────────
 
-export const supplierEvaluations = erpSchema.table(
-  'supplier_evaluation',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    templateVersionId: uuid('template_version_id').notNull(),
-    periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
-    periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
-    evaluatedBy: uuid('evaluated_by').notNull(),
-    status: supplierEvalStatusEnum('status').notNull().default('DRAFT'),
-    overallScore: numeric('overall_score', { precision: 5, scale: 2 }),
-    notes: text('notes'),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_eval_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_eval_status').on(t.tenantId, t.status),
-    check('chk_supplier_eval_score_nonneg', sql`${t.overallScore} >= 0`),
-  ]
-).enableRLS();
+export const supplierEvaluations = erpSchema
+  .table(
+    'supplier_evaluation',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      templateVersionId: uuid('template_version_id').notNull(),
+      periodStart: timestamp('period_start', { withTimezone: true }).notNull(),
+      periodEnd: timestamp('period_end', { withTimezone: true }).notNull(),
+      evaluatedBy: uuid('evaluated_by').notNull(),
+      status: supplierEvalStatusEnum('status').notNull().default('DRAFT'),
+      overallScore: numeric('overall_score', { precision: 5, scale: 2 }),
+      notes: text('notes'),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_eval_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_eval_status').on(t.tenantId, t.status),
+      check('chk_supplier_eval_score_nonneg', sql`${t.overallScore} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_eval_score (D14) ──────────────────────────────────────────
 
-export const supplierEvalScores = erpSchema.table(
-  'supplier_eval_score',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    evaluationId: uuid('evaluation_id').notNull().references(() => supplierEvaluations.id, { onDelete: 'cascade' }),
-    criteriaId: uuid('criteria_id').notNull().references(() => supplierEvalCriteria.id, { onDelete: 'restrict' }),
-    score: smallint('score').notNull(),
-    notes: text('notes'),
-    ...timestamps(),
-  },
-  (t) => [
-    uniqueIndex('uq_supplier_eval_score').on(t.evaluationId, t.criteriaId),
-    index('idx_supplier_eval_score_eval').on(t.evaluationId),
-    check('chk_supplier_eval_score_nonneg', sql`${t.score} >= 0`),
-  ]
-).enableRLS();
+export const supplierEvalScores = erpSchema
+  .table(
+    'supplier_eval_score',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      evaluationId: uuid('evaluation_id')
+        .notNull()
+        .references(() => supplierEvaluations.id, { onDelete: 'cascade' }),
+      criteriaId: uuid('criteria_id')
+        .notNull()
+        .references(() => supplierEvalCriteria.id, { onDelete: 'restrict' }),
+      score: smallint('score').notNull(),
+      notes: text('notes'),
+      ...timestamps(),
+    },
+    (t) => [
+      uniqueIndex('uq_supplier_eval_score').on(t.evaluationId, t.criteriaId),
+      index('idx_supplier_eval_score_eval').on(t.evaluationId),
+      check('chk_supplier_eval_score_nonneg', sql`${t.score} >= 0`),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_risk_indicator (D16) ──────────────────────────────────────
 
-export const supplierRiskIndicators = erpSchema.table(
-  'supplier_risk_indicator',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    riskRating: supplierRiskRatingEnum('risk_rating').notNull(),
-    riskCategory: supplierRiskCategoryEnum('risk_category').notNull(),
-    description: text('description').notNull(),
-    incidentDate: timestamp('incident_date', { withTimezone: true }),
-    documentId: uuid('document_id'),
-    raisedBy: uuid('raised_by').notNull(),
-    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
-    resolvedBy: uuid('resolved_by'),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_risk_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_risk_active').on(t.tenantId, t.supplierId, t.isActive),
-  ]
-).enableRLS();
+export const supplierRiskIndicators = erpSchema
+  .table(
+    'supplier_risk_indicator',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      riskRating: supplierRiskRatingEnum('risk_rating').notNull(),
+      riskCategory: supplierRiskCategoryEnum('risk_category').notNull(),
+      description: text('description').notNull(),
+      incidentDate: timestamp('incident_date', { withTimezone: true }),
+      documentId: uuid('document_id'),
+      raisedBy: uuid('raised_by').notNull(),
+      resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+      resolvedBy: uuid('resolved_by'),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_risk_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_risk_active').on(t.tenantId, t.supplierId, t.isActive),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_diversity (E18) ───────────────────────────────────────────
 
-export const supplierDiversities = erpSchema.table(
-  'supplier_diversity',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    diversityCode: supplierDiversityCodeEnum('diversity_code').notNull(),
-    certificateNumber: varchar('certificate_number', { length: 100 }),
-    validFrom: timestamp('valid_from', { withTimezone: true }),
-    validUntil: timestamp('valid_until', { withTimezone: true }),
-    documentId: uuid('document_id'),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_diversity_supplier').on(t.tenantId, t.supplierId),
-    uniqueIndex('uq_supplier_diversity').on(t.tenantId, t.supplierId, t.diversityCode),
-  ]
-).enableRLS();
+export const supplierDiversities = erpSchema
+  .table(
+    'supplier_diversity',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      diversityCode: supplierDiversityCodeEnum('diversity_code').notNull(),
+      certificateNumber: varchar('certificate_number', { length: 100 }),
+      validFrom: timestamp('valid_from', { withTimezone: true }),
+      validUntil: timestamp('valid_until', { withTimezone: true }),
+      documentId: uuid('document_id'),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_diversity_supplier').on(t.tenantId, t.supplierId),
+      uniqueIndex('uq_supplier_diversity').on(t.tenantId, t.supplierId, t.diversityCode),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_contact (F20) ─────────────────────────────────────────────
 
-export const supplierContacts = erpSchema.table(
-  'supplier_contact',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierId: uuid('supplier_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    siteId: uuid('site_id'),
-    role: supplierContactRoleEnum('role').notNull(),
-    firstName: varchar('first_name', { length: 100 }).notNull(),
-    lastName: varchar('last_name', { length: 100 }).notNull(),
-    email: varchar('email', { length: 255 }).notNull(),
-    phone: varchar('phone', { length: 50 }),
-    jobTitle: varchar('job_title', { length: 200 }),
-    isPrimary: boolean('is_primary').notNull().default(false),
-    isActive: boolean('is_active').notNull().default(true),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_contact_supplier').on(t.tenantId, t.supplierId),
-    index('idx_supplier_contact_site').on(t.tenantId, t.supplierId, t.siteId),
-  ]
-).enableRLS();
+export const supplierContacts = erpSchema
+  .table(
+    'supplier_contact',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierId: uuid('supplier_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      siteId: uuid('site_id'),
+      role: supplierContactRoleEnum('role').notNull(),
+      firstName: varchar('first_name', { length: 100 }).notNull(),
+      lastName: varchar('last_name', { length: 100 }).notNull(),
+      email: varchar('email', { length: 255 }).notNull(),
+      phone: varchar('phone', { length: 50 }),
+      jobTitle: varchar('job_title', { length: 200 }),
+      isPrimary: boolean('is_primary').notNull().default(false),
+      isActive: boolean('is_active').notNull().default(true),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_contact_supplier').on(t.tenantId, t.supplierId),
+      index('idx_supplier_contact_site').on(t.tenantId, t.supplierId, t.siteId),
+    ]
+  )
+  .enableRLS();
 
 // ─── erp.supplier_duplicate_suspect (E19) ───────────────────────────────────
 
-export const supplierDuplicateSuspects = erpSchema.table(
-  'supplier_duplicate_suspect',
-  {
-    ...pkId(),
-    ...tenantCol(),
-    supplierAId: uuid('supplier_a_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    supplierBId: uuid('supplier_b_id').notNull().references(() => suppliers.id, { onDelete: 'cascade' }),
-    matchType: supplierDuplicateMatchTypeEnum('match_type').notNull(),
-    confidence: numeric('confidence', { precision: 3, scale: 2 }).notNull(),
-    status: supplierDuplicateStatusEnum('status').notNull().default('OPEN'),
-    mergedIntoId: uuid('merged_into_id'),
-    reviewedBy: uuid('reviewed_by'),
-    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
-    ...timestamps(),
-  },
-  (t) => [
-    index('idx_supplier_dup_suspect_a').on(t.tenantId, t.supplierAId),
-    index('idx_supplier_dup_suspect_b').on(t.tenantId, t.supplierBId),
-    index('idx_supplier_dup_suspect_status').on(t.tenantId, t.status),
-    check('chk_supplier_dup_confidence', sql`${t.confidence} >= 0 AND ${t.confidence} <= 1`),
-  ]
-).enableRLS();
+export const supplierDuplicateSuspects = erpSchema
+  .table(
+    'supplier_duplicate_suspect',
+    {
+      ...pkId(),
+      ...tenantCol(),
+      supplierAId: uuid('supplier_a_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      supplierBId: uuid('supplier_b_id')
+        .notNull()
+        .references(() => suppliers.id, { onDelete: 'cascade' }),
+      matchType: supplierDuplicateMatchTypeEnum('match_type').notNull(),
+      confidence: numeric('confidence', { precision: 3, scale: 2 }).notNull(),
+      status: supplierDuplicateStatusEnum('status').notNull().default('OPEN'),
+      mergedIntoId: uuid('merged_into_id'),
+      reviewedBy: uuid('reviewed_by'),
+      reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+      ...timestamps(),
+    },
+    (t) => [
+      index('idx_supplier_dup_suspect_a').on(t.tenantId, t.supplierAId),
+      index('idx_supplier_dup_suspect_b').on(t.tenantId, t.supplierBId),
+      index('idx_supplier_dup_suspect_status').on(t.tenantId, t.status),
+      check('chk_supplier_dup_confidence', sql`${t.confidence} >= 0 AND ${t.confidence} <= 1`),
+    ]
+  )
+  .enableRLS();

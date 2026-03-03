@@ -5,10 +5,18 @@ import { PageHeader } from '@/components/erp/page-header';
 import { PortalDashboard } from '@/features/portal/blocks/portal-dashboard-summary';
 import { AlertTriangle } from 'lucide-react';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
 
-export default async function PortalDashboardPage() {
-  const ctx = await getRequestContext();
+export const metadata: Metadata = {
+  title: 'Dashboard | Supplier Portal',
+};
 
+/**
+ * Async child component - enables Suspense streaming
+ * Fetches supplier and dashboard data inside the Suspense boundary
+ */
+async function DashboardContent({ ctx }: { ctx: RequestContext }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -24,7 +32,6 @@ export default async function PortalDashboardPage() {
   const dashboardResult = await getPortalDashboard(ctx, supplier.supplierId);
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title={`Welcome back, ${supplier.supplierName}`}
@@ -41,6 +48,15 @@ export default async function PortalDashboardPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default async function PortalDashboardPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <DashboardContent ctx={ctx} />
     </Suspense>
   );
 }

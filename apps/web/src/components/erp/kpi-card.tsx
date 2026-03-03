@@ -11,14 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  TooltipProvider,
-} from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { toSorted } from '@/lib/utils/array';
 import type { KPICatalogEntry, KPITemplate } from '@/lib/kpis/kpi-catalog';
 import { getQuickActions } from '@/lib/kpis/kpi-catalog';
+import { toPlainTitle } from '@/lib/kpis/kpi-plain-title';
 import type { KPIResolverResult, KpiIndicator } from '@/lib/kpis/kpi-registry.server';
+import { EmptyState } from '@/components/erp/empty-state';
 
 // ─── KPI Card Variants (cva) ─────────────────────────────────────────────────
 // Explicit variants per benchmark spec; no layout-heuristic styling.
@@ -35,7 +35,7 @@ const kpiCardVariants = cva(
     defaultVariants: {
       variant: 'compact',
     },
-  },
+  }
 );
 
 const GROUP_LABELS: Record<NonNullable<KPICatalogEntry['group']>, string> = {
@@ -80,7 +80,7 @@ interface KPICardProps {
 
 /** Infer compact from variant or grid size (fallback). */
 const isCompact = (variant?: KPICardVariant, gridW?: number, gridH?: number) =>
-  variant === 'compact' || ((variant == null) && (gridW ?? 1) === 1 && (gridH ?? 1) === 1);
+  variant === 'compact' || (variant == null && (gridW ?? 1) === 1 && (gridH ?? 1) === 1);
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -93,43 +93,32 @@ function KPICard({
   gridH,
   onRefresh,
 }: KPICardProps) {
-  const variant = variantProp ?? ((gridW === 1 && gridH === 1) ? 'compact' : 'default');
+  const variant = variantProp ?? (gridW === 1 && gridH === 1 ? 'compact' : 'default');
   const compact = isCompact(variant, gridW, gridH);
-  const displayTitle =
-    plainLanguage && catalog.plainTitle ? catalog.plainTitle : catalog.title;
+  const displayTitle = plainLanguage
+    ? (catalog.plainTitle ?? toPlainTitle(catalog.title, catalog.description))
+    : catalog.title;
   const quickActions = getQuickActions(catalog);
   const drillTargets = catalog.drillTargets ?? [];
   const hasDrillTargets = drillTargets.length > 0;
   const hasActions = quickActions.length > 0 || catalog.href || hasDrillTargets;
   const isError = data.status === 'error';
   const hasHelperContent =
-    catalog.description ||
-    data.indicator ||
-    hasActions ||
-    (isError && !!onRefresh);
+    catalog.description || data.indicator || hasActions || (isError && !!onRefresh);
   const showFooter = hasActions && !compact;
   const showEmptyState = catalog.emptyState && data.isEmpty === true;
 
-  const bodyContent = showEmptyState && catalog.emptyState ? (
-    <div className="flex flex-col gap-2 py-2">
-      <p className="text-sm font-medium text-muted-foreground">
-        {catalog.emptyState.title}
-      </p>
-      <p className="text-xs text-muted-foreground">
-        {catalog.emptyState.description}
-      </p>
-      <Button variant="outline" size="sm" className="h-7 w-fit text-xs" asChild>
-        <Link href={catalog.emptyState.ctaHref}>{catalog.emptyState.ctaLabel}</Link>
-      </Button>
-    </div>
-  ) : (
-    <TemplateRenderer
-      template={catalog.template}
-      data={data}
-      catalog={catalog}
-      compact={compact}
-    />
-  );
+  const bodyContent =
+    showEmptyState && catalog.emptyState ? (
+      <EmptyState constraint="1x1" contentKey={catalog.emptyState.registryKey} variant="firstRun" />
+    ) : (
+      <TemplateRenderer
+        template={catalog.template}
+        data={data}
+        catalog={catalog}
+        compact={compact}
+      />
+    );
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -137,13 +126,13 @@ function KPICard({
         className={cn(
           kpiCardVariants({ variant }),
           catalog.href && 'hover:border-primary/50',
-          isError && 'opacity-75 ring-1 ring-destructive/20',
+          isError && 'opacity-75 ring-1 ring-destructive/20'
         )}
       >
         <CardHeader
           className={cn(
             'flex flex-row items-start justify-between space-y-0 px-4! pt-3!',
-            compact ? 'pb-1.5!' : 'pb-2!',
+            compact ? 'pb-1.5!' : 'pb-2!'
           )}
         >
           <div className="min-w-0 flex-1">
@@ -155,7 +144,7 @@ function KPICard({
             <CardTitle
               className={cn(
                 'font-medium text-muted-foreground truncate block',
-                compact ? 'text-xs' : 'text-sm',
+                compact ? 'text-xs' : 'text-sm'
               )}
             >
               {displayTitle}
@@ -176,9 +165,7 @@ function KPICard({
               <DropdownMenuContent align="end" className="w-56">
                 {isError && onRefresh && (
                   <>
-                    <DropdownMenuItem onClick={onRefresh}>
-                      Refresh
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onRefresh}>Refresh</DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>
                 )}
@@ -198,7 +185,7 @@ function KPICard({
                         'rounded px-1 py-0.5 text-[10px] font-medium',
                         data.indicator === 'on_track' && 'text-success',
                         data.indicator === 'at_risk' && 'text-warning',
-                        data.indicator === 'overdue' && 'text-destructive',
+                        data.indicator === 'overdue' && 'text-destructive'
                       )}
                     >
                       {INDICATOR_LABELS[data.indicator]}
@@ -230,10 +217,10 @@ function KPICard({
         <CardContent
           className={cn(
             'flex flex-1 flex-col justify-center px-4! pt-0!',
-            compact ? 'pb-3!' : 'pb-4!',
+            compact ? 'pb-3!' : 'pb-4!'
           )}
         >
-          {catalog.href ? (
+          {catalog.href && !showEmptyState ? (
             <Link
               href={catalog.href}
               className="block -m-2 rounded-md p-2 transition-colors hover:bg-muted/50"
@@ -334,6 +321,7 @@ function TemplateRenderer({
     case 'speedometer':
       return <SpeedometerTemplate data={data} catalog={catalog} compact={compact} />;
     case 'stub':
+    case 'pending':
       return <StubTemplate />;
     default:
       return <ValueTrendTemplate {...common} />;
@@ -342,17 +330,16 @@ function TemplateRenderer({
 
 // ─── Value + Trend Template ─────────────────────────────────────────────────
 
-function ValueTrendTemplate({
-  data,
-  compact,
-}: {
-  data: KPIResolverResult;
-  compact?: boolean;
-}) {
+function ValueTrendTemplate({ data, compact }: { data: KPIResolverResult; compact?: boolean }) {
   const { comparison, trend, trendValue, sparklineData, formattedValue } = data;
   return (
     <div className={cn('space-y-1', compact && 'space-y-0.5')}>
-      <div className={cn('font-semibold tabular-nums tracking-tight', compact ? 'text-lg' : 'text-2xl')}>
+      <div
+        className={cn(
+          'font-semibold tabular-nums tracking-tight',
+          compact ? 'text-lg' : 'text-2xl'
+        )}
+      >
         {formattedValue}
       </div>
       {!compact && sparklineData != null && sparklineData.length > 0 && (
@@ -365,7 +352,7 @@ function ValueTrendTemplate({
             className={cn(
               comparison.trend === 'up' && 'text-trade-up',
               comparison.trend === 'down' && 'text-trade-down',
-              comparison.trend === 'flat' && 'text-trade-flat',
+              comparison.trend === 'flat' && 'text-trade-flat'
             )}
           >
             {comparison.value}
@@ -381,7 +368,7 @@ function ValueTrendTemplate({
               className={cn(
                 trend === 'up' && 'text-trade-up',
                 trend === 'down' && 'text-trade-down',
-                trend === 'flat' && 'text-trade-flat',
+                trend === 'flat' && 'text-trade-flat'
               )}
             >
               {trendValue}
@@ -396,17 +383,16 @@ function ValueTrendTemplate({
 
 // ─── Value + Sparkline Template ─────────────────────────────────────────────
 
-function ValueSparklineTemplate({
-  data,
-  compact,
-}: {
-  data: KPIResolverResult;
-  compact?: boolean;
-}) {
+function ValueSparklineTemplate({ data, compact }: { data: KPIResolverResult; compact?: boolean }) {
   const { comparison, trend, trendValue, sparklineData, formattedValue } = data;
   return (
     <div className={cn(compact ? 'space-y-0.5' : 'space-y-2')}>
-      <div className={cn('font-semibold tabular-nums tracking-tight', compact ? 'text-lg' : 'text-2xl')}>
+      <div
+        className={cn(
+          'font-semibold tabular-nums tracking-tight',
+          compact ? 'text-lg' : 'text-2xl'
+        )}
+      >
         {formattedValue}
       </div>
       {!compact && sparklineData != null && sparklineData.length > 0 && (
@@ -414,21 +400,17 @@ function ValueSparklineTemplate({
       )}
       {(comparison || (trend && trendValue)) && (
         <div className="flex items-center gap-1 text-xs">
-          <TrendIcon
-            trend={comparison?.trend ?? trend ?? 'flat'}
-          />
+          <TrendIcon trend={comparison?.trend ?? trend ?? 'flat'} />
           <span
             className={cn(
               (comparison?.trend ?? trend) === 'up' && 'text-trade-up',
               (comparison?.trend ?? trend) === 'down' && 'text-trade-down',
-              (comparison?.trend ?? trend) === 'flat' && 'text-trade-flat',
+              (comparison?.trend ?? trend) === 'flat' && 'text-trade-flat'
             )}
           >
             {comparison ? comparison.value : trendValue}
           </span>
-          {comparison && (
-            <span className="text-muted-foreground">{comparison.label}</span>
-          )}
+          {comparison && <span className="text-muted-foreground">{comparison.label}</span>}
         </div>
       )}
     </div>
@@ -437,19 +419,18 @@ function ValueSparklineTemplate({
 
 // ─── Aging Template ─────────────────────────────────────────────────────────
 
-function AgingTemplate({
-  data,
-  compact,
-}: {
-  data: KPIResolverResult;
-  compact?: boolean;
-}) {
+function AgingTemplate({ data, compact }: { data: KPIResolverResult; compact?: boolean }) {
   const { buckets = [] } = data;
   const total = buckets.reduce((sum, b) => sum + b.value, 0);
 
   return (
     <div className={cn(compact ? 'space-y-0.5' : 'space-y-2')}>
-      <div className={cn('font-semibold tabular-nums tracking-tight', compact ? 'text-lg' : 'text-2xl')}>
+      <div
+        className={cn(
+          'font-semibold tabular-nums tracking-tight',
+          compact ? 'text-lg' : 'text-2xl'
+        )}
+      >
         {data.formattedValue}
       </div>
       {!compact && buckets.length > 0 && (
@@ -466,7 +447,7 @@ function AgingTemplate({
                     i === 1 && 'bg-info',
                     i === 2 && 'bg-warning',
                     i === 3 && 'bg-warning/70',
-                    i >= 4 && 'bg-destructive',
+                    i >= 4 && 'bg-destructive'
                   )}
                   style={{ width: `${pct}%` }}
                 />
@@ -486,17 +467,16 @@ function AgingTemplate({
 
 // ─── Count + Status Template ────────────────────────────────────────────────
 
-function CountStatusTemplate({
-  data,
-  compact,
-}: {
-  data: KPIResolverResult;
-  compact?: boolean;
-}) {
+function CountStatusTemplate({ data, compact }: { data: KPIResolverResult; compact?: boolean }) {
   const { trend, trendValue, formattedValue } = data;
   return (
     <div className={cn(compact ? 'space-y-0' : 'space-y-1')}>
-      <div className={cn('font-semibold tabular-nums tracking-tight', compact ? 'text-lg' : 'text-2xl')}>
+      <div
+        className={cn(
+          'font-semibold tabular-nums tracking-tight',
+          compact ? 'text-lg' : 'text-2xl'
+        )}
+      >
         {formattedValue}
       </div>
       {trend && trendValue && (
@@ -545,29 +525,32 @@ function BulletTemplate({
   return (
     <div className={cn(compact ? 'space-y-0.5' : 'space-y-2')}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className={cn('font-semibold tabular-nums tracking-tight', compact ? 'text-lg' : 'text-2xl')}>
+        <span
+          className={cn(
+            'font-semibold tabular-nums tracking-tight',
+            compact ? 'text-lg' : 'text-2xl'
+          )}
+        >
           {data.formattedValue}
         </span>
         {!compact && target > 0 && (
-          <span className="text-xs text-muted-foreground">
-            Target: {target.toLocaleString()}
-          </span>
+          <span className="text-xs text-muted-foreground">Target: {target.toLocaleString()}</span>
         )}
       </div>
       {!compact && (
-      <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn('h-full rounded-full transition-all', barColor)}
-          style={{ width: `${pct}%` }}
-        />
-        {target > 0 && targetPct < 100 && (
+        <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
           <div
-            className="absolute top-0 h-full w-0.5 bg-foreground/60"
-            style={{ left: `${targetPct}%` }}
-            aria-hidden
+            className={cn('h-full rounded-full transition-all', barColor)}
+            style={{ width: `${pct}%` }}
           />
-        )}
-      </div>
+          {target > 0 && targetPct < 100 && (
+            <div
+              className="absolute top-0 h-full w-0.5 bg-foreground/60"
+              style={{ left: `${targetPct}%` }}
+              aria-hidden
+            />
+          )}
+        </div>
       )}
       {data.trendValue && (
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -594,11 +577,13 @@ function DialTemplate({
   const max = catalog.maxValue ?? 100;
   const raw = parseFloat(data.value) || 0;
   const pct = max > min ? Math.min(Math.max((raw - min) / (max - min), 0), 1) * 100 : 0;
-  const { thresholds = [
-    { value: 33, color: 'success' as const },
-    { value: 66, color: 'warning' as const },
-    { value: 100, color: 'destructive' as const },
-  ] } = catalog;
+  const {
+    thresholds = [
+      { value: 33, color: 'success' as const },
+      { value: 66, color: 'warning' as const },
+      { value: 100, color: 'destructive' as const },
+    ],
+  } = catalog;
   const colorForPct = (p: number) => {
     const t = toSorted(thresholds, (a, b) => a.value - b.value);
     for (let i = t.length - 1; i >= 0; i--) {
@@ -620,7 +605,9 @@ function DialTemplate({
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold tabular-nums tracking-tight">{data.formattedValue}</span>
+        <span className="text-lg font-semibold tabular-nums tracking-tight">
+          {data.formattedValue}
+        </span>
         {data.trendValue && (
           <span className="text-xs text-muted-foreground">{data.trendValue}</span>
         )}
@@ -654,7 +641,9 @@ function DialTemplate({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-lg font-semibold tabular-nums tracking-tight">{data.formattedValue}</span>
+          <span className="text-lg font-semibold tabular-nums tracking-tight">
+            {data.formattedValue}
+          </span>
         </div>
       </div>
       {data.trendValue && (
@@ -682,11 +671,13 @@ function SpeedometerTemplate({
   const max = catalog.maxValue ?? 100;
   const raw = parseFloat(data.value) || 0;
   const pct = max > min ? Math.min(Math.max((raw - min) / (max - min), 0), 1) * 100 : 0;
-  const { thresholds = [
-    { value: 33, color: 'success' as const },
-    { value: 66, color: 'warning' as const },
-    { value: 100, color: 'destructive' as const },
-  ] } = catalog;
+  const {
+    thresholds = [
+      { value: 33, color: 'success' as const },
+      { value: 66, color: 'warning' as const },
+      { value: 100, color: 'destructive' as const },
+    ],
+  } = catalog;
   const colorForPct = (p: number) => {
     const t = toSorted(thresholds, (a, b) => a.value - b.value);
     for (let i = t.length - 1; i >= 0; i--) {
@@ -708,7 +699,9 @@ function SpeedometerTemplate({
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold tabular-nums tracking-tight">{data.formattedValue}</span>
+        <span className="text-lg font-semibold tabular-nums tracking-tight">
+          {data.formattedValue}
+        </span>
         {data.trendValue && (
           <span className="text-xs text-muted-foreground">{data.trendValue}</span>
         )}
@@ -738,7 +731,9 @@ function SpeedometerTemplate({
           />
         </svg>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
-          <span className="text-lg font-semibold tabular-nums tracking-tight">{data.formattedValue}</span>
+          <span className="text-lg font-semibold tabular-nums tracking-tight">
+            {data.formattedValue}
+          </span>
         </div>
       </div>
       {data.trendValue && (

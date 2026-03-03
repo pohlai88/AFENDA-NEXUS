@@ -740,6 +740,9 @@ importers:
       '@afenda/storage':
         specifier: workspace:*
         version: link:../../storage
+      '@afenda/supplier-kernel':
+        specifier: workspace:*
+        version: link:../../supplier-kernel
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.1(@neondatabase/serverless@0.10.4)(@opentelemetry/api@1.9.0(patch_hash=xtzilp3csjguuxvh37zwrugqzu))(@prisma/client@5.22.0)(@types/pg@8.16.0)(better-sqlite3@12.6.2)(gel@2.2.0)(kysely@0.28.11)(pg@8.18.0)(postgres@3.4.8)
@@ -829,6 +832,37 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+    devDependencies:
+      '@afenda/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@afenda/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.11
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.7.3)(yaml@2.8.2)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.7.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.19.11)(jiti@2.6.1)(jsdom@26.1.0)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.11)(typescript@5.7.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/supplier-kernel:
+    dependencies:
+      '@afenda/authz':
+        specifier: workspace:*
+        version: link:../authz
+      '@afenda/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@afenda/core':
+        specifier: workspace:*
+        version: link:../core
     devDependencies:
       '@afenda/eslint-config':
         specifier: workspace:*

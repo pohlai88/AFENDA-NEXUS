@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import type { RequestContext } from '@afenda/core';
 import { getRequestContext } from '@/lib/auth';
 import { getApCloseChecklist } from '@/features/finance/payables/queries/ap-close.queries';
 import { ApCloseChecklistView } from '@/features/finance/payables/blocks/ap-close-checklist';
@@ -11,15 +12,13 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Payables — Close Checklist' };
 
-export default async function CloseChecklistPage({
-  searchParams,
+async function CloseChecklistContent({
+  ctx,
+  periodId,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  ctx: RequestContext;
+  periodId?: string;
 }) {
-  const params = await searchParams;
-  const periodId = typeof params.periodId === 'string' ? params.periodId : undefined;
-
-  const ctx = await getRequestContext();
   const result = await getApCloseChecklist(ctx, { periodId });
 
   return (
@@ -43,17 +42,31 @@ export default async function CloseChecklistPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<LoadingSkeleton />}>
-            {result.ok ? (
-              <ApCloseChecklistView checklist={result.value} />
-            ) : (
-              <p className="py-8 text-center text-sm text-destructive">
-                Failed to load close checklist: {result.error.message}
-              </p>
-            )}
-          </Suspense>
+          {result.ok ? (
+            <ApCloseChecklistView checklist={result.value} />
+          ) : (
+            <p className="py-8 text-center text-sm text-destructive">
+              Failed to load close checklist: {result.error.message}
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default async function CloseChecklistPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const periodId = typeof params.periodId === 'string' ? params.periodId : undefined;
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <CloseChecklistContent ctx={ctx} periodId={periodId} />
+    </Suspense>
   );
 }

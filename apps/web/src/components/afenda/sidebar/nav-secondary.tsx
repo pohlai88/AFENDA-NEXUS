@@ -44,7 +44,7 @@ export function NavSecondary({
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
                   <Link href={item.href}>
-                    <Icon />
+                    <Icon  aria-hidden="true" />
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>

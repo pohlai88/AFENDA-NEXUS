@@ -19,5 +19,7 @@ export { NavQuickActions } from './nav-quick-actions';
 export { NavCategories } from './nav-categories';
 export type { SidebarCategory, SidebarModuleEntry } from './nav-categories';
 
+export { NavPortals } from './nav-portals';
+
 export { NavSecondary } from './nav-secondary';
 export type { NavSecondaryItem } from './nav-secondary';

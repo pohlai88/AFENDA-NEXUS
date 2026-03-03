@@ -75,6 +75,7 @@ export function JournalTable({ data, total }: JournalTableProps) {
     return (
       <EmptyState
         contentKey="finance.journals"
+        constraint="table"
         icon={FileText}
         action={
           <Button asChild>

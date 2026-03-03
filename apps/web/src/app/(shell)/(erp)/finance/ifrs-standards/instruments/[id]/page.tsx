@@ -1,12 +1,20 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
-import { getInstrumentById, getInstrumentFairValues } from '@/features/finance/instruments/queries/instruments.queries';
-import { InstrumentDetailHeader, InstrumentOverview, FairValueHistory } from '@/features/finance/instruments/blocks/instrument-detail';
+import {
+  getInstrumentById,
+  getInstrumentFairValues,
+} from '@/features/finance/instruments/queries/instruments.queries';
+import {
+  InstrumentDetailHeader,
+  InstrumentOverview,
+  FairValueHistory,
+} from '@/features/finance/instruments/blocks/instrument-detail';
 import { routes } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,8 +34,7 @@ async function ValuationsSection({ instrumentId }: { instrumentId: string }) {
   return <FairValueHistory valuations={result.value.data} />;
 }
 
-export default async function InstrumentDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function InstrumentDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getInstrumentById(ctx, id);
 
   if (!result.ok) {
@@ -63,5 +70,15 @@ export default async function InstrumentDetailPage({ params }: Props) {
         ]}
       />
     </div>
+  );
+}
+
+export default async function InstrumentDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense>
+      <InstrumentDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

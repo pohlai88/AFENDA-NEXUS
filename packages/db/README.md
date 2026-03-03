@@ -73,10 +73,10 @@ export const glJournals = erpSchema.table('gl_journal', {
 
 Three CI gates protect the database package:
 
-| Gate | Script | Purpose |
-| ---- | ------ | ------- |
-| `db:ci` | `db-check-ci.mjs` | Snapshot consistency + no uncommitted schema changes |
-| `gate:db-module` | `gate-db-module.mjs` | Every table has `ENABLE ROW LEVEL SECURITY` + `CREATE POLICY` |
+| Gate                      | Script                        | Purpose                                                                                              |
+| ------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `db:ci`                   | `db-check-ci.mjs`             | Snapshot consistency + no uncommitted schema changes                                                 |
+| `gate:db-module`          | `gate-db-module.mjs`          | Every table has `ENABLE ROW LEVEL SECURITY` + `CREATE POLICY`                                        |
 | `gate:schema-conventions` | `gate-schema-conventions.mjs` | SC-01–SC-08: enableRLS, tenantCol, references, AnyPgColumn, moneyBigint, pkId, timestamps, relations |
 
 ```yaml
@@ -90,12 +90,13 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
-      - run: pnpm db:ci             # ← fails if schema changes lack migrations
-      - run: pnpm module:gates       # ← runs all 31 gates including db-module + schema-conventions
+      - run: pnpm db:ci # ← fails if schema changes lack migrations
+      - run: pnpm module:gates # ← runs all 31 gates including db-module + schema-conventions
 ```
 
-If `db:ci` fails, run `pnpm db:generate` and commit the result.
-If `gate:schema-conventions` fails, see [CONTRIBUTING-DB.md](./CONTRIBUTING-DB.md) for fix instructions.
+If `db:ci` fails, run `pnpm db:generate` and commit the result. If
+`gate:schema-conventions` fails, see [CONTRIBUTING-DB.md](./CONTRIBUTING-DB.md)
+for fix instructions.
 
 **Troubleshooting:** If `db:generate` produces a full schema dump (70KB+ SQL)
 instead of an incremental migration, the snapshot chain is broken. See
@@ -127,11 +128,11 @@ neonctl branches delete feature/my-feature --project-id dark-band-87285012
 
 ### Schemas (125 tables)
 
-| Schema     | Tables | Purpose                     | Key Domains                                                                                             |
-| ---------- | ------ | --------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `platform` | 7      | Multi-tenant infrastructure | `tenant`, `company`, `user`, `user_preference`, `system_config`, `admin_user`, `admin_action_log`       |
+| Schema     | Tables | Purpose                     | Key Domains                                                                                                                                                                 |
+| ---------- | ------ | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `platform` | 7      | Multi-tenant infrastructure | `tenant`, `company`, `user`, `user_preference`, `system_config`, `admin_user`, `admin_action_log`                                                                           |
 | `erp`      | 117    | Core ERP domain             | GL, AP, AR, IC, Tax, Assets, Banking, Credit, Expenses, Projects, Leases, Provisions, Cost Accounting, Consolidation, IFRS, Supplier MDM, Documents, SoD, Approvals, Outbox |
-| `audit`    | 1      | Immutable audit trail       | `audit_log`                                                                                             |
+| `audit`    | 1      | Immutable audit trail       | `audit_log`                                                                                                                                                                 |
 
 ### Connection Types
 
@@ -241,7 +242,7 @@ import { createPooledClient } from '@afenda/db/client';
 - [`CONTRIBUTING-DB.md`](./CONTRIBUTING-DB.md) — **Schema conventions, drift
   prevention, new-table checklist**
 - [`architecture.db.md`](./architecture.db.md) — Full Neon-optimized spec
-- [`ARCHITECTURE.@afenda-db.md`](./ARCHITECTURE.@afenda-db.md) — Governance
+- [`ARCHITECTURE_afenda-db.md`](./ARCHITECTURE_afenda-db.md) — Governance
   frontmatter
 - [`docs/NEON-INTEGRATION.md`](./docs/NEON-INTEGRATION.md) — Schema sync & Neon
   capabilities
@@ -256,7 +257,8 @@ import { createPooledClient } from '@afenda/db/client';
 
 ## Database Seeding
 
-Production-grade seeding system with Neon branch integration, idempotency, RLS safety, and dashboard verification.
+Production-grade seeding system with Neon branch integration, idempotency, RLS
+safety, and dashboard verification.
 
 ### Quick Start
 
@@ -282,17 +284,18 @@ pnpm db:seed -- --scenarios=baseline --scenarios=late-payments
 - **Deterministic**: Same `--seed` = same data every time
 - **Idempotent**: Safe to run multiple times (hash-based registry)
 - **RLS-Safe**: All tenant-scoped data properly isolated
-- **Branch-Aware**: Auto-adjusts depth for Neon branches (minimal for dev/preview, comprehensive for main)
+- **Branch-Aware**: Auto-adjusts depth for Neon branches (minimal for
+  dev/preview, comprehensive for main)
 - **Dashboard-Verified**: Guarantees all 8 dashboard charts will populate
 - **Fast**: Standard depth seeds in ~10 seconds
 
 ### Seeding Depth
 
-| Depth | Companies | Customers | Suppliers | Months | Time | Use |
-|-------|-----------|-----------|-----------|--------|------|-----|
-| **minimal** | 1 | 20 | 10 | 1 | ~5s | Dev, preview branches, CI |
-| **standard** | 2 | 50 | 30 | 6 | ~10s | Test branches, QA |
-| **comprehensive** | 2 | 80 | 50 | 12 | ~30s | Main branch, demos |
+| Depth             | Companies | Customers | Suppliers | Months | Time | Use                       |
+| ----------------- | --------- | --------- | --------- | ------ | ---- | ------------------------- |
+| **minimal**       | 1         | 20        | 10        | 1      | ~5s  | Dev, preview branches, CI |
+| **standard**      | 2         | 50        | 30        | 6      | ~10s | Test branches, QA         |
+| **comprehensive** | 2         | 80        | 50        | 12     | ~30s | Main branch, demos        |
 
 ### Auto-Seeding (Development Only)
 
@@ -306,12 +309,14 @@ DATABASE_URL_DIRECT=postgresql://localhost:5432/afenda
 ```
 
 **Guards**:
+
 1. ✅ `NODE_ENV=development`
 2. ✅ `AFENDA_AUTO_SEED=1` (explicit opt-in)
 3. ✅ Non-production database (localhost OR Neon non-main branch)
 4. ✅ No existing `seed_run` record
 
-Start API: `pnpm --filter @afenda/api dev` — database seeds automatically on first run.
+Start API: `pnpm --filter @afenda/api dev` — database seeds automatically on
+first run.
 
 ### Environment Variables
 
@@ -350,7 +355,9 @@ If any check fails, seeding throws with specific error messages.
 
 ### Documentation
 
-- **[SEEDING-GUIDE.md](./docs/SEEDING-GUIDE.md)** — Full usage guide with examples
-- **[SEEDING-ARCHITECTURE.md](./docs/SEEDING-ARCHITECTURE.md)** — System architecture and design
-- **[SEEDING-IMPLEMENTATION-REFERENCE.md](./SEEDING-IMPLEMENTATION-REFERENCE.md)** — Implementation checklist
-
+- **[SEEDING-GUIDE.md](./docs/SEEDING-GUIDE.md)** — Full usage guide with
+  examples
+- **[SEEDING-ARCHITECTURE.md](./docs/SEEDING-ARCHITECTURE.md)** — System
+  architecture and design
+- **[SEEDING-IMPLEMENTATION-REFERENCE.md](./SEEDING-IMPLEMENTATION-REFERENCE.md)**
+  — Implementation checklist

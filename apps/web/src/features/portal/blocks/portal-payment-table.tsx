@@ -24,12 +24,7 @@ interface PortalPaymentTableProps {
 
 export function PortalPaymentTable({ data, total }: PortalPaymentTableProps) {
   if (data.length === 0) {
-    return (
-      <EmptyState
-        contentKey="portal.payments"
-        icon={Banknote}
-      />
-    );
+    return <EmptyState contentKey="portal.payments" constraint="table" icon={Banknote} />;
   }
 
   return (
@@ -62,7 +57,9 @@ export function PortalPaymentTable({ data, total }: PortalPaymentTableProps) {
                       window.location.href = detailHref;
                     }
                   }}
-                  onClick={() => { window.location.href = detailHref; }}
+                  onClick={() => {
+                    window.location.href = detailHref;
+                  }}
                 >
                   <TableCell>
                     <Link

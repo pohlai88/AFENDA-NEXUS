@@ -6,14 +6,18 @@ import { PortalPaymentTable } from '@/features/portal/blocks/portal-payment-tabl
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
+
+export const metadata: Metadata = {
+  title: 'Payments | Supplier Portal',
+};
 
 interface Props {
   searchParams: Promise<{ page?: string }>;
 }
 
-export default async function PortalPaymentsPage({ searchParams }: Props) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-
+async function PaymentsPageContent({ ctx, page }: { ctx: RequestContext; page?: string }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -27,12 +31,11 @@ export default async function PortalPaymentsPage({ searchParams }: Props) {
 
   const supplier = supplierResult.value;
   const result = await getPortalPaymentRuns(ctx, supplier.supplierId, {
-    page: params.page,
+    page,
     limit: '20',
   });
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Payments"
@@ -48,6 +51,15 @@ export default async function PortalPaymentsPage({ searchParams }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+export default async function PortalPaymentsPage({ searchParams }: Props) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PaymentsPageContent ctx={ctx} page={params.page} />
     </Suspense>
   );
 }

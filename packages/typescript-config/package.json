@@ -11,6 +11,6 @@
   },
   "files": [
     "*.json",
-    "ARCHITECTURE.@afenda-typescript-config.md"
+    "ARCHITECTURE_afenda-typescript-config.md"
   ]
 }

@@ -505,7 +505,13 @@ export const ConsolidationQuerySchema = z.object({
 
 // ─── Supplier Schemas ──────────────────────────────────────────────────────
 
-export const SupplierStatusSchema = z.enum(['ACTIVE', 'ON_HOLD', 'INACTIVE', 'BLOCKED', 'BLACKLISTED']);
+export const SupplierStatusSchema = z.enum([
+  'ACTIVE',
+  'ON_HOLD',
+  'INACTIVE',
+  'BLOCKED',
+  'BLACKLISTED',
+]);
 export type SupplierStatus = z.infer<typeof SupplierStatusSchema>;
 
 export const SupplierOnboardingStatusSchema = z.enum([
@@ -758,13 +764,15 @@ export const CreateSupplierEvaluationSchema = z.object({
   templateVersionId: z.string().uuid(),
   periodStart: z.string().datetime(),
   periodEnd: z.string().datetime(),
-  scores: z.array(
-    z.object({
-      criteriaId: z.string().uuid(),
-      score: z.number().int().min(1),
-      notes: z.string().nullable().optional(),
-    })
-  ).min(1),
+  scores: z
+    .array(
+      z.object({
+        criteriaId: z.string().uuid(),
+        score: z.number().int().min(1),
+        notes: z.string().nullable().optional(),
+      })
+    )
+    .min(1),
   notes: z.string().nullable().optional(),
 });
 export type CreateSupplierEvaluation = z.infer<typeof CreateSupplierEvaluationSchema>;
@@ -863,7 +871,9 @@ export const UpsertSupplierAccountGroupConfigSchema = z.object({
   allowOneTimeUse: z.boolean().default(false),
   isActive: z.boolean().default(true),
 });
-export type UpsertSupplierAccountGroupConfig = z.infer<typeof UpsertSupplierAccountGroupConfigSchema>;
+export type UpsertSupplierAccountGroupConfig = z.infer<
+  typeof UpsertSupplierAccountGroupConfigSchema
+>;
 
 // ─── AP Supplier Recon Schema ──────────────────────────────────────────────
 
@@ -1090,28 +1100,37 @@ export const CreateCreditMemoSchema = z.object({
 export type CreateCreditMemo = z.infer<typeof CreateCreditMemoSchema>;
 
 export const BatchInvoiceImportSchema = z.object({
-  rows: z.array(z.object({
-    companyId: z.string().uuid(),
-    supplierId: z.string().uuid(),
-    ledgerId: z.string().uuid(),
-    invoiceNumber: z.string().min(1).max(100),
-    supplierRef: z.string().max(200).nullable().optional(),
-    invoiceDate: z.string().date(),
-    dueDate: z.string().date(),
-    currencyCode: z.string().length(3),
-    description: z.string().max(500).nullable().optional(),
-    poRef: z.string().max(100).nullable().optional(),
-    receiptRef: z.string().max(100).nullable().optional(),
-    paymentTermsId: z.string().uuid().nullable().optional(),
-    lines: z.array(z.object({
-      accountId: z.string().uuid(),
-      description: z.string().max(500).nullable().optional(),
-      quantity: z.coerce.number().int().positive().default(1),
-      unitPrice: z.coerce.number().nonnegative(),
-      amount: z.coerce.number().nonnegative(),
-      taxAmount: z.coerce.number().nonnegative().default(0),
-    })).min(1),
-  })).min(1).max(500),
+  rows: z
+    .array(
+      z.object({
+        companyId: z.string().uuid(),
+        supplierId: z.string().uuid(),
+        ledgerId: z.string().uuid(),
+        invoiceNumber: z.string().min(1).max(100),
+        supplierRef: z.string().max(200).nullable().optional(),
+        invoiceDate: z.string().date(),
+        dueDate: z.string().date(),
+        currencyCode: z.string().length(3),
+        description: z.string().max(500).nullable().optional(),
+        poRef: z.string().max(100).nullable().optional(),
+        receiptRef: z.string().max(100).nullable().optional(),
+        paymentTermsId: z.string().uuid().nullable().optional(),
+        lines: z
+          .array(
+            z.object({
+              accountId: z.string().uuid(),
+              description: z.string().max(500).nullable().optional(),
+              quantity: z.coerce.number().int().positive().default(1),
+              unitPrice: z.coerce.number().nonnegative(),
+              amount: z.coerce.number().nonnegative(),
+              taxAmount: z.coerce.number().nonnegative().default(0),
+            })
+          )
+          .min(1),
+      })
+    )
+    .min(1)
+    .max(500),
 });
 export type BatchInvoiceImport = z.infer<typeof BatchInvoiceImportSchema>;
 
@@ -1468,7 +1487,15 @@ export const CreateFixedAssetSchema = z.object({
 export type CreateFixedAsset = z.infer<typeof CreateFixedAssetSchema>;
 
 // ─── Phase 8: Tax Codes & Returns ───────────────────────────────────────────
-export const TaxTypeSchema = z.enum(['VAT', 'GST', 'SALES_TAX', 'SERVICE_TAX', 'WITHHOLDING', 'EXCISE', 'OTHER']);
+export const TaxTypeSchema = z.enum([
+  'VAT',
+  'GST',
+  'SALES_TAX',
+  'SERVICE_TAX',
+  'WITHHOLDING',
+  'EXCISE',
+  'OTHER',
+]);
 export type TaxType = z.infer<typeof TaxTypeSchema>;
 
 export const CreateTaxCodeSchema = z.object({
@@ -2214,7 +2241,13 @@ export type AddEntityInput = z.infer<typeof AddEntityInputSchema>;
 // ─── Cost Accounting ────────────────────────────────────────────────────────
 
 export const CostCenterTypeEnum = z.enum(['production', 'service', 'administration', 'selling']);
-export const DriverTypeEnum = z.enum(['headcount', 'square_footage', 'machine_hours', 'revenue', 'custom']);
+export const DriverTypeEnum = z.enum([
+  'headcount',
+  'square_footage',
+  'machine_hours',
+  'revenue',
+  'custom',
+]);
 export const AllocationMethodEnum = z.enum(['direct', 'step_down', 'reciprocal', 'activity_based']);
 
 export const CreateCostCenterInputSchema = z.object({
@@ -2273,7 +2306,12 @@ export type CreateAllocationRunInput = z.infer<typeof CreateAllocationRunInputSc
 // ─── Credit ─────────────────────────────────────────────────────────────────
 
 export const ReviewFrequencyEnum = z.enum(['monthly', 'quarterly', 'annually']);
-export const CreditReviewTypeEnum = z.enum(['periodic', 'limit_increase', 'new_customer', 'risk_triggered']);
+export const CreditReviewTypeEnum = z.enum([
+  'periodic',
+  'limit_increase',
+  'new_customer',
+  'risk_triggered',
+]);
 export const CreditRiskRatingEnum = z.enum(['low', 'medium', 'high', 'very_high']);
 export const CreditHoldTypeEnum = z.enum(['credit_limit', 'overdue', 'manual', 'payment_terms']);
 
@@ -2317,7 +2355,11 @@ export type PlaceHoldInput = z.infer<typeof PlaceHoldInputSchema>;
 // ─── Deferred Tax ───────────────────────────────────────────────────────────
 
 export const DeferredTaxTypeEnum = z.enum(['asset', 'liability']);
-export const OriginTypeEnum = z.enum(['temporary_difference', 'tax_loss_carryforward', 'tax_credit']);
+export const OriginTypeEnum = z.enum([
+  'temporary_difference',
+  'tax_loss_carryforward',
+  'tax_credit',
+]);
 
 export const CreateDTItemInputSchema = z.object({
   description: z.string().min(1),
@@ -2368,7 +2410,12 @@ export type CreateInstrumentInput = z.infer<typeof CreateInstrumentInputSchema>;
 export const LeaseTypeEnum = z.enum(['finance', 'operating', 'short_term', 'low_value']);
 export const AssetClassEnum = z.enum(['property', 'vehicle', 'equipment', 'it_equipment', 'other']);
 export const PaymentFrequencyEnum = z.enum(['monthly', 'quarterly', 'semi_annual', 'annual']);
-export const ModificationTypeEnum = z.enum(['scope_change', 'term_extension', 'payment_change', 'index_adjustment']);
+export const ModificationTypeEnum = z.enum([
+  'scope_change',
+  'term_extension',
+  'payment_change',
+  'index_adjustment',
+]);
 
 export const CreateLeaseInputSchema = z.object({
   description: z.string().min(1),
@@ -2418,10 +2465,29 @@ export type CreateLedgerPayload = z.infer<typeof CreateLedgerPayloadSchema>;
 
 // ─── Projects ───────────────────────────────────────────────────────────────
 
-export const ProjectTypeEnum = z.enum(['fixed_price', 'time_materials', 'cost_plus', 'retainer', 'internal']);
+export const ProjectTypeEnum = z.enum([
+  'fixed_price',
+  'time_materials',
+  'cost_plus',
+  'retainer',
+  'internal',
+]);
 export const BillingMethodEnum = z.enum(['milestone', 'progress', 'time_materials', 'fixed_fee']);
-export const RevenueRecognitionEnum = z.enum(['percentage_completion', 'completed_contract', 'milestone', 'straight_line']);
-export const CostTypeEnum = z.enum(['labor', 'material', 'subcontractor', 'travel', 'equipment', 'overhead', 'other']);
+export const RevenueRecognitionEnum = z.enum([
+  'percentage_completion',
+  'completed_contract',
+  'milestone',
+  'straight_line',
+]);
+export const CostTypeEnum = z.enum([
+  'labor',
+  'material',
+  'subcontractor',
+  'travel',
+  'equipment',
+  'overhead',
+  'other',
+]);
 
 export const CreateProjectInputSchema = z.object({
   projectNumber: z.string().min(1),
@@ -2500,7 +2566,14 @@ export type BillingWizardInput = z.infer<typeof BillingWizardInputSchema>;
 
 // ─── Provisions ─────────────────────────────────────────────────────────────
 
-export const ProvisionTypeEnum = z.enum(['warranty', 'restructuring', 'legal', 'decommissioning', 'onerous_contract', 'other']);
+export const ProvisionTypeEnum = z.enum([
+  'warranty',
+  'restructuring',
+  'legal',
+  'decommissioning',
+  'onerous_contract',
+  'other',
+]);
 
 export const CreateProvisionInputSchema = z.object({
   name: z.string().min(1),
@@ -2518,8 +2591,20 @@ export type CreateProvisionInput = z.infer<typeof CreateProvisionInputSchema>;
 
 // ─── Transfer Pricing ───────────────────────────────────────────────────────
 
-export const TpTransactionTypeEnum = z.enum(['goods', 'services', 'royalties', 'financing', 'cost_sharing']);
-export const TpPricingMethodEnum = z.enum(['cup', 'resale_price', 'cost_plus', 'tnmm', 'profit_split']);
+export const TpTransactionTypeEnum = z.enum([
+  'goods',
+  'services',
+  'royalties',
+  'financing',
+  'cost_sharing',
+]);
+export const TpPricingMethodEnum = z.enum([
+  'cup',
+  'resale_price',
+  'cost_plus',
+  'tnmm',
+  'profit_split',
+]);
 
 export const CreatePolicyInputSchema = z.object({
   name: z.string().min(1),
@@ -2719,7 +2804,9 @@ export const SupplierNotificationPrefItemSchema = z.object({
 export const SupplierPortalUpdateNotificationPrefsSchema = z.object({
   preferences: z.array(SupplierNotificationPrefItemSchema).min(1),
 });
-export type SupplierPortalUpdateNotificationPrefs = z.infer<typeof SupplierPortalUpdateNotificationPrefsSchema>;
+export type SupplierPortalUpdateNotificationPrefs = z.infer<
+  typeof SupplierPortalUpdateNotificationPrefsSchema
+>;
 
 // ─── OCR Pipeline Schemas ─────────────────────────────────────────────────
 
@@ -2754,5 +2841,2217 @@ export const OcrUploadResponseSchema = z.object({
 });
 export type OcrUploadResponse = z.infer<typeof OcrUploadResponseSchema>;
 
+// ─── Response View-Model Schemas (auto-generated) ─────────────────────────
+// Generated by: node tools/scripts/gen-response-schemas.mjs
+// These schemas provide contract coverage for response types used in query files.
+
+// ── Finance Response Schemas ──
+
+// account
+export const AccountListItemSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  type: AccountTypeSchema,
+  normalBalance: NormalBalanceSchema,
+  parentId: z.string().nullable(),
+  isActive: z.boolean(),
+});
+export type AccountListItem = z.infer<typeof AccountListItemSchema>;
+
+export const AccountDetailSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  type: AccountTypeSchema,
+  normalBalance: NormalBalanceSchema,
+  parentId: z.string().nullable(),
+  isActive: z.boolean(),
+  companyId: z.string(),
+});
+export type AccountDetail = z.infer<typeof AccountDetailSchema>;
+
+// approvals
+export const GetApprovalsParamsSchema = z.object({
+  status: z.union([z.string(), z.string(), z.string(), z.string()]).optional(),
+  documentType: z.string().optional(),
+  slaStatus: z.union([z.string(), z.string(), z.string()]).optional(),
+  page: z.number().optional(),
+  limit: z.number().optional(),
+});
+export type GetApprovalsParams = z.infer<typeof GetApprovalsParamsSchema>;
+
+// budget
+export const BudgetEntryListItemSchema = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  accountCode: z.string(),
+  accountName: z.string().optional(),
+  periodId: z.string(),
+  periodName: z.string().optional(),
+  budgetAmount: z.string(),
+  version: z.number(),
+  versionNote: z.string().optional(),
+});
+export type BudgetEntryListItem = z.infer<typeof BudgetEntryListItemSchema>;
+
+export const BudgetVarianceRowSchema = z.object({
+  accountId: z.string(),
+  accountCode: z.string(),
+  accountName: z.string(),
+  budgetAmount: z.string(),
+  actualAmount: z.string(),
+  variance: z.string(),
+  variancePct: z.number(),
+});
+export type BudgetVarianceRow = z.infer<typeof BudgetVarianceRowSchema>;
+
+export const BudgetVarianceResultSchema = z.object({
+  ledgerId: z.string(),
+  periodId: z.string(),
+  rows: z.array(BudgetVarianceRowSchema),
+  totalBudget: z.string(),
+  totalActual: z.string(),
+  totalVariance: z.string(),
+});
+export type BudgetVarianceResult = z.infer<typeof BudgetVarianceResultSchema>;
+
+export const VarianceAlertSchema = z.object({
+  accountCode: z.string(),
+  accountName: z.string(),
+  budgetAmount: z.string(),
+  actualAmount: z.string(),
+  variance: z.string(),
+  variancePct: z.number(),
+  severity: z.enum(['WARNING', 'CRITICAL']),
+});
+export type VarianceAlert = z.infer<typeof VarianceAlertSchema>;
+
+export const VarianceAlertsResultSchema = z.object({
+  alerts: z.array(VarianceAlertSchema),
+  ledgerId: z.string(),
+  periodId: z.string(),
+  warningPct: z.number(),
+  criticalPct: z.number(),
+});
+export type VarianceAlertsResult = z.infer<typeof VarianceAlertsResultSchema>;
+
+// consolidation
+export type GroupEntityView = {
+  id: string;
+  entityCode: string;
+  name: string;
+  country: string;
+  currency: string;
+  entityType: string;
+  consolidationMethod: string;
+  status: string;
+  parentId: string | null;
+  ownershipPercent: number;
+  votingRightsPercent: number;
+  acquisitionDate: string | null;
+  divestmentDate: string | null;
+  functionalCurrency: string;
+  reportingCurrency: string;
+  fxRate: number;
+  children?: GroupEntityView[];
+};
+export const GroupEntityViewSchema: z.ZodType<GroupEntityView> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    entityCode: z.string(),
+    name: z.string(),
+    country: z.string(),
+    currency: z.string(),
+    entityType: z.string(),
+    consolidationMethod: z.string(),
+    status: z.string(),
+    parentId: z.string().nullable(),
+    ownershipPercent: z.number(),
+    votingRightsPercent: z.number(),
+    acquisitionDate: z.string().nullable(),
+    divestmentDate: z.string().nullable(),
+    functionalCurrency: z.string(),
+    reportingCurrency: z.string(),
+    fxRate: z.number(),
+    children: z.array(GroupEntityViewSchema).optional(),
+  })
+);
+
+export const GoodwillAllocationViewSchema = z.object({
+  id: z.string(),
+  entityId: z.string(),
+  entityName: z.string(),
+  acquisitionDate: z.string(),
+  initialGoodwill: z.number(),
+  accumulatedImpairment: z.number(),
+  carryingAmount: z.number(),
+  cguId: z.string(),
+  cguName: z.string(),
+  lastImpairmentTest: z.string(),
+  currency: z.string(),
+});
+export type GoodwillAllocationView = z.infer<typeof GoodwillAllocationViewSchema>;
+
+export const OwnershipRecordViewSchema = z.object({
+  id: z.string(),
+  entityId: z.string(),
+  effectiveDate: z.string(),
+  previousOwnership: z.number(),
+  newOwnership: z.number(),
+  changeType: z.string(),
+  consideration: z.number(),
+  nciAdjustment: z.number(),
+  goodwillImpact: z.number(),
+  journalEntryId: z.string().nullable(),
+});
+export type OwnershipRecordView = z.infer<typeof OwnershipRecordViewSchema>;
+
+export const ConsolidationSummaryViewSchema = z.object({
+  totalEntities: z.number(),
+  subsidiaries: z.number(),
+  associates: z.number(),
+  jointVentures: z.number(),
+  totalGoodwill: z.number(),
+  nciEquity: z.number(),
+  eliminationEntries: z.number(),
+});
+export type ConsolidationSummaryView = z.infer<typeof ConsolidationSummaryViewSchema>;
+
+// cost-accounting
+export type CostCenterListItem = {
+  id: string;
+  code: string;
+  name: string;
+  parentId: string | null;
+  level: number;
+  status: string;
+  managerId: string | null;
+  managerName: string | null;
+  companyId: string;
+  currencyCode: string;
+  budgetAmount: string;
+  actualAmount: string;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  createdAt: string;
+  updatedAt: string;
+  children?: CostCenterListItem[];
+};
+export const CostCenterListItemSchema: z.ZodType<CostCenterListItem> = z.lazy(() =>
+  z.object({
+    id: z.string(),
+    code: z.string(),
+    name: z.string(),
+    parentId: z.string().nullable(),
+    level: z.number(),
+    status: z.string(),
+    managerId: z.string().nullable(),
+    managerName: z.string().nullable(),
+    companyId: z.string(),
+    currencyCode: z.string(),
+    budgetAmount: z.string(),
+    actualAmount: z.string(),
+    effectiveFrom: z.string(),
+    effectiveTo: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+    children: z.array(CostCenterListItemSchema).optional(),
+  })
+);
+
+export const CostCenterDetailSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  parentId: z.string().nullable(),
+  level: z.number(),
+  status: z.string(),
+  managerId: z.string().nullable(),
+  managerName: z.string().nullable(),
+  companyId: z.string(),
+  currencyCode: z.string(),
+  budgetAmount: z.string(),
+  actualAmount: z.string(),
+  effectiveFrom: z.string(),
+  effectiveTo: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  children: z.array(CostCenterListItemSchema).optional(),
+  description: z.string(),
+  parentCode: z.string().nullable(),
+  parentName: z.string().nullable(),
+  path: z.array(z.string()),
+  type: z.string(),
+});
+export type CostCenterDetail = z.infer<typeof CostCenterDetailSchema>;
+
+export const CostDriverListItemSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  description: z.string(),
+  driverType: z.string(),
+  unitOfMeasure: z.string(),
+  status: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type CostDriverListItem = z.infer<typeof CostDriverListItemSchema>;
+
+export const CostDriverValueViewSchema = z.object({
+  id: z.string(),
+  driverId: z.string(),
+  costCenterId: z.string(),
+  costCenterCode: z.string(),
+  costCenterName: z.string(),
+  period: z.string(),
+  value: z.number(),
+  percentage: z.number(),
+  updatedAt: z.string(),
+});
+export type CostDriverValueView = z.infer<typeof CostDriverValueViewSchema>;
+
+export const AllocationRuleViewSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  sourceCostCenterId: z.string(),
+  sourceCostCenterCode: z.string(),
+  sourceCostCenterName: z.string(),
+  driverId: z.string(),
+  driverCode: z.string(),
+  driverName: z.string(),
+  method: z.string(),
+  isActive: z.boolean(),
+  order: z.number(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type AllocationRuleView = z.infer<typeof AllocationRuleViewSchema>;
+
+export const AllocationRunViewSchema = z.object({
+  id: z.string(),
+  runNumber: z.string(),
+  period: z.string(),
+  method: z.string(),
+  status: z.string(),
+  totalAllocated: z.string(),
+  currency: z.string(),
+  rulesApplied: z.number(),
+  costCentersAffected: z.number(),
+  journalEntryId: z.string().nullable(),
+  journalEntryNumber: z.string().nullable(),
+  initiatedBy: z.string(),
+  initiatedAt: z.string(),
+  completedAt: z.string().nullable(),
+  reversedAt: z.string().nullable(),
+  reversedBy: z.string().nullable(),
+});
+export type AllocationRunView = z.infer<typeof AllocationRunViewSchema>;
+
+export const AllocationLineViewSchema = z.object({
+  id: z.string(),
+  runId: z.string(),
+  ruleId: z.string(),
+  ruleName: z.string(),
+  fromCostCenterId: z.string(),
+  fromCostCenterCode: z.string(),
+  fromCostCenterName: z.string(),
+  toCostCenterId: z.string(),
+  toCostCenterCode: z.string(),
+  toCostCenterName: z.string(),
+  amount: z.string(),
+  percentage: z.number(),
+  driverValue: z.number(),
+});
+export type AllocationLineView = z.infer<typeof AllocationLineViewSchema>;
+
+export const AllocationRunDetailViewSchema = AllocationRunViewSchema.extend({
+  lines: z.array(AllocationLineViewSchema),
+});
+export type AllocationRunDetailView = z.infer<typeof AllocationRunDetailViewSchema>;
+
+export const CostAccountingSummaryViewSchema = z.object({
+  totalCostCenters: z.number(),
+  activeCostCenters: z.number(),
+  totalDrivers: z.number(),
+  totalRules: z.number(),
+  lastAllocationRun: z.string().nullable(),
+  totalAllocatedYTD: z.string(),
+  budgetVariancePercent: z.number(),
+  pendingAllocations: z.number(),
+});
+export type CostAccountingSummaryView = z.infer<typeof CostAccountingSummaryViewSchema>;
+
+export const PostingPreviewLineSchema = z.object({
+  accountId: z.string(),
+  accountCode: z.string(),
+  accountName: z.string(),
+  debit: z.string(),
+  credit: z.string(),
+  description: z.string(),
+});
+export type PostingPreviewLine = z.infer<typeof PostingPreviewLineSchema>;
+
+export const PostingPreviewResultSchema = z.object({
+  ledgerName: z.string(),
+  periodName: z.string(),
+  currency: z.string(),
+  lines: z.array(PostingPreviewLineSchema),
+  warnings: z.array(z.string()),
+});
+export type PostingPreviewResult = z.infer<typeof PostingPreviewResultSchema>;
+
+// credit
+export const CustomerCreditViewSchema = z.object({
+  id: z.string(),
+  customerId: z.string(),
+  customerCode: z.string(),
+  customerName: z.string(),
+  creditLimit: z.number(),
+  currentBalance: z.number(),
+  availableCredit: z.number(),
+  utilizationPercent: z.number(),
+  overdueAmount: z.number(),
+  currency: z.string(),
+  paymentTermsDays: z.number(),
+  avgPaymentDays: z.number(),
+  riskRating: z.string(),
+  status: z.string(),
+  lastReviewDate: z.string(),
+  nextReviewDate: z.string(),
+  reviewFrequency: z.string(),
+  creditScoreExternal: z.number().nullable(),
+  creditScoreInternal: z.number().nullable(),
+  isOnHold: z.boolean(),
+  holdReason: z.string().nullable(),
+  holdDate: z.string().nullable(),
+  holdBy: z.string().nullable(),
+  approvedBy: z.string().nullable(),
+  approvedDate: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type CustomerCreditView = z.infer<typeof CustomerCreditViewSchema>;
+
+export const CreditReviewViewSchema = z.object({
+  id: z.string(),
+  reviewNumber: z.string(),
+  customerId: z.string(),
+  customerCode: z.string(),
+  customerName: z.string(),
+  reviewType: z.string(),
+  status: z.string(),
+  currentLimit: z.number(),
+  proposedLimit: z.number(),
+  currentRating: z.string(),
+  proposedRating: z.string(),
+  currency: z.string(),
+  requestedBy: z.string(),
+  requestedAt: z.string(),
+  assignedTo: z.string().nullable(),
+  financialAnalysis: z.string().nullable(),
+  paymentHistory: z.string().nullable(),
+  recommendation: z.string().nullable(),
+  approvedBy: z.string().nullable(),
+  approvedAt: z.string().nullable(),
+  rejectionReason: z.string().nullable(),
+  dueDate: z.string(),
+  completedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type CreditReviewView = z.infer<typeof CreditReviewViewSchema>;
+
+export const CreditHoldViewSchema = z.object({
+  id: z.string(),
+  customerId: z.string(),
+  customerCode: z.string(),
+  customerName: z.string(),
+  holdType: z.string(),
+  status: z.string(),
+  reason: z.string(),
+  amount: z.number(),
+  currency: z.string(),
+  blockedOrders: z.number(),
+  blockedOrderValue: z.number(),
+  holdDate: z.string(),
+  holdBy: z.string(),
+  releaseDate: z.string().nullable(),
+  releaseBy: z.string().nullable(),
+  releaseNotes: z.string().nullable(),
+  escalatedTo: z.string().nullable(),
+  escalatedAt: z.string().nullable(),
+  autoRelease: z.boolean(),
+  autoReleaseCondition: z.string().nullable(),
+});
+export type CreditHoldView = z.infer<typeof CreditHoldViewSchema>;
+
+export const CreditSummaryViewSchema = z.object({
+  totalCustomers: z.number(),
+  totalCreditLimit: z.number(),
+  totalOutstanding: z.number(),
+  totalOverdue: z.number(),
+  avgUtilization: z.number(),
+  customersOnHold: z.number(),
+  pendingReviews: z.number(),
+  overdueReviews: z.number(),
+  highRiskCustomers: z.number(),
+});
+export type CreditSummaryView = z.infer<typeof CreditSummaryViewSchema>;
+
+// dashboard
+export const DashboardSummarySchema = z.object({
+  cashBalance: z.number(),
+  openAr: z.record(z.unknown()),
+  openAp: z.record(z.unknown()),
+  currentPeriod: z.record(z.unknown()).nullable(),
+  recentActivity: z.array(z.record(z.unknown())),
+});
+export type DashboardSummary = z.infer<typeof DashboardSummarySchema>;
+
+// deferred-tax
+export const DeferredTaxItemViewSchema = z.object({
+  id: z.string(),
+  itemNumber: z.string(),
+  description: z.string(),
+  type: z.union([z.string(), z.string()]),
+  originType: z.string(),
+  status: z.union([z.string(), z.string(), z.string()]),
+  bookBasis: z.number(),
+  taxBasis: z.number(),
+  temporaryDifference: z.number(),
+  taxRate: z.number(),
+  deferredTaxAmount: z.number(),
+  currency: z.string(),
+  jurisdiction: z.string(),
+  originatingPeriod: z.string(),
+  expectedReversalPeriod: z.string().nullable(),
+  sourceId: z.string().nullable(),
+  sourceType: z.string().nullable(),
+  glAccountId: z.string(),
+  glAccountCode: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type DeferredTaxItemView = z.infer<typeof DeferredTaxItemViewSchema>;
+
+export const DeferredTaxMovementViewSchema = z.object({
+  id: z.string(),
+  itemId: z.string(),
+  periodEnd: z.string(),
+  openingBalance: z.number(),
+  additions: z.number(),
+  reversals: z.number(),
+  rateChange: z.number(),
+  fxAdjustment: z.number(),
+  closingBalance: z.number(),
+  journalEntryId: z.string().nullable(),
+});
+export type DeferredTaxMovementView = z.infer<typeof DeferredTaxMovementViewSchema>;
+
+export const DeferredTaxSummaryViewSchema = z.object({
+  totalDTA: z.number(),
+  totalDTL: z.number(),
+  netPosition: z.number(),
+  valuationAllowance: z.number(),
+  movementYTD: z.number(),
+  dtaByOrigin: z.record(z.unknown()),
+  dtlByOrigin: z.record(z.unknown()),
+});
+export type DeferredTaxSummaryView = z.infer<typeof DeferredTaxSummaryViewSchema>;
+
+// expenses
+export const ExpenseClaimListItemSchema = z.object({
+  id: z.string(),
+  claimNumber: z.string(),
+  employeeId: z.string(),
+  employeeName: z.string(),
+  department: z.string(),
+  title: z.string(),
+  status: z.string(),
+  totalAmount: z.number(),
+  currency: z.string(),
+  lineCount: z.number(),
+  submittedDate: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type ExpenseClaimListItem = z.infer<typeof ExpenseClaimListItemSchema>;
+
+export const ExpenseLineViewSchema = z.object({
+  id: z.string(),
+  expenseDate: z.string(),
+  category: z.string(),
+  description: z.string(),
+  merchantName: z.string(),
+  amount: z.number(),
+  currency: z.string(),
+  taxAmount: z.number(),
+  glAccountCode: z.string(),
+  costCenterCode: z.string().nullable(),
+  receiptAttached: z.boolean(),
+});
+export type ExpenseLineView = z.infer<typeof ExpenseLineViewSchema>;
+
+export const ExpenseClaimDetailSchema = z.object({
+  id: z.string(),
+  claimNumber: z.string(),
+  employeeId: z.string(),
+  employeeName: z.string(),
+  department: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  status: z.string(),
+  totalAmount: z.number(),
+  currency: z.string(),
+  lineCount: z.number(),
+  approvedAmount: z.number().nullable(),
+  approvedBy: z.string().nullable(),
+  approvedAt: z.string().nullable(),
+  paidDate: z.string().nullable(),
+  paymentReference: z.string().nullable(),
+  rejectionReason: z.string().nullable(),
+  submittedDate: z.string().nullable(),
+  periodFrom: z.string(),
+  periodTo: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type ExpenseClaimDetail = z.infer<typeof ExpenseClaimDetailSchema>;
+
+export const ExpensePolicyViewSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  categoryLimits: z.record(z.unknown()),
+  dailyLimit: z.number(),
+  monthlyLimit: z.number(),
+  requiresReceipt: z.boolean(),
+  receiptThreshold: z.number(),
+  requiresPreApproval: z.boolean(),
+  preApprovalThreshold: z.number(),
+  allowedCurrencies: z.array(z.string()),
+  isDefault: z.boolean(),
+});
+export type ExpensePolicyView = z.infer<typeof ExpensePolicyViewSchema>;
+
+export const ExpenseSummarySchema = z.object({
+  totalClaims: z.number(),
+  pendingClaims: z.number(),
+  approvedThisMonth: z.number(),
+  pendingAmount: z.number(),
+  approvedAmount: z.number(),
+  paidThisMonth: z.number(),
+  rejectionRate: z.number(),
+  averageProcessingDays: z.number(),
+});
+export type ExpenseSummary = z.infer<typeof ExpenseSummarySchema>;
+
+// fx
+export const FxRateListItemSchema = z.object({
+  id: z.string(),
+  fromCurrency: z.string(),
+  toCurrency: z.string(),
+  rate: z.string(),
+  effectiveDate: z.string(),
+  expiresAt: z.string().optional(),
+  source: z.string(),
+});
+export type FxRateListItem = z.infer<typeof FxRateListItemSchema>;
+
+export const FxRateDetailSchema = z.object({
+  id: z.string(),
+  fromCurrency: z.string(),
+  toCurrency: z.string(),
+  rate: z.string(),
+  effectiveDate: z.string(),
+  expiresAt: z.string().optional(),
+  source: z.string(),
+  createdAt: z.string(),
+});
+export type FxRateDetail = z.infer<typeof FxRateDetailSchema>;
+
+// hedging
+export const HedgeRelationshipViewSchema = z.object({
+  id: z.string(),
+  relationshipNumber: z.string(),
+  name: z.string(),
+  description: z.string(),
+  hedgeType: z.string(),
+  status: z.string(),
+  hedgedItemId: z.string(),
+  hedgedItemDescription: z.string(),
+  hedgingInstrumentId: z.string(),
+  hedgingInstrumentDescription: z.string(),
+  hedgeRatio: z.number(),
+  designationDate: z.string(),
+  terminationDate: z.string().nullable(),
+  currency: z.string(),
+  hedgedRisk: z.string(),
+  lastEffectivenessTest: z.string().nullable(),
+  effectivenessResult: z.string().nullable(),
+  ineffectivenessAmount: z.number(),
+  cashFlowReserve: z.number(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type HedgeRelationshipView = z.infer<typeof HedgeRelationshipViewSchema>;
+
+export const EffectivenessTestViewSchema = z.object({
+  id: z.string(),
+  relationshipId: z.string(),
+  testDate: z.string(),
+  periodEnd: z.string(),
+  method: z.string(),
+  hedgedItemChange: z.number(),
+  hedgingInstrumentChange: z.number(),
+  effectivenessRatio: z.number(),
+  result: z.string(),
+  ineffectivenessAmount: z.number(),
+  journalEntryId: z.string().nullable(),
+  testedBy: z.string(),
+  createdAt: z.string(),
+});
+export type EffectivenessTestView = z.infer<typeof EffectivenessTestViewSchema>;
+
+export const HedgingSummaryViewSchema = z.object({
+  activeRelationships: z.number(),
+  fairValueHedges: z.number(),
+  cashFlowHedges: z.number(),
+  netInvestmentHedges: z.number(),
+  totalCashFlowReserve: z.number(),
+  totalIneffectiveness: z.number(),
+});
+export type HedgingSummaryView = z.infer<typeof HedgingSummaryViewSchema>;
+
+// instruments
+export const InstrumentViewSchema = z.object({
+  id: z.string(),
+  instrumentNumber: z.string(),
+  name: z.string(),
+  description: z.string(),
+  type: z.string(),
+  category: z.string(),
+  status: z.string(),
+  issuer: z.string(),
+  currency: z.string(),
+  faceValue: z.number(),
+  carryingAmount: z.number(),
+  fairValue: z.number(),
+  fairValueLevel: z.string(),
+  unrealizedGainLoss: z.number(),
+  accruedInterest: z.number(),
+  interestRate: z.number().nullable(),
+  maturityDate: z.string().nullable(),
+  acquisitionDate: z.string(),
+  acquisitionCost: z.number(),
+  lastValuationDate: z.string(),
+  ecl: z.number(),
+  eclStage: z.number(),
+  glAccountId: z.string(),
+  glAccountCode: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type InstrumentView = z.infer<typeof InstrumentViewSchema>;
+
+export const FairValueMeasurementViewSchema = z.object({
+  id: z.string(),
+  instrumentId: z.string(),
+  measurementDate: z.string(),
+  fairValue: z.number(),
+  fairValueLevel: z.string(),
+  valuationMethod: z.string(),
+  unrealizedGainLoss: z.number(),
+  journalEntryId: z.string().nullable(),
+  journalEntryNumber: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type FairValueMeasurementView = z.infer<typeof FairValueMeasurementViewSchema>;
+
+export const InstrumentSummaryViewSchema = z.object({
+  totalInstruments: z.number(),
+  totalCarryingAmount: z.number(),
+  totalFairValue: z.number(),
+  unrealizedGainLoss: z.number(),
+  ecl: z.number(),
+  byCategory: z.record(z.unknown()),
+});
+export type InstrumentSummaryView = z.infer<typeof InstrumentSummaryViewSchema>;
+
+// ic
+export const IcSettlementStatusSchema = z.record(z.unknown());
+export type IcSettlementStatus = z.infer<typeof IcSettlementStatusSchema>;
+
+export const IcTransactionListItemSchema = z.object({
+  id: z.string(),
+  agreementId: z.string(),
+  description: z.string(),
+  amount: z.string(),
+  currency: z.string(),
+  transactionDate: z.string(),
+  settlementStatus: IcSettlementStatusSchema,
+  sourceCompanyName: z.string(),
+  mirrorCompanyName: z.string(),
+  sourceJournalRef: z.string().optional(),
+  mirrorJournalRef: z.string().optional(),
+});
+export type IcTransactionListItem = z.infer<typeof IcTransactionListItemSchema>;
+
+export const IcTransactionDetailSchema = z.object({
+  id: z.string(),
+  agreementId: z.string(),
+  description: z.string(),
+  amount: z.string(),
+  currency: z.string(),
+  transactionDate: z.string(),
+  settlementStatus: IcSettlementStatusSchema,
+  sourceCompanyId: z.string(),
+  sourceCompanyName: z.string(),
+  mirrorCompanyId: z.string(),
+  mirrorCompanyName: z.string(),
+  sourceJournalId: z.string().optional(),
+  sourceJournalRef: z.string().optional(),
+  mirrorJournalId: z.string().optional(),
+  mirrorJournalRef: z.string().optional(),
+  sourceLines: z.array(z.string()),
+  mirrorLines: z.array(z.string()),
+  createdAt: z.string(),
+});
+export type IcTransactionDetail = z.infer<typeof IcTransactionDetailSchema>;
+
+export const IcJournalLineViewSchema = z.object({
+  accountId: z.string(),
+  accountCode: z.string(),
+  accountName: z.string().optional(),
+  debit: z.string(),
+  credit: z.string(),
+});
+export type IcJournalLineView = z.infer<typeof IcJournalLineViewSchema>;
+
+export const IcAgreementListItemSchema = z.object({
+  id: z.string(),
+  sellerCompanyId: z.string(),
+  sellerCompanyName: z.string(),
+  buyerCompanyId: z.string(),
+  buyerCompanyName: z.string(),
+  pricingRule: z.string(),
+  markupPercent: z.number().optional(),
+  isActive: z.boolean(),
+});
+export type IcAgreementListItem = z.infer<typeof IcAgreementListItemSchema>;
+
+export const IcAgingRowSchema = z.object({
+  companyId: z.string(),
+  companyName: z.string(),
+  counterpartyId: z.string(),
+  counterpartyName: z.string(),
+  currency: z.string(),
+  current: z.string(),
+  days30: z.string(),
+  days60: z.string(),
+  days90Plus: z.string(),
+  total: z.string(),
+});
+export type IcAgingRow = z.infer<typeof IcAgingRowSchema>;
+
+export const IcAgingResultSchema = z.object({
+  rows: z.array(IcAgingRowSchema),
+  asOfDate: z.string(),
+  currency: z.string(),
+  grandTotal: z.string(),
+});
+export type IcAgingResult = z.infer<typeof IcAgingResultSchema>;
+
+export const IcTransactionPreviewResultSchema = z.object({
+  sourceJournal: PostingPreviewResultSchema,
+  mirrorJournal: PostingPreviewResultSchema,
+});
+export type IcTransactionPreviewResult = z.infer<typeof IcTransactionPreviewResultSchema>;
+
+// journal
+export const JournalListItemSchema = z.object({
+  id: z.string(),
+  documentNumber: z.string(),
+  description: z.string(),
+  status: JournalStatusSchema,
+  postingDate: z.string(),
+  totalDebit: z.string(),
+  totalCredit: z.string(),
+  currency: z.string(),
+  createdAt: z.string(),
+});
+export type JournalListItem = z.infer<typeof JournalListItemSchema>;
+
+export const JournalDetailSchema = z.object({
+  id: z.string(),
+  documentNumber: z.string(),
+  description: z.string(),
+  status: JournalStatusSchema,
+  postingDate: z.string(),
+  companyId: z.string(),
+  ledgerId: z.string(),
+  lines: z.array(z.string()),
+  totalDebit: z.string(),
+  totalCredit: z.string(),
+  currency: z.string(),
+  createdAt: z.string(),
+  postedAt: z.string().optional(),
+  reversedById: z.string().optional(),
+  voidedAt: z.string().optional(),
+  voidReason: z.string().optional(),
+});
+export type JournalDetail = z.infer<typeof JournalDetailSchema>;
+
+export const JournalLineViewSchema = z.object({
+  id: z.string(),
+  accountCode: z.string(),
+  accountName: z.string().optional(),
+  description: z.string().optional(),
+  debit: z.string(),
+  credit: z.string(),
+  currency: z.string(),
+});
+export type JournalLineView = z.infer<typeof JournalLineViewSchema>;
+
+// ledger
+export const LedgerListItemSchema = z.object({
+  id: z.string(),
+  companyId: z.string(),
+  name: z.string(),
+  baseCurrency: z.string(),
+  companyName: z.string().optional(),
+});
+export type LedgerListItem = z.infer<typeof LedgerListItemSchema>;
+
+export const LedgerDetailSchema = z.object({
+  id: z.string(),
+  companyId: z.string(),
+  companyName: z.string().optional(),
+  name: z.string(),
+  baseCurrency: z.string(),
+});
+export type LedgerDetail = z.infer<typeof LedgerDetailSchema>;
+
+// ap-close
+export const CloseChecklistItemSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  description: z.string(),
+  status: z.union([z.string(), z.string(), z.string(), z.string()]),
+  details: z.string().optional(),
+  count: z.number().optional(),
+});
+export type CloseChecklistItem = z.infer<typeof CloseChecklistItemSchema>;
+
+export const ApCloseChecklistSchema = z.object({
+  periodName: z.string(),
+  periodId: z.string(),
+  asOfDate: z.string(),
+  items: z.array(CloseChecklistItemSchema),
+  passCount: z.number(),
+  failCount: z.number(),
+  warningCount: z.number(),
+});
+export type ApCloseChecklist = z.infer<typeof ApCloseChecklistSchema>;
+
+// ap-hold
+export const ApHoldListItemSchema = z.object({
+  id: z.string(),
+  invoiceId: z.string(),
+  invoiceNumber: z.string(),
+  supplierName: z.string(),
+  supplierId: z.string(),
+  holdType: ApHoldTypeSchema,
+  holdReason: z.string(),
+  status: ApHoldStatusSchema,
+  createdAt: z.string(),
+  releasedAt: z.string().optional(),
+  releaseReason: z.string().optional(),
+});
+export type ApHoldListItem = z.infer<typeof ApHoldListItemSchema>;
+
+export const InvoiceTimelineEntrySchema = z.object({
+  id: z.string(),
+  action: z.string(),
+  userId: z.string(),
+  userName: z.string().optional(),
+  timestamp: z.string(),
+  details: z.string().optional(),
+});
+export type InvoiceTimelineEntry = z.infer<typeof InvoiceTimelineEntrySchema>;
+
+// ap-payment-run
+export const PaymentRunListItemSchema = z.object({
+  id: z.string(),
+  runNumber: z.string(),
+  status: PaymentRunStatusSchema,
+  runDate: z.string(),
+  cutoffDate: z.string(),
+  currencyCode: z.string(),
+  totalAmount: z.string(),
+  itemCount: z.number(),
+  createdAt: z.string(),
+});
+export type PaymentRunListItem = z.infer<typeof PaymentRunListItemSchema>;
+
+export const PaymentRunItemViewSchema = z.object({
+  id: z.string(),
+  invoiceId: z.string(),
+  invoiceNumber: z.string(),
+  supplierName: z.string(),
+  supplierId: z.string(),
+  amount: z.string(),
+  discountAmount: z.string(),
+  netAmount: z.string(),
+  currencyCode: z.string(),
+  dueDate: z.string(),
+});
+export type PaymentRunItemView = z.infer<typeof PaymentRunItemViewSchema>;
+
+export const PaymentRunDetailSchema = z.object({
+  id: z.string(),
+  runNumber: z.string(),
+  status: PaymentRunStatusSchema,
+  runDate: z.string(),
+  cutoffDate: z.string(),
+  currencyCode: z.string(),
+  companyId: z.string(),
+  companyName: z.string(),
+  totalAmount: z.string(),
+  totalDiscount: z.string(),
+  totalNet: z.string(),
+  itemCount: z.number(),
+  items: z.array(PaymentRunItemViewSchema),
+  createdAt: z.string(),
+  executedAt: z.string().optional(),
+  cancelledAt: z.string().optional(),
+  cancelReason: z.string().optional(),
+});
+export type PaymentRunDetail = z.infer<typeof PaymentRunDetailSchema>;
+
+export const RemittanceAdviceViewSchema = z.object({
+  runNumber: z.string(),
+  runDate: z.string(),
+  supplierName: z.string(),
+  currencyCode: z.string(),
+  totalGross: z.string(),
+  totalDiscount: z.string(),
+  totalNet: z.string(),
+});
+export type RemittanceAdviceView = z.infer<typeof RemittanceAdviceViewSchema>;
+
+export const PaymentProposalGroupSchema = z.object({
+  groupKey: z.string(),
+  supplierId: z.string(),
+  supplierName: z.string(),
+  paymentMethod: z.string(),
+  bankAccountId: z.string().nullable(),
+  currencyCode: z.string(),
+  totalGross: z.string(),
+  totalDiscount: z.string(),
+  totalNet: z.string(),
+});
+export type PaymentProposalGroup = z.infer<typeof PaymentProposalGroupSchema>;
+
+export const PaymentProposalResponseSchema = z.object({
+  paymentDate: z.string(),
+  cutoffDate: z.string(),
+  groups: z.array(PaymentProposalGroupSchema),
+});
+export type PaymentProposalResponse = z.infer<typeof PaymentProposalResponseSchema>;
+
+// ap-supplier
+export const SupplierListItemSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  status: SupplierStatusSchema,
+  taxId: z.string().optional(),
+  currencyCode: z.string(),
+  defaultPaymentMethod: z.string().optional(),
+  createdAt: z.string(),
+});
+export type SupplierListItem = z.infer<typeof SupplierListItemSchema>;
+
+export const SupplierSiteViewSchema = z.object({
+  id: z.string(),
+  siteCode: z.string(),
+  name: z.string(),
+  addressLine1: z.string(),
+  addressLine2: z.string().optional(),
+  city: z.string(),
+  state: z.string().optional(),
+  postalCode: z.string().optional(),
+  countryCode: z.string(),
+  isPrimary: z.boolean(),
+});
+export type SupplierSiteView = z.infer<typeof SupplierSiteViewSchema>;
+
+export const SupplierBankAccountViewSchema = z.object({
+  id: z.string(),
+  bankName: z.string(),
+  accountName: z.string(),
+  accountNumber: z.string(),
+  swiftBic: z.string().optional(),
+  iban: z.string().optional(),
+  routingNumber: z.string().optional(),
+  currencyCode: z.string(),
+  isPrimary: z.boolean(),
+});
+export type SupplierBankAccountView = z.infer<typeof SupplierBankAccountViewSchema>;
+
+export const SupplierDetailSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  status: SupplierStatusSchema,
+  taxId: z.string().optional(),
+  currencyCode: z.string(),
+  defaultPaymentMethod: z.string().optional(),
+  paymentTerms: z.string().optional(),
+  whtRateId: z.string().optional(),
+  remittanceEmail: z.string().optional(),
+  companyId: z.string(),
+  companyName: z.string(),
+  sites: z.array(SupplierSiteViewSchema),
+  bankAccounts: z.array(SupplierBankAccountViewSchema),
+  invoiceCount: z.number(),
+  openBalance: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type SupplierDetail = z.infer<typeof SupplierDetailSchema>;
+
+// ap-wht
+export const WhtCertificateListItemSchema = z.object({
+  id: z.string(),
+  supplierId: z.string(),
+  supplierName: z.string(),
+  supplierCode: z.string(),
+  certificateNumber: z.string(),
+  taxYear: z.number(),
+  incomeType: z.string(),
+  grossAmount: z.string(),
+  whtAmount: z.string(),
+  whtRate: z.string(),
+  currencyCode: z.string(),
+  issueDate: z.string(),
+  status: z.enum(['ISSUED', 'VOIDED']),
+});
+export type WhtCertificateListItem = z.infer<typeof WhtCertificateListItemSchema>;
+
+export const WhtReportSummarySchema = z.object({
+  totalGross: z.string(),
+  totalWht: z.string(),
+  currencyCode: z.string(),
+  certificateCount: z.number(),
+});
+export type WhtReportSummary = z.infer<typeof WhtReportSummarySchema>;
+
+// ap
+export const ApInvoiceListItemSchema = z.object({
+  id: z.string(),
+  invoiceNumber: z.string(),
+  supplierName: z.string(),
+  supplierId: z.string(),
+  status: ApInvoiceStatusSchema,
+  invoiceDate: z.string(),
+  dueDate: z.string(),
+  totalAmount: z.string(),
+  amountPaid: z.string(),
+  balanceDue: z.string(),
+  currencyCode: z.string(),
+  createdAt: z.string(),
+});
+export type ApInvoiceListItem = z.infer<typeof ApInvoiceListItemSchema>;
+
+export const ApInvoiceLineViewSchema = z.object({
+  id: z.string(),
+  accountCode: z.string(),
+  accountName: z.string().optional(),
+  description: z.string().optional(),
+  quantity: z.number(),
+  unitPrice: z.string(),
+  amount: z.string(),
+  taxAmount: z.string(),
+});
+export type ApInvoiceLineView = z.infer<typeof ApInvoiceLineViewSchema>;
+
+export const ApInvoiceDetailSchema = z.object({
+  id: z.string(),
+  invoiceNumber: z.string(),
+  supplierName: z.string(),
+  supplierId: z.string(),
+  supplierRef: z.string().optional(),
+  status: ApInvoiceStatusSchema,
+  invoiceDate: z.string(),
+  dueDate: z.string(),
+  currencyCode: z.string(),
+  description: z.string().optional(),
+  poRef: z.string().optional(),
+  receiptRef: z.string().optional(),
+  companyId: z.string(),
+  ledgerId: z.string(),
+  lines: z.array(ApInvoiceLineViewSchema),
+  totalAmount: z.string(),
+  totalTax: z.string(),
+  amountPaid: z.string(),
+  balanceDue: z.string(),
+  createdAt: z.string(),
+  postedAt: z.string().optional(),
+  cancelledAt: z.string().optional(),
+  cancelReason: z.string().optional(),
+});
+export type ApInvoiceDetail = z.infer<typeof ApInvoiceDetailSchema>;
+
+export const InvoiceEarlyDiscountSchema = z.object({
+  eligible: z.boolean(),
+  discountDeadline: z.string().nullable(),
+  savingsPercent: z.number(),
+  discountAmount: z.string(),
+  netPayable: z.string(),
+  currencyCode: z.string(),
+});
+export type InvoiceEarlyDiscount = z.infer<typeof InvoiceEarlyDiscountSchema>;
+
+export const ApDiscountSummarySchema = z.object({
+  totalDiscount: z.string(),
+  currencyCode: z.string(),
+  days: z.number(),
+});
+export type ApDiscountSummary = z.infer<typeof ApDiscountSummarySchema>;
+
+// match-tolerance
+export const MatchToleranceListItemSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  scope: ToleranceScopeSchema,
+  scopeEntityId: z.string().nullable(),
+  companyId: z.string().nullable(),
+  toleranceBps: z.number(),
+  quantityTolerancePercent: z.number(),
+  autoHold: z.boolean(),
+  isActive: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type MatchToleranceListItem = z.infer<typeof MatchToleranceListItemSchema>;
+
+// prepayment
+export const PrepaymentListItemSchema = z.object({
+  id: z.string(),
+  invoiceNumber: z.string(),
+  supplierName: z.string(),
+  supplierId: z.string(),
+  status: z.string(),
+  totalAmount: z.string(),
+  appliedAmount: z.string(),
+  remainingAmount: z.string(),
+  currencyCode: z.string(),
+  invoiceDate: z.string(),
+  createdAt: z.string(),
+});
+export type PrepaymentListItem = z.infer<typeof PrepaymentListItemSchema>;
+
+export const PrepaymentApplicationViewSchema = z.object({
+  id: z.string(),
+  targetInvoiceId: z.string(),
+  targetInvoiceNumber: z.string(),
+  amount: z.string(),
+  appliedAt: z.string(),
+});
+export type PrepaymentApplicationView = z.infer<typeof PrepaymentApplicationViewSchema>;
+
+export const PrepaymentDetailSchema = PrepaymentListItemSchema.extend({
+  applications: z.array(PrepaymentApplicationViewSchema),
+});
+export type PrepaymentDetail = z.infer<typeof PrepaymentDetailSchema>;
+
+// supplier-mdm
+export const SupplierBlockViewSchema = z.object({
+  id: z.string(),
+  blockType: z.string(),
+  blockScope: z.string(),
+  reason: z.string(),
+  effectiveFrom: z.string(),
+  effectiveTo: z.string().nullable(),
+  isActive: z.boolean(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+});
+export type SupplierBlockView = z.infer<typeof SupplierBlockViewSchema>;
+
+export const SupplierTaxRegistrationViewSchema = z.object({
+  id: z.string(),
+  taxType: z.string(),
+  registrationNumber: z.string(),
+  countryCode: z.string(),
+  issuingAuthority: z.string().nullable(),
+  validFrom: z.string(),
+  validTo: z.string().nullable(),
+  verified: z.boolean(),
+  verifiedAt: z.string().nullable(),
+  verifiedBy: z.string().nullable(),
+});
+export type SupplierTaxRegistrationView = z.infer<typeof SupplierTaxRegistrationViewSchema>;
+
+export const SupplierLegalDocViewSchema = z.object({
+  id: z.string(),
+  docType: z.string(),
+  documentName: z.string(),
+  fileUrl: z.string().nullable(),
+  status: z.string(),
+  expiryDate: z.string().nullable(),
+  verifiedAt: z.string().nullable(),
+  verifiedBy: z.string().nullable(),
+  rejectionReason: z.string().nullable(),
+  uploadedAt: z.string(),
+});
+export type SupplierLegalDocView = z.infer<typeof SupplierLegalDocViewSchema>;
+
+export const SupplierEvaluationViewSchema = z.object({
+  id: z.string(),
+  templateName: z.string(),
+  evaluatorName: z.string(),
+  status: z.string(),
+  overallScore: z.number().nullable(),
+  period: z.string(),
+  completedAt: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type SupplierEvaluationView = z.infer<typeof SupplierEvaluationViewSchema>;
+
+export const SupplierRiskIndicatorViewSchema = z.object({
+  id: z.string(),
+  riskCategory: z.string(),
+  riskRating: z.string(),
+  description: z.string(),
+  mitigationPlan: z.string().nullable(),
+  isActive: z.boolean(),
+  resolvedAt: z.string().nullable(),
+  resolvedBy: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type SupplierRiskIndicatorView = z.infer<typeof SupplierRiskIndicatorViewSchema>;
+
+export const SupplierDiversityViewSchema = z.object({
+  id: z.string(),
+  diversityCode: z.string(),
+  certificationBody: z.string().nullable(),
+  certificationNumber: z.string().nullable(),
+  validFrom: z.string(),
+  validTo: z.string().nullable(),
+  verified: z.boolean(),
+});
+export type SupplierDiversityView = z.infer<typeof SupplierDiversityViewSchema>;
+
+export const SupplierContactViewSchema = z.object({
+  id: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  role: z.string(),
+  email: z.string(),
+  phone: z.string().nullable(),
+  isPrimary: z.boolean(),
+  createdAt: z.string(),
+});
+export type SupplierContactView = z.infer<typeof SupplierContactViewSchema>;
+
+export const SupplierCompanyOverrideViewSchema = z.object({
+  id: z.string(),
+  companyId: z.string(),
+  companyName: z.string(),
+  paymentTermsOverride: z.string().nullable(),
+  paymentMethodOverride: z.string().nullable(),
+  currencyOverride: z.string().nullable(),
+  whtRateOverride: z.string().nullable(),
+  updatedAt: z.string(),
+});
+export type SupplierCompanyOverrideView = z.infer<typeof SupplierCompanyOverrideViewSchema>;
+
+export const SupplierActivationReadinessSchema = z.object({
+  ready: z.boolean(),
+});
+export type SupplierActivationReadiness = z.infer<typeof SupplierActivationReadinessSchema>;
+
+// period
+export const PeriodStatusSchema = z.record(z.unknown());
+export type PeriodStatus = z.infer<typeof PeriodStatusSchema>;
+
+export const PeriodListItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  year: z.number(),
+  period: z.number(),
+  startDate: z.string(),
+  endDate: z.string(),
+  status: PeriodStatusSchema,
+});
+export type PeriodListItem = z.infer<typeof PeriodListItemSchema>;
+
+export const PeriodDetailSchema = z.object({
+  id: z.string(),
+  companyId: z.string(),
+  name: z.string(),
+  year: z.number(),
+  period: z.number(),
+  startDate: z.string(),
+  endDate: z.string(),
+  status: PeriodStatusSchema,
+});
+export type PeriodDetail = z.infer<typeof PeriodDetailSchema>;
+
+// provisions
+export const ProvisionViewSchema = z.object({
+  id: z.string(),
+  provisionNumber: z.string(),
+  name: z.string(),
+  description: z.string(),
+  type: z.string(),
+  status: z.string(),
+  recognitionDate: z.string(),
+  expectedSettlementDate: z.string().nullable(),
+  initialAmount: z.number(),
+  currentBalance: z.number(),
+  currency: z.string(),
+  discountRate: z.number().nullable(),
+  presentValue: z.number().nullable(),
+  isDiscounted: z.boolean(),
+  utilizationYTD: z.number(),
+  additionsYTD: z.number(),
+  reversalsYTD: z.number(),
+  unwinding: z.number(),
+  glAccountId: z.string(),
+  glAccountCode: z.string(),
+  costCenterId: z.string().nullable(),
+  costCenterCode: z.string().nullable(),
+  contingentLiability: z.boolean(),
+  contingencyNote: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type ProvisionView = z.infer<typeof ProvisionViewSchema>;
+
+export const ProvisionMovementViewSchema = z.object({
+  id: z.string(),
+  provisionId: z.string(),
+  movementDate: z.string(),
+  movementType: z.string(),
+  amount: z.number(),
+  currency: z.string(),
+  description: z.string(),
+  reference: z.string().nullable(),
+  journalEntryId: z.string().nullable(),
+  journalEntryNumber: z.string().nullable(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+});
+export type ProvisionMovementView = z.infer<typeof ProvisionMovementViewSchema>;
+
+export const ProvisionSummaryViewSchema = z.object({
+  totalProvisions: z.number(),
+  activeProvisions: z.number(),
+  totalBalance: z.number(),
+  utilizationYTD: z.number(),
+  additionsYTD: z.number(),
+  reversalsYTD: z.number(),
+  contingentLiabilities: z.number(),
+  provisionsToReview: z.number(),
+});
+export type ProvisionSummaryView = z.infer<typeof ProvisionSummaryViewSchema>;
+
+// ar
+export const ArInvoiceListItemSchema = z.object({
+  id: z.string(),
+  invoiceNumber: z.string(),
+  customerName: z.string(),
+  customerId: z.string(),
+  status: ArInvoiceStatusSchema,
+  invoiceDate: z.string(),
+  dueDate: z.string(),
+  totalAmount: z.string(),
+  amountPaid: z.string(),
+  balanceDue: z.string(),
+  currencyCode: z.string(),
+  createdAt: z.string(),
+});
+export type ArInvoiceListItem = z.infer<typeof ArInvoiceListItemSchema>;
+
+export const ArInvoiceLineViewSchema = z.object({
+  id: z.string(),
+  accountCode: z.string(),
+  accountName: z.string().optional(),
+  description: z.string().optional(),
+  quantity: z.number(),
+  unitPrice: z.string(),
+  amount: z.string(),
+  taxAmount: z.string(),
+});
+export type ArInvoiceLineView = z.infer<typeof ArInvoiceLineViewSchema>;
+
+export const ArInvoiceDetailSchema = z.object({
+  id: z.string(),
+  invoiceNumber: z.string(),
+  customerName: z.string(),
+  customerId: z.string(),
+  customerRef: z.string().optional(),
+  status: ArInvoiceStatusSchema,
+  invoiceDate: z.string(),
+  dueDate: z.string(),
+  currencyCode: z.string(),
+  description: z.string().optional(),
+  companyId: z.string(),
+  ledgerId: z.string(),
+  lines: z.array(ArInvoiceLineViewSchema),
+  totalAmount: z.string(),
+  totalTax: z.string(),
+  amountPaid: z.string(),
+  balanceDue: z.string(),
+  createdAt: z.string(),
+  postedAt: z.string().optional(),
+  cancelledAt: z.string().optional(),
+  cancelReason: z.string().optional(),
+  writtenOffAt: z.string().optional(),
+  writeOffReason: z.string().optional(),
+});
+export type ArInvoiceDetail = z.infer<typeof ArInvoiceDetailSchema>;
+
+// dunning
+export const DunningRunListItemSchema = z.object({
+  id: z.string(),
+  runDate: z.string(),
+  status: z.string(),
+  lettersGenerated: z.number(),
+  totalOutstanding: z.string(),
+  currencyCode: z.string(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+});
+export type DunningRunListItem = z.infer<typeof DunningRunListItemSchema>;
+
+export const DunningLetterViewSchema = z.object({
+  id: z.string(),
+  customerId: z.string(),
+  customerName: z.string(),
+  dunningLevel: z.number(),
+  totalOverdue: z.string(),
+  currencyCode: z.string(),
+  invoiceCount: z.number(),
+  status: z.string(),
+  sentAt: z.string().nullable(),
+});
+export type DunningLetterView = z.infer<typeof DunningLetterViewSchema>;
+
+export const DunningRunDetailSchema = z.object({
+  id: z.string(),
+  runDate: z.string(),
+  status: z.string(),
+  lettersGenerated: z.number(),
+  totalOutstanding: z.string(),
+  currencyCode: z.string(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  letters: z.array(DunningLetterViewSchema),
+});
+export type DunningRunDetail = z.infer<typeof DunningRunDetailSchema>;
+
+// recurring
+export const RecurringTemplateLineSchema = z.object({
+  accountCode: z.string(),
+  debit: z.number(),
+  credit: z.number(),
+  description: z.string().optional(),
+});
+export type RecurringTemplateLine = z.infer<typeof RecurringTemplateLineSchema>;
+
+export const RecurringTemplateListItemSchema = z.object({
+  id: z.string(),
+  companyId: z.string(),
+  companyName: z.string().optional(),
+  ledgerId: z.string(),
+  description: z.string(),
+  frequency: RecurringFrequencySchema,
+  nextRunDate: z.string(),
+  isActive: z.boolean(),
+  lineCount: z.number(),
+  createdAt: z.string(),
+});
+export type RecurringTemplateListItem = z.infer<typeof RecurringTemplateListItemSchema>;
+
+export const RecurringTemplateDetailSchema = z.object({
+  id: z.string(),
+  companyId: z.string(),
+  companyName: z.string().optional(),
+  ledgerId: z.string(),
+  ledgerName: z.string().optional(),
+  description: z.string(),
+  frequency: RecurringFrequencySchema,
+  nextRunDate: z.string(),
+  isActive: z.boolean(),
+  lines: z.array(RecurringTemplateLineSchema),
+  createdAt: z.string(),
+});
+export type RecurringTemplateDetail = z.infer<typeof RecurringTemplateDetailSchema>;
+
+// report
+export const AgingBucketSchema = z.object({
+  current: z.string(),
+  days30: z.string(),
+  days60: z.string(),
+  days90: z.string(),
+  over90: z.string(),
+  total: z.string(),
+});
+export type AgingBucket = z.infer<typeof AgingBucketSchema>;
+
+export const ApAgingRowSchema = AgingBucketSchema.extend({
+  supplierId: z.string(),
+  supplierName: z.string(),
+  invoiceCount: z.number(),
+});
+export type ApAgingRow = z.infer<typeof ApAgingRowSchema>;
+
+export const ApAgingResultSchema = z.object({
+  asOfDate: z.string(),
+  rows: z.array(ApAgingRowSchema),
+  totals: AgingBucketSchema,
+  currency: z.string(),
+});
+export type ApAgingResult = z.infer<typeof ApAgingResultSchema>;
+
+export const ArAgingRowSchema = AgingBucketSchema.extend({
+  customerId: z.string(),
+  customerName: z.string(),
+  invoiceCount: z.number(),
+  creditLimit: z.string(),
+});
+export type ArAgingRow = z.infer<typeof ArAgingRowSchema>;
+
+export const ArAgingResultSchema = z.object({
+  asOfDate: z.string(),
+  rows: z.array(ArAgingRowSchema),
+  totals: AgingBucketSchema,
+  currency: z.string(),
+});
+export type ArAgingResult = z.infer<typeof ArAgingResultSchema>;
+
+export const AssetRegisterRowSchema = z.object({
+  assetId: z.string(),
+  assetCode: z.string(),
+  description: z.string(),
+  category: z.string(),
+  acquisitionDate: z.string(),
+  costAmount: z.string(),
+  accumulatedDepreciation: z.string(),
+  netBookValue: z.string(),
+  status: z.string(),
+});
+export type AssetRegisterRow = z.infer<typeof AssetRegisterRowSchema>;
+
+export const AssetRegisterResultSchema = z.object({
+  asOfDate: z.string(),
+  rows: z.array(AssetRegisterRowSchema),
+  totalCost: z.string(),
+  totalDepreciation: z.string(),
+  totalNBV: z.string(),
+  currency: z.string(),
+});
+export type AssetRegisterResult = z.infer<typeof AssetRegisterResultSchema>;
+
+export const ConsolidationEntityRowSchema = z.object({
+  entityCode: z.string(),
+  entityName: z.string(),
+  currency: z.string(),
+  ownershipPercent: z.number(),
+  method: z.string(),
+  assets: z.string(),
+  liabilities: z.string(),
+  equity: z.string(),
+});
+export type ConsolidationEntityRow = z.infer<typeof ConsolidationEntityRowSchema>;
+
+export const ConsolidationReportResultSchema = z.object({
+  asOfDate: z.string(),
+  rows: z.array(ConsolidationEntityRowSchema),
+  totalAssets: z.string(),
+  totalLiabilities: z.string(),
+  totalEquity: z.string(),
+  eliminationsTotal: z.string(),
+  currency: z.string(),
+});
+export type ConsolidationReportResult = z.infer<typeof ConsolidationReportResultSchema>;
+
+export const CostAllocationRowSchema = z.object({
+  costCenterCode: z.string(),
+  costCenterName: z.string(),
+  directCosts: z.string(),
+  allocatedCosts: z.string(),
+  totalCosts: z.string(),
+  allocationPercent: z.number(),
+});
+export type CostAllocationRow = z.infer<typeof CostAllocationRowSchema>;
+
+export const CostAllocationResultSchema = z.object({
+  periodRange: z.string(),
+  rows: z.array(CostAllocationRowSchema),
+  totalDirectCosts: z.string(),
+  totalAllocatedCosts: z.string(),
+  grandTotal: z.string(),
+  currency: z.string(),
+});
+export type CostAllocationResult = z.infer<typeof CostAllocationResultSchema>;
+
+export const EquityMovementRowSchema = z.object({
+  description: z.string(),
+  shareCapital: z.string(),
+  retainedEarnings: z.string(),
+  otherReserves: z.string(),
+  nci: z.string(),
+  total: z.string(),
+});
+export type EquityMovementRow = z.infer<typeof EquityMovementRowSchema>;
+
+export const EquityStatementResultSchema = z.object({
+  periodRange: z.string(),
+  rows: z.array(EquityMovementRowSchema),
+  openingBalance: EquityMovementRowSchema,
+  closingBalance: EquityMovementRowSchema,
+  currency: z.string(),
+});
+export type EquityStatementResult = z.infer<typeof EquityStatementResultSchema>;
+
+export const TaxSummaryRowSchema = z.object({
+  taxCode: z.string(),
+  taxName: z.string(),
+  taxableBase: z.string(),
+  taxAmount: z.string(),
+  adjustments: z.string(),
+  netTax: z.string(),
+});
+export type TaxSummaryRow = z.infer<typeof TaxSummaryRowSchema>;
+
+export const TaxSummaryResultSchema = z.object({
+  periodRange: z.string(),
+  rows: z.array(TaxSummaryRowSchema),
+  totalTaxableBase: z.string(),
+  totalTaxAmount: z.string(),
+  totalAdjustments: z.string(),
+  totalNetTax: z.string(),
+  currency: z.string(),
+});
+export type TaxSummaryResult = z.infer<typeof TaxSummaryResultSchema>;
+
+export const TrialBalanceRowSchema = z.object({
+  accountCode: z.string(),
+  accountName: z.string(),
+  debit: z.string(),
+  credit: z.string(),
+  balance: z.string(),
+});
+export type TrialBalanceRow = z.infer<typeof TrialBalanceRowSchema>;
+
+export const TrialBalanceResultSchema = z.object({
+  rows: z.array(TrialBalanceRowSchema),
+  totalDebit: z.string(),
+  totalCredit: z.string(),
+  asOfDate: z.string(),
+});
+export type TrialBalanceResult = z.infer<typeof TrialBalanceResultSchema>;
+
+export const ReportRowSchema = z.object({
+  accountCode: z.string(),
+  accountName: z.string(),
+  balance: z.string(),
+});
+export type ReportRow = z.infer<typeof ReportRowSchema>;
+
+export const ReportSectionSchema = z.object({
+  label: z.string(),
+  rows: z.array(ReportRowSchema),
+  total: z.string(),
+});
+export type ReportSection = z.infer<typeof ReportSectionSchema>;
+
+export const BalanceSheetResultSchema = z.object({
+  ledgerId: z.string(),
+  periodId: z.string(),
+  assets: ReportSectionSchema,
+  liabilities: ReportSectionSchema,
+  equity: ReportSectionSchema,
+  isBalanced: z.boolean(),
+  asOfDate: z.string(),
+});
+export type BalanceSheetResult = z.infer<typeof BalanceSheetResultSchema>;
+
+export const IncomeStatementResultSchema = z.object({
+  ledgerId: z.string(),
+  fromPeriodId: z.string(),
+  toPeriodId: z.string(),
+  revenue: ReportSectionSchema,
+  expenses: ReportSectionSchema,
+  netIncome: z.string(),
+  periodRange: z.string(),
+});
+export type IncomeStatementResult = z.infer<typeof IncomeStatementResultSchema>;
+
+export const CashFlowResultSchema = z.object({
+  ledgerId: z.string(),
+  fromPeriodId: z.string(),
+  toPeriodId: z.string(),
+  operatingActivities: z.string(),
+  investingActivities: z.string(),
+  financingActivities: z.string(),
+  netCashFlow: z.string(),
+  periodRange: z.string(),
+});
+export type CashFlowResult = z.infer<typeof CashFlowResultSchema>;
+
+// revenue
+export const RevenueContractListItemSchema = z.object({
+  id: z.string(),
+  contractNumber: z.string(),
+  customerName: z.string(),
+  totalAmount: z.string(),
+  recognizedAmount: z.string(),
+  deferredAmount: z.string(),
+  currency: z.string(),
+  recognitionMethod: z.string(),
+  startDate: z.string(),
+  endDate: z.string(),
+  status: z.string(),
+  createdAt: z.string(),
+});
+export type RevenueContractListItem = z.infer<typeof RevenueContractListItemSchema>;
+
+export const RecognitionMilestoneViewSchema = z.object({
+  id: z.string(),
+  milestoneName: z.string(),
+  targetDate: z.string(),
+  completionPercent: z.number(),
+  amount: z.string(),
+  isRecognized: z.boolean(),
+  recognizedAt: z.string().nullable(),
+});
+export type RecognitionMilestoneView = z.infer<typeof RecognitionMilestoneViewSchema>;
+
+export const RevenueContractDetailSchema = z.object({
+  id: z.string(),
+  contractNumber: z.string(),
+  customerName: z.string(),
+  companyId: z.string(),
+  totalAmount: z.string(),
+  recognizedAmount: z.string(),
+  deferredAmount: z.string(),
+  currency: z.string(),
+  recognitionMethod: z.string(),
+  startDate: z.string(),
+  endDate: z.string(),
+  deferredAccountId: z.string(),
+  revenueAccountId: z.string(),
+  status: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type RevenueContractDetail = z.infer<typeof RevenueContractDetailSchema>;
+
+// settings
+export const PaymentTermsListItemSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  dueDays: z.number(),
+  discountDays: z.number().nullable(),
+  discountPercent: z.number().nullable(),
+  isActive: z.boolean(),
+  createdAt: z.string(),
+});
+export type PaymentTermsListItem = z.infer<typeof PaymentTermsListItemSchema>;
+
+export const PaymentTermsDetailSchema = PaymentTermsListItemSchema.extend({
+  lines: z.array(z.string()),
+  updatedAt: z.string(),
+});
+export type PaymentTermsDetail = z.infer<typeof PaymentTermsDetailSchema>;
+
+export const PaymentTermsLineViewSchema = z.object({
+  id: z.string(),
+  sequence: z.number(),
+  duePercent: z.number(),
+  dueDays: z.number(),
+  discountDays: z.number().nullable(),
+  discountPercent: z.number().nullable(),
+});
+export type PaymentTermsLineView = z.infer<typeof PaymentTermsLineViewSchema>;
+
+// transfer-pricing
+export const TransferPricingPolicyViewSchema = z.object({
+  id: z.string(),
+  policyNumber: z.string(),
+  name: z.string(),
+  description: z.string(),
+  transactionType: z.string(),
+  pricingMethod: z.string(),
+  status: z.string(),
+  entities: z.array(z.string()),
+  entityNames: z.array(z.string()),
+  armLengthRange: z.record(z.unknown()),
+  targetMargin: z.number(),
+  currency: z.string(),
+  effectiveFrom: z.string(),
+  effectiveTo: z.string().nullable(),
+  lastReviewDate: z.string().nullable(),
+  nextReviewDate: z.string().nullable(),
+  documentationId: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type TransferPricingPolicyView = z.infer<typeof TransferPricingPolicyViewSchema>;
+
+export const BenchmarkStudyViewSchema = z.object({
+  id: z.string(),
+  studyNumber: z.string(),
+  policyId: z.string(),
+  fiscalYear: z.string(),
+  comparableSetSize: z.number(),
+  quartiles: z.record(z.unknown()),
+  interquartileRange: z.number(),
+  actualResult: z.number(),
+  isWithinRange: z.boolean(),
+  studyProvider: z.string(),
+  studyDate: z.string(),
+  documentationId: z.string().nullable(),
+});
+export type BenchmarkStudyView = z.infer<typeof BenchmarkStudyViewSchema>;
+
+export const TransferPricingSummaryViewSchema = z.object({
+  totalPolicies: z.number(),
+  activePolicies: z.number(),
+  policiesForReview: z.number(),
+  transactionsYTD: z.number(),
+  adjustmentsYTD: z.number(),
+  complianceRate: z.number(),
+});
+export type TransferPricingSummaryView = z.infer<typeof TransferPricingSummaryViewSchema>;
+
+// treasury
+export const CashForecastViewSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  periodType: z.string(),
+  startDate: z.string(),
+  endDate: z.string(),
+  currency: z.string(),
+  status: z.string(),
+  openingBalance: z.number(),
+  closingBalance: z.number(),
+  totalInflows: z.number(),
+  totalOutflows: z.number(),
+  netCashFlow: z.number(),
+  createdBy: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type CashForecastView = z.infer<typeof CashForecastViewSchema>;
+
+export const CovenantViewSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  type: z.string(),
+  facilityId: z.string(),
+  facilityName: z.string(),
+  lenderId: z.string(),
+  lenderName: z.string(),
+  metric: z.string(),
+  operator: z.string(),
+  threshold: z.number(),
+  thresholdMax: z.number().optional(),
+  currentValue: z.number(),
+  status: z.string(),
+  testingFrequency: z.string(),
+  nextTestDate: z.string(),
+  lastTestDate: z.string(),
+  gracePeriodDays: z.number(),
+  consequences: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type CovenantView = z.infer<typeof CovenantViewSchema>;
+
+export const CovenantTestViewSchema = z.object({
+  id: z.string(),
+  covenantId: z.string(),
+  testDate: z.string(),
+  periodEnd: z.string(),
+  actualValue: z.number(),
+  threshold: z.number(),
+  variance: z.number(),
+  variancePercent: z.number(),
+  status: z.string(),
+  notes: z.string(),
+  testedBy: z.string(),
+  approvedBy: z.string(),
+  approvedAt: z.string(),
+});
+export type CovenantTestView = z.infer<typeof CovenantTestViewSchema>;
+
+export const IntercompanyLoanViewSchema = z.object({
+  id: z.string(),
+  loanNumber: z.string(),
+  lenderEntityId: z.string(),
+  lenderEntityName: z.string(),
+  borrowerEntityId: z.string(),
+  borrowerEntityName: z.string(),
+  type: z.string(),
+  principal: z.number(),
+  outstandingBalance: z.number(),
+  currency: z.string(),
+  interestRate: z.number(),
+  rateType: z.string(),
+  referenceRate: z.string().optional(),
+  spread: z.number().optional(),
+  startDate: z.string(),
+  maturityDate: z.string(),
+  accruedInterest: z.number(),
+  totalInterestPaid: z.number(),
+  status: z.string(),
+  armLengthRate: z.number(),
+  isArmLength: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type IntercompanyLoanView = z.infer<typeof IntercompanyLoanViewSchema>;
+
+export const ICLoanScheduleEntryViewSchema = z.object({
+  id: z.string(),
+  loanId: z.string(),
+  dueDate: z.string(),
+  principalDue: z.number(),
+  interestDue: z.number(),
+  totalDue: z.number(),
+  principalPaid: z.number(),
+  interestPaid: z.number(),
+  paidDate: z.string().nullable(),
+  status: z.string(),
+});
+export type ICLoanScheduleEntryView = z.infer<typeof ICLoanScheduleEntryViewSchema>;
+
+export const TreasurySummaryViewSchema = z.object({
+  totalCashPosition: z.number(),
+  forecastedEndOfMonth: z.number(),
+  activeLoans: z.number(),
+  totalLoanBalance: z.number(),
+  covenantsAtRisk: z.number(),
+  covenantsBreeched: z.number(),
+  upcomingMaturities: z.number(),
+  netIntercompanyPosition: z.number(),
+});
+export type TreasurySummaryView = z.infer<typeof TreasurySummaryViewSchema>;
+
+// ── Portal Response Schemas ──
+
+// portal
+export const PortalSupplierSchema = z.object({
+  supplierId: z.string(),
+  supplierName: z.string(),
+  supplierCode: z.string(),
+  status: z.union([z.string(), z.string(), z.string()]),
+  taxId: z.string().nullable(),
+  remittanceEmail: z.string().nullable(),
+  currencyCode: z.string(),
+});
+export type PortalSupplier = z.infer<typeof PortalSupplierSchema>;
+
+export const PortalInvoiceListItemSchema = z.object({
+  id: z.string(),
+  invoiceNumber: z.string(),
+  status: z.string(),
+  invoiceDate: z.string(),
+  dueDate: z.string(),
+  totalAmount: z.string(),
+  amountPaid: z.string(),
+  balanceDue: z.string(),
+  currencyCode: z.string(),
+});
+export type PortalInvoiceListItem = z.infer<typeof PortalInvoiceListItemSchema>;
+
+export const PortalInvoiceDetailSchema = PortalInvoiceListItemSchema.extend({
+  supplierRef: z.string().nullable(),
+  description: z.string().nullable(),
+  lines: z.array(z.string()),
+});
+export type PortalInvoiceDetail = z.infer<typeof PortalInvoiceDetailSchema>;
+
+export const PortalInvoiceLineSchema = z.object({
+  id: z.string(),
+  lineNumber: z.number(),
+  description: z.string(),
+  quantity: z.string(),
+  unitPrice: z.string(),
+  amount: z.string(),
+  taxCode: z.string().nullable(),
+  taxAmount: z.string(),
+});
+export type PortalInvoiceLine = z.infer<typeof PortalInvoiceLineSchema>;
+
+export const PortalAgingBucketSchema = z.object({
+  label: z.string(),
+  count: z.number(),
+  totalAmount: z.string(),
+  currencyCode: z.string(),
+});
+export type PortalAgingBucket = z.infer<typeof PortalAgingBucketSchema>;
+
+export const PortalPaymentRunListItemSchema = z.object({
+  id: z.string(),
+  runNumber: z.string(),
+  runDate: z.string(),
+  status: z.string(),
+  totalAmount: z.string(),
+  currencyCode: z.string(),
+  invoiceCount: z.number(),
+});
+export type PortalPaymentRunListItem = z.infer<typeof PortalPaymentRunListItemSchema>;
+
+export const PortalRemittanceItemSchema = z.object({
+  invoiceId: z.string(),
+  invoiceNumber: z.string(),
+  grossAmount: z.string(),
+  discountAmount: z.string(),
+  netAmount: z.string(),
+});
+export type PortalRemittanceItem = z.infer<typeof PortalRemittanceItemSchema>;
+
+export const PortalRemittanceAdviceSchema = z.object({
+  paymentRunId: z.string(),
+  runNumber: z.string(),
+  runDate: z.string(),
+  currencyCode: z.string(),
+  supplierName: z.string(),
+  items: z.array(PortalRemittanceItemSchema),
+  totalGross: z.string(),
+  totalDiscount: z.string(),
+  totalNet: z.string(),
+});
+export type PortalRemittanceAdvice = z.infer<typeof PortalRemittanceAdviceSchema>;
+
+export const PortalBankAccountSchema = z.object({
+  id: z.string(),
+  bankName: z.string(),
+  accountName: z.string(),
+  accountNumber: z.string(),
+  iban: z.string().nullable(),
+  swiftBic: z.string().nullable(),
+  currencyCode: z.string(),
+  isPrimary: z.boolean(),
+});
+export type PortalBankAccount = z.infer<typeof PortalBankAccountSchema>;
+
+export const PortalDocumentSchema = z.object({
+  id: z.string(),
+  category: z.string(),
+  title: z.string(),
+  fileName: z.string(),
+  mimeType: z.string(),
+  fileSizeBytes: z.number(),
+  checksumSha256: z.string(),
+  expiresAt: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type PortalDocument = z.infer<typeof PortalDocumentSchema>;
+
+export const PortalDisputeSchema = z.object({
+  id: z.string(),
+  invoiceId: z.string().nullable(),
+  paymentRunId: z.string().nullable(),
+  category: z.string(),
+  subject: z.string(),
+  description: z.string(),
+  status: z.string(),
+  resolution: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type PortalDispute = z.infer<typeof PortalDisputeSchema>;
+
+export const PortalWhtCertificateSchema = z.object({
+  id: z.string(),
+  invoiceId: z.string(),
+  certificateNumber: z.string(),
+  whtAmount: z.string(),
+  currencyCode: z.string(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
+  issuedAt: z.string(),
+});
+export type PortalWhtCertificate = z.infer<typeof PortalWhtCertificateSchema>;
+
+export const PortalComplianceItemSchema = z.object({
+  itemType: z.string(),
+  status: z.string(),
+  expiresAt: z.string().nullable(),
+  lastVerifiedAt: z.string().nullable(),
+  notes: z.string().nullable(),
+});
+export type PortalComplianceItem = z.infer<typeof PortalComplianceItemSchema>;
+
+export const PortalComplianceSummarySchema = z.object({
+  items: z.array(PortalComplianceItemSchema),
+  overallStatus: z.string(),
+});
+export type PortalComplianceSummary = z.infer<typeof PortalComplianceSummarySchema>;
+
+export const PortalNotificationPrefSchema = z.object({
+  eventType: z.string(),
+  channel: z.string(),
+  enabled: z.boolean(),
+  webhookUrl: z.string().nullable(),
+});
+export type PortalNotificationPref = z.infer<typeof PortalNotificationPrefSchema>;
+
+export const PortalReconResultSchema = z.object({
+  matchedCount: z.number(),
+  unmatchedCount: z.number(),
+  statementOnlyCount: z.number(),
+  matched: z.array(z.string()),
+  unmatched: z.array(z.string()),
+  statementOnly: z.array(z.string()),
+});
+export type PortalReconResult = z.infer<typeof PortalReconResultSchema>;
+
+export const PortalReconLineSchema = z.object({
+  statementRef: z.string(),
+  statementAmount: z.string(),
+  ledgerRef: z.string().nullable(),
+  ledgerAmount: z.string().nullable(),
+  status: z.string(),
+});
+export type PortalReconLine = z.infer<typeof PortalReconLineSchema>;
+
+export const PortalDashboardSummarySchema = z.object({
+  openInvoiceCount: z.number(),
+  openInvoiceAmount: z.string(),
+  overdueInvoiceCount: z.number(),
+  overdueInvoiceAmount: z.string(),
+  paidLast30Count: z.number(),
+  paidLast30Amount: z.string(),
+  currencyCode: z.string(),
+  aging: z.array(PortalAgingBucketSchema),
+  compliance: PortalComplianceSummarySchema,
+  recentInvoices: z.array(PortalInvoiceListItemSchema),
+  openDisputes: z.array(PortalDisputeSchema),
+});
+export type PortalDashboardSummary = z.infer<typeof PortalDashboardSummarySchema>;
+
 // ─── Kernel Contracts ─────────────────────────────────────────────────────────
 export * from './kernel/index.js';
+
+// ─── Finance Chart Contracts ──────────────────────────────────────────────────
+export * from './finance/charts.js';
+
+// ─── Portal 2.0 Contracts (SP-2000 series) ────────────────────────────────────
+export * from './portal/index.js';

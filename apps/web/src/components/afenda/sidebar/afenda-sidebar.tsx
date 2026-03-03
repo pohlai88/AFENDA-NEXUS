@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { NavMain } from './nav-main';
 import { NavFavorites } from './nav-favorites';
+import { NavPortals } from './nav-portals';
 import { NavCategories, type SidebarCategory } from './nav-categories';
 import { NavSecondary, type NavSecondaryItem } from './nav-secondary';
 import { NavQuickActions } from './nav-quick-actions';
@@ -19,6 +20,7 @@ import type { AttentionSummary } from '@/lib/attention/attention.types';
 import {
   NAV_MAIN_ITEMS,
   CATEGORY_DEFS,
+  PORTAL_DEFS,
   SECONDARY_ITEM_DEFS,
 } from '@/lib/sidebar/sidebar-config';
 
@@ -34,26 +36,24 @@ import {
 function buildCategories(modules: ClientModuleWithNav[]): SidebarCategory[] {
   const moduleMap = new Map(modules.map((m) => [m.id, m]));
 
-  return CATEGORY_DEFS
-    .map((def) => {
-      const mods = def.moduleIds
-        .map((id) => moduleMap.get(id))
-        .filter((m): m is ClientModuleWithNav => m != null)
-        .map((m) => ({
-          id: m.id,
-          label: m.label,
-          href: m.href,
-          icon: m.iconName,
-        }));
+  return CATEGORY_DEFS.map((def) => {
+    const mods = def.moduleIds
+      .map((id) => moduleMap.get(id))
+      .filter((m): m is ClientModuleWithNav => m != null)
+      .map((m) => ({
+        id: m.id,
+        label: m.label,
+        href: m.href,
+        icon: m.iconName,
+      }));
 
-      return {
-        label: def.label,
-        emoji: def.emoji,
-        icon: def.icon,
-        modules: mods,
-      };
-    })
-    .filter((c) => c.modules.length > 0);
+    return {
+      label: def.label,
+      emoji: def.emoji,
+      icon: def.icon,
+      modules: mods,
+    };
+  }).filter((c) => c.modules.length > 0);
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -80,11 +80,17 @@ interface AfendaSidebarProps extends React.ComponentProps<typeof Sidebar> {
  *   SidebarContent
  *     ├── NavQuickActions (configurable CRUD shortcuts — Ctrl+1…9)
  *     ├── NavFavorites (user-pinned pages with picker dialog)
+ *     ├── NavPortals (Customer, Supplier, Investor, Franchisee portals)
  *     ├── NavCategories (Category → Module — config-driven)
  *     └── NavSecondary (Settings, Admin — config-driven, mt-auto)
  *   SidebarRail (icon-only collapsed mode)
  */
-function AfendaSidebar({ modules, onSwitchCompany, attentionSummary, ...props }: AfendaSidebarProps) {
+function AfendaSidebar({
+  modules,
+  onSwitchCompany,
+  attentionSummary,
+  ...props
+}: AfendaSidebarProps) {
   const categories = React.useMemo(() => buildCategories(modules), [modules]);
 
   // Build nav-main items with live badge from attentionSummary
@@ -93,18 +99,16 @@ function AfendaSidebar({ modules, onSwitchCompany, attentionSummary, ...props }:
     return NAV_MAIN_ITEMS.map((item) => ({
       ...item,
       // Attach the live pending count to the Approvals item
-      badge: item.icon === 'CheckCircle' && pendingCount
-        ? String(pendingCount)
-        : undefined,
+      badge: item.icon === 'CheckCircle' && pendingCount ? String(pendingCount) : undefined,
     }));
   }, [attentionSummary]);
 
   // Secondary items — config-driven, filtered to visible modules
   const secondaryItems = React.useMemo<NavSecondaryItem[]>(() => {
     const visibleIds = new Set(modules.map((m) => m.id));
-    return SECONDARY_ITEM_DEFS
-      .filter((def) => visibleIds.has(def.moduleId))
-      .map(({ title, href, icon }) => ({ title, href, icon }));
+    return SECONDARY_ITEM_DEFS.filter((def) => visibleIds.has(def.moduleId)).map(
+      ({ title, href, icon }) => ({ title, href, icon })
+    );
   }, [modules]);
 
   return (
@@ -116,10 +120,11 @@ function AfendaSidebar({ modules, onSwitchCompany, attentionSummary, ...props }:
         <NavMain items={navMainItems} />
       </SidebarHeader>
 
-      {/* ─── Content: Quick Actions → Favorites → Categories → Secondary ─── */}
+      {/* ─── Content: Quick Actions → Favorites → Portals → Categories → Secondary ─── */}
       <SidebarContent>
         <NavQuickActions />
         <NavFavorites modules={modules} />
+        <NavPortals portals={PORTAL_DEFS} />
         <NavCategories categories={categories} />
         <NavSecondary items={secondaryItems} className="mt-auto" />
       </SidebarContent>

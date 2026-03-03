@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
@@ -9,23 +10,18 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Preferences' };
 
-export default async function PreferencesPage() {
-  const ctx = await getRequestContext();
+async function PreferencesContent({ ctx }: { ctx: RequestContext }) {
   const api = createApiClient(ctx);
   const result = await api.get<Record<string, unknown>>('/me/preferences');
 
   const preferences = UserPreferencesSchema.parse(result.ok ? result.value : {});
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Preferences"
         description="Customize your personal experience."
-        breadcrumbs={[
-          { label: 'Settings', href: '/settings' },
-          { label: 'Preferences' },
-        ]}
+        breadcrumbs={[{ label: 'Settings', href: '/settings' }, { label: 'Preferences' }]}
       />
 
       <div className="max-w-2xl space-y-6">
@@ -37,6 +33,15 @@ export default async function PreferencesPage() {
         </div>
       </div>
     </div>
-  </Suspense>
+  );
+}
+
+export default async function PreferencesPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PreferencesContent ctx={ctx} />
+    </Suspense>
   );
 }

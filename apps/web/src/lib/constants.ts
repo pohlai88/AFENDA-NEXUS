@@ -18,6 +18,23 @@ export const routes = {
     dashboard: '/finance',
     approvals: '/finance/approvals',
 
+    // Sub-domain dashboard pages
+    glDashboard: '/finance/general-ledger',
+    apDashboard: '/finance/accounts-payable',
+    arDashboard: '/finance/accounts-receivable',
+    assetsDashboard: '/finance/asset-accounting',
+    travelDashboard: '/finance/travel-expenses',
+    bankingDashboard: '/finance/banking-liquidity',
+    treasuryDashboard: '/finance/treasury',
+    controllingDashboard: '/finance/controlling',
+    taxDashboard: '/finance/tax-compliance',
+    intercompanyDashboard: '/finance/intercompany',
+    ifrsDashboard: '/finance/ifrs-standards',
+    consolidationDashboard: '/finance/consolidation',
+    paymentsDashboard: '/finance/payments',
+    settingsDashboard: '/finance/finance-settings',
+    reportsDashboard: '/finance/financial-reports',
+
     // Payments
     payments: '/finance/payments',
     paymentDetail: (id: string) => `/finance/payments/${id}`,
@@ -53,8 +70,10 @@ export const routes = {
     paymentRunDetail: (id: string) => `/finance/accounts-payable/payables/payment-runs/${id}`,
     paymentRunNew: '/finance/accounts-payable/payables/payment-runs/new',
     paymentRunItems: (id: string) => `/finance/accounts-payable/payables/payment-runs/${id}/items`,
-    paymentRunRemittance: (id: string) => `/finance/accounts-payable/payables/payment-runs/${id}/remittance`,
-    paymentRunRejection: (id: string) => `/finance/accounts-payable/payables/payment-runs/${id}/rejection`,
+    paymentRunRemittance: (id: string) =>
+      `/finance/accounts-payable/payables/payment-runs/${id}/remittance`,
+    paymentRunRejection: (id: string) =>
+      `/finance/accounts-payable/payables/payment-runs/${id}/rejection`,
 
     // AP Suppliers
     suppliers: '/finance/accounts-payable/payables/suppliers',
@@ -330,14 +349,37 @@ export const routes = {
     profile: '/portal/profile',
     bankAccounts: '/portal/bank-accounts',
     documents: '/portal/documents',
-    disputes: '/portal/disputes',
-    disputeNew: '/portal/disputes/new',
-    disputeDetail: (id: string) => `/portal/disputes/${id}`,
+    cases: '/portal/cases',
+    caseNew: '/portal/cases/new',
+    caseDetail: (id: string) => `/portal/cases/${id}`,
+    onboarding: '/portal/onboarding',
     reconciliation: '/portal/reconciliation',
     wht: '/portal/wht',
     whtDetail: (id: string) => `/portal/wht/${id}`,
     compliance: '/portal/compliance',
+    complianceAlerts: '/portal/compliance/alerts',
+    complianceTimeline: '/portal/compliance/timeline',
+    activity: '/portal/activity',
+    company: '/portal/company',
+    directory: '/portal/directory',
     notificationSettings: '/portal/settings/notifications',
+    apiSettings: '/portal/settings/api',
+    messages: '/portal/messages',
+    messageThread: (threadId: string) => `/portal/messages/${threadId}`,
+    escalations: '/portal/escalations',
+    escalationDetail: (escalationId: string) => `/portal/escalations/${escalationId}`,
+    announcements: '/portal/announcements',
+    verification: '/portal/verification',
+    appointments: '/portal/appointments',
+    appointmentNew: '/portal/appointments/new',
+    appointmentDetail: (id: string) => `/portal/appointments/${id}`,
+    earlyPayments: '/portal/payments/early-payment',
+    earlyPaymentDetail: (id: string) => `/portal/payments/early-payment/${id}`,
+    creditDebitNoteNew: '/portal/invoices/credit-debit-note/new',
+    resolution: (invoiceId: string) => `/portal/invoices/${invoiceId}/resolution`,
+    customer: '/portal/customer',
+    investor: '/portal/investor',
+    franchisee: '/portal/franchisee',
   },
 } as const;
 
@@ -420,6 +462,8 @@ export interface NavGroup {
   featureId?: string;
   title: string;
   icon: string;
+  /** Link to the sub-domain dashboard page (e.g. '/finance/general-ledger') */
+  href?: string;
   items: NavItem[];
   collapsible?: boolean;
   /** Dashboard shortcut card metadata (optional override) */
@@ -455,6 +499,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'overview',
     title: 'Overview',
     icon: 'LayoutDashboard',
+    href: routes.finance.dashboard,
     items: [
       { title: 'Dashboard', href: routes.finance.dashboard, icon: 'LayoutDashboard' },
       { title: 'Approvals', href: routes.finance.approvals, icon: 'CheckCircle' },
@@ -466,6 +511,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'gl',
     title: 'General Ledger (FI-GL)',
     icon: 'BookOpen',
+    href: routes.finance.glDashboard,
     collapsible: true,
     shortcut: { description: 'Chart of Accounts, journals, periods' },
     items: [
@@ -484,6 +530,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'ap',
     title: 'Accounts Payable (FI-AP)',
     icon: 'Receipt',
+    href: routes.finance.apDashboard,
     collapsible: true,
     shortcut: { description: 'Invoice processing, payment runs, suppliers' },
     items: [
@@ -506,6 +553,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'ar',
     title: 'Accounts Receivable (FI-AR)',
     icon: 'HandCoins',
+    href: routes.finance.arDashboard,
     collapsible: true,
     shortcut: { description: 'Customer invoices, collections, credit control' },
     items: [
@@ -522,6 +570,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'assets',
     title: 'Asset Accounting (FI-AA)',
     icon: 'Building',
+    href: routes.finance.assetsDashboard,
     collapsible: true,
     shortcut: { description: 'Fixed assets, depreciation, disposals' },
     items: [
@@ -538,6 +587,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'travel',
     title: 'Travel & Expenses (FI-TV)',
     icon: 'Wallet',
+    href: routes.finance.travelDashboard,
     collapsible: true,
     shortcut: { description: 'Expense claims, policies, reimbursement' },
     items: [
@@ -552,6 +602,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'banking',
     title: 'Banking & Liquidity (FI-BL)',
     icon: 'Landmark',
+    href: routes.finance.bankingDashboard,
     collapsible: true,
     shortcut: { description: 'Bank statements, reconciliation, rules' },
     items: [
@@ -566,6 +617,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'treasury',
     title: 'Treasury (TR)',
     icon: 'Vault',
+    href: routes.finance.treasuryDashboard,
     collapsible: true,
     shortcut: { description: 'Cash forecasts, covenants, FX, loans' },
     items: [
@@ -581,6 +633,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'controlling',
     title: 'Controlling (CO)',
     icon: 'PieChart',
+    href: routes.finance.controllingDashboard,
     collapsible: true,
     shortcut: { description: 'Cost centers, projects, allocations' },
     items: [
@@ -596,6 +649,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'tax',
     title: 'Tax & Compliance (FI-TX)',
     icon: 'FileCheck',
+    href: routes.finance.taxDashboard,
     collapsible: true,
     shortcut: { description: 'Tax codes, returns, WHT certificates' },
     items: [
@@ -611,6 +665,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'intercompany',
     title: 'Intercompany (IC)',
     icon: 'Network',
+    href: routes.finance.intercompanyDashboard,
     collapsible: true,
     shortcut: { description: 'IC transactions, transfer pricing' },
     items: [
@@ -625,6 +680,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'ifrs',
     title: 'IFRS & Standards (EC-CS)',
     icon: 'ShieldCheck',
+    href: routes.finance.ifrsDashboard,
     collapsible: true,
     shortcut: { description: 'Lease, provision, hedge, instrument accounting' },
     items: [
@@ -633,7 +689,11 @@ export const financeNavigationGroups: NavGroup[] = [
       { title: 'Instruments (IFRS 9)', href: routes.finance.instruments, icon: 'Banknote' },
       { title: 'Hedges (IFRS 9)', href: routes.finance.hedges, icon: 'Umbrella' },
       { title: 'Deferred Tax (IAS 12)', href: routes.finance.deferredTax, icon: 'Clock' },
-      { title: 'Revenue Recognition (IFRS 15)', href: routes.finance.revenueRecognition, icon: 'BarChart3' },
+      {
+        title: 'Revenue Recognition (IFRS 15)',
+        href: routes.finance.revenueRecognition,
+        icon: 'BarChart3',
+      },
     ],
   },
 
@@ -642,6 +702,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'consolidation',
     title: 'Consolidation (FI-LC)',
     icon: 'GitBranch',
+    href: routes.finance.consolidationDashboard,
     collapsible: true,
     shortcut: { description: 'Group entities, eliminations, goodwill' },
     items: [
@@ -649,8 +710,23 @@ export const financeNavigationGroups: NavGroup[] = [
       { title: 'Ownership Structure', href: routes.finance.ownership, icon: 'Users' },
       { title: 'Eliminations', href: routes.finance.eliminations, icon: 'MinusCircle' },
       { title: 'Goodwill', href: routes.finance.goodwill, icon: 'Star' },
-      { title: 'Consolidation Report', href: routes.finance.consolidationReport, icon: 'GitBranch' },
+      {
+        title: 'Consolidation Report',
+        href: routes.finance.consolidationReport,
+        icon: 'GitBranch',
+      },
     ],
+  },
+
+  // ── FI-PM: Payments ───────────────────────────────────────────────────
+  {
+    featureId: 'payments',
+    title: 'Payments (FI-PM)',
+    icon: 'Banknote',
+    href: routes.finance.paymentsDashboard,
+    collapsible: true,
+    shortcut: { description: 'Centralized payment management hub' },
+    items: [{ title: 'Payments Hub', href: routes.finance.payments, icon: 'Banknote' }],
   },
 
   // ── FI-CFG: Finance Settings ────────────────────────────────────────────
@@ -658,6 +734,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'settings',
     title: 'Finance Settings (FI-CFG)',
     icon: 'Settings',
+    href: routes.finance.settingsDashboard,
     collapsible: true,
     shortcut: { description: 'Payment terms, match tolerances, policies' },
     items: [
@@ -672,6 +749,7 @@ export const financeNavigationGroups: NavGroup[] = [
     featureId: 'reports',
     title: 'Financial Reports (FI-RP)',
     icon: 'BarChart3',
+    href: routes.finance.reportsDashboard,
     collapsible: true,
     shortcut: { description: 'Statutory & management reports' },
     items: [
@@ -691,10 +769,22 @@ export const portalNavigationItems: NavItem[] = [
   { title: 'Invoices', href: routes.portal.invoices, icon: 'Receipt' },
   { title: 'Payments', href: routes.portal.payments, icon: 'Banknote' },
   { title: 'Documents', href: routes.portal.documents, icon: 'FolderOpen' },
-  { title: 'Disputes', href: routes.portal.disputes, icon: 'MessageSquareWarning' },
+  { title: 'Cases', href: routes.portal.cases, icon: 'Inbox' },
+  { title: 'Bank Accounts', href: routes.portal.bankAccounts, icon: 'Landmark' },
+  { title: 'Profile', href: routes.portal.profile, icon: 'UserCog' },
+  { title: 'WHT Certificates', href: routes.portal.wht, icon: 'FileText' },
   { title: 'Reconciliation', href: routes.portal.reconciliation, icon: 'GitMerge' },
   { title: 'Compliance', href: routes.portal.compliance, icon: 'ShieldCheck' },
+  { title: 'Activity', href: routes.portal.activity, icon: 'ClipboardList' },
+  { title: 'Company Locations', href: routes.portal.company, icon: 'Building' },
+  { title: 'Directory', href: routes.portal.directory, icon: 'Users' },
   { title: 'Settings', href: routes.portal.notificationSettings, icon: 'Settings' },
+  { title: 'API & Webhooks', href: routes.portal.apiSettings, icon: 'Webhook' },
+  { title: 'Messages', href: routes.portal.messages, icon: 'MessageSquare' },
+  { title: 'Escalations', href: routes.portal.escalations, icon: 'Siren' },
+  { title: 'Announcements', href: routes.portal.announcements, icon: 'Megaphone' },
+  { title: 'Verification', href: routes.portal.verification, icon: 'ShieldCheck' },
+  { title: 'Appointments', href: routes.portal.appointments, icon: 'CalendarClock' },
 ];
 
 // ─── HRM Navigation Config ──────────────────────────────────────────────────
@@ -703,9 +793,7 @@ export const hrmNavigationGroups: NavGroup[] = [
   {
     title: 'Overview',
     icon: 'LayoutDashboard',
-    items: [
-      { title: 'Dashboard', href: routes.hrm.dashboard, icon: 'LayoutDashboard' },
-    ],
+    items: [{ title: 'Dashboard', href: routes.hrm.dashboard, icon: 'LayoutDashboard' }],
   },
   {
     title: 'People',
@@ -724,9 +812,7 @@ export const hrmNavigationGroups: NavGroup[] = [
     icon: 'Banknote',
     collapsible: true,
     shortcut: { description: 'Payroll & benefits' },
-    items: [
-      { title: 'Payroll', href: routes.hrm.payroll, icon: 'Banknote' },
-    ],
+    items: [{ title: 'Payroll', href: routes.hrm.payroll, icon: 'Banknote' }],
   },
   {
     title: 'Talent',
@@ -747,9 +833,7 @@ export const crmNavigationGroups: NavGroup[] = [
   {
     title: 'Overview',
     icon: 'LayoutDashboard',
-    items: [
-      { title: 'Dashboard', href: routes.crm.dashboard, icon: 'LayoutDashboard' },
-    ],
+    items: [{ title: 'Dashboard', href: routes.crm.dashboard, icon: 'LayoutDashboard' }],
   },
   {
     title: 'Sales Pipeline',
@@ -778,9 +862,7 @@ export const crmNavigationGroups: NavGroup[] = [
     icon: 'Sparkles',
     collapsible: true,
     shortcut: { description: 'Campaigns & outreach' },
-    items: [
-      { title: 'Campaigns', href: routes.crm.campaigns, icon: 'Sparkles' },
-    ],
+    items: [{ title: 'Campaigns', href: routes.crm.campaigns, icon: 'Sparkles' }],
   },
 ];
 
@@ -790,9 +872,7 @@ export const boardroomNavigationGroups: NavGroup[] = [
   {
     title: 'Overview',
     icon: 'LayoutDashboard',
-    items: [
-      { title: 'Dashboard', href: routes.boardroom.dashboard, icon: 'LayoutDashboard' },
-    ],
+    items: [{ title: 'Dashboard', href: routes.boardroom.dashboard, icon: 'LayoutDashboard' }],
   },
   {
     title: 'Communication',

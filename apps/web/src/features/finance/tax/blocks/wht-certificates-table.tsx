@@ -76,7 +76,7 @@ const columns: Column<WHTCertificate>[] = [
       const Icon = cert.type === 'payable' ? Building2 : User;
       return (
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-muted-foreground" />
+          <Icon className="h-4 w-4 text-muted-foreground"  aria-hidden="true" />
           <div>
             <div className="font-medium">{name}</div>
             <div className="text-xs text-muted-foreground font-mono">{cert.taxId}</div>

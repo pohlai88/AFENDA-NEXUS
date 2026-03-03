@@ -1,13 +1,18 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
 import { getRevenueContract } from '@/features/finance/revenue-recognition/queries/revenue.queries';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ContractHeader, ContractOverview, MilestonesSection } from '@/features/finance/revenue-recognition/blocks/contract-detail-blocks';
+import {
+  ContractHeader,
+  ContractOverview,
+  MilestonesSection,
+} from '@/features/finance/revenue-recognition/blocks/contract-detail-blocks';
 import { routes } from '@/lib/constants';
 
 type Props = { params: Promise<{ id: string }> };
@@ -19,8 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${result.value.contractNumber} | Revenue Recognition` };
 }
 
-export default async function RevenueContractDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function RevenueContractDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getRevenueContract(ctx, id);
 
   if (!result.ok) {
@@ -43,7 +47,11 @@ export default async function RevenueContractDetailPage({ params }: Props) {
       <BusinessDocument
         header={<ContractHeader contract={contract} />}
         tabs={[
-          { value: 'overview', label: 'Overview', content: <ContractOverview contract={contract} /> },
+          {
+            value: 'overview',
+            label: 'Overview',
+            content: <ContractOverview contract={contract} />,
+          },
           {
             value: 'milestones',
             label: 'Milestones',
@@ -56,5 +64,15 @@ export default async function RevenueContractDetailPage({ params }: Props) {
         ]}
       />
     </div>
+  );
+}
+
+export default async function RevenueContractDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense>
+      <RevenueContractDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

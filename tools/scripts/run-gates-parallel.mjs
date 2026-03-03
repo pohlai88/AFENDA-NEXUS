@@ -182,6 +182,12 @@ const GATES = [
     cmd: ['node', 'tools/scripts/gate-schema-entity-alignment.mjs'],
     group: 'module',
   },
+  {
+    id: 'contract-drift-improved',
+    name: 'Contract drift improved (CDI-01–03)',
+    cmd: ['node', 'tools/scripts/gate-contract-drift-improved.mjs'],
+    group: 'module',
+  },
 
   // ── Domain Invariants (group: domain) ───────────────────────────────────
   {
@@ -282,6 +288,12 @@ const GATES = [
     cmd: ['node', 'tools/scripts/gate-performance-budget.mjs'],
     group: 'security',
   },
+  {
+    id: 'nested-interactive',
+    name: 'Nested interactive elements (NESTED-01)',
+    cmd: ['node', 'tools/scripts/gate-nested-interactive.mjs'],
+    group: 'domain',
+  },
 ];
 
 // ── CLI Parsing ─────────────────────────────────────────────────────────────
@@ -300,7 +312,7 @@ const concurrencyLimit = Number(getFlag('--concurrency')) || 0; // 0 = unlimited
 
 if (selectedGroup && !VALID_GROUPS.includes(selectedGroup)) {
   console.error(
-    `\n  ❌ Invalid group: "${selectedGroup}"\n  Valid groups: ${VALID_GROUPS.join(', ')}\n`,
+    `\n  ❌ Invalid group: "${selectedGroup}"\n  Valid groups: ${VALID_GROUPS.join(', ')}\n`
   );
   process.exit(1);
 }
@@ -426,9 +438,7 @@ async function main() {
   console.log();
   console.log('╔══════════════════════════════════════════════════════════════╗');
   console.log(`║  Parallel Gate Runner                                        ║`);
-  console.log(
-    `║  ${pad(`${gates.length} gates (${label}${concLabel})`, 58)}║`,
-  );
+  console.log(`║  ${pad(`${gates.length} gates (${label}${concLabel})`, 58)}║`);
   console.log('╚══════════════════════════════════════════════════════════════╝');
   console.log();
 
@@ -458,7 +468,7 @@ async function main() {
   console.log();
   console.log('── Summary ───────────────────────────────────────────────────');
   console.log(
-    `  Total: ${results.length} gates | ✅ ${passed.length} passed | ❌ ${failed.length} failed | ⏱  ${fmt(totalDuration)}`,
+    `  Total: ${results.length} gates | ✅ ${passed.length} passed | ❌ ${failed.length} failed | ⏱  ${fmt(totalDuration)}`
   );
   console.log();
 

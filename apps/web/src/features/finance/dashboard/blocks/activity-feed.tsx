@@ -74,7 +74,7 @@ function ActivityItemRow({ item }: { item: ActivityItem }) {
   const content = (
     <div className="flex items-start gap-3 py-3 px-1 hover:bg-accent/50 rounded-md transition-colors">
       <div className={cn('rounded-full p-2', config.color)}>
-        <Icon className="h-4 w-4" />
+        <Icon className="h-4 w-4" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center justify-between gap-2">
@@ -124,10 +124,9 @@ export function ActivityFeed({ activities, maxHeight }: ActivityFeedProps) {
           {activities.length === 0 ? (
             <div className="px-6 py-6">
               <EmptyState
+                contentKey="finance.dashboard.activity"
                 variant="noResults"
-                size="sm"
-                title="No recent activity"
-                description="Transactions and updates will appear here."
+                constraint="2x1"
               />
             </div>
           ) : (

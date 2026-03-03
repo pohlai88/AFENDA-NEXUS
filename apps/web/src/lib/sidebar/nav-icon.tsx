@@ -19,7 +19,7 @@ interface NavIconProps {
 /** Renders a Lucide icon by name with consistent sizing. */
 function NavIcon({ name, className }: NavIconProps) {
   const Icon = getIcon(name);
-  return <Icon className={cn('h-4 w-4', className)} />;
+  return <Icon className={cn('h-4 w-4', className)}  aria-hidden="true" />;
 }
 NavIcon.displayName = 'NavIcon';
 

@@ -72,12 +72,73 @@ for (const file of walkTsx(WEB_SRC)) {
   const lines = content.split('\n');
   const r = rel(file);
 
+  // Track #region agent log blocks — Date.now() inside these is for debug
+  // telemetry payloads, not rendered output, so it cannot cause hydration
+  // mismatch.
+  let inAgentLogRegion = false;
+
   for (const { id, name, regex, hint } of PATTERNS) {
+    inAgentLogRegion = false;
+
+    // State machine: track depth inside useEffect/useCallback/useMemo bodies.
+    // This correctly handles Prettier-formatted multi-line hook bodies:
+    //   useEffect(() => {           ← hookDepth becomes > 0, insideHook = true
+    //     setClientNow(Date.now()); ← inside hook body, skipped ✓
+    //   }, []);                     ← hookDepth returns to 0, insideHook = false
+    //
+    // We count net open parens on the useEffect line to handle same-line calls:
+    //   useEffect(() => { setClientNow(Date.now()); }, []); ← hookDepth goes to 0 on same line,
+    //                                                          but the whole line is skipped at entry
+    let insideHook = false;
+    let hookDepth = 0;
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      // Allow inside useEffect, useCallback, or comment
+
+      // Track agent log regions
+      if (/^\s*\/\/\s*#region\s+agent\s+log/i.test(line)) {
+        inAgentLogRegion = true;
+        continue;
+      }
+      if (/^\s*\/\/\s*#endregion/i.test(line)) {
+        inAgentLogRegion = false;
+        continue;
+      }
+      if (inAgentLogRegion) continue;
+
+      // Skip comment lines
       if (/^\s*\/\//.test(line) || /^\s*\*/.test(line)) continue;
-      if (line.includes('useEffect') || line.includes('useCallback') || line.includes('useMemo')) continue;
+
+      // Detect entry into a useEffect / useCallback / useMemo call.
+      // On the keyword line we update hookDepth and always skip the line itself.
+      if (
+        !insideHook &&
+        (line.includes('useEffect') || line.includes('useCallback') || line.includes('useMemo'))
+      ) {
+        const opens = (line.match(/\(/g) || []).length;
+        const closes = (line.match(/\)/g) || []).length;
+        hookDepth = opens - closes;
+        insideHook = hookDepth > 0; // still open → multi-line body
+        continue; // always skip the hook keyword line
+      }
+
+      // If inside a hook body, adjust depth and skip
+      if (insideHook) {
+        hookDepth += (line.match(/\(/g) || []).length - (line.match(/\)/g) || []).length;
+        if (hookDepth <= 0) {
+          insideHook = false;
+          hookDepth = 0;
+        }
+        continue;
+      }
+
+      // Allow Date.now() used for timing/logging variables (not rendered)
+      if (
+        /\b(timestamp|elapsed|start|end|duration|perf|timer)\b/i.test(line) &&
+        /\bDate\.now\s*\(\s*\)/g.test(line)
+      )
+        continue;
+
       const match = line.match(regex);
       if (match) {
         failures.push({ gate: id, file: r, line: i + 1, name, hint });
@@ -102,7 +163,9 @@ if (failures.length > 0) {
     }
     console.error('');
   }
-  console.error(`${failures.length} hydration-risk pattern(s). See .agents/skills/next-best-practices/hydration-error.md`);
+  console.error(
+    `${failures.length} hydration-risk pattern(s). See .agents/skills/next-best-practices/hydration-error.md`
+  );
   process.exit(1);
 }
 

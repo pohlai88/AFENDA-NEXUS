@@ -19,7 +19,8 @@
     { "path": "./packages/db" },
     { "path": "./packages/platform" },
     { "path": "./packages/modules/finance" },
-    { "path": "./packages/api-kit" }
+    { "path": "./packages/api-kit" },
+    { "path": "./packages/supplier-kernel" }
   ],
   "files": []
 }

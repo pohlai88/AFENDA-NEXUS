@@ -1,5 +1,6 @@
 'use server';
 
+// @gate-allow-unauth — sets UI preference cookie only, no data mutation
 import { cookies } from 'next/headers';
 
 export async function setActiveCompanyAction(companyId: string): Promise<void> {

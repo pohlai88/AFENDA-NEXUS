@@ -1,0 +1,68 @@
++--------------------------------------------------------------+
+|  gate:web-module — Frontend CI Gate                          |
++--------------------------------------------------------------+
+
++--------------------------------------------------------------+
+|  @afenda/web -- Frontend Drift Gate                          |
+|  27 checks - ARCHITECTURE.@afenda-web.md enforcement         |
++--------------------------------------------------------------+
+
+  + W01 No hardcoded Radix primitives [PASS]
+  + W02 No raw className strings (use cn/cva) [PASS]
+  + W03 Forbidden imports (DB/backend) [PASS]
+  + W04 Contract compliance (no hand-written types) [PASS]
+  + W05 Route boundary (allowed import prefixes) [PASS]
+  + W06 Feature isolation (no cross-feature) [PASS]
+  + W07 shadcn purity (no domain code in ui/) [PASS]
+  + W08 No `any` in component props [PASS]
+  + W09 Accessibility (button type, img alt) [PASS]
+  + W10 Tailwind v4 compatibility [PASS]
+  + W11 "use client" discipline [PASS]
+  + W12 Required structure [PASS]
+  + W13 Dependency audit [PASS]
+  + W14 No hardcoded colors [PASS]
+  + W15 Server Action pattern [PASS]
+  + W16 @theme inline completeness [PASS]
+  + W17 No hardcoded URLs (use env vars) [PASS]
+  + W18 No loose utils files (use @/lib/) [PASS]
+  + W19 shadcn component usage (no raw HTML primitives) [PASS]
+  + W20 No hardcoded route paths (use routes.*) [PASS]
+  ! W21 Route boundary completeness (loading/error/not-found) [WARN]
+      ! app/(shell)/(erp)/finance/docs/ap-invoice-lifecycle/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/ar-collections/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/consolidation/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/financial-statements/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/gl-account-tree/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/hedge-accounting/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/lease-timeline/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/month-end-close/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/multi-ledger/ -- page.tsx exists but missing sibling error.tsx.
+      ! app/(shell)/(erp)/finance/docs/subledger-architecture/ -- page.tsx exists but missing sibling error.tsx.
+  + W22 Suspense discipline (streaming) [PASS]
+  + W23 Page metadata exports (SEO) [PASS]
+  + W24 No stray console.log [PASS]
+  + W25 next.config.ts best practices [PASS]
+  + W26 Exception registry audit [PASS]
+  + W27 EmptyState registry discipline [PASS]
+
+--------------------------------------------------------------
+  Total: 108 checks
+  Pass:  98
+  Fail:  0
+  Warn:  10
+--------------------------------------------------------------
+
+  RESULT: PASS (with 10 warning(s))
+
+
+  ✅ Phase 1 — web-drift-check (W01–W20) PASSED
+
+  ✅ Phase 2 — Module structure checks PASSED
+
+  ℹ️  3 advisory(s) — progressive migration:
+    apps/web/src/features/finance/expenses: Feature module has no @afenda/contracts usage
+    apps/web/src/features/finance/instruments: Feature module has no @afenda/contracts usage
+    apps/web/src/features/finance/reports: Feature module has no @afenda/contracts usage
+
+==============================================================
+✅ gate:web-module PASSED

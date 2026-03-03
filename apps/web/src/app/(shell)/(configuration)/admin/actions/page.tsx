@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
@@ -7,8 +8,7 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Admin Actions — Admin' };
 
-export default async function AdminActionsPage() {
-  const ctx = await getRequestContext();
+async function AdminActionsContent({ ctx }: { ctx: RequestContext }) {
   const api = createApiClient(ctx);
   const result = await api.get<{
     data: Array<{
@@ -26,7 +26,6 @@ export default async function AdminActionsPage() {
   const data = result.ok ? result.value.data : [];
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Admin Action Log"
@@ -36,6 +35,15 @@ export default async function AdminActionsPage() {
 
       <ActionLogTable entries={data} />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function AdminActionsPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AdminActionsContent ctx={ctx} />
+    </Suspense>
   );
 }

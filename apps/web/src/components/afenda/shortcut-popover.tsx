@@ -13,17 +13,14 @@ import {
 } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { EmptyState } from '@/components/erp/empty-state';
 import { useRegisteredShortcuts } from '@/providers/shortcut-provider';
 import type { ShortcutScope } from '@/lib/shortcuts/shortcut-engine';
 import type { ShortcutRegistration } from '@/lib/shortcuts/shortcut-engine';
 import { cn } from '@/lib/utils';
+import { routes } from '@/lib/constants';
 import { POPOVER_DOMAIN_W, SCROLL_MAX_H, TOOL_BAR_W } from './shell.tokens';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -33,7 +30,7 @@ interface ShortcutPopoverProps {
   open?: boolean;
   /** Called when open state changes. */
   onOpenChange?: (open: boolean) => void;
-  /** Resolved shortcut keys that open this popover (e.g. "ctrl+shift+?"). Shown in tooltip and aria-label. */
+  /** Resolved shortcut keys that open this popover (e.g. "mod+/"). Shown in tooltip and aria-label. */
   shortcutTriggerKeys?: string;
 }
 
@@ -51,9 +48,19 @@ const SCOPE_LABELS: Record<ShortcutScope, string> = {
 };
 
 const STATIC_SHORTCUTS: Omit<ShortcutRegistration, 'handler'>[] = [
-  { id: 'static-help', keys: 'ctrl+shift+?', description: 'Show keyboard shortcuts', scope: 'global' },
+  {
+    id: 'static-help',
+    keys: 'mod+/',
+    description: 'Show keyboard shortcuts',
+    scope: 'global',
+  },
   { id: 'static-search', keys: 'mod+k', description: 'Open command palette', scope: 'global' },
-  { id: 'static-quick-actions', keys: 'ctrl+q', description: 'Open Quick Action picker (Ctrl+1…9 for pinned)', scope: 'global' },
+  {
+    id: 'static-quick-actions',
+    keys: 'mod+q',
+    description: 'Open Quick Action picker (slots 1…9 for pinned)',
+    scope: 'global',
+  },
   { id: 'static-calculator', keys: 'mod+=', description: 'Open calculator', scope: 'global' },
   { id: 'static-sidebar', keys: 'mod+b', description: 'Toggle sidebar', scope: 'global' },
   { id: 'static-dashboard', keys: 'g d', description: 'Go to Dashboard', scope: 'global' },
@@ -72,15 +79,45 @@ const STATIC_SHORTCUTS: Omit<ShortcutRegistration, 'handler'>[] = [
   { id: 'static-create-bill', keys: 'c b', description: 'New Bill (AP)', scope: 'global' },
   { id: 'static-create-expense', keys: 'c x', description: 'New Expense Claim', scope: 'global' },
   { id: 'static-create-account', keys: 'c a', description: 'New Account', scope: 'global' },
-  { id: 'static-escape', keys: 'escape', description: 'Close dialog / clear search', scope: 'global' },
+  {
+    id: 'static-escape',
+    keys: 'escape',
+    description: 'Close dialog / clear search',
+    scope: 'global',
+  },
   { id: 'static-date-today', keys: 't', description: 'Date field: Today', scope: 'global' },
   { id: 'static-date-yesterday', keys: 'y', description: 'Date field: Yesterday', scope: 'global' },
   { id: 'static-date-month-end', keys: 'm', description: 'Date field: Month end', scope: 'global' },
-  { id: 'static-table-select-all', keys: 'mod+a', description: 'Table: Select all rows', scope: 'global' },
-  { id: 'static-journal-copy-row', keys: 'f8', description: 'Journal lines: Copy row above into current row', scope: 'global' },
-  { id: 'static-page-new', keys: 'n', description: 'New (contextual — create item on current page)', scope: 'global' },
-  { id: 'static-form-save', keys: 'mod+s', description: 'Save form (when form has focus)', scope: 'global' },
-  { id: 'static-form-save-close', keys: 'mod+enter', description: 'Save and close form', scope: 'global' },
+  {
+    id: 'static-table-select-all',
+    keys: 'mod+a',
+    description: 'Table: Select all rows',
+    scope: 'global',
+  },
+  {
+    id: 'static-journal-copy-row',
+    keys: 'f8',
+    description: 'Journal lines: Copy row above into current row',
+    scope: 'global',
+  },
+  {
+    id: 'static-page-new',
+    keys: 'n',
+    description: 'New (contextual — create item on current page)',
+    scope: 'global',
+  },
+  {
+    id: 'static-form-save',
+    keys: 'mod+s',
+    description: 'Save form (when form has focus)',
+    scope: 'global',
+  },
+  {
+    id: 'static-form-save-close',
+    keys: 'mod+enter',
+    description: 'Save and close form',
+    scope: 'global',
+  },
 ];
 
 // ─── ShortcutPopover ──────────────────────────────────────────────────────────
@@ -90,21 +127,28 @@ const STATIC_SHORTCUTS: Omit<ShortcutRegistration, 'handler'>[] = [
  * Popover with header, filter input, ScrollArea, grouped shortcuts.
  * Triggered by Ctrl+? (keyboard icon) or shortcut.
  */
-export function ShortcutPopover({ open, onOpenChange, shortcutTriggerKeys: _shortcutTriggerKeys }: ShortcutPopoverProps) {
+export function ShortcutPopover({
+  open,
+  onOpenChange,
+  shortcutTriggerKeys: _shortcutTriggerKeys,
+}: ShortcutPopoverProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [filter, setFilter] = useState('');
 
   const isControlled = open !== undefined && onOpenChange !== undefined;
   const isOpen = isControlled ? open : internalOpen;
   const setOpen = isControlled ? onOpenChange : setInternalOpen;
-  const isMac = useMemo(() => typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent), []);
+  const isMac = useMemo(
+    () => typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent),
+    []
+  );
 
   const handleOpenChange = React.useCallback(
     (next: boolean) => {
       setOpen(next);
       if (!next) setFilter('');
     },
-    [setOpen],
+    [setOpen]
   );
 
   const registered = useRegisteredShortcuts();
@@ -120,9 +164,7 @@ export function ShortcutPopover({ open, onOpenChange, shortcutTriggerKeys: _shor
     const q = filter.toLowerCase().trim();
     const filtered = q
       ? shortcuts.filter(
-          (s) =>
-            s.description.toLowerCase().includes(q) ||
-            s.keys.toLowerCase().includes(q),
+          (s) => s.description.toLowerCase().includes(q) || s.keys.toLowerCase().includes(q)
         )
       : shortcuts;
 
@@ -141,23 +183,19 @@ export function ShortcutPopover({ open, onOpenChange, shortcutTriggerKeys: _shor
 
       if (scope === 'global') {
         const moduleNav = items.filter(
-          (s) => s.keys.startsWith('g ') || s.description.startsWith('Go to '),
+          (s) => s.keys.startsWith('g ') || s.description.startsWith('Go to ')
         );
         const create = items.filter(
           (s) =>
             s.keys.startsWith('c ') ||
             s.description.startsWith('New ') ||
-            s.description.startsWith('Create '),
+            s.description.startsWith('Create ')
         );
-        const other = items.filter(
-          (s) => !moduleNav.includes(s) && !create.includes(s),
-        );
+        const other = items.filter((s) => !moduleNav.includes(s) && !create.includes(s));
         if (moduleNav.length > 0)
           result.push({ scope, label: 'Module navigation', shortcuts: moduleNav });
-        if (create.length > 0)
-          result.push({ scope, label: 'Create', shortcuts: create });
-        if (other.length > 0)
-          result.push({ scope, label: 'Other', shortcuts: other });
+        if (create.length > 0) result.push({ scope, label: 'Create', shortcuts: create });
+        if (other.length > 0) result.push({ scope, label: 'Other', shortcuts: other });
       } else {
         result.push({ scope, label: SCOPE_LABELS[scope], shortcuts: items });
       }
@@ -177,7 +215,7 @@ export function ShortcutPopover({ open, onOpenChange, shortcutTriggerKeys: _shor
               type="button"
               className={cn(
                 'hidden h-8 items-center gap-2 rounded-md border bg-background px-3 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 lg:inline-flex',
-                TOOL_BAR_W,
+                TOOL_BAR_W
               )}
               aria-label="Keyboard shortcuts (⌘ ?)"
             >
@@ -203,7 +241,10 @@ export function ShortcutPopover({ open, onOpenChange, shortcutTriggerKeys: _shor
           <PopoverTitle className="text-base">Keyboard Shortcuts</PopoverTitle>
           <div className="mt-2">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Search
+                className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
               <Input
                 placeholder="Filter shortcuts…"
                 value={filter}
@@ -216,23 +257,13 @@ export function ShortcutPopover({ open, onOpenChange, shortcutTriggerKeys: _shor
         </PopoverHeader>
         {!hasAnyItems ? (
           <EmptyState
-            title={filter.trim() ? 'No matches' : 'No shortcuts'}
-            description={
-              filter.trim()
-                ? 'Try a different search term.'
-                : 'No shortcuts registered.'
-            }
+            contentKey="shell.shortcuts"
             icon={Keyboard}
-            variant="noResults"
-            size="sm"
-            animate={false}
-            className="border-0 py-8"
+            variant={filter.trim() ? 'noResults' : 'firstRun'}
+            constraint="1x2"
           />
         ) : (
-          <ScrollArea
-            className={cn(SCROLL_MAX_H, 'h-[min(70vh,24rem)]')}
-            type="auto"
-          >
+          <ScrollArea className={cn(SCROLL_MAX_H, 'h-[min(70vh,24rem)]')} type="auto">
             <div
               className="flex flex-col gap-4 py-3 pr-4 pl-3"
               role="list"
@@ -265,7 +296,7 @@ export function ShortcutPopover({ open, onOpenChange, shortcutTriggerKeys: _shor
         )}
         <div className="border-t px-4 py-2">
           <Link
-            href="/settings/preferences"
+            href={routes.settingsPreferences}
             onClick={() => handleOpenChange(false)}
             className="text-xs text-muted-foreground underline-offset-4 hover:underline"
           >
@@ -282,14 +313,6 @@ ShortcutPopover.displayName = 'ShortcutPopover';
 // ─── Key combo renderer ────────────────────────────────────────────────────────
 
 function ShortcutKeyCombo({ keys, isMac }: { keys: string; isMac: boolean }) {
-  if (keys === 'ctrl+shift+?' || keys === 'ctrl+?') {
-    return (
-      <KbdGroup>
-        <Kbd>Ctrl</Kbd>
-        <Kbd>?</Kbd>
-      </KbdGroup>
-    );
-  }
   const parts = keys.split(/(?<=\+)|(?=\+)|\s+/).filter((p) => p !== '+');
 
   return (

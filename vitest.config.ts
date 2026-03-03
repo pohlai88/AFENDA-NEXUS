@@ -18,6 +18,7 @@ export default defineConfig({
       'packages/modules/finance',
       'packages/platform',
       'packages/storage',
+      'packages/supplier-kernel',
       'apps/worker',
       'apps/api',
       'apps/web',

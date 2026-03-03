@@ -35,8 +35,6 @@ function mapLineToDomain(row: LineRow, currencyCode: string): ApInvoiceLine {
 }
 
 function mapToDomain(row: InvoiceRow, lines: LineRow[], currencyCode: string): ApInvoice {
-  // W4: invoiceType + originalInvoiceId may not exist in older schema rows
-  const ext = row as Record<string, unknown>;
   return {
     id: row.id,
     tenantId: row.tenantId,
@@ -50,13 +48,13 @@ function mapToDomain(row: InvoiceRow, lines: LineRow[], currencyCode: string): A
     totalAmount: money(row.totalAmount, currencyCode),
     paidAmount: money(row.paidAmount, currencyCode),
     status: row.status as ApInvoice['status'],
-    invoiceType: ((ext.invoiceType as string) ?? 'STANDARD') as ApInvoice['invoiceType'],
+    invoiceType: (row.invoiceType ?? 'STANDARD') as ApInvoice['invoiceType'],
     description: row.description,
     poRef: row.poRef,
     receiptRef: row.receiptRef,
     paymentTermsId: row.paymentTermsId,
     journalId: row.journalId,
-    originalInvoiceId: (ext.originalInvoiceId as string) ?? null,
+    originalInvoiceId: row.originalInvoiceId ?? null,
     lines: lines.map((l) => mapLineToDomain(l, currencyCode)),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -104,6 +102,8 @@ export class DrizzleApInvoiceRepo implements IApInvoiceRepo {
         poRef: input.poRef,
         receiptRef: input.receiptRef,
         paymentTermsId: input.paymentTermsId,
+        invoiceType: input.invoiceType ?? 'STANDARD',
+        originalInvoiceId: input.originalInvoiceId ?? null,
       })
       .returning();
 

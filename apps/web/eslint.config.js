@@ -14,7 +14,9 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
  * Gate: tools/scripts/gate-hydration.mjs. See .agents/skills/next-best-practices/hydration-error.md
  */
 export default [
-  { ignores: ['dist/**', '.next/**', '*.config.*', 'src/__tests__/**'] },
+  {
+    ignores: ['dist/**', '.next/**', '*.config.*', '**/__tests__/**', '**/*.test.*', '**/*.spec.*'],
+  },
   ...baseConfig,
   jsxA11y.flatConfigs.recommended,
   {
@@ -29,9 +31,9 @@ export default [
       'jsx-a11y/no-autofocus': ['error', { ignoreNonDOM: true }],
       // Temporarily disable problematic rule due to minimatch compatibility
       'jsx-a11y/label-has-associated-control': 'off',
-      
+
       // ── Performance & Best Practices (Auto-fixable) ────────────────────────
-      
+
       // RBP-03: Prefer .toSorted() over .sort() — immutable, avoids mutation
       'no-restricted-syntax': [
         'warn',
@@ -40,7 +42,7 @@ export default [
           message:
             'Use .toSorted() instead of .sort() to avoid mutating the array (RBP-03). Auto-fix: Run eslint --fix',
         },
-        
+
         // Hydration risks
         {
           selector: "CallExpression[callee.object.name='Date'][callee.property.name='now']",
@@ -48,7 +50,8 @@ export default [
             'Date.now() in render causes hydration mismatch. Use useEffect + useState or suppressHydrationWarning',
         },
         {
-          selector: "CallExpression[callee.object.name='Date'][callee.property.name='toLocaleString']",
+          selector:
+            "CallExpression[callee.object.name='Date'][callee.property.name='toLocaleString']",
           message:
             'new Date().toLocaleString() in render causes hydration mismatch. Use client-only or suppressHydrationWarning',
         },
@@ -57,37 +60,37 @@ export default [
           message:
             'Math.random() in render causes hydration mismatch. Use useId() or generate stable IDs on server',
         },
-        
+
         // RBP-CACHE: Server data fetchers must use React cache()
         {
-          selector: "ExportNamedDeclaration[declaration.type='FunctionDeclaration'][declaration.async=true][declaration.id.name=/^(fetch|resolve|build|get)/]",
+          selector:
+            "ExportNamedDeclaration[declaration.type='FunctionDeclaration'][declaration.async=true][declaration.id.name=/^(fetch|resolve|build|get)/]",
           message:
             'Server data fetcher should use React cache() for request memoization (RBP-CACHE). Convert to: export const funcName = cache(async (ctx) => { ... })',
         },
-        
+
         // Console.log in production
         {
           selector: "CallExpression[callee.object.name='console'][callee.property.name='log']",
-          message:
-            'Avoid console.log in production. Use proper logging (pino) or remove',
+          message: 'Avoid console.log in production. Use proper logging (pino) or remove',
         },
-        
+
         // Prefer optional chaining
         {
-          selector: "LogicalExpression[operator='&&'][left.type='MemberExpression'][right.type='MemberExpression']",
-          message:
-            'Use optional chaining (?.) instead of && checks. Auto-fixable in many cases',
+          selector:
+            "LogicalExpression[operator='&&'][left.type='MemberExpression'][right.type='MemberExpression']",
+          message: 'Use optional chaining (?.) instead of && checks. Auto-fixable in many cases',
         },
       ],
-      
+
       // ── Auto-fixable Rules ────────────────────────────────────────────────
-      
+
       // Prefer const over let when variable is never reassigned
       'prefer-const': ['error', { destructuring: 'all' }],
-      
+
       // Require === instead of ==
-      'eqeqeq': ['error', 'always', { null: 'ignore' }],
-      
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
+
       // No unused variables (auto-fixable imports)
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -98,7 +101,7 @@ export default [
           destructuredArrayIgnorePattern: '^_',
         },
       ],
-      
+
       // Enforce consistent array/object destructuring
       'prefer-destructuring': [
         'error',
@@ -108,22 +111,22 @@ export default [
         },
         { enforceForRenamedProperties: false },
       ],
-      
+
       // No unnecessary template literals
       'no-useless-template-literals': 'off', // Not standard ESLint
-      
+
       // Prefer template literals over string concatenation
       'prefer-template': 'error',
-      
+
       // No var declarations
       'no-var': 'error',
-      
+
       // Prefer arrow functions for callbacks
       'prefer-arrow-callback': ['error', { allowNamedFunctions: false }],
-      
+
       // Object shorthand
       'object-shorthand': ['error', 'always'],
-      
+
       // No else return (simplify conditional logic)
       'no-else-return': ['error', { allowElseIf: false }],
     },

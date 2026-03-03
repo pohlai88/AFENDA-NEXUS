@@ -16,21 +16,59 @@
  *
  * Usage: pnpm gen:screen finance accounts
  *
- * Conventions: follows ARCHITECTURE.@afenda-web.md §3, §11, §12.
+ * Conventions: follows ARCHITECTURE_afenda-web.md §3, §11, §12.
  */
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { toTitleCase, pluralize, patchEmptyStateRegistry, readJson } from './utils.mjs';
 
 // ─── CLI Args ────────────────────────────────────────────────────────────────
 
-const module_ = process.argv[2];
-const entity = process.argv[3];
+const allArgs = process.argv.slice(2);
+let module_ = '';
+let entity = '';
+let specPath = '';
+let displayNameFlag = '';
+let displayPluralFlag = '';
+
+// Positional args first, then flags
+const positional = [];
+for (let i = 0; i < allArgs.length; i++) {
+  if (allArgs[i] === '--spec' && allArgs[i + 1]) {
+    specPath = allArgs[++i];
+    continue;
+  }
+  if (allArgs[i] === '--displayName' && allArgs[i + 1]) {
+    displayNameFlag = allArgs[++i];
+    continue;
+  }
+  if (allArgs[i] === '--displayPlural' && allArgs[i + 1]) {
+    displayPluralFlag = allArgs[++i];
+    continue;
+  }
+  positional.push(allArgs[i]);
+}
+module_ = positional[0] || '';
+entity = positional[1] || '';
 
 if (!module_ || !entity) {
-  console.error('Usage: pnpm gen:screen <module> <entity>');
+  console.error(
+    'Usage: pnpm gen:screen <module> <entity> [--spec <path>] [--displayName <name>] [--displayPlural <plural>]'
+  );
   console.error('Example: pnpm gen:screen finance accounts');
   process.exit(1);
+}
+
+// ─── Resolve display metadata ───────────────────────────────────────────────
+
+let specData = null;
+if (specPath) {
+  try {
+    specData = readJson(specPath);
+  } catch (e) {
+    console.warn(`Warning: Could not read spec file: ${specPath}`);
+  }
 }
 
 // ─── Naming Conventions ─────────────────────────────────────────────────────
@@ -529,6 +567,27 @@ console.log(`  ✓ app/(shell)/${module_}/${kebab}/new/page.tsx`);
 
 // ─── Summary ────────────────────────────────────────────────────────────────
 
+// ─── Auto-patch empty state registry ─────────────────────────────────────────
+
+const displayName = displayNameFlag || specData?.entity?.displayName || toTitleCase(pascal);
+const displayPlural =
+  displayPluralFlag || specData?.entity?.displayPlural || pluralize(displayName);
+const emptyStateDescription =
+  specData?.entity?.emptyStateDescription || `Create your first ${displayName} to get started.`;
+
+const esResult = patchEmptyStateRegistry({
+  registryKey,
+  displayName,
+  displayPlural,
+  description: emptyStateDescription,
+  root,
+});
+
+if (esResult.keysPatched)
+  console.log(`  ✓ Patched empty-state.generated-keys.ts (added "${registryKey}")`);
+if (esResult.registryPatched)
+  console.log(`  ✓ Patched empty-state.registry.ts (added "${registryKey}")`);
+
 console.log(`
 [DONE] Screen ${module_}/${kebab} scaffolded (8 files).
 
@@ -548,10 +607,8 @@ Next steps:
   1. Fill in view model fields in ${prefix}.queries.ts
   2. Add columns to ${prefix}-table.tsx
   3. Add detail fields to ${prefix}-detail-header.tsx
-  4. Add registry entry for "${registryKey}" in empty-state.registry.ts
-  5. Add "${registryKey}" to EmptyStateKey type in empty-state.types.ts
-  6. Generate a form:  pnpm gen:form Create${pascal}Schema
-  7. Generate a table:  pnpm gen:table-ui ${pascal}ListItem
-  8. Add routes to constants.ts + nav items
-  9. Run:  pnpm --filter @afenda/web typecheck
+  4. Generate a form:  pnpm gen:form Create${pascal}Schema
+  5. Generate a table:  pnpm gen:table-ui ${pascal}ListItem
+  6. Add routes to constants.ts + nav items
+  7. Run:  pnpm --filter @afenda/web typecheck
 `);

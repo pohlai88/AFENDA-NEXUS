@@ -1,12 +1,20 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
-import { getHedgeRelationshipById, getEffectivenessTests } from '@/features/finance/hedging/queries/hedging.queries';
-import { HedgeDetailHeader, HedgeOverview, EffectivenessTestsList } from '@/features/finance/hedging/blocks/hedge-detail';
+import {
+  getHedgeRelationshipById,
+  getEffectivenessTests,
+} from '@/features/finance/hedging/queries/hedging.queries';
+import {
+  HedgeDetailHeader,
+  HedgeOverview,
+  EffectivenessTestsList,
+} from '@/features/finance/hedging/blocks/hedge-detail';
 import { routes } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,8 +34,7 @@ async function EffectivenessSection({ relationshipId }: { relationshipId: string
   return <EffectivenessTestsList tests={result.value.data} />;
 }
 
-export default async function HedgeDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function HedgeDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getHedgeRelationshipById(ctx, id);
 
   if (!result.ok) {
@@ -63,5 +70,15 @@ export default async function HedgeDetailPage({ params }: Props) {
         ]}
       />
     </div>
+  );
+}
+
+export default async function HedgeDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense>
+      <HedgeDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

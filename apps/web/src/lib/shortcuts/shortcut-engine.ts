@@ -13,6 +13,17 @@
 
 import { toSorted } from '@/lib/utils/array';
 
+// ─── Platform Detection ──────────────────────────────────────────────────────
+
+/**
+ * Detect if running on macOS/iOS.
+ * Used for platform-aware modifier key handling:
+ * - Mac: Cmd → mod, Ctrl → ctrl (separate keys)
+ * - Windows/Linux: Ctrl → mod (primary modifier)
+ */
+const isMacPlatform = (): boolean =>
+  typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
 /** Scope priority — higher wins. */
 export type ShortcutScope = 'dialog' | 'cmdk' | 'sheet' | 'table' | 'page' | 'global';
 
@@ -93,7 +104,9 @@ export class ShortcutEngine {
     this.boundHandler = this.handleKeyDown.bind(this);
     this.boundFocusHandler = this.resetBuffer.bind(this);
 
-    document.addEventListener('keydown', this.boundHandler);
+    // Use capture phase to intercept browser shortcuts (Ctrl+K, Ctrl+D, etc.)
+    // before Chrome handles them at the browser level.
+    document.addEventListener('keydown', this.boundHandler, { capture: true });
     document.addEventListener('focusin', this.boundFocusHandler);
     this.listening = true;
   }
@@ -102,7 +115,7 @@ export class ShortcutEngine {
     if (!this.listening || typeof document === 'undefined') return;
 
     if (this.boundHandler) {
-      document.removeEventListener('keydown', this.boundHandler);
+      document.removeEventListener('keydown', this.boundHandler, { capture: true });
     }
     if (this.boundFocusHandler) {
       document.removeEventListener('focusin', this.boundFocusHandler);
@@ -254,18 +267,32 @@ export class ShortcutEngine {
   private hasOpenDialog(): boolean {
     if (typeof document === 'undefined') return false;
     return !!document.querySelector(
-      '[role="dialog"]:not([hidden]), [role="alertdialog"]:not([hidden])',
+      '[role="dialog"]:not([hidden]), [role="alertdialog"]:not([hidden])'
     );
   }
 
   private normalizeKey(e: KeyboardEvent): string {
     const parts: string[] = [];
-    // Distinguish Ctrl-only (e.g. Ctrl+Q for Quick Actions) from Cmd/Ctrl (mod)
-    if (e.ctrlKey && !e.metaKey) {
-      parts.push('ctrl');
-    } else if (e.metaKey || e.ctrlKey) {
-      parts.push('mod');
+    const isMac = isMacPlatform();
+
+    if (isMac) {
+      // Mac: Ctrl is separate from Cmd (⌘)
+      // - Ctrl+X → "ctrl+x" (physical Ctrl key)
+      // - Cmd+X → "mod+x" (platform command key)
+      if (e.ctrlKey && !e.metaKey) {
+        parts.push('ctrl');
+      } else if (e.metaKey) {
+        parts.push('mod');
+      }
+    } else {
+      // Windows/Linux: Ctrl is the primary modifier
+      // - Ctrl+X → "mod+x" (platform command key)
+      // No "ctrl+" shortcuts on Windows — Ctrl IS mod
+      if (e.ctrlKey) {
+        parts.push('mod');
+      }
     }
+
     if (e.altKey) parts.push('alt');
     if (e.shiftKey) parts.push('shift');
     parts.push(e.key.toLowerCase());

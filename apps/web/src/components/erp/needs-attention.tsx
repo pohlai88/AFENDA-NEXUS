@@ -8,10 +8,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/erp/empty-state';
 import { cn } from '@/lib/utils';
 import { formatRelativeTime } from '@/lib/format';
-import {
-  ATTENTION_SEVERITY_ICON,
-  ATTENTION_SEVERITY_COLOR,
-} from '@/lib/ui/severity-styles';
+import { ATTENTION_SEVERITY_ICON, ATTENTION_SEVERITY_COLOR } from '@/lib/ui/severity-styles';
 import type { AttentionItem, AttentionSummary } from '@/lib/attention/attention.types';
 
 // ─── NeedsAttention ──────────────────────────────────────────────────────────
@@ -31,9 +28,8 @@ export function NeedsAttention({ summary }: NeedsAttentionProps) {
       <EmptyState
         contentKey="shell.attention"
         variant="firstRun"
-        size="sm"
+        constraint="1x2"
         icon={CheckCircle2}
-        animate={false}
       />
     );
   }
@@ -62,7 +58,7 @@ function AttentionItemRow({ item }: { item: AttentionItem }) {
   return (
     <div className="rounded-md border px-3 py-2">
       <div className="flex items-start gap-2">
-        <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', color)} />
+        <Icon className={cn('mt-0.5 h-4 w-4 shrink-0', color)} aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <span className="text-sm font-medium">{item.title}</span>
@@ -85,15 +81,10 @@ function AttentionItemRow({ item }: { item: AttentionItem }) {
               )}
               Details
             </Button>
-            <Link
-              href={item.href}
-              className="text-xs text-primary hover:underline"
-            >
+            <Link href={item.href} className="text-xs text-primary hover:underline">
               View →
             </Link>
-            <span className="ml-auto text-[10px] text-muted-foreground">
-              {relativeTime}
-            </span>
+            <span className="ml-auto text-[10px] text-muted-foreground">{relativeTime}</span>
           </div>
         </div>
       </div>

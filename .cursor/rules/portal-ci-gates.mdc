@@ -1,0 +1,241 @@
+---
+description: CI gates and quality enforcement for the Supplier Portal
+alwaysApply: true
+---
+
+# Portal CI Gates & Quality Enforcement
+
+These gates prevent architectural drift in the Supplier Portal. They supplement
+the existing 32 gates in `tools/scripts/gate-*.mjs`.
+
+---
+
+## Existing gates (already enforced — portal inherits all 32)
+
+### Structural gates (portal-critical)
+
+| Gate                      | What it checks                                                                    | Script                        | Portal impact                                                  |
+| ------------------------- | --------------------------------------------------------------------------------- | ----------------------------- | -------------------------------------------------------------- |
+| `gate:web-module`         | Every `page.tsx` has sibling `loading.tsx`                                        | `gate-web-module.mjs`         | All `(supplier-portal)` pages must comply                      |
+| `gate:db-module`          | Every tenant table has RLS + policy                                               | `gate-db-module.mjs`          | All `portal-*` tables need `tenant_id` + RLS                   |
+| `gate:identity-sot`       | No raw `x-tenant-id` / `x-user-id` header reads                                   | `gate-identity-sot.mjs`       | Portal routes must use `PortalRequestContext`, not raw headers |
+| `gate:status-types`       | Status fields use union types, not bare `string`                                  | `gate-status-types.mjs`       | Portal enums must use typed unions                             |
+| `gate:kernel-invariants`  | Auth guards on routes, kernel context usage                                       | `gate-kernel-invariants.mjs`  | Extend for `@afenda/supplier-kernel` boundary                  |
+| `gate:schema-conventions` | Drizzle: `.enableRLS()`, `tenantCol()`, `pkId()`, `timestamps()`, `moneyBigint()` | `gate-schema-conventions.mjs` | Portal tables must follow all SC-01 through SC-08              |
+
+### Quality gates
+
+| Gate                        | What it checks                                | Script                          |
+| --------------------------- | --------------------------------------------- | ------------------------------- |
+| `gate:react-cache`          | Server fetchers use `cache()`                 | `gate-react-cache.mjs`          |
+| `gate:react-best-practices` | `.toSorted()` not `.sort()`, ternary numerics | `gate-react-best-practices.mjs` |
+| `gate:react-keys`           | Stable React keys (no index keys)             | `gate-react-keys.mjs`           |
+| `gate:hydration`            | No `Date.now()` / `Math.random()` in render   | `gate-hydration.mjs`            |
+| `gate:a11y`                 | Accessibility rules                           | `gate-a11y.mjs`                 |
+| `gate:nested-interactive`   | No nested interactive elements                | `gate-nested-interactive.mjs`   |
+| `gate:loading-skeleton`     | Loading states have skeletons                 | `gate-loading-skeleton.mjs`     |
+| `gate:performance-budget`   | Bundle size / lighthouse                      | `gate-performance-budget.mjs`   |
+| `gate:frontend-quality`     | General frontend quality                      | `gate-frontend-quality.mjs`     |
+
+### Finance-specific gates (portal inherits when touching AP data)
+
+| Gate                     | What it checks                                 | Script                             |
+| ------------------------ | ---------------------------------------------- | ---------------------------------- |
+| `gate:money-safety`      | No raw `BigInt(Math.round(x * 100))` in routes | `gate-money-safety.mjs`            |
+| `gate:currency-safety`   | No hardcoded `'USD'` or `?? 'USD'` in repos    | `gate-currency-safety.mjs`         |
+| `gate:contract-drift`    | Contract schema matches API responses          | `gate-contract-drift-improved.mjs` |
+| `gate:openapi-drift`     | OpenAPI spec matches routes                    | `gate-openapi-drift.mjs`           |
+| `gate:response-type-sot` | Response types match contracts                 | `gate-response-type-sot.mjs`       |
+
+Run all: `pnpm ci:gates:parallel`
+
+---
+
+## Portal-specific gates (to be added during Phase 0)
+
+### GATE-PORTAL-01: Supplier-safe language
+
+**Rule:** No raw internal hold reasons or system labels leak to the supplier UI.
+All supplier-visible text must resolve through Status Dictionary (`SP-1003`).
+
+**Check:** Scan all portal frontend files for hardcoded status strings that
+don't come from the dictionary. Flag any use of internal constants like
+`FRAUD_SUSPICION`, `SANCTIONS_HIT`, `AML_REVIEW`, `INTERNAL_HOLD` in
+`(supplier-portal)` route group or portal API response shapes.
+
+**Script:** `gate-portal-supplier-safe.mjs` (SP-8025)
+
+### GATE-PORTAL-02: PortalRequestContext enforcement
+
+**Rule:** No portal service or route may call `resolveSupplierIdentity()`
+directly. All identity must flow through `PortalRequestContext` constructed in
+the Fastify `preHandler` hook.
+
+**Check:** Grep portal services/routes for direct `resolveSupplierIdentity()`
+calls. Only the preHandler hook may call it.
+
+**Script:** `gate-portal-identity.mjs`
+
+### GATE-PORTAL-03: Idempotency on mutations
+
+**Rule:** Every portal mutation endpoint (POST/PUT/PATCH/DELETE) must include
+`Idempotency-Key` header handling via `IIdempotencyStore.claimOrGet()`.
+
+**Check:** Scan portal route files for mutation handlers and verify each has
+idempotency wiring.
+
+**Script:** `gate-portal-idempotency.mjs`
+
+### GATE-PORTAL-04: Timeline transaction integrity
+
+**Rule:** When a source entity (message, document, escalation) is inserted,
+the corresponding `supplier_case_timeline` entry must be inserted in the
+**same** database transaction. No separate transaction or fire-and-forget.
+
+**Check:** Scan services that write timeline entries and verify they use the
+same `tx` handle as the source entity insert.
+
+**Script:** `gate-portal-timeline-tx.mjs`
+
+### GATE-PORTAL-05: Proof chain continuity
+
+**Rule:** Every supplier-facing event must produce a proof chain entry via
+`SP-1006` writer within the same DB transaction.
+
+**Check:** Property test verifies chain has no gaps
+(`chain_position` is strictly sequential per tenant).
+
+**Script:** `gate-portal-proof-chain.mjs` (SP-8022)
+
+### GATE-PORTAL-06: Kernel import boundary
+
+**Rule:** `@afenda/supplier-kernel` must not import from
+`packages/modules/finance/`, `apps/web/`, or `apps/api/`.
+
+**Check:** Static import analysis on `packages/supplier-kernel/`.
+
+**Script:** Extend existing `gate-kernel-invariants.mjs`
+
+### GATE-PORTAL-07: SoD enforcement on critical actions
+
+**Rule:** Bank account changes and API key management must go through SoD
+two-person control. The action performer must not be the same user as the
+approver.
+
+**Check:** Verify that routes for `bank_account:propose`, `api_key:create`
+call `requireSoD()` with the matching policy.
+
+**Script:** `gate-portal-sod.mjs` (SP-8020)
+
+### GATE-PORTAL-08: Rate limiting on mutations
+
+**Rule:** All portal mutation routes must have rate limiting middleware using
+`actorFingerprint` as key.
+
+**Check:** Scan portal route registrations for rate-limit hook.
+
+**Script:** `gate-portal-rate-limit.mjs`
+
+---
+
+## Agent CI awareness
+
+When writing portal code, agents must be aware:
+
+1. **Before creating a new portal file** — check if an existing SP code covers
+   it. If not, assign the next available SP code in the appropriate series.
+2. **Before merging any feature** — Phase 0 (kernel) must be green. Check
+   `portal-registry.ts` for SP-1001 through SP-1010 status.
+3. **After editing a portal service** — run `pnpm typecheck` + relevant gate
+   locally before committing.
+4. **After adding a new DB table** — ensure `tenant_id` + RLS policy exist
+   (`gate-db-module.mjs` will catch this, but fix pre-commit).
+5. **After adding a new page** — ensure `loading.tsx` + `error.tsx` siblings
+   exist (`gate-web-module.mjs` will catch this).
+
+---
+
+## ESLint rules inherited by portal code
+
+Portal files inherit rules from three layers:
+
+### Layer 1: `@afenda/eslint-config` (base — all `.ts`/`.tsx`)
+
+| Rule                                         | Severity | What                                                            |
+| -------------------------------------------- | -------- | --------------------------------------------------------------- |
+| `@typescript-eslint/no-unused-vars`          | error    | No unused vars (ignores `_`-prefixed)                           |
+| `@typescript-eslint/consistent-type-imports` | error    | Must use `import type` for type-only imports                    |
+| `@typescript-eslint/no-explicit-any`         | warn     | Avoid `any` — use `unknown` or specific types                   |
+| `@typescript-eslint/no-non-null-assertion`   | warn     | No `!` — use optional chaining or guards                        |
+| `no-console`                                 | warn     | Only `console.warn`/`console.error` allowed                     |
+| **CIG-04** `no-restricted-imports`           | error    | Routes/pages cannot import `@afenda/db`, `drizzle-orm` directly |
+
+### Layer 2: `apps/web/eslint.config.js` (frontend-specific)
+
+| Rule / Selector                        | Severity | What                                          |
+| -------------------------------------- | -------- | --------------------------------------------- |
+| **RBP-03** `.sort()` ban               | warn     | Use `.toSorted()` — immutable sort            |
+| **RBP-CACHE** async export fetcher ban | warn     | Server data fetchers must use `cache()`       |
+| `Date.now()` in render                 | warn     | Hydration risk — use `useEffect + useState`   |
+| `Math.random()` in render              | warn     | Hydration risk — use `useId()` for stable IDs |
+| `console.log`                          | warn     | Use pino logging, not console.log             |
+| `react/jsx-key`                        | error    | Every array element needs a key               |
+| `react/no-array-index-key`             | error    | Use stable IDs, not array index               |
+| `react-hooks/rules-of-hooks`           | error    | Hooks at top level only                       |
+| `react-hooks/exhaustive-deps`          | warn     | All effect dependencies must be listed        |
+| `jsx-a11y/*`                           | mixed    | Full accessibility ruleset                    |
+| `eqeqeq`                               | error    | `===` required (except null)                  |
+| `prefer-destructuring`                 | error    | Object destructuring preferred                |
+
+### Layer 3: `packages/modules/finance/eslint.config.js` (services/routes)
+
+| Rule / Selector                       | Severity | What                                                         |
+| ------------------------------------- | -------- | ------------------------------------------------------------ |
+| **CIG-02** `Number()` in `*`          | error    | No float math on money — use `convertAmountPrecise` / BigInt |
+| **CIG-02** `parseFloat()` in `*`      | error    | Same — no float-based currency conversion                    |
+| **CIG-02** `Math.round(x * rate)`     | error    | Same — use BigInt fixed-point                                |
+| **CIG-03** `req.query as Record`      | error    | Use Zod schema `.parse()` for input validation               |
+| **CIG-03** `req.params` cast          | error    | Use `IdParamSchema.parse()` or Zod schema                    |
+| **CIG-04** Tests outside `__tests__/` | error    | Test files must be inside `__tests__/` directories           |
+
+---
+
+## Portal-specific ESLint rules (to be added in Phase 0)
+
+These use `no-restricted-imports` and `no-restricted-syntax` patterns in
+`packages/eslint-config/index.js` (or a portal-specific config overlay).
+
+### ESLINT-PORTAL-01: No direct identity resolution in services
+
+```javascript
+// Add to portal route/service files
+'no-restricted-syntax': ['error', {
+  selector: "CallExpression[callee.name='resolveSupplierIdentity']",
+  message: 'SP-IDENTITY-01: Use PortalRequestContext from preHandler hook, not resolveSupplierIdentity() directly.',
+}]
+```
+
+### ESLINT-PORTAL-02: No raw internal status labels in portal frontend
+
+```javascript
+// Add to (supplier-portal) files
+'no-restricted-syntax': ['error', {
+  selector: "Literal[value=/FRAUD_SUSPICION|SANCTIONS_HIT|AML_REVIEW|INTERNAL_HOLD/]",
+  message: 'SP-LANG-01: Internal hold reasons must not appear in portal code. Use Status Dictionary.',
+}]
+```
+
+### ESLINT-PORTAL-03: Kernel cannot import from AP module
+
+```javascript
+// Add to packages/supplier-kernel/ config
+'no-restricted-imports': ['error', {
+  patterns: [{
+    group: ['@afenda/modules/*', '@afenda/modules/finance', '@afenda/modules/finance/*'],
+    message: 'SP-IMPORT-01: Kernel must not import from module packages. Use ports/contracts only.',
+  }]
+}]
+```
+
+These supplement existing ESLint config. Add them incrementally during
+Phase 0 kernel buildout.

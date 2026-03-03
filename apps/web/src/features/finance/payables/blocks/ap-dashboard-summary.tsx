@@ -76,7 +76,7 @@ export function ApDashboardSummary({ summary }: ApDashboardSummaryProps) {
             href={href}
             className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           >
-            <Icon className="h-3.5 w-3.5" />
+            <Icon className="h-3.5 w-3.5"  aria-hidden="true" />
             {label}
           </Link>
         ))}

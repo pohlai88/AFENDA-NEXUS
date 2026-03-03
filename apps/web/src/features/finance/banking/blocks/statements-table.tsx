@@ -42,7 +42,7 @@ function StatusBadge({ status }: { status: StatementStatus }) {
 
   return (
     <Badge className={cn('gap-1', config.color)}>
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3 w-3"  aria-hidden="true" />
       {config.label}
     </Badge>
   );

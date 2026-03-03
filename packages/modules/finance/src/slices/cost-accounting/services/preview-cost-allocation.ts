@@ -5,7 +5,10 @@ import type { ICostCenterRepo } from '../ports/cost-center-repo.js';
 import type { ICostDriverRepo } from '../ports/cost-driver-repo.js';
 import { computeDirectAllocation } from '../calculators/direct-allocation.js';
 import type { AllocationMethodType } from '../entities/cost-allocation-run.js';
-import type { PostingLinePreview, PostingPreviewResult } from '../../ap/services/preview-ap-posting.js';
+import type {
+  PostingLinePreview,
+  PostingPreviewResult,
+} from '../../../shared/types/posting-preview.js';
 
 export interface PreviewCostAllocationInput {
   readonly companyId: string;

@@ -54,6 +54,21 @@ import { DrizzleSupplierNotificationPrefRepo } from './slices/ap/repos/drizzle-s
 import { DrizzleSupplierComplianceRepo } from './slices/ap/repos/drizzle-supplier-compliance-repo.js';
 import { DrizzleInvoiceAttachmentRepo } from './slices/ap/repos/drizzle-invoice-attachment-repo.js';
 import { DrizzleApWhtCertificateRepo } from './slices/ap/repos/drizzle-ap-wht-certificate-repo.js';
+import { DrizzleAuditLogRepo } from './slices/ap/repos/drizzle-audit-log-repo.js';
+import { DrizzleSupplierCaseRepo } from './slices/ap/repos/drizzle-supplier-case-repo.js';
+import { DrizzleCaseTimelineRepo } from './slices/ap/repos/drizzle-case-timeline-repo.js';
+import { DrizzleOnboardingSubmissionRepo } from './slices/ap/repos/drizzle-onboarding-submission-repo.js';
+import { DrizzleCompanyLocationRepo } from './slices/ap/repos/drizzle-company-location-repo.js';
+import { DrizzleDirectoryRepo } from './slices/ap/repos/drizzle-directory-repo.js';
+import { DrizzleInvitationRepo } from './slices/ap/repos/drizzle-invitation-repo.js';
+import { DrizzleMessageThreadRepo } from './slices/ap/repos/drizzle-message-thread-repo.js';
+import { DrizzleMessageRepo } from './slices/ap/repos/drizzle-message-repo.js';
+import { DrizzleEscalationRepo } from './slices/ap/repos/drizzle-escalation-repo.js';
+import { DrizzleAnnouncementRepo } from './slices/ap/repos/drizzle-announcement-repo.js';
+import { DrizzleMeetingRequestRepo } from './slices/ap/repos/drizzle-meeting-request-repo.js';
+import { DrizzleProofChainReader } from './slices/ap/repos/drizzle-proof-chain-reader.js';
+import { DrizzlePaymentStatusFactRepo } from './slices/ap/repos/drizzle-payment-status-fact-repo.js';
+import { DrizzleEarlyPaymentOfferRepo } from './slices/ap/repos/drizzle-early-payment-offer-repo.js';
 import { DrizzleArInvoiceRepo } from './slices/ar/repos/drizzle-ar-invoice-repo.js';
 import { DrizzleArPaymentAllocationRepo } from './slices/ar/repos/drizzle-ar-payment-allocation-repo.js';
 import { DrizzleDunningRepo } from './slices/ar/repos/drizzle-dunning-repo.js';
@@ -190,6 +205,22 @@ function buildDeps(tx: TenantTx): FinanceDeps {
     supplierNotificationPrefRepo: new DrizzleSupplierNotificationPrefRepo(tx),
     supplierComplianceRepo: new DrizzleSupplierComplianceRepo(tx),
     apWhtCertificateRepo: new DrizzleApWhtCertificateRepo(tx),
+    auditLogRepo: new DrizzleAuditLogRepo(tx),
+    supplierCaseRepo: new DrizzleSupplierCaseRepo(tx),
+    caseTimelineRepo: new DrizzleCaseTimelineRepo(tx),
+    onboardingSubmissionRepo: new DrizzleOnboardingSubmissionRepo(tx),
+    onboardingRepo: new DrizzleOnboardingSubmissionRepo(tx),
+    companyLocationRepo: new DrizzleCompanyLocationRepo(tx),
+    directoryRepo: new DrizzleDirectoryRepo(tx),
+    invitationRepo: new DrizzleInvitationRepo(tx),
+    messageThreadRepo: new DrizzleMessageThreadRepo(tx),
+    messageRepo: new DrizzleMessageRepo(tx),
+    escalationRepo: new DrizzleEscalationRepo(tx),
+    announcementRepo: new DrizzleAnnouncementRepo(tx),
+    meetingRequestRepo: new DrizzleMeetingRequestRepo(tx),
+    proofChainReader: new DrizzleProofChainReader(tx),
+    paymentStatusFactRepo: new DrizzlePaymentStatusFactRepo(tx),
+    earlyPaymentOfferRepo: new DrizzleEarlyPaymentOfferRepo(tx),
     arInvoiceRepo: new DrizzleArInvoiceRepo(tx),
     arPaymentAllocationRepo: new DrizzleArPaymentAllocationRepo(tx),
     dunningRepo: new DrizzleDunningRepo(tx),

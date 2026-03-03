@@ -2,10 +2,14 @@ import { Suspense } from 'react';
 import { PageHeader } from '@/components/erp/page-header';
 import { EmptyState } from '@/components/erp/empty-state';
 import { getRequestContext } from '@/lib/auth';
+import type { RequestContext } from '@afenda/core';
 import { handleApiError } from '@/lib/api-error.server';
 import { getBudgetEntries } from '@/features/finance/budgets/queries/budget.queries';
 import { BudgetEntryTable } from '@/features/finance/budgets/blocks/budget-entry-table';
-import { BudgetCreateSection, BudgetPagination } from '@/features/finance/budgets/blocks/budget-page-blocks';
+import {
+  BudgetCreateSection,
+  BudgetPagination,
+} from '@/features/finance/budgets/blocks/budget-page-blocks';
 import { routes } from '@/lib/constants';
 import { Target } from 'lucide-react';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
@@ -17,24 +21,32 @@ const breadcrumbs = [
   { label: 'Budget Entries' },
 ];
 
-interface Props { searchParams: Promise<{ ledgerId?: string; periodId?: string; page?: string; limit?: string }> }
+interface Props {
+  searchParams: Promise<{ ledgerId?: string; periodId?: string; page?: string; limit?: string }>;
+}
 
-export default async function BudgetEntriesPage({ searchParams }: Props) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-
+async function BudgetEntriesContent({
+  ctx,
+  params,
+}: {
+  ctx: RequestContext;
+  params: { ledgerId?: string; periodId?: string; page?: string; limit?: string };
+}) {
   // Require ledgerId and periodId filters
   if (!params.ledgerId || !params.periodId) {
     return (
-      <Suspense fallback={<LoadingSkeleton />}>
       <div className="space-y-6">
-        <PageHeader title="Budget Entries" description="Manage budget allocations by account and period." breadcrumbs={breadcrumbs} />
+        <PageHeader
+          title="Budget Entries"
+          description="Manage budget allocations by account and period."
+          breadcrumbs={breadcrumbs}
+        />
         <div className="rounded-md border p-6 text-center text-sm text-muted-foreground">
-          Select a <strong>Ledger</strong> and <strong>Period</strong> to view budget entries.
-          Use the URL parameters <code>?ledgerId=&amp;periodId=</code> to filter.
+          Select a <strong>Ledger</strong> and <strong>Period</strong> to view budget entries. Use
+          the URL parameters <code>?ledgerId=&amp;periodId=</code> to filter.
         </div>
         <BudgetCreateSection />
       </div>
-    </Suspense>
     );
   }
 
@@ -54,17 +66,39 @@ export default async function BudgetEntriesPage({ searchParams }: Props) {
   const totalPages = Math.ceil(total / limit);
   return (
     <div className="space-y-6">
-      <PageHeader title="Budget Entries" description="Manage budget allocations by account and period." breadcrumbs={breadcrumbs} />
+      <PageHeader
+        title="Budget Entries"
+        description="Manage budget allocations by account and period."
+        breadcrumbs={breadcrumbs}
+      />
 
-      <BudgetCreateSection defaultValues={{ ledgerId: params.ledgerId, periodId: params.periodId }} />
+      <BudgetCreateSection
+        defaultValues={{ ledgerId: params.ledgerId, periodId: params.periodId }}
+      />
 
       {entries.length === 0 ? (
-        <EmptyState contentKey="finance.budgetEntries" icon={Target} />
+        <EmptyState contentKey="finance.budgetEntries" constraint="page" icon={Target} />
       ) : (
         <BudgetEntryTable entries={entries} />
       )}
 
-      <BudgetPagination page={page} totalPages={totalPages} total={total} ledgerId={params.ledgerId} periodId={params.periodId} />
+      <BudgetPagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        ledgerId={params.ledgerId}
+        periodId={params.periodId}
+      />
     </div>
+  );
+}
+
+export default async function BudgetEntriesPage({ searchParams }: Props) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <BudgetEntriesContent ctx={ctx} params={params} />
+    </Suspense>
   );
 }

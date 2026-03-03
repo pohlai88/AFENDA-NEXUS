@@ -28,11 +28,6 @@ function DomainDashboardLayout({
   kpiDeck,
   featureGrid,
 }: DomainDashboardLayoutProps) {
-  // #region agent log
-  // eslint-disable-next-line no-restricted-syntax
-  fetch('http://127.0.0.1:7877/ingest/5572b893-09bf-4986-bb0f-a54b06329d22',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b56243'},body:JSON.stringify({sessionId:'b56243',location:'domain-dashboard-layout.tsx:25',message:'Layout rendering',data:{hasFeatureGrid:!!featureGrid,featureGridType:typeof featureGrid,title},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
-  // #endregion
-
   return (
     <div className="flex flex-col gap-6">
       {/* ── Header ── */}
@@ -49,9 +44,7 @@ function DomainDashboardLayout({
       )}
 
       {/* ── Top Panel: Unified Bento Deck (KPIs + Charts + Diagrams) ── */}
-      <div className="flex flex-col gap-6">
-        {kpiDeck}
-      </div>
+      <div className="flex flex-col gap-6">{kpiDeck}</div>
 
       <Separator />
 

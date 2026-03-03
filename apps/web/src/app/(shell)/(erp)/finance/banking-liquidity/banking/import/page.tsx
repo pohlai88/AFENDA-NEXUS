@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader, PageHeaderHeading, PageHeaderDescription } from '@/components/erp/page-header';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import { getBankAccounts } from '@/features/finance/banking/queries/banking.queries';
@@ -10,8 +11,7 @@ export const metadata = {
   description: 'Import a bank statement for reconciliation',
 };
 
-export default async function ImportStatementPage() {
-  const ctx = await getRequestContext();
+async function ImportStatementContent({ ctx }: { ctx: RequestContext }) {
   const accountsResult = await getBankAccounts(ctx);
 
   if (!accountsResult.ok) {
@@ -19,17 +19,25 @@ export default async function ImportStatementPage() {
   }
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
-      <div className="flex flex-col gap-6 max-w-2xl">
-        <PageHeader>
-          <PageHeaderHeading>Import Bank Statement</PageHeaderHeading>
-          <PageHeaderDescription>
-            Upload a bank statement file to import transactions for reconciliation.
-          </PageHeaderDescription>
-        </PageHeader>
+    <div className="flex flex-col gap-6 max-w-2xl">
+      <PageHeader>
+        <PageHeaderHeading>Import Bank Statement</PageHeaderHeading>
+        <PageHeaderDescription>
+          Upload a bank statement file to import transactions for reconciliation.
+        </PageHeaderDescription>
+      </PageHeader>
 
-        <StatementImportForm bankAccounts={accountsResult.data} />
-      </div>
+      <StatementImportForm bankAccounts={accountsResult.data} />
+    </div>
+  );
+}
+
+export default async function ImportStatementPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <ImportStatementContent ctx={ctx} />
     </Suspense>
   );
 }

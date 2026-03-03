@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { routes } from '@/lib/constants';
 import type { IntangibleType, AmortizationMethod } from '../types';
 import { intangibleTypeLabels, amortizationMethodLabels } from '../types';
+import { searchCategories } from '../actions/intangibles.actions';
 
 const CreateIntangibleSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -66,7 +67,9 @@ interface CreateIntangibleFormData {
 interface CreateIntangibleFormProps {
   onSubmit: (
     data: unknown
-  ) => Promise<{ ok: true; data: { id: string; assetNumber: string } } | { ok: false; error: string }>;
+  ) => Promise<
+    { ok: true; data: { id: string; assetNumber: string } } | { ok: false; error: string }
+  >;
 }
 
 const typeOptions = Object.entries(intangibleTypeLabels).map(([value, label]) => ({
@@ -165,19 +168,29 @@ export function CreateIntangibleForm({ onSubmit }: CreateIntangibleFormProps) {
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">Name *</Label>
-          <Input id="name" placeholder="e.g. SAP ERP License" {...form.register('name', { required: true })} />
+          <Input
+            id="name"
+            placeholder="e.g. SAP ERP License"
+            {...form.register('name', { required: true })}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="intangibleType">Type *</Label>
           <Select
             value={form.watch('intangibleType')}
-            onValueChange={(v) => form.setValue('intangibleType', v as IntangibleType, { shouldValidate: true })}
+            onValueChange={(v) =>
+              form.setValue('intangibleType', v as IntangibleType, { shouldValidate: true })
+            }
           >
-            <SelectTrigger id="intangibleType"><SelectValue /></SelectTrigger>
+            <SelectTrigger id="intangibleType">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {typeOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -186,35 +199,65 @@ export function CreateIntangibleForm({ onSubmit }: CreateIntangibleFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <Textarea id="description" placeholder="Describe the asset..." rows={2} {...form.register('description')} />
+        <Textarea
+          id="description"
+          placeholder="Describe the asset..."
+          rows={2}
+          {...form.register('description')}
+        />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="originalCost">Original Cost *</Label>
-          <Input id="originalCost" type="number" min="0" step="0.01" {...form.register('originalCost', { valueAsNumber: true })} />
+          <Input
+            id="originalCost"
+            type="number"
+            min="0"
+            step="0.01"
+            {...form.register('originalCost', { valueAsNumber: true })}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="residualValue">Residual Value</Label>
-          <Input id="residualValue" type="number" min="0" step="0.01" {...form.register('residualValue', { valueAsNumber: true })} />
+          <Input
+            id="residualValue"
+            type="number"
+            min="0"
+            step="0.01"
+            {...form.register('residualValue', { valueAsNumber: true })}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="currency">Currency *</Label>
-          <Input id="currency" placeholder="e.g. USD" maxLength={3} {...form.register('currency', { required: true })} />
+          <Input
+            id="currency"
+            placeholder="e.g. USD"
+            maxLength={3}
+            {...form.register('currency', { required: true })}
+          />
         </div>
       </div>
 
       <div className="grid gap-6 sm:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="acquisitionDate">Acquisition Date *</Label>
-          <Input id="acquisitionDate" type="date" {...form.register('acquisitionDate', { required: true })} />
+          <Input
+            id="acquisitionDate"
+            type="date"
+            {...form.register('acquisitionDate', { required: true })}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="amortizationStartDate">Amortization Start *</Label>
-          <Input id="amortizationStartDate" type="date" {...form.register('amortizationStartDate', { required: true })} />
+          <Input
+            id="amortizationStartDate"
+            type="date"
+            {...form.register('amortizationStartDate', { required: true })}
+          />
         </div>
 
         <div className="space-y-2">
@@ -228,12 +271,18 @@ export function CreateIntangibleForm({ onSubmit }: CreateIntangibleFormProps) {
           <Label htmlFor="amortizationMethod">Amortization Method *</Label>
           <Select
             value={form.watch('amortizationMethod')}
-            onValueChange={(v) => form.setValue('amortizationMethod', v as AmortizationMethod, { shouldValidate: true })}
+            onValueChange={(v) =>
+              form.setValue('amortizationMethod', v as AmortizationMethod, { shouldValidate: true })
+            }
           >
-            <SelectTrigger id="amortizationMethod"><SelectValue /></SelectTrigger>
+            <SelectTrigger id="amortizationMethod">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {methodOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -258,9 +307,9 @@ export function CreateIntangibleForm({ onSubmit }: CreateIntangibleFormProps) {
               setSelectedCategory(opt);
               form.setValue('categoryId', opt?.id ?? '', { shouldValidate: true });
             }}
-            loadOptions={async (_q) => {
-              // TODO: wire to searchCategories server action
-              return [];
+            loadOptions={async (query) => {
+              const result = await searchCategories(query);
+              return result.ok ? result.data : [];
             }}
             placeholder="Select category…"
             error={form.formState.errors.categoryId?.message}
@@ -276,12 +325,20 @@ export function CreateIntangibleForm({ onSubmit }: CreateIntangibleFormProps) {
 
         <div className="space-y-2">
           <Label htmlFor="registrationNumber">Registration Number</Label>
-          <Input id="registrationNumber" placeholder="Optional" {...form.register('registrationNumber')} />
+          <Input
+            id="registrationNumber"
+            placeholder="Optional"
+            {...form.register('registrationNumber')}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="developmentPhase">Development Phase</Label>
-          <Input id="developmentPhase" placeholder="e.g. Research, Development" {...form.register('developmentPhase')} />
+          <Input
+            id="developmentPhase"
+            placeholder="e.g. Research, Development"
+            {...form.register('developmentPhase')}
+          />
         </div>
       </div>
 

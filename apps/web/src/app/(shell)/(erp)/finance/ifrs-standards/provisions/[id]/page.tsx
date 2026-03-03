@@ -1,12 +1,20 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
-import { getProvisionById, getProvisionMovements } from '@/features/finance/provisions/queries/provisions.queries';
-import { ProvisionDetailHeader, ProvisionOverview, ProvisionMovementsList } from '@/features/finance/provisions/blocks/provision-detail';
+import {
+  getProvisionById,
+  getProvisionMovements,
+} from '@/features/finance/provisions/queries/provisions.queries';
+import {
+  ProvisionDetailHeader,
+  ProvisionOverview,
+  ProvisionMovementsList,
+} from '@/features/finance/provisions/blocks/provision-detail';
 import { routes } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,8 +34,7 @@ async function MovementsSection({ provisionId }: { provisionId: string }) {
   return <ProvisionMovementsList movements={result.value.data} />;
 }
 
-export default async function ProvisionDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function ProvisionDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getProvisionById(ctx, id);
 
   if (!result.ok) {
@@ -50,7 +57,11 @@ export default async function ProvisionDetailPage({ params }: Props) {
       <BusinessDocument
         header={<ProvisionDetailHeader provision={provision} />}
         tabs={[
-          { value: 'overview', label: 'Overview', content: <ProvisionOverview provision={provision} /> },
+          {
+            value: 'overview',
+            label: 'Overview',
+            content: <ProvisionOverview provision={provision} />,
+          },
           {
             value: 'movements',
             label: 'Movements',
@@ -63,5 +74,15 @@ export default async function ProvisionDetailPage({ params }: Props) {
         ]}
       />
     </div>
+  );
+}
+
+export default async function ProvisionDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense>
+      <ProvisionDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

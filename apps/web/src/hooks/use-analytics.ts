@@ -25,7 +25,7 @@ export interface AnalyticsUser {
 
 // ─── Singleton Init (dynamic import) ─────────────────────────────────────────
 
-let _posthog: PostHog | null = null;
+let _posthog: typeof PostHog | null = null;
 let _initPromise: Promise<boolean> | null = null;
 
 async function ensurePostHog(): Promise<boolean> {

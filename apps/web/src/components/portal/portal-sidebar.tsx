@@ -18,10 +18,20 @@ import {
   Receipt,
   Banknote,
   FolderOpen,
-  MessageSquareWarning,
   GitMerge,
   ShieldCheck,
   Settings,
+  ClipboardList,
+  Inbox,
+  Building,
+  Users,
+  MessageSquare,
+  Siren,
+  Megaphone,
+  CalendarClock,
+  Landmark,
+  UserCog,
+  FileText,
 } from 'lucide-react';
 
 const iconMap: Record<string, LucideIcon> = {
@@ -29,15 +39,25 @@ const iconMap: Record<string, LucideIcon> = {
   Receipt,
   Banknote,
   FolderOpen,
-  MessageSquareWarning,
   GitMerge,
   ShieldCheck,
   Settings,
+  ClipboardList,
+  Inbox,
+  Building,
+  Users,
+  MessageSquare,
+  Siren,
+  Megaphone,
+  CalendarClock,
+  Landmark,
+  UserCog,
+  FileText,
 };
 
 function PortalNavIcon({ name, className }: { name: string; className?: string }) {
   const Icon = iconMap[name] ?? Receipt;
-  return <Icon className={cn('h-4 w-4', className)} />;
+  return <Icon className={cn('h-4 w-4', className)} aria-hidden="true" />;
 }
 
 export function PortalSidebarSkeleton() {

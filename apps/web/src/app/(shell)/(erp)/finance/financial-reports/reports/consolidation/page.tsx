@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { ExportMenu } from '@/components/erp/export-menu';
 import { EmptyState } from '@/components/erp/empty-state';
@@ -22,12 +23,15 @@ interface ConsolidationPageProps {
   }>;
 }
 
-export default async function ConsolidationReportPage({ searchParams }: ConsolidationPageProps) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-
-  const ledgerId = params.ledgerId ?? '';
-  const periodId = params.periodId ?? '';
-
+async function ConsolidationContent({
+  ctx,
+  ledgerId,
+  periodId,
+}: {
+  ctx: RequestContext;
+  ledgerId: string;
+  periodId: string;
+}) {
   const [filterData, result] = await Promise.all([
     getReportFilterData(),
     periodId ? getConsolidationReport(ctx, { periodId }) : Promise.resolve(null),
@@ -70,9 +74,29 @@ export default async function ConsolidationReportPage({ searchParams }: Consolid
         </Suspense>
       </div>
 
-      {!periodId && <EmptyState contentKey="finance.reports.consolidation" variant="firstRun" icon={BarChart3} />}
+      {!periodId && (
+        <EmptyState
+          contentKey="finance.reports.consolidation"
+          constraint="page"
+          variant="firstRun"
+          icon={BarChart3}
+        />
+      )}
 
-      { data ? <ConsolidationReportTable data={data} /> : null}
+      {data ? <ConsolidationReportTable data={data} /> : null}
     </div>
+  );
+}
+
+export default async function ConsolidationReportPage({ searchParams }: ConsolidationPageProps) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  const ledgerId = params.ledgerId ?? '';
+  const periodId = params.periodId ?? '';
+
+  return (
+    <Suspense>
+      <ConsolidationContent ctx={ctx} ledgerId={ledgerId} periodId={periodId} />
+    </Suspense>
   );
 }

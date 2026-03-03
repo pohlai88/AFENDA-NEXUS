@@ -1,26 +1,18 @@
 import 'server-only';
 
 import { cache } from 'react';
+import { createApiClient } from '@/lib/api-client';
+import { getRequestContext } from '@/lib/auth';
 
 // ─── Chart Resolvers (Server-Only) ──────────────────────────────────────────
 //
-// Async resolvers for dashboard chart data. Currently return stub data
-// shaped like real domain data. Each chart displays a "Preview" badge
-// until the resolver is wired to real DB queries.
+// Async resolvers for dashboard chart data. API-first with fallback data.
+// Each chart displays a "Preview" badge when using fallback data;
+// cleared once data is fetched from real API endpoints.
 //
 // Pattern matches kpi-registry.server.ts: error-isolated, deterministic.
 //
-// TODO: Wire to real queries:
-//   const ctx = await getRequestContext();
-//   const client = createApiClient(ctx);
-//   return client.get('/reports/cash-flow', { months: 6 });
-//
 // ─────────────────────────────────────────────────────────────────────────────
-
-interface RequestContextLike {
-  token?: string;
-  [key: string]: unknown;
-}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -44,13 +36,13 @@ export interface ChartData {
   cashFlow: CashFlowPoint[];
   expenses: ExpenseCategory[];
   arAging: AgingBucket[];
-  /** Whether this data is preview/stub (true) or from real queries (false). */
+  /** Whether this data is preview/fallback (true) or from real queries (false). */
   isPreview: boolean;
 }
 
-// ─── Stub Data ───────────────────────────────────────────────────────────────
+// ─── Fallback Data ───────────────────────────────────────────────────────────
 
-const STUB_CASH_FLOW: CashFlowPoint[] = [
+const FALLBACK_CASH_FLOW: CashFlowPoint[] = [
   { month: 'Sep', inflow: 124000, outflow: 98000 },
   { month: 'Oct', inflow: 156000, outflow: 112000 },
   { month: 'Nov', inflow: 142000, outflow: 128000 },
@@ -59,7 +51,7 @@ const STUB_CASH_FLOW: CashFlowPoint[] = [
   { month: 'Feb', inflow: 178000, outflow: 142000 },
 ];
 
-const STUB_EXPENSES: ExpenseCategory[] = [
+const FALLBACK_EXPENSES: ExpenseCategory[] = [
   { category: 'Payroll', amount: 85000 },
   { category: 'Rent', amount: 12000 },
   { category: 'Software', amount: 8500 },
@@ -68,7 +60,7 @@ const STUB_EXPENSES: ExpenseCategory[] = [
   { category: 'Utilities', amount: 2100 },
 ];
 
-const STUB_AR_AGING: AgingBucket[] = [
+const FALLBACK_AR_AGING: AgingBucket[] = [
   { bucket: 'Current', amount: 45000 },
   { bucket: '1-30', amount: 22000 },
   { bucket: '31-60', amount: 8500 },
@@ -80,37 +72,61 @@ const STUB_AR_AGING: AgingBucket[] = [
 
 /**
  * Resolve chart data for the dashboard.
- * Returns stub/preview data until wired to real DB queries.
- * Error-isolated: never throws — returns empty data on failure.
+ * API-first with fallback data when endpoints are unreachable.
+ * Error-isolated: never throws — returns fallback data on failure.
  * Wrapped with React cache() for automatic request memoization (RBP-CACHE).
  */
-export const resolveChartData = cache(
-  async (_ctx?: RequestContextLike): Promise<ChartData> => {
-    try {
-      // Simulate network latency
-      await new Promise((r) => setTimeout(r, 80));
+export const resolveChartData = cache(async (): Promise<ChartData> => {
+  try {
+    const ctx = await getRequestContext();
+    const client = createApiClient(ctx);
 
-      // TODO: Replace with real queries:
-      // const [cashFlow, expenses, arAging] = await Promise.all([
-      //   client.get('/reports/cash-flow', { months: 6 }),
-      //   client.get('/reports/expense-breakdown'),
-      //   client.get('/reports/ar-aging'),
-      // ]);
+    const [cfResult, expResult, arResult] = await Promise.all([
+      client
+        .get<{ month: string; inflows: number; outflows: number }[]>('/dashboard/cash-flow-chart')
+        .catch(() => null),
+      client
+        .get<{ summary: { category: string; total: number }[] }>('/expense-claims/summary')
+        .catch(() => null),
+      client.get<{ totals: Record<string, number> }>('/ar/aging').catch(() => null),
+    ]);
 
-      return {
-        cashFlow: STUB_CASH_FLOW,
-        expenses: STUB_EXPENSES,
-        arAging: STUB_AR_AGING,
-        isPreview: true,
-      };
-    } catch {
-      // Error-isolated: return empty data
-      return {
-        cashFlow: [],
-        expenses: [],
-        arAging: [],
-        isPreview: true,
-      };
+    const cashFlow: CashFlowPoint[] =
+      cfResult?.ok && Array.isArray(cfResult.value) && cfResult.value.length > 0
+        ? cfResult.value.map((d) => ({ month: d.month, inflow: d.inflows, outflow: d.outflows }))
+        : FALLBACK_CASH_FLOW;
+
+    const expenses: ExpenseCategory[] =
+      expResult?.ok && expResult.value?.summary?.length
+        ? expResult.value.summary.map((s) => ({ category: s.category, amount: s.total }))
+        : FALLBACK_EXPENSES;
+
+    let arAging: AgingBucket[] = FALLBACK_AR_AGING;
+    if (arResult?.ok && arResult.value?.totals) {
+      const t = arResult.value.totals;
+      const mapped = [
+        { bucket: 'Current', amount: Number(t.current ?? 0) },
+        { bucket: '1-30', amount: Number(t.days30 ?? 0) },
+        { bucket: '31-60', amount: Number(t.days60 ?? 0) },
+        { bucket: '61-90', amount: Number(t.days90 ?? 0) },
+        { bucket: '90+', amount: Number(t.over90 ?? 0) },
+      ].filter((b) => b.amount > 0);
+      if (mapped.length > 0) arAging = mapped;
     }
+
+    const isPreview =
+      cashFlow === FALLBACK_CASH_FLOW &&
+      expenses === FALLBACK_EXPENSES &&
+      arAging === FALLBACK_AR_AGING;
+
+    return { cashFlow, expenses, arAging, isPreview };
+  } catch {
+    // Error-isolated: return fallback data
+    return {
+      cashFlow: FALLBACK_CASH_FLOW,
+      expenses: FALLBACK_EXPENSES,
+      arAging: FALLBACK_AR_AGING,
+      isPreview: true,
+    };
   }
-);
+});

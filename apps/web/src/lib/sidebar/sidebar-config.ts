@@ -53,23 +53,107 @@ export const UTILITY_MODULE_IDS = new Set(['settings', 'admin']);
 export const SHELL_SHORTCUTS: ShellShortcut[] = [
   // ─── Go To (g prefix) ─────────────────────────────────────────────────────
   { id: 'nav-home', keys: 'g d', href: routes.home, label: 'Dashboard', scope: 'global' },
-  { id: 'nav-journals', keys: 'g j', href: routes.finance.journals, label: 'Journals', scope: 'global' },
-  { id: 'nav-accounts', keys: 'g a', href: routes.finance.accounts, label: 'Chart of Accounts', scope: 'global' },
-  { id: 'nav-periods', keys: 'g p', href: routes.finance.periods, label: 'Periods', scope: 'global' },
-  { id: 'nav-ledgers', keys: 'g l', href: routes.finance.ledgers, label: 'Ledgers', scope: 'global' },
-  { id: 'nav-banking', keys: 'g b', href: routes.finance.banking, label: 'Banking', scope: 'global' },
-  { id: 'nav-expenses', keys: 'g x', href: routes.finance.expenses, label: 'Expenses', scope: 'global' },
+  {
+    id: 'nav-journals',
+    keys: 'g j',
+    href: routes.finance.journals,
+    label: 'Journals',
+    scope: 'global',
+  },
+  {
+    id: 'nav-accounts',
+    keys: 'g a',
+    href: routes.finance.accounts,
+    label: 'Chart of Accounts',
+    scope: 'global',
+  },
+  {
+    id: 'nav-periods',
+    keys: 'g p',
+    href: routes.finance.periods,
+    label: 'Periods',
+    scope: 'global',
+  },
+  {
+    id: 'nav-ledgers',
+    keys: 'g l',
+    href: routes.finance.ledgers,
+    label: 'Ledgers',
+    scope: 'global',
+  },
+  {
+    id: 'nav-banking',
+    keys: 'g b',
+    href: routes.finance.banking,
+    label: 'Banking',
+    scope: 'global',
+  },
+  {
+    id: 'nav-expenses',
+    keys: 'g x',
+    href: routes.finance.expenses,
+    label: 'Expenses',
+    scope: 'global',
+  },
   { id: 'nav-settings', keys: 'g s', href: routes.settings, label: 'Settings', scope: 'global' },
-  { id: 'nav-invoices', keys: 'g i', href: routes.finance.receivables, label: 'Invoices (AR)', scope: 'global' },
-  { id: 'nav-bills', keys: 'g v', href: routes.finance.payables, label: 'Bills (AP)', scope: 'global' },
-  { id: 'nav-reports', keys: 'g r', href: routes.finance.reports, label: 'Reports', scope: 'global' },
+  {
+    id: 'nav-invoices',
+    keys: 'g i',
+    href: routes.finance.receivables,
+    label: 'Invoices (AR)',
+    scope: 'global',
+  },
+  {
+    id: 'nav-bills',
+    keys: 'g v',
+    href: routes.finance.payables,
+    label: 'Bills (AP)',
+    scope: 'global',
+  },
+  {
+    id: 'nav-reports',
+    keys: 'g r',
+    href: routes.finance.reports,
+    label: 'Reports',
+    scope: 'global',
+  },
   { id: 'nav-home-alt', keys: 'g h', href: routes.home, label: 'Home', scope: 'global' },
   // ─── Create (c prefix, Zoho-style) ─────────────────────────────────────────
-  { id: 'create-journal', keys: 'c j', href: routes.finance.journalNew, label: 'New Journal Entry', scope: 'global' },
-  { id: 'create-invoice', keys: 'c i', href: routes.finance.receivableNew, label: 'New Invoice (AR)', scope: 'global' },
-  { id: 'create-bill', keys: 'c b', href: routes.finance.payableNew, label: 'New Bill (AP)', scope: 'global' },
-  { id: 'create-expense', keys: 'c x', href: routes.finance.expenseNew, label: 'New Expense Claim', scope: 'global' },
-  { id: 'create-account', keys: 'c a', href: routes.finance.accountNew, label: 'New Account', scope: 'global' },
+  {
+    id: 'create-journal',
+    keys: 'c j',
+    href: routes.finance.journalNew,
+    label: 'New Journal Entry',
+    scope: 'global',
+  },
+  {
+    id: 'create-invoice',
+    keys: 'c i',
+    href: routes.finance.receivableNew,
+    label: 'New Invoice (AR)',
+    scope: 'global',
+  },
+  {
+    id: 'create-bill',
+    keys: 'c b',
+    href: routes.finance.payableNew,
+    label: 'New Bill (AP)',
+    scope: 'global',
+  },
+  {
+    id: 'create-expense',
+    keys: 'c x',
+    href: routes.finance.expenseNew,
+    label: 'New Expense Claim',
+    scope: 'global',
+  },
+  {
+    id: 'create-account',
+    keys: 'c a',
+    href: routes.finance.accountNew,
+    label: 'New Account',
+    scope: 'global',
+  },
 ];
 
 /**
@@ -77,7 +161,7 @@ export const SHELL_SHORTCUTS: ShellShortcut[] = [
  * Used by DomainPopover to render <Kbd> hints next to nav items.
  */
 export const SHORTCUT_HINTS: Record<string, string> = Object.fromEntries(
-  SHELL_SHORTCUTS.map((s) => [s.href, s.keys]),
+  SHELL_SHORTCUTS.map((s) => [s.href, s.keys])
 );
 
 // ─── Sidebar Nav-Main Items ──────────────────────────────────────────────────
@@ -100,6 +184,56 @@ export interface NavMainItemDef {
 export const NAV_MAIN_ITEMS: NavMainItemDef[] = [
   { title: 'Home', href: '/home', icon: 'Home', emoji: '🏠' },
   { title: 'Approvals', href: routes.finance.approvals, icon: 'CheckCircle', emoji: '📋' },
+];
+
+// ─── Portal Definitions ──────────────────────────────────────────────────────
+
+/**
+ * Portal entries — external-facing portals for different stakeholders.
+ * Rendered above the Navigation categories in the sidebar.
+ */
+export interface PortalDef {
+  /** Display label. */
+  label: string;
+  /** 3D emoji for visual differentiation. */
+  emoji: string;
+  /** Lucide icon name for collapsed tooltip. */
+  icon: string;
+  /** Navigation target. */
+  href: string;
+  /** Short description shown in compact mode. */
+  description: string;
+}
+
+export const PORTAL_DEFS: PortalDef[] = [
+  {
+    label: 'Customer Portal',
+    emoji: '👤',
+    icon: 'UserCircle',
+    href: routes.portal.customer,
+    description: 'Customer self-service',
+  },
+  {
+    label: 'Supplier Portal',
+    emoji: '🏭',
+    icon: 'Factory',
+    href: routes.portal.dashboard,
+    description: 'Supplier collaboration',
+  },
+  {
+    label: 'Investor Portal',
+    emoji: '📈',
+    icon: 'TrendingUp',
+    href: routes.portal.investor,
+    description: 'Investor relations',
+  },
+  {
+    label: 'Franchisee Portal',
+    emoji: '🤝',
+    icon: 'Handshake',
+    href: routes.portal.franchisee,
+    description: 'Franchise operations',
+  },
 ];
 
 // ─── Sidebar Category Definitions ────────────────────────────────────────────
@@ -142,4 +276,3 @@ export const SECONDARY_ITEM_DEFS: SecondaryItemDef[] = [
   { moduleId: 'settings', title: 'Settings', href: '/settings', icon: 'Settings' },
   { moduleId: 'admin', title: 'Admin', href: '/admin', icon: 'ShieldCheck' },
 ];
-

@@ -1,12 +1,16 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
 import { getLeaseById } from '@/features/finance/leases/queries/leases.queries';
 import { LeaseDetailHeader, LeaseOverview } from '@/features/finance/leases/blocks/lease-detail';
-import { LeaseScheduleSection, LeaseModificationsSection } from '@/features/finance/leases/blocks/lease-sections';
+import {
+  LeaseScheduleSection,
+  LeaseModificationsSection,
+} from '@/features/finance/leases/blocks/lease-sections';
 import { routes } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -20,7 +24,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function LeaseDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+  const { id } = await params;
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <LeaseDetailContent ctx={ctx} id={id} />
+    </Suspense>
+  );
+}
+
+async function LeaseDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getLeaseById(ctx, id);
 
   if (!result.ok) {

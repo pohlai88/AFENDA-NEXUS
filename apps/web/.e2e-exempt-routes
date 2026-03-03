@@ -1,0 +1,26 @@
+# Route-prefix exemptions for gate:e2e-coverage-map
+# Format: /route-prefix — reason
+# Only the top-level route path (after route-group stripping) is matched.
+
+# ── ERP modules (E2E specs in backlog) ──────────────────────────────────────
+/(erp)/finance — E2E-BACKLOG: finance module routes scaffolded, specs planned
+/(erp)/crm — E2E-BACKLOG: CRM module scaffolded, no user flows yet
+/(erp)/hrm — E2E-BACKLOG: HRM module scaffolded, no user flows yet
+
+# ── Shell routes ────────────────────────────────────────────────────────────
+/(boardroom)/boardroom — E2E-BACKLOG: boardroom dashboard, specs planned
+/(configuration)/admin — E2E-BACKLOG: admin panel, specs planned
+/(configuration)/settings — E2E-BACKLOG: settings pages, specs planned
+/(utilities)/forbidden — E2E-BACKLOG: utility error page, low priority
+
+# ── Auth flows (partially covered via login/register specs) ─────────────────
+/accept-invite — E2E-BACKLOG: invite acceptance flow, specs planned
+/reset-password — E2E-BACKLOG: password reset flow, specs planned
+/verify-email — E2E-BACKLOG: email verification flow, specs planned
+/onboarding — E2E-BACKLOG: onboarding wizard, specs planned
+
+# ── App root ────────────────────────────────────────────────────────────────
+/home — E2E-BACKLOG: authenticated home dashboard, specs planned
+
+# ── Supplier portal ─────────────────────────────────────────────────────────
+/portal — E2E-BACKLOG: supplier portal routes, specs planned

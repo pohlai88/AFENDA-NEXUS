@@ -11,7 +11,31 @@ import { routes } from '@/lib/constants';
 import {
   previewAmortizationPosting,
   type PostingPreviewResult,
+  getIntangibleCategories,
 } from '../queries/intangibles.queries';
+
+// ─── Category Actions ────────────────────────────────────────────────────────
+
+export async function searchCategories(
+  _query: string
+): Promise<
+  | { ok: true; data: Array<{ id: string; label: string; hint?: string }> }
+  | { ok: false; error: string }
+> {
+  const ctx = await getRequestContext();
+  const result = await getIntangibleCategories(ctx);
+
+  if (!result.ok) return { ok: false, error: result.error };
+
+  return {
+    ok: true,
+    data: result.data.map((cat) => ({
+      id: cat.id,
+      label: cat.name,
+      hint: cat.code,
+    })),
+  };
+}
 
 // ─── Asset CRUD Actions ──────────────────────────────────────────────────────
 
@@ -71,10 +95,11 @@ export async function calculateAmortization(params: {
 > {
   const ctx = await getRequestContext();
   const client = createApiClient(ctx);
-  const result = await client.post<{ runId: string; assetCount: number; totalAmortization: number }>(
-    '/intangible-assets/amortization/calculate',
-    params
-  );
+  const result = await client.post<{
+    runId: string;
+    assetCount: number;
+    totalAmortization: number;
+  }>('/intangible-assets/amortization/calculate', params);
 
   if (!result.ok) return { ok: false, error: result.error.message };
 

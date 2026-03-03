@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { AllocationRunDetail } from '@/features/finance/cost-accounting/blocks/allocation-run-detail';
@@ -23,8 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function AllocationDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function AllocationDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getAllocationRunById(ctx, id);
 
   if (!result.ok) {
@@ -35,7 +35,6 @@ export default async function AllocationDetailPage({ params }: Props) {
   const run = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title={`Allocation Run — ${run.runNumber}`}
@@ -68,6 +67,15 @@ export default async function AllocationDetailPage({ params }: Props) {
         defaultTab="details"
       />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function AllocationDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AllocationDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

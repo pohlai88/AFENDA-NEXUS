@@ -56,11 +56,6 @@ export async function DomainDashboardShell({ config }: DomainDashboardShellProps
     config.buildFeatureMetrics?.(ctx) ?? Promise.resolve({}),
   ]);
 
-  // #region agent log
-  // eslint-disable-next-line no-restricted-syntax
-  fetch('http://127.0.0.1:7877/ingest/5572b893-09bf-4986-bb0f-a54b06329d22',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b56243'},body:JSON.stringify({sessionId:'b56243',location:'domain-dashboard-shell.tsx:60',message:'Shell rendering',data:{hasNavGroups:!!config.navGroups,navGroupsLength:config.navGroups?.length||0,domainId:config.domainId,attentionCount:attentionItems?.length||0,featureMetricsKeys:Object.keys(featureMetrics||{}).length},timestamp:Date.now(),hypothesisId:'H1,H2'})}).catch(()=>{});
-  // #endregion
-
   return (
     <DomainDashboardLayout
       title={config.title}
@@ -140,17 +135,27 @@ async function KpiDeckLoader({
   }
 
   const comparisonMode =
-    prefs.comparisonMode && prefs.comparisonMode !== 'none'
-      ? prefs.comparisonMode
-      : undefined;
+    prefs.comparisonMode && prefs.comparisonMode !== 'none' ? prefs.comparisonMode : undefined;
 
   const timeRange = (prefs.timeRange ?? 'mtd') as 'mtd' | 'qtd' | 'ytd' | 'custom';
 
   // 4. Resolve KPIs + chart + diagram in parallel (async-parallel) — eliminates waterfall
   const [resolvedKpis, chartData, diagramData] = await Promise.all([
     resolveKPIs(activeKpiIds, ctx, { comparisonMode, timeRange }),
-    selectedChartId ? fetchChartData(selectedChartId, { userId: ctx.userId, tenantId: ctx.tenantId, token: ctx.token }) : Promise.resolve(null),
-    selectedDiagramId ? fetchDiagramData(selectedDiagramId, { userId: ctx.userId, tenantId: ctx.tenantId, token: ctx.token }) : Promise.resolve(null),
+    selectedChartId
+      ? fetchChartData(selectedChartId, {
+          userId: ctx.userId,
+          tenantId: ctx.tenantId,
+          token: ctx.token,
+        })
+      : Promise.resolve(null),
+    selectedDiagramId
+      ? fetchDiagramData(selectedDiagramId, {
+          userId: ctx.userId,
+          tenantId: ctx.tenantId,
+          token: ctx.token,
+        })
+      : Promise.resolve(null),
   ]);
 
   // 5. Look up catalog entries (active + all available)
@@ -167,16 +172,16 @@ async function KpiDeckLoader({
       const data = dataById.get(id);
       return catalog && data ? { catalog, data } : null;
     })
-    .filter((e): e is { catalog: typeof activeCatalog[0]; data: typeof resolvedKpis[0] } => e != null);
+    .filter(
+      (e): e is { catalog: (typeof activeCatalog)[0]; data: (typeof resolvedKpis)[0] } => e != null
+    );
   void processKpiAlerts(alertEntries);
-  
+
   // Construct chart/diagram slots arrays (no push mutations - RBP-03)
-  const chartSlots: { id: string; data: unknown }[] = selectedChartId && chartData 
-    ? [{ id: selectedChartId, data: chartData }] 
-    : [];
-  const diagramSlots: { id: string; data: unknown }[] = selectedDiagramId && diagramData 
-    ? [{ id: selectedDiagramId, data: diagramData }] 
-    : [];
+  const chartSlots: { id: string; data: unknown }[] =
+    selectedChartId && chartData ? [{ id: selectedChartId, data: chartData }] : [];
+  const diagramSlots: { id: string; data: unknown }[] =
+    selectedDiagramId && diagramData ? [{ id: selectedDiagramId, data: diagramData }] : [];
 
   return (
     <BentoKpiDeck

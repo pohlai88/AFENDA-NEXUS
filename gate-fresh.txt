@@ -1,0 +1,225 @@
+﻿
+ÔòöÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòù
+Ôòæ  Parallel Gate Runner                                        Ôòæ
+Ôòæ  42 gates (all groups)                                     Ôòæ
+ÔòÜÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòØ
+
+ÔöÇÔöÇ Results ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  ÔØî SchemaÔåöentity alignment (SEA-01ÔÇô02)          [module]          1.47s
+  Ô£à Contract response drift (CRD-01ÔÇô02)          [module]          1.55s
+  Ô£à Contract completeness (CC-01ÔÇô03)             [module]          1.58s
+  Ô£à Schema conventions (SC-01ÔÇô08)                [module]          1.66s
+  Ô£à DB module gate                               [module]          1.69s
+  Ô£à Worker module gate                           [module]          1.77s
+  Ô£à API module gate                              [module]          1.81s
+  Ô£à API smoke CI (SMOKE-01ÔÇô04)                   [compliance]      1.89s
+  Ô£à SOX ITGC audit (strict)                      [compliance]      2.02s
+  Ô£à AIS benchmark audit                          [compliance]      2.05s
+  Ô£à KPI stub tracker (KPI-STUB-01ÔÇô03)            [domain]          2.15s
+  Ô£à Agent drift check                            [arch]            2.19s
+  Ô£à Monorepo drift check                         [arch]            2.22s
+  Ô£à Turbo.json configuration (TURBO-01ÔÇô07)       [arch]            2.31s
+  Ô£à Loading skeleton (LS-01ÔÇô05)                  [domain]          2.46s
+  Ô£à Kernel invariants (G-KRN-01ÔÇô05)              [domain]          2.52s
+  Ô£à Identity SoT gate                            [module]          2.54s
+  Ô£à E2E coverage map (E2E-MAP-01ÔÇô03)             [domain]          2.54s
+  Ô£à Icon integrity (ICON-01ÔÇô05)                  [domain]          2.70s
+  Ô£à Contract drift improved (CDI-01ÔÇô03)          [module]          2.87s
+  Ô£à Money safety gate                            [domain]          2.92s
+  ÔØî Accessibility (A11Y-01ÔÇô06)                   [domain]          2.93s
+  Ô£à Currency safety gate                         [domain]          2.94s
+  Ô£à Architecture guard (E1ÔÇôE16)                  [arch]            3.02s
+  Ô£à Status types gate                            [domain]          3.06s
+  Ô£à Performance budget (PERF-01ÔÇô05)              [security]        3.22s
+  Ô£à Dependency graph (DEP-01ÔÇô03)                 [arch]            3.27s
+  Ô£à React key props (REACT-KEY-01ÔÇô02)            [domain]          3.43s
+  Ô£à Nested interactive elements (NESTED-01)      [domain]          3.45s
+  Ô£à React cache() enforcement (RBP-CACHE)        [domain]          3.79s
+  ÔØî Hydration safety (HYDRO-01ÔÇô03)               [domain]          4.01s
+  Ô£à Response type SoT (RST-01ÔÇô03)                [module]          4.52s
+  Ô£à Security headers (SEC-01ÔÇô06)                 [security]        4.66s
+  Ô£à Test directory convention                    [compliance]      4.97s
+  Ô£à React best practices (RBP-01ÔÇô04)             [domain]          5.03s
+  ÔØî Frontend quality (FE-01ÔÇô05)                  [domain]          5.19s
+  Ô£à Dependency audit (high+crit)                 [compliance]      9.27s
+  ÔØî Web drift check (W01ÔÇôW16)                    [arch]           10.97s
+  ÔØî Web module gate                              [module]         11.97s
+  Ô£à OpenAPI drift gate                           [module]         13.54s
+  ÔØî Neon integration sync                        [compliance]     19.34s
+  Ô£à Unused exports gate                          [arch]          115.61s
+
+ÔöÇÔöÇ Summary ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  Total: 42 gates | Ô£à 35 passed | ÔØî 7 failed | ÔÅ▒  115.80s
+
+ÔöÇÔöÇ Failure Details ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  Ôò¡ÔöÇ SchemaÔåöentity alignment (SEA-01ÔÇô02) (schema-entity-alignment) [module]
+  Ôöé     No DB table 'comparativeBalanceSheets' found for entity 'ComparativeBalanceSheet'
+  Ôöé   ÔÜá [ComparativeIncomeStatement] packages/modules/finance/src/slices/reporting/entities/financial-reports.ts:60
+  Ôöé     No DB table 'comparativeIncomeStatements' found for entity 'ComparativeIncomeStatement'
+  Ôöé   ÔÜá [CashFlowStatement] packages/modules/finance/src/slices/reporting/entities/financial-reports.ts:73
+  Ôöé     No DB table 'cashFlowStatements' found for entity 'CashFlowStatement'
+  Ôöé   ÔÜá [EquityStatementReport] packages/modules/finance/src/slices/reporting/entities/financial-reports.ts:83
+  Ôöé     No DB table 'equityStatementReports' found for entity 'EquityStatementReport'
+  Ôöé   ÔÜá [EquityStatementReportRow] packages/modules/finance/src/slices/reporting/entities/financial-reports.ts:92
+  Ôöé     No DB table 'equityStatementReportRows' found for entity 'EquityStatementReportRow'
+  Ôöé   ÔÜá [TaxCode] packages/modules/finance/src/slices/tax/entities/tax-code.ts:8
+  Ôöé     No DB table 'taxCodes' found for entity 'TaxCode'
+  Ôöé   ÔÜá [TaxRate] packages/modules/finance/src/slices/tax/entities/tax-rate.ts:7
+  Ôöé     No DB table 'taxRates' found for entity 'TaxRate'
+  Ôöé   ÔÜá [TaxReturnPeriod] packages/modules/finance/src/slices/tax/entities/tax-return.ts:7
+  Ôöé     No DB table 'taxReturnPeriods' found for entity 'TaxReturnPeriod'
+  Ôöé   ÔÜá [WhtCertificate] packages/modules/finance/src/slices/tax/entities/wht-certificate.ts:7
+  Ôöé     No DB table 'whtCertificates' found for entity 'WhtCertificate'
+  Ôöé   ÔÜá [TpBenchmark] packages/modules/finance/src/slices/transfer-pricing/entities/tp-benchmark.ts:8
+  Ôöé     No DB table 'tpBenchmarks' found for entity 'TpBenchmark'
+  Ôöé   ÔÜá [TpPolicy] packages/modules/finance/src/slices/transfer-pricing/entities/tp-policy.ts:7
+  Ôöé     No DB table 'tpPolicys' found for entity 'TpPolicy'
+  Ôöé   ÔÜá [CashForecast] packages/modules/finance/src/slices/treasury/entities/cash-forecast.ts:7
+  Ôöé     No DB table 'cashForecasts' found for entity 'CashForecast'
+  Ôöé   ÔÜá [Covenant] packages/modules/finance/src/slices/treasury/entities/covenant.ts:14
+  Ôöé     No DB table 'covenants' found for entity 'Covenant'
+  Ôöé   ÔÜá [IcLoan] packages/modules/finance/src/slices/treasury/entities/ic-loan.ts:7
+  Ôöé     No DB table 'icLoans' found for entity 'IcLoan'
+  Ôöé 
+  Ôöé ÔØî gate:schema-entity-alignment FAILED
+  Ôöé    No entity interfaces matched any DB table. Naming convention may have changed.
+  Ôò░ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  Ôò¡ÔöÇ Accessibility (A11Y-01ÔÇô06) (a11y) [domain]
+  Ôöé ÔØî gate:a11y FAILED
+  Ôöé 
+  Ôöé   A11Y-04 (1):
+  Ôöé     apps/web/src/app/(supplier-portal)/portal/appointments/new/page.tsx:248: Form input without label
+  Ôöé       Hint: Add <label> or aria-label: <label htmlFor="email">Email</label><input id="email" type="email" />
+  Ôöé 
+  Ôöé   A11Y-05 (7):
+  Ôöé     apps/web/src/features/portal/blocks/portal-bulk-upload-form.tsx:465: Decorative icon not hidden from screen readers
+  Ôöé       Hint: Add aria-hidden to decorative icons: <Icon name="chevron" aria-hidden="true" />
+  Ôöé     apps/web/src/features/portal/blocks/portal-early-payment-offer-list.tsx:130: Decorative icon not hidden from screen readers
+  Ôöé       Hint: Add aria-hidden to decorative icons: <Icon name="chevron" aria-hidden="true" />
+  Ôöé     apps/web/src/features/portal/blocks/portal-payment-status-timeline.tsx:118: Decorative icon not hidden from screen readers
+  Ôöé       Hint: Add aria-hidden to decorative icons: <Icon name="chevron" aria-hidden="true" />
+  Ôöé     ... and 4 more
+  Ôöé 
+  Ôöé   Run with --fix to auto-correct fixable violations.
+  Ôöé   Reference: https://www.w3.org/WAI/WCAG21/quickref/
+  Ôò░ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  Ôò¡ÔöÇ Hydration safety (HYDRO-01ÔÇô03) (hydration) [domain]
+  Ôöé ÔØî gate:hydration FAILED
+  Ôöé 
+  Ôöé   HYDRO-01 (2):
+  Ôöé     apps/web/src/features/portal/blocks/portal-early-payment-offer-list.tsx:92: Date.now() in render
+  Ôöé        Use useEffect + useState or render only on client.
+  Ôöé     apps/web/src/features/portal/blocks/portal-escalation-tracker.tsx:61: Date.now() in render
+  Ôöé        Use useEffect + useState or render only on client.
+  Ôöé 
+  Ôöé 2 hydration-risk pattern(s). See .agents/skills/next-best-practices/hydration-error.md
+  Ôò░ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  Ôò¡ÔöÇ Frontend quality (FE-01ÔÇô05) (frontend-quality) [domain]
+  Ôöé ÔØî gate:frontend-quality FAILED
+  Ôöé 
+  Ôöé   FE-GATE-01 (1 violation):
+  Ôöé     apps/web/src/features/portal/blocks/portal-credit-debit-note-form.tsx:229: Raw UUID input placeholder ÔÇö use EntityCombobox instead
+  Ôöé 
+  Ôöé 1 total violation(s).
+  Ôò░ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  Ôò¡ÔöÇ Web drift check (W01ÔÇôW16) (web-drift) [arch]
+  Ôöé       x features/portal/blocks/portal-bulk-upload-form.tsx:292 -- Raw <input> element. Use <Input /> from @/components/ui/input instead.
+  Ôöé       x features/portal/components/portal-sos-button.tsx:113 -- Raw <select> element. Use <Select /> from @/components/ui/select instead.
+  Ôöé   x W20 No hardcoded route paths (use routes.*) [FAIL]
+  Ôöé       x features/portal/blocks/portal-payment-status-timeline.tsx:246 -- Hardcoded route path. Use routes.* from @/lib/constants instead.
+  Ôöé       x lib/sidebar/sidebar-config.ts:213 -- Hardcoded route path. Use routes.* from @/lib/constants instead.
+  Ôöé       x lib/sidebar/sidebar-config.ts:227 -- Hardcoded route path. Use routes.* from @/lib/constants instead.
+  Ôöé       x lib/sidebar/sidebar-config.ts:234 -- Hardcoded route path. Use routes.* from @/lib/constants instead.
+  Ôöé   ! W21 Route boundary completeness (loading/error/not-found) [WARN]
+  Ôöé       ! app/(shell)/(erp)/finance/docs/ap-invoice-lifecycle/ -- page.tsx exists but missing sibling error.tsx.
+  Ôöé   ! W22 Suspense discipline (streaming) [WARN]
+  Ôöé       ! app/(supplier-portal)/portal/compliance/page.tsx -- 3 await calls but no <Suspense> boundary. Consider streaming with Suspense.
+  Ôöé   + W23 Page metadata exports (SEO) [PASS]
+  Ôöé   + W24 No stray console.log [PASS]
+  Ôöé   + W25 next.config.ts best practices [PASS]
+  Ôöé   + W26 Exception registry audit [PASS]
+  Ôöé   ! W27 EmptyState registry discipline [WARN]
+  Ôöé       ! components\charts\chart-card.tsx:70 -- <EmptyState> uses deprecated `size` prop. Migrate to `constraint`.
+  Ôöé   ! W28 Stub / TODO / Placeholder audit [WARN]
+  Ôöé       ! [TODO] app/(supplier-portal)/layout.tsx:54 -- // TODO SP-5020: load brand from DB ÔÇö for now default tokens (no-op)
+  Ôöé       ! [TODO] features/finance/intangibles/forms/create-intangible-form.tsx:262 -- // TODO: wire to searchCategories server action
+  Ôöé       ! SUMMARY: 2 unresolved items ÔÇö TODO(2)
+  Ôöé 
+  Ôöé --------------------------------------------------------------
+  Ôöé   Total: 191 checks
+  Ôöé   Pass:  100
+  Ôöé   Fail:  85
+  Ôöé   Warn:  6
+  Ôöé --------------------------------------------------------------
+  Ôöé 
+  Ôöé   RESULT: FAIL -- 85 violation(s) must be fixed.
+  Ôò░ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  Ôò¡ÔöÇ Web module gate (web-module) [module]
+  Ôöé   + W25 next.config.ts best practices [PASS]
+  Ôöé   + W26 Exception registry audit [PASS]
+  Ôöé   ! W27 EmptyState registry discipline [WARN]
+  Ôöé       ! components\charts\chart-card.tsx:70 -- <EmptyState> uses deprecated `size` prop. Migrate to `constraint`.
+  Ôöé   ! W28 Stub / TODO / Placeholder audit [WARN]
+  Ôöé       ! [TODO] app/(supplier-portal)/layout.tsx:54 -- // TODO SP-5020: load brand from DB ÔÇö for now default tokens (no-op)
+  Ôöé       ! [TODO] features/finance/intangibles/forms/create-intangible-form.tsx:262 -- // TODO: wire to searchCategories server action
+  Ôöé       ! SUMMARY: 2 unresolved items ÔÇö TODO(2)
+  Ôöé 
+  Ôöé --------------------------------------------------------------
+  Ôöé   Total: 191 checks
+  Ôöé   Pass:  100
+  Ôöé   Fail:  85
+  Ôöé   Warn:  6
+  Ôöé --------------------------------------------------------------
+  Ôöé 
+  Ôöé   RESULT: FAIL -- 85 violation(s) must be fixed.
+  Ôöé 
+  Ôöé 
+  Ôöé   ÔØî Phase 1 ÔÇö web-drift-check (W01ÔÇôW20) FAILED
+  Ôöé 
+  Ôöé   Ô£à Phase 2 ÔÇö Module structure checks PASSED
+  Ôöé 
+  Ôöé   Ôä╣´©Å  3 advisory(s) ÔÇö progressive migration:
+  Ôöé     apps/web/src/features/finance/expenses: Feature module has no @afenda/contracts usage
+  Ôöé     apps/web/src/features/finance/instruments: Feature module has no @afenda/contracts usage
+  Ôöé     apps/web/src/features/finance/reports: Feature module has no @afenda/contracts usage
+  Ôöé 
+  Ôöé ==============================================================
+  Ôöé ÔØî gate:web-module FAILED ÔÇö fix all violations above.
+  Ôò░ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  Ôò¡ÔöÇ Neon integration sync (neon-sync) [compliance]
+  Ôöé > NEON Integration Sync (packages/db/docs/NEON-INTEGRATION.md)
+  Ôöé 
+  Ôöé 1. drizzle-kit check (snapshot Ôåö migrations)...
+  Ôöé 
+  Ôöé > @afenda/db@0.0.0 db:check C:\AI-BOS\NEXUSCANON-AFENDA\packages\db
+  Ôöé > drizzle-kit check
+  Ôöé 
+  Ôöé No config path provided, using default 'drizzle.config.ts'
+  Ôöé Reading config file 'C:\AI-BOS\NEXUSCANON-AFENDA\packages\db\drizzle.config.ts'
+  Ôöé Everything's fine ­ƒÉÂ­ƒöÑ
+  Ôöé    Ô£ô Passed
+  Ôöé 
+  Ôöé 2. db:ci (no pending schema changes)...
+  Ôöé 
+  Ôöé > @afenda/monorepo@ db:ci C:\AI-BOS\NEXUSCANON-AFENDA
+  Ôöé > node tools/scripts/db-check-ci.mjs
+  Ôöé 
+  Ôöé > drizzle-kit check (snapshot consistency)...
+  Ôöé   [PASS] Snapshots consistent
+  Ôöé > drizzle-kit generate --name=ci_check (dry run)...
+  Ôöé   [FAIL] Schema has pending changes not captured in migrations:
+  Ôöé      - 0042_ci_check.sql
+  Ôöé 
+  Ôöé   Fix: run `pnpm --filter @afenda/db db:generate` and commit the result.
+  Ôöé ÔÇëELIFECYCLEÔÇë Command failed with exit code 1.
+  Ôöé    Ô£ù Failed
+  Ôò░ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+

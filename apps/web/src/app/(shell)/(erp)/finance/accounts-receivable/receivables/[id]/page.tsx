@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { AuditPanel } from '@/components/erp/audit-panel';
@@ -23,30 +24,58 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${r.value.invoiceNumber} | Receivables | Finance` };
 }
 
-export default async function ReceivableDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function ReceivableDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getArInvoice(ctx, id);
-  if (!result.ok) { if (result.error.statusCode === 404) notFound(); handleApiError(result, 'Failed to load receivable invoice'); }
+  if (!result.ok) {
+    if (result.error.statusCode === 404) notFound();
+    handleApiError(result, 'Failed to load receivable invoice');
+  }
   const inv = result.value;
 
   const auditResult = await getArInvoiceAuditAction(id);
   const auditEntries = auditResult.ok ? auditResult.value : [];
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
-      <PageHeader title={inv.invoiceNumber} breadcrumbs={[{ label: 'Finance' }, { label: 'Receivables', href: routes.finance.receivables }, { label: inv.invoiceNumber }]} />
+      <PageHeader
+        title={inv.invoiceNumber}
+        breadcrumbs={[
+          { label: 'Finance' },
+          { label: 'Receivables', href: routes.finance.receivables },
+          { label: inv.invoiceNumber },
+        ]}
+      />
 
       <BusinessDocument
         header={<ArInvoiceDetailHeader invoice={inv} />}
         tabs={[
-          { value: 'lines', label: 'Lines', content: <ArInvoiceLinesTable lines={inv.lines} currency={inv.currencyCode} totalAmount={inv.totalAmount} totalTax={inv.totalTax} /> },
+          {
+            value: 'lines',
+            label: 'Lines',
+            content: (
+              <ArInvoiceLinesTable
+                lines={inv.lines}
+                currency={inv.currencyCode}
+                totalAmount={inv.totalAmount}
+                totalTax={inv.totalTax}
+              />
+            ),
+          },
           { value: 'audit', label: 'Audit Trail', content: <AuditPanel entries={auditEntries} /> },
         ]}
         defaultTab="lines"
         rightRail={<ArInvoiceActions invoiceId={inv.id} status={inv.status} />}
       />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function ReceivableDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <ReceivableDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

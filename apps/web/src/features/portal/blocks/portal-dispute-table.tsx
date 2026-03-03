@@ -27,6 +27,7 @@ export function PortalDisputeTable({ data }: PortalDisputeTableProps) {
     return (
       <EmptyState
         contentKey="portal.disputes"
+        constraint="table"
         icon={MessageSquareWarning}
         action={
           <Button asChild>
@@ -66,7 +67,9 @@ export function PortalDisputeTable({ data }: PortalDisputeTableProps) {
                     window.location.href = detailHref;
                   }
                 }}
-                onClick={() => { window.location.href = detailHref; }}
+                onClick={() => {
+                  window.location.href = detailHref;
+                }}
               >
                 <TableCell>
                   <Link

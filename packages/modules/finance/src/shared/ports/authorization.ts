@@ -33,7 +33,9 @@ export type FinancePermission =
   | 'trialBalance:read'
   | 'supplier:read'
   | 'supplier:write'
-  | 'supplier:submit';
+  | 'supplier:submit'
+  | 'PROFILE_UPDATE'
+  | 'USER_MANAGE';
 
 export interface SoDViolation {
   readonly userId: string;

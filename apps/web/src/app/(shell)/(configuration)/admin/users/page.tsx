@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { requireAuth, getRequestContext } from '@/lib/auth';
 import { createApiClient } from '@/lib/api-client';
 import { UsersTable } from './_components/users-table';
@@ -12,9 +13,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function AdminUsersPage() {
-  const session = await requireAuth();
-  const ctx = await getRequestContext(session);
+async function AdminUsersContent({ ctx }: { ctx: RequestContext }) {
   const api = createApiClient(ctx);
 
   const result = await api.get<{
@@ -32,12 +31,21 @@ export default async function AdminUsersPage() {
   const users = result.ok ? result.value.data : [];
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold">Users</h1>
       <p className="text-sm text-muted-foreground">Cross-tenant user management.</p>
       <UsersTable users={users} />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function AdminUsersPage() {
+  const session = await requireAuth();
+  const ctx = await getRequestContext(session);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AdminUsersContent ctx={ctx} />
+    </Suspense>
   );
 }

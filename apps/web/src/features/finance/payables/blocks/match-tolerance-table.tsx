@@ -135,9 +135,15 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
       <>
         <EmptyState
           contentKey="finance.payables.matchTolerances"
+          constraint="table"
           icon={Settings2}
           action={
-            <Button onClick={() => { resetForm(); setCreateOpen(true); }}>
+            <Button
+              onClick={() => {
+                resetForm();
+                setCreateOpen(true);
+              }}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Add Tolerance Rule
             </Button>
@@ -148,7 +154,8 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
             <DialogHeader>
               <DialogTitle>Add Match Tolerance Rule</DialogTitle>
               <DialogDescription>
-                Define tolerance for PO–receipt–invoice matching. Invoices outside tolerance can be auto-held.
+                Define tolerance for PO–receipt–invoice matching. Invoices outside tolerance can be
+                auto-held.
               </DialogDescription>
             </DialogHeader>
             <ToleranceForm
@@ -161,11 +168,17 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
               autoHold={formAutoHold}
               setAutoHold={setFormAutoHold}
             />
-            { error ? <p className="text-xs text-destructive" role="alert">{error}</p> : null}
+            {error ? (
+              <p className="text-xs text-destructive" role="alert">
+                {error}
+              </p>
+            ) : null}
             <DialogFooter>
-              <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={isPending}>Cancel</Button>
+              <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={isPending}>
+                Cancel
+              </Button>
               <Button onClick={handleCreate} disabled={isPending}>
-                { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Create
               </Button>
             </DialogFooter>
@@ -178,7 +191,12 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
   return (
     <>
       <div className="flex justify-end">
-        <Button onClick={() => { resetForm(); setCreateOpen(true); }}>
+        <Button
+          onClick={() => {
+            resetForm();
+            setCreateOpen(true);
+          }}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add Rule
         </Button>
@@ -202,12 +220,8 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
                 <TableCell>
                   <Badge variant="outline">{SCOPE_LABELS[rule.scope]}</Badge>
                 </TableCell>
-                <TableCell className="font-mono">
-                  {(rule.toleranceBps / 100).toFixed(2)}%
-                </TableCell>
-                <TableCell className="font-mono">
-                  {rule.quantityTolerancePercent}%
-                </TableCell>
+                <TableCell className="font-mono">{(rule.toleranceBps / 100).toFixed(2)}%</TableCell>
+                <TableCell className="font-mono">{rule.quantityTolerancePercent}%</TableCell>
                 <TableCell>{rule.autoHold ? 'Yes' : 'No'}</TableCell>
                 <TableCell>
                   <Badge variant={rule.isActive ? 'default' : 'secondary'}>
@@ -231,7 +245,8 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
           <DialogHeader>
             <DialogTitle>Add Match Tolerance Rule</DialogTitle>
             <DialogDescription>
-              Define tolerance for PO–receipt–invoice matching. Invoices outside tolerance can be auto-held.
+              Define tolerance for PO–receipt–invoice matching. Invoices outside tolerance can be
+              auto-held.
             </DialogDescription>
           </DialogHeader>
           <ToleranceForm
@@ -244,11 +259,17 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
             autoHold={formAutoHold}
             setAutoHold={setFormAutoHold}
           />
-          { error ? <p className="text-xs text-destructive" role="alert">{error}</p> : null}
+          {error ? (
+            <p className="text-xs text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={isPending}>Cancel</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={isPending}>
+              Cancel
+            </Button>
             <Button onClick={handleCreate} disabled={isPending}>
-              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Create
             </Button>
           </DialogFooter>
@@ -275,11 +296,17 @@ export function MatchToleranceTable({ data }: MatchToleranceTableProps) {
             setAutoHold={setFormAutoHold}
             scopeDisabled
           />
-          { error ? <p className="text-xs text-destructive" role="alert">{error}</p> : null}
+          {error ? (
+            <p className="text-xs text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditTarget(null)} disabled={isPending}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditTarget(null)} disabled={isPending}>
+              Cancel
+            </Button>
             <Button onClick={handleUpdate} disabled={isPending}>
-              { isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Save
             </Button>
           </DialogFooter>
@@ -314,7 +341,11 @@ function ToleranceForm({
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>Scope</Label>
-        <Select value={scope} onValueChange={(v) => setScope(v as ToleranceScope)} disabled={scopeDisabled}>
+        <Select
+          value={scope}
+          onValueChange={(v) => setScope(v as ToleranceScope)}
+          disabled={scopeDisabled}
+        >
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

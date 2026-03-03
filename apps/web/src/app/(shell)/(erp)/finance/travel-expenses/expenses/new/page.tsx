@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader, PageHeaderHeading, PageHeaderDescription } from '@/components/erp/page-header';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import { getRequestContext } from '@/lib/auth';
@@ -11,8 +12,7 @@ export const metadata = {
   description: 'Create a new expense claim',
 };
 
-export default async function NewExpenseClaimPage() {
-  const ctx = await getRequestContext();
+async function NewExpenseClaimContent({ ctx }: { ctx: RequestContext }) {
   const policyResult = await getExpensePolicy(ctx);
 
   if (!policyResult.ok) {
@@ -20,18 +20,26 @@ export default async function NewExpenseClaimPage() {
   }
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
-      <div className="flex flex-col gap-6 max-w-4xl">
-        <PageHeader>
-          <PageHeaderHeading>New Expense Claim</PageHeaderHeading>
-          <PageHeaderDescription>
-            Submit expenses for reimbursement. All claims are subject to approval based on company
-            policy.
-          </PageHeaderDescription>
-        </PageHeader>
+    <div className="flex flex-col gap-6 max-w-4xl">
+      <PageHeader>
+        <PageHeaderHeading>New Expense Claim</PageHeaderHeading>
+        <PageHeaderDescription>
+          Submit expenses for reimbursement. All claims are subject to approval based on company
+          policy.
+        </PageHeaderDescription>
+      </PageHeader>
 
-        <ExpenseClaimForm policy={policyResult.value as unknown as ExpensePolicy} />
-      </div>
+      <ExpenseClaimForm policy={policyResult.value as unknown as ExpensePolicy} />
+    </div>
+  );
+}
+
+export default async function NewExpenseClaimPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <NewExpenseClaimContent ctx={ctx} />
     </Suspense>
   );
 }

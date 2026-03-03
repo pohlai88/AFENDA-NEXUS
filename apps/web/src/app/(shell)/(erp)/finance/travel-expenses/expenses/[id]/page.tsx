@@ -4,9 +4,13 @@ import { Suspense } from 'react';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
+import type { RequestContext } from '@afenda/core';
 import { handleApiError } from '@/lib/api-error.server';
 import { getExpenseClaim } from '@/features/finance/expenses/queries/expenses.queries';
-import { ExpenseDetailHeader, ExpenseOverview } from '@/features/finance/expenses/blocks/expense-detail';
+import {
+  ExpenseDetailHeader,
+  ExpenseOverview,
+} from '@/features/finance/expenses/blocks/expense-detail';
 import { ExpenseLinesSection } from '@/features/finance/expenses/blocks/expense-sections';
 import { routes } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,8 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${result.value.claimNumber} | Expenses` };
 }
 
-export default async function ExpenseDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function ExpenseDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getExpenseClaim(ctx, id);
 
   if (!result.ok) {
@@ -57,5 +60,15 @@ export default async function ExpenseDetailPage({ params }: Props) {
         ]}
       />
     </div>
+  );
+}
+
+export default async function ExpenseDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <ExpenseDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

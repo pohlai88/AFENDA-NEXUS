@@ -3,7 +3,10 @@ import { ok, formatMinorUnits } from '@afenda/core';
 import type { IAssetRepo } from '../ports/asset-repo.js';
 import type { IAccountRepo } from '../../../shared/ports/gl-read-ports.js';
 import { computeDepreciation } from '../calculators/depreciation.js';
-import type { PostingLinePreview, PostingPreviewResult } from '../../ap/services/preview-ap-posting.js';
+import type {
+  PostingLinePreview,
+  PostingPreviewResult,
+} from '../../../shared/types/posting-preview.js';
 
 export interface PreviewDepreciationRunInput {
   readonly periodStart: Date;
@@ -89,9 +92,5 @@ export async function previewDepreciationRun(
 }
 
 function monthsBetween(start: Date, end: Date): number {
-  return (
-    (end.getFullYear() - start.getFullYear()) * 12 +
-    (end.getMonth() - start.getMonth()) +
-    1
-  );
+  return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
 }

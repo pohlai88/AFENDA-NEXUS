@@ -18,19 +18,41 @@ import { ThemeToggle } from '@/components/erp/theme-toggle';
 import { UserMenu } from '@/components/erp/user-menu';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  PortalEntitySwitcher,
+  type SupplierAssociation,
+} from '@/features/portal/components/portal-entity-switcher';
 
 interface PortalShellProps {
   children: React.ReactNode;
   supplierName?: string;
+  /**
+   * Optional pinned-banner content injected between the topbar and main.
+   * Edge-to-edge, outside the scrollable main area.
+   * Used by CAP-ANNOUNCE (Phase 1.2.3) for persistent announcement strips.
+   */
+  banner?: React.ReactNode;
   user?: {
     name: string;
     email: string;
     image?: string | null;
   };
   logoutAction?: () => Promise<void>;
+  /** CAP-MULTI: all supplier associations for the current user. */
+  associations?: readonly SupplierAssociation[];
+  /** CAP-MULTI: supplierId of the currently active entity. */
+  activeSupplierId?: string;
 }
 
-export function PortalShell({ children, supplierName, user, logoutAction }: PortalShellProps) {
+export function PortalShell({
+  children,
+  supplierName,
+  banner,
+  user,
+  logoutAction,
+  associations = [],
+  activeSupplierId,
+}: PortalShellProps) {
   return (
     <SidebarProvider>
       {/* Skip link for accessibility */}
@@ -75,10 +97,18 @@ export function PortalShell({ children, supplierName, user, logoutAction }: Port
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
-            {supplierName && (
-              <span className="hidden text-sm font-medium text-muted-foreground md:inline">
-                {supplierName}
-              </span>
+            {/* CAP-MULTI: entity switcher (falls back to plain label for single entity) */}
+            {associations.length > 0 && activeSupplierId ? (
+              <PortalEntitySwitcher
+                associations={associations}
+                activeSupplierId={activeSupplierId}
+              />
+            ) : (
+              supplierName && (
+                <span className="hidden text-sm font-medium text-muted-foreground md:inline">
+                  {supplierName}
+                </span>
+              )
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -90,6 +120,9 @@ export function PortalShell({ children, supplierName, user, logoutAction }: Port
             <UserMenu user={user} logoutAction={logoutAction} />
           </div>
         </header>
+
+        {/* Pinned Announcements Banner — edge-to-edge, outside scrollable main */}
+        {banner}
 
         {/* Page content */}
         <main id="portal-main-content" className="flex-1 overflow-y-auto p-6" tabIndex={-1}>

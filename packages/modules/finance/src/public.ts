@@ -409,7 +409,10 @@ export type {
   SupplierBlockScope,
   SupplierBlockAction,
 } from './slices/ap/entities/supplier-block.js';
-export type { SupplierTaxRegistration, SupplierTaxType } from './slices/ap/entities/supplier-tax.js';
+export type {
+  SupplierTaxRegistration,
+  SupplierTaxType,
+} from './slices/ap/entities/supplier-tax.js';
 export type {
   SupplierLegalDocument,
   SupplierLegalDocType,
@@ -423,10 +426,24 @@ export type {
   SupplierEvalScore,
   SupplierEvalStatus,
 } from './slices/ap/entities/supplier-evaluation.js';
-export type { SupplierRiskIndicator, SupplierRiskRating, SupplierRiskCategory } from './slices/ap/entities/supplier-risk.js';
-export type { SupplierDiversity, SupplierDiversityCode } from './slices/ap/entities/supplier-diversity.js';
-export type { SupplierContact, SupplierContactRole } from './slices/ap/entities/supplier-contact.js';
-export type { SupplierDuplicateSuspect, SupplierDuplicateMatchType, SupplierDuplicateStatus } from './slices/ap/entities/supplier-duplicate.js';
+export type {
+  SupplierRiskIndicator,
+  SupplierRiskRating,
+  SupplierRiskCategory,
+} from './slices/ap/entities/supplier-risk.js';
+export type {
+  SupplierDiversity,
+  SupplierDiversityCode,
+} from './slices/ap/entities/supplier-diversity.js';
+export type {
+  SupplierContact,
+  SupplierContactRole,
+} from './slices/ap/entities/supplier-contact.js';
+export type {
+  SupplierDuplicateSuspect,
+  SupplierDuplicateMatchType,
+  SupplierDuplicateStatus,
+} from './slices/ap/entities/supplier-duplicate.js';
 export type { SupplierCompanyOverride } from './slices/ap/entities/supplier-company-override.js';
 export type { SupplierAccountGroupConfig } from './slices/ap/entities/supplier-account-group.js';
 
@@ -693,6 +710,27 @@ export {
   type SupplierIdentityResult,
 } from './slices/ap/services/supplier-portal-identity.js';
 export { registerSupplierPortalRoutes } from './slices/ap/routes/supplier-portal-routes.js';
+
+// ─── Phase 1.1: Case Management ────────────────────────────────────────────
+export {
+  supplierCreateCase,
+  supplierGetCase,
+  supplierListCases,
+  supplierTransitionCase,
+  supplierAssignCase,
+  supplierAddTimelineMessage,
+  supplierGetCaseTimeline,
+  type SupplierCase,
+  type CaseTimelineEntry,
+  type TimelineEntryType,
+  type CreateCaseInput,
+  type TransitionCaseInput,
+  type AssignCaseInput,
+  type AddTimelineMessageInput,
+  type CaseListQuery as CaseListQueryInput,
+  type ISupplierCaseRepo,
+  type ICaseTimelineRepo,
+} from './slices/ap/services/supplier-portal-case.js';
 
 // ─── B2: Triage queue ──────────────────────────────────────────────────────
 export {

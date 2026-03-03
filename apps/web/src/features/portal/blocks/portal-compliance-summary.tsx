@@ -12,6 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { ShieldCheck, ShieldAlert, ShieldX, Clock } from 'lucide-react';
+import { ComplianceRenewalDialog } from './portal-compliance-renewal-dialog';
 import type { PortalComplianceSummary } from '../queries/portal.queries';
 
 function ComplianceIcon({ status }: { status: string }) {
@@ -29,11 +30,37 @@ function ComplianceIcon({ status }: { status: string }) {
   }
 }
 
-interface PortalComplianceSummaryBlockProps {
-  data: PortalComplianceSummary;
+function ExpiryCountdown({ expiryDate }: { expiryDate: string }) {
+  const now = new Date();
+  const expiry = new Date(expiryDate);
+  const diffMs = expiry.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return (
+      <span className="text-xs font-medium text-destructive">
+        Expired {Math.abs(diffDays)}d ago
+      </span>
+    );
+  }
+  if (diffDays <= 7) {
+    return <span className="text-xs font-medium text-destructive">{diffDays}d remaining</span>;
+  }
+  if (diffDays <= 30) {
+    return <span className="text-xs font-medium text-warning">{diffDays}d remaining</span>;
+  }
+  return <span className="text-xs text-muted-foreground">{diffDays}d remaining</span>;
 }
 
-export function PortalComplianceSummaryBlock({ data }: PortalComplianceSummaryBlockProps) {
+interface PortalComplianceSummaryBlockProps {
+  data: PortalComplianceSummary;
+  supplierId?: string;
+}
+
+export function PortalComplianceSummaryBlock({
+  data,
+  supplierId,
+}: PortalComplianceSummaryBlockProps) {
   return (
     <div className="space-y-6">
       <Card>
@@ -56,25 +83,34 @@ export function PortalComplianceSummaryBlock({ data }: PortalComplianceSummaryBl
                   <TableHead>Item</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Expires</TableHead>
+                  <TableHead>Countdown</TableHead>
                   <TableHead>Last Verified</TableHead>
                   <TableHead>Notes</TableHead>
+                  {supplierId && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {data.items.map((item) => (
-                  <TableRow key={item.itemType}>
+                  <TableRow key={item.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <ComplianceIcon status={item.status} />
-                        <span className="font-medium">{item.itemType}</span>
+                        <span className="font-medium">{item.label ?? item.itemType}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={item.status} showIcon={false} />
                     </TableCell>
                     <TableCell>
-                      {item.expiresAt ? (
-                        <DateCell date={item.expiresAt} format="short" />
+                      {item.expiryDate ? (
+                        <DateCell date={item.expiryDate} format="short" />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{'\u2014'}</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {item.expiryDate ? (
+                        <ExpiryCountdown expiryDate={item.expiryDate} />
                       ) : (
                         <span className="text-xs text-muted-foreground">{'\u2014'}</span>
                       )}
@@ -89,6 +125,15 @@ export function PortalComplianceSummaryBlock({ data }: PortalComplianceSummaryBl
                     <TableCell className="text-sm text-muted-foreground">
                       {item.notes ?? '\u2014'}
                     </TableCell>
+                    {supplierId && (
+                      <TableCell className="text-right">
+                        <ComplianceRenewalDialog
+                          supplierId={supplierId}
+                          itemId={item.id}
+                          itemType={item.itemType}
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

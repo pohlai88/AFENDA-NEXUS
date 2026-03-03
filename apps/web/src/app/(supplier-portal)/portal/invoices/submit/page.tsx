@@ -6,10 +6,9 @@ import { PortalInvoiceSubmitForm } from '@/features/portal/forms/portal-invoice-
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { RequestContext } from '@afenda/core';
 
-export default async function PortalInvoiceSubmitPage() {
-  const ctx = await getRequestContext();
-
+async function InvoiceSubmitPageContent({ ctx }: { ctx: RequestContext }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -22,7 +21,6 @@ export default async function PortalInvoiceSubmitPage() {
   }
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Submit Invoice"
@@ -36,6 +34,15 @@ export default async function PortalInvoiceSubmitPage() {
 
       <PortalInvoiceSubmitForm supplierId={supplierResult.value.supplierId} />
     </div>
+  );
+}
+
+export default async function PortalInvoiceSubmitPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <InvoiceSubmitPageContent ctx={ctx} />
     </Suspense>
   );
 }

@@ -4,7 +4,10 @@ import type { IRevenueContractRepo } from '../../../slices/hub/ports/revenue-con
 import type { IAccountRepo, ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
 import type { IFiscalPeriodRepo } from '../../../shared/ports/fiscal-period-port.js';
 import { computeStraightLineSchedule } from '../calculators/revenue-recognition.js';
-import type { PostingLinePreview, PostingPreviewResult } from '../../ap/services/preview-ap-posting.js';
+import type {
+  PostingLinePreview,
+  PostingPreviewResult,
+} from '../../../shared/types/posting-preview.js';
 
 export interface PreviewRevenueRecognitionInput {
   readonly contractId: string;
@@ -35,7 +38,9 @@ export async function previewRevenueRecognition(
   }
 
   if (contract.recognizedToDate >= contract.totalAmount) {
-    return err(new AppError('VALIDATION', `Contract ${contract.contractNumber} is fully recognized`));
+    return err(
+      new AppError('VALIDATION', `Contract ${contract.contractNumber} is fully recognized`)
+    );
   }
 
   const warnings: string[] = [];
@@ -104,9 +109,7 @@ export async function previewRevenueRecognition(
       ? Number((contract.recognizedToDate * 100n) / contract.totalAmount)
       : 0;
   if (recognizedPct > 90) {
-    warnings.push(
-      `Contract is ${recognizedPct}% recognized — nearing completion`
-    );
+    warnings.push(`Contract is ${recognizedPct}% recognized — nearing completion`);
   }
 
   return ok({

@@ -41,11 +41,14 @@ export default [
       'react-hooks': reactHooks,
     },
     rules: {
-      'react/jsx-key': ['error', {
-        checkFragmentShorthand: true,
-        checkKeyMustBeforeSpread: true,
-        warnOnDuplicates: true,
-      }],
+      'react/jsx-key': [
+        'error',
+        {
+          checkFragmentShorthand: true,
+          checkKeyMustBeforeSpread: true,
+          warnOnDuplicates: true,
+        },
+      ],
       'react/no-array-index-key': 'error',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',

@@ -51,7 +51,9 @@ export function ApThreeWayMatchCard({ invoice, holds }: ApThreeWayMatchCardProps
   const statusBadge = () => {
     if (matchStatus) {
       const variant =
-        matchStatus.status === 'OVER_TOLERANCE' || matchStatus.status === 'QUANTITY_MISMATCH' || matchStatus.status === 'PRICE_MISMATCH'
+        matchStatus.status === 'OVER_TOLERANCE' ||
+        matchStatus.status === 'QUANTITY_MISMATCH' ||
+        matchStatus.status === 'PRICE_MISMATCH'
           ? 'destructive'
           : 'secondary';
       return (
@@ -79,6 +81,7 @@ export function ApThreeWayMatchCard({ invoice, holds }: ApThreeWayMatchCardProps
       </CardHeader>
       <CardContent>
         <Table>
+          <caption className="sr-only">Three-way match comparison</caption>
           <TableHeader>
             <TableRow>
               <TableHead>PO reference</TableHead>
@@ -89,12 +92,8 @@ export function ApThreeWayMatchCard({ invoice, holds }: ApThreeWayMatchCardProps
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell className="font-mono text-sm">
-                {invoice.poRef ?? '—'}
-              </TableCell>
-              <TableCell className="font-mono text-sm">
-                {invoice.receiptRef ?? '—'}
-              </TableCell>
+              <TableCell className="font-mono text-sm">{invoice.poRef ?? '—'}</TableCell>
+              <TableCell className="font-mono text-sm">{invoice.receiptRef ?? '—'}</TableCell>
               <TableCell className="text-right">
                 <MoneyCell amount={invoice.totalAmount} currency={invoice.currencyCode} />
               </TableCell>
@@ -104,7 +103,8 @@ export function ApThreeWayMatchCard({ invoice, holds }: ApThreeWayMatchCardProps
         </Table>
         {!matchStatus && (invoice.poRef || invoice.receiptRef) && (
           <p className="mt-2 text-xs text-muted-foreground">
-            PO and receipt amounts are not stored on the invoice. Match validation runs during approval when amounts are provided.
+            PO and receipt amounts are not stored on the invoice. Match validation runs during
+            approval when amounts are provided.
           </p>
         )}
       </CardContent>

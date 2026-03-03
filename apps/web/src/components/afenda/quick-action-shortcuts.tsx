@@ -29,7 +29,7 @@ export function QuickActionShortcuts() {
   // Register Ctrl+Q to open the picker (with user override)
   useEffect(() => {
     if (!ctx) return;
-    const keys = resolveShortcutKeys('quick-action-picker', 'ctrl+q', overrides);
+    const keys = resolveShortcutKeys('quick-action-picker', 'mod+q', overrides);
     ctx.engine.register({
       id: 'quick-action-picker',
       keys,
@@ -51,7 +51,7 @@ export function QuickActionShortcuts() {
     for (const action of actions) {
       const id = `quick-action-${action.slot}`;
       ids.push(id);
-      const keys = resolveShortcutKeys(id, `ctrl+${action.slot}`, overrides);
+      const keys = resolveShortcutKeys(id, `mod+${action.slot}`, overrides);
 
       ctx.engine.register({
         id,

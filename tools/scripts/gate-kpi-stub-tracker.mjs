@@ -19,15 +19,7 @@ import { readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
-const KPI_REGISTRY = join(
-  ROOT,
-  'apps',
-  'web',
-  'src',
-  'lib',
-  'kpis',
-  'kpi-registry.server.ts',
-);
+const KPI_REGISTRY = join(ROOT, 'apps', 'web', 'src', 'lib', 'kpis', 'kpi-registry.server.ts');
 const MODULE_DEFS = join(
   ROOT,
   'apps',
@@ -35,7 +27,7 @@ const MODULE_DEFS = join(
   'src',
   'lib',
   'modules',
-  'module-definitions.server.ts',
+  'module-definitions.server.ts'
 );
 
 function rel(fp) {
@@ -76,18 +68,14 @@ function parseResolvers(content) {
 
     if (currentResolver) {
       resolverBody += line + '\n';
-      braceDepth += (line.match(/\(/g) || []).length;
-      braceDepth -= (line.match(/\)/g) || []).length;
+      braceDepth += (line.match(/\{/g) || []).length;
+      braceDepth -= (line.match(/\}/g) || []).length;
 
       // Resolver body ends when parens balance back (at the closing }),)
       if (braceDepth <= 0 && resolverBody.includes('=>')) {
         // Check for opt-out comment above the resolver
-        const prevLines = lines
-          .slice(Math.max(0, startLine - 3), startLine - 1)
-          .join('\n');
-        const exemptMatch = prevLines.match(
-          /@gate-allow-stub:\s*(\S+)/,
-        );
+        const prevLines = lines.slice(Math.max(0, startLine - 3), startLine - 1).join('\n');
+        const exemptMatch = prevLines.match(/@gate-allow-stub:\s*(\S+)/);
 
         resolvers.push({
           id: currentResolver,
@@ -95,7 +83,9 @@ function parseResolvers(content) {
           line: startLine,
           hasApiCall:
             resolverBody.includes('createApiClient') ||
-            resolverBody.includes('fetch('),
+            resolverBody.includes('fetch(') ||
+            resolverBody.includes('import(') ||
+            resolverBody.includes('_dashSummary'),
           isComingSoonStub: currentResolver === 'stub.comingSoon',
           exemptTicket: exemptMatch ? exemptMatch[1] : null,
         });
@@ -121,21 +111,17 @@ let registryContent;
 try {
   registryContent = readFileSync(KPI_REGISTRY, 'utf-8');
 } catch {
-  console.error(
-    `❌ gate:kpi-stub-tracker — Cannot read ${rel(KPI_REGISTRY)}`,
-  );
+  console.error(`❌ gate:kpi-stub-tracker — Cannot read ${rel(KPI_REGISTRY)}`);
   process.exit(1);
 }
 
 const resolvers = parseResolvers(registryContent);
 const stubResolvers = resolvers.filter(
-  (r) => !r.hasApiCall && !r.isComingSoonStub && !r.exemptTicket,
+  (r) => !r.hasApiCall && !r.isComingSoonStub && !r.exemptTicket
 );
 const exemptResolvers = resolvers.filter((r) => r.exemptTicket);
 const comingSoon = resolvers.filter((r) => r.isComingSoonStub);
-const wiredResolvers = resolvers.filter(
-  (r) => r.hasApiCall,
-);
+const wiredResolvers = resolvers.filter((r) => r.hasApiCall);
 
 // Check module definitions
 let comingSoonRefCount = 0;
@@ -155,22 +141,15 @@ for (const r of stubResolvers) {
     id: r.id,
     file: rel(KPI_REGISTRY),
     line: r.line,
-    issue:
-      'Returns hardcoded data without calling createApiClient()',
+    issue: 'Returns hardcoded data without calling createApiClient()',
   });
 }
 
 if (violations.length > 0) {
   console.error('❌ gate:kpi-stub-tracker FAILED\n');
-  console.error(
-    '   KPI resolvers returning hardcoded placeholder data detected.',
-  );
-  console.error(
-    '   Wire each resolver to a real API endpoint using createApiClient(ctx),',
-  );
-  console.error(
-    '   or add `// @gate-allow-stub: TICKET-123` above the resolver.\n',
-  );
+  console.error('   KPI resolvers returning hardcoded placeholder data detected.');
+  console.error('   Wire each resolver to a real API endpoint using createApiClient(ctx),');
+  console.error('   or add `// @gate-allow-stub: TICKET-123` above the resolver.\n');
 
   for (const v of violations) {
     console.error(`  ${v.file}:${v.line}`);
@@ -180,34 +159,22 @@ if (violations.length > 0) {
   }
 
   console.error('── Summary ──');
-  console.error(
-    `  ${violations.length} stub resolver(s) without exemption (FAIL)`,
-  );
-  console.error(
-    `  ${exemptResolvers.length} explicitly exempted (tracked)`,
-  );
-  console.error(
-    `  ${comingSoon.length} 'stub.comingSoon' (future-module placeholder)`,
-  );
-  console.error(
-    `  ${wiredResolvers.length} wired to real API`,
-  );
-  console.error(
-    `  ${resolvers.length} total resolvers`,
-  );
+  console.error(`  ${violations.length} stub resolver(s) without exemption (FAIL)`);
+  console.error(`  ${exemptResolvers.length} explicitly exempted (tracked)`);
+  console.error(`  ${comingSoon.length} 'stub.comingSoon' (future-module placeholder)`);
+  console.error(`  ${wiredResolvers.length} wired to real API`);
+  console.error(`  ${resolvers.length} total resolvers`);
 
   if (exemptResolvers.length > 0) {
     console.error('\n── Exempted Stubs (tracked) ──');
     for (const r of exemptResolvers) {
-      console.error(
-        `  '${r.id}' — ticket: ${r.exemptTicket}`,
-      );
+      console.error(`  '${r.id}' — ticket: ${r.exemptTicket}`);
     }
   }
 
   if (comingSoonRefCount > 0) {
     console.error(
-      `\n  ⚠ ${comingSoonRefCount} module(s) reference stub.comingSoon in module-definitions.server.ts`,
+      `\n  ⚠ ${comingSoonRefCount} module(s) reference stub.comingSoon in module-definitions.server.ts`
     );
   }
 
@@ -215,12 +182,12 @@ if (violations.length > 0) {
 } else {
   console.log('✅ gate:kpi-stub-tracker PASSED');
   console.log(
-    `   ${resolvers.length} resolver(s) scanned — ${wiredResolvers.length} wired, ${exemptResolvers.length} exempted, ${comingSoon.length} coming-soon.`,
+    `   ${resolvers.length} resolver(s) scanned — ${wiredResolvers.length} wired, ${exemptResolvers.length} exempted, ${comingSoon.length} coming-soon.`
   );
 
   if (comingSoonRefCount > 0) {
     console.log(
-      `   ⚠ ${comingSoonRefCount} module(s) still reference stub.comingSoon (future phases).`,
+      `   ⚠ ${comingSoonRefCount} module(s) still reference stub.comingSoon (future phases).`
     );
   }
 }

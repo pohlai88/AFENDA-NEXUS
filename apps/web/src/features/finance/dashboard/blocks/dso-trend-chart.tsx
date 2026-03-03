@@ -1,18 +1,32 @@
 'use client';
 
 import { ChartCard } from '@/components/charts/chart-card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ReferenceLine, Area, AreaChart } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ReferenceLine,
+  Area,
+  AreaChart,
+} from 'recharts';
 import type { ChartParams, DrilldownTarget } from '@/components/charts';
 
 /**
  * DSO data point
  */
 interface DSODataPoint {
-  period: string;        // e.g. "Jan 2026"
+  period: string; // e.g. "Jan 2026"
   dso: number;
-  dsoCompare?: number;   // Prior period/year
-  target?: number;       // Target DSO
+  dsoCompare?: number; // Prior period/year
+  target?: number; // Target DSO
 }
 
 interface DSOTrendChartProps {
@@ -26,6 +40,8 @@ interface DSOTrendChartProps {
   isLoading?: boolean;
   error?: Error | null;
   showSparkline?: boolean;
+  _gridW?: number;
+  _gridH?: number;
 }
 
 const DSO_CONFIG = {
@@ -36,13 +52,13 @@ const DSO_CONFIG = {
 
 /**
  * DSO Trend Chart
- * 
+ *
  * Enterprise DSO (Days Sales Outstanding) trend line:
  * - Current period DSO
  * - Compare to prior period/year (dotted line)
  * - Target DSO (horizontal reference line)
  * - Optional sparkline mode for compact widgets
- * 
+ *
  * Drilldown: AR Aging report
  */
 export function DSOTrendChart({
@@ -57,11 +73,12 @@ export function DSOTrendChart({
   error,
   showSparkline = false,
 }: DSOTrendChartProps) {
-  const margin = compact || showSparkline 
-    ? { top: 5, right: 5, left: 0, bottom: 0 }
-    : { top: 10, right: 10, left: 0, bottom: 0 };
+  const margin =
+    compact || showSparkline
+      ? { top: 5, right: 5, left: 0, bottom: 0 }
+      : { top: 10, right: 10, left: 0, bottom: 0 };
   const tickFontSize = compact ? 10 : 12;
-  
+
   const currentDSO = data[data.length - 1]?.dso;
   const priorDSO = data[data.length - 2]?.dso;
   const change = currentDSO && priorDSO ? ((currentDSO - priorDSO) / priorDSO) * 100 : 0;
@@ -101,6 +118,7 @@ export function DSOTrendChart({
       isEmpty={!data || data.length === 0}
       error={error}
       compact={compact}
+      emptyStateKey="finance.dashboard.dsoTrend"
     >
       <ChartContainer
         config={DSO_CONFIG}

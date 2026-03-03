@@ -29,6 +29,7 @@ export function ApInvoiceTable({ data, total }: ApInvoiceTableProps) {
     return (
       <EmptyState
         contentKey="finance.payables"
+        constraint="table"
         icon={Receipt}
         action={
           <Button asChild>
@@ -71,7 +72,9 @@ export function ApInvoiceTable({ data, total }: ApInvoiceTableProps) {
                       window.location.href = detailHref;
                     }
                   }}
-                  onClick={() => { window.location.href = detailHref; }}
+                  onClick={() => {
+                    window.location.href = detailHref;
+                  }}
                 >
                   <TableCell>
                     <Link

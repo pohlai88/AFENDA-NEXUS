@@ -196,6 +196,7 @@ export function LoginForm() {
             placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"
             required
             autoComplete="current-password"
+            aria-label="Password"
           />
         </div>
 

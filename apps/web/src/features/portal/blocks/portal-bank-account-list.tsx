@@ -19,12 +19,7 @@ interface PortalBankAccountListProps {
 
 export function PortalBankAccountList({ data }: PortalBankAccountListProps) {
   if (data.length === 0) {
-    return (
-      <EmptyState
-        contentKey="portal.bankAccounts"
-        icon={Landmark}
-      />
-    );
+    return <EmptyState contentKey="portal.bankAccounts" constraint="table" icon={Landmark} />;
   }
 
   return (

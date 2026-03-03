@@ -27,6 +27,7 @@ export function ApPaymentRunTable({ data }: ApPaymentRunTableProps) {
     return (
       <EmptyState
         contentKey="finance.payables.paymentRuns"
+        constraint="table"
         icon={Banknote}
         action={
           <Button asChild>

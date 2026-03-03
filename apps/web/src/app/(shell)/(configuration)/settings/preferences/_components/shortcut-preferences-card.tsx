@@ -21,15 +21,15 @@ import { Keyboard, RotateCcw } from 'lucide-react';
 
 /** Customizable shortcuts: id, default keys, label */
 const CUSTOMIZABLE_SHORTCUTS: Array<{ id: string; defaultKeys: string; label: string }> = [
-  { id: 'afenda-shortcut-dialog', defaultKeys: '?', label: 'Show keyboard shortcuts' },
+  { id: 'afenda-shortcut-dialog', defaultKeys: 'mod+/', label: 'Show keyboard shortcuts' },
   { id: 'afenda-command-palette', defaultKeys: 'mod+k', label: 'Open command palette' },
   { id: 'afenda-calculator', defaultKeys: 'mod+=', label: 'Open calculator' },
   { id: 'afenda-sidebar', defaultKeys: 'mod+b', label: 'Toggle sidebar' },
-  { id: 'quick-action-picker', defaultKeys: 'ctrl+q', label: 'Open Quick Action picker' },
+  { id: 'quick-action-picker', defaultKeys: 'mod+q', label: 'Open Quick Action picker' },
   { id: 'page-new', defaultKeys: 'n', label: 'New (contextual)' },
   ...Array.from({ length: 9 }, (_, i) => ({
     id: `quick-action-${i + 1}`,
-    defaultKeys: `ctrl+${i + 1}`,
+    defaultKeys: `mod+${i + 1}`,
     label: `Quick Action slot ${i + 1}`,
   })),
   ...SHELL_SHORTCUTS.map((s) => ({
@@ -75,7 +75,7 @@ export function ShortcutPreferencesCard() {
     } else if (keys) {
       // Conflict check: warn if another shortcut already uses these keys
       const conflict = CUSTOMIZABLE_SHORTCUTS.find(
-        (s) => s.id !== editingId && resolveShortcutKeys(s.id, s.defaultKeys, next) === keys,
+        (s) => s.id !== editingId && resolveShortcutKeys(s.id, s.defaultKeys, next) === keys
       );
       if (conflict) {
         setCaptureError(`Already used by "${conflict.label}". Change that shortcut first.`);
@@ -113,7 +113,7 @@ export function ShortcutPreferencesCard() {
         setCapturedKeys(keys);
       }
     },
-    [editingId, handleSave],
+    [editingId, handleSave]
   );
 
   const handleReset = useCallback(() => {
@@ -184,9 +184,7 @@ export function ShortcutPreferencesCard() {
         >
           <DialogHeader>
             <DialogTitle>Change shortcut</DialogTitle>
-            <DialogDescription>
-              {def?.label}. Press the new key combination.
-            </DialogDescription>
+            <DialogDescription>{def?.label}. Press the new key combination.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="shortcut-capture">Key combination</Label>

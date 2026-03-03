@@ -103,28 +103,28 @@ Layers form a strict dependency DAG. Lower layers MUST NOT import higher layers.
   domain-primitives          ← may import NOTHING (innermost)
 ```
 
-| Layer               | Packages                         | MAY Import                           | MUST NOT Import                            |
-| ------------------- | -------------------------------- | ------------------------------------ | ------------------------------------------ |
-| `domain-primitives` | core                             | `./` only                            | all other @afenda packages, all frameworks |
-| `contracts`         | contracts                        | core, zod                            | db, platform, modules, fastify, drizzle    |
-| `authorization`     | authz                            | core                                 | db, platform, modules, fastify, drizzle    |
-| `infrastructure`    | db                               | core, drizzle-orm, postgres          | platform, modules, fastify, next           |
-| `platform`          | platform                         | core, pino, zod                      | db, modules, fastify, drizzle              |
-| `module`            | finance, inventory…              | core, contracts, authz, db, platform | other modules (except via `public.ts`)     |
-| `industry-overlay`  | fnb, manufacturing…              | core, finance                        | db, platform directly                      |
-| `deployment`        | api, web, worker                 | any @afenda package                  | N/A (leaf apps)                            |
-| `config`            | typescript-config, eslint-config | N/A                                  | N/A                                        |
+| Layer               | Packages                          | MAY Import                           | MUST NOT Import                            |
+| ------------------- | --------------------------------- | ------------------------------------ | ------------------------------------------ |
+| `domain-primitives` | core                              | `./` only                            | all other @afenda packages, all frameworks |
+| `contracts`         | contracts                         | core, zod                            | db, platform, modules, fastify, drizzle    |
+| `authorization`     | authz                             | core                                 | db, platform, modules, fastify, drizzle    |
+| `infrastructure`    | db                                | core, drizzle-orm, postgres          | platform, modules, fastify, next           |
+| `platform`          | platform                          | core, pino, zod                      | db, modules, fastify, drizzle              |
+| `module`            | finance, inventory…               | core, contracts, authz, db, platform | other modules (except via `public.ts`)     |
+| `industry-overlay`  | fnb, manufacturing…               | core, finance                        | db, platform directly                      |
+| `deployment`        | api, web, worker                  | any @afenda package                  | N/A (leaf apps)                            |
+| `config`            | typescript-config, eslint-config  | N/A                                  | N/A                                        |
 | `tool`              | generators, drift-check, graphviz | N/A                                  | N/A                                        |
 
 ---
 
 ## §C. Naming Convention
 
-| Component        | Pattern                           | Example                                               |
-| ---------------- | --------------------------------- | ----------------------------------------------------- |
-| File name        | `ARCHITECTURE.@<scope>-<name>.md` | `ARCHITECTURE.@afenda-core.md`                        |
-| Scope derivation | `@afenda/core` → `@afenda-core`   | `@afenda/modules/finance` → `@afenda-modules-finance` |
-| Location         | Package root directory            | `packages/core/ARCHITECTURE.@afenda-core.md`          |
+| Component        | Pattern                          | Example                                              |
+| ---------------- | -------------------------------- | ---------------------------------------------------- |
+| File name        | `ARCHITECTURE_<scope>-<name>.md` | `ARCHITECTURE_afenda-core.md`                        |
+| Scope derivation | `@afenda/core` → `afenda-core`   | `@afenda/modules/finance` → `afenda-modules-finance` |
+| Location         | Package root directory           | `packages/core/ARCHITECTURE_afenda-core.md`          |
 
 The file MUST be listed in `package.json` `files` array for library packages
 (included in npm publish).
@@ -356,12 +356,12 @@ ARCHITECTURE.md files — they modify existing packages.
 
 ## §I. Relationship to Other Governance
 
-| Document                        | Scope                                               | Enforced By             |
-| ------------------------------- | --------------------------------------------------- | ----------------------- |
-| `PROJECT.md`                    | Monorepo-wide architecture, conventions, tech stack | `agents-drift.mjs`      |
-| `ARCHITECTURE.*.md` (this spec) | Per-package boundaries, deps, structure             | `arch-guard.mjs`        |
+| Document                        | Scope                                               | Enforced By                              |
+| ------------------------------- | --------------------------------------------------- | ---------------------------------------- |
+| `PROJECT.md`                    | Monorepo-wide architecture, conventions, tech stack | `agents-drift.mjs`                       |
+| `ARCHITECTURE.*.md` (this spec) | Per-package boundaries, deps, structure             | `arch-guard.mjs`                         |
 | `.afenda/project.manifest.json` | Package registry (name, type, layer)                | `drift-check/index.mjs`, `dep-graph.mjs` |
-| `.agents/skills-registry.json`  | AI agent skill catalog                              | `agents-gen.mjs`        |
+| `.agents/skills-registry.json`  | AI agent skill catalog                              | `agents-gen.mjs`                         |
 
 `PROJECT.md` defines the **what** and **why**. `ARCHITECTURE.*.md` defines the
 **how** per package. The manifest is the registry. The drift tools enforce all

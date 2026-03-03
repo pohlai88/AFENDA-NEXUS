@@ -44,9 +44,13 @@ export type { EmptyStateProps } from './empty-state';
 export type {
   EmptyStateVariant,
   EmptyStateSize,
+  EmptyStateConstraint,
   EmptyStateKey,
   EmptyStateContent,
+  CuratedEmptyStateKey,
 } from './empty-state.types';
+export { CONSTRAINT_SLOTS } from './empty-state.types';
+export type { GeneratedEmptyStateKey } from './empty-state.generated-keys';
 export { getEmptyStateContent } from './empty-state.registry';
 
 export { Pagination } from './pagination';
@@ -129,8 +133,4 @@ export { ReceiptPanel } from './receipt-panel';
 export type { ReceiptPanelProps } from './receipt-panel';
 
 export { ErrorBoundary, ErrorDisplay, NotFoundDisplay } from './error-boundary';
-export type {
-  ErrorBoundaryProps,
-  ErrorDisplayProps,
-  NotFoundDisplayProps,
-} from './error-boundary';
+export type { ErrorBoundaryProps, ErrorDisplayProps, NotFoundDisplayProps } from './error-boundary';

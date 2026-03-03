@@ -60,4 +60,40 @@ test.describe('Finance dashboard bento KPI deck', () => {
     const toggle = page.getByRole('switch', { name: /plain language/i });
     await expect(toggle).toBeVisible({ timeout: 10_000 });
   });
+
+  test('Plain language toggle swaps KPI card titles', async ({ page }) => {
+    const toggle = page.getByRole('switch', { name: /plain language/i });
+    await expect(toggle).toBeVisible({ timeout: 10_000 });
+
+    // Capture a known financial-jargon title before toggling
+    const totalPayables = page.getByText('Total Payables', { exact: true });
+    const accountsPayable = page.getByText('Accounts Payable', { exact: true });
+    const hasPayablesTitle = await totalPayables.isVisible().catch(() => false);
+    const hasAPTitle = await accountsPayable.isVisible().catch(() => false);
+
+    // At least one AP/Payables KPI should be on the default dashboard
+    test.skip(
+      !hasPayablesTitle && !hasAPTitle,
+      'Neither Total Payables nor Accounts Payable visible on this dashboard config'
+    );
+
+    // Toggle ON
+    await toggle.click();
+    await page.waitForLoadState('networkidle');
+
+    // After toggle, the plain language version should appear
+    await expect(page.getByText('Money owed', { exact: true }).first()).toBeVisible({
+      timeout: 10_000,
+    });
+
+    // Toggle OFF — original title should restore
+    await toggle.click();
+    await page.waitForLoadState('networkidle');
+
+    if (hasPayablesTitle) {
+      await expect(totalPayables).toBeVisible({ timeout: 10_000 });
+    } else {
+      await expect(accountsPayable).toBeVisible({ timeout: 10_000 });
+    }
+  });
 });

@@ -1,7 +1,12 @@
 'use client';
 
 import { ChartCard } from '@/components/charts/chart-card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { formatChartValue } from './chart-utils';
 import type { ChartParams, DrilldownTarget } from '@/components/charts';
@@ -26,6 +31,9 @@ interface TaxLiabilityChartProps {
   lastUpdated?: string;
   isLoading?: boolean;
   error?: Error | null;
+  _params?: unknown;
+  _gridW?: number;
+  _gridH?: number;
 }
 
 const TAX_CONFIG = {
@@ -36,12 +44,12 @@ const TAX_CONFIG = {
 
 /**
  * Tax Liability Stacked Area Chart
- * 
+ *
  * Enterprise tax visualization:
  * - Output tax (VAT/GST collected)
  * - Input tax (VAT/GST paid)
  * - Net tax liability (output - input)
- * 
+ *
  * Drilldown: Tax summary report
  */
 export function TaxLiabilityChart({
@@ -55,7 +63,9 @@ export function TaxLiabilityChart({
   isLoading,
   error,
 }: TaxLiabilityChartProps) {
-  const margin = compact ? { top: 10, right: 8, left: 0, bottom: 8 } : { top: 10, right: 10, left: 0, bottom: 0 };
+  const margin = compact
+    ? { top: 10, right: 8, left: 0, bottom: 8 }
+    : { top: 10, right: 10, left: 0, bottom: 0 };
   const tickFontSize = compact ? 10 : 12;
 
   return (
@@ -67,6 +77,7 @@ export function TaxLiabilityChart({
       isEmpty={!data || data.length === 0}
       error={error}
       compact={compact}
+      emptyStateKey="finance.dashboard.taxLiability"
     >
       <ChartContainer
         config={TAX_CONFIG}

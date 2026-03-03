@@ -15,11 +15,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { AfendaDisplayCluster } from './afenda-display-cluster';
 import { ModuleNavPopover } from './module-nav-popover';
 import { UserMenu } from '@/components/erp/user-menu';
@@ -87,17 +83,17 @@ function AfendaShellHeader({
 
   const crumbs = React.useMemo(
     () => deriveBreadcrumbs(pathname, modules, { pageBreadcrumb: pageBreadcrumb ?? undefined }),
-    [pathname, modules, pageBreadcrumb],
+    [pathname, modules, pageBreadcrumb]
   );
 
   // Last crumb label used as page title on mobile
-  const pageTitle = crumbs.length > 0 ? crumbs.at(-1)?.label ?? '' : '';
+  const pageTitle = crumbs.length > 0 ? (crumbs.at(-1)?.label ?? '') : '';
 
   return (
     <header
       className={cn(
-        'bg-background sticky top-0 z-50 flex shrink-0 items-center border-b',
-        HEADER_HEIGHT,
+        'bg-background/80 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 flex shrink-0 items-center border-b',
+        HEADER_HEIGHT
       )}
     >
       {/* Left — Sidebar trigger + separator + Breadcrumbs */}
@@ -117,9 +113,7 @@ function AfendaShellHeader({
                     {i > 0 && <BreadcrumbSeparator />}
                     <BreadcrumbItem>
                       {isLast ? (
-                        <BreadcrumbPage className="line-clamp-1">
-                          {crumb.label}
-                        </BreadcrumbPage>
+                        <BreadcrumbPage className="line-clamp-1">{crumb.label}</BreadcrumbPage>
                       ) : crumb.href ? (
                         <BreadcrumbLink asChild>
                           <Link href={crumb.href}>{crumb.label}</Link>
@@ -136,9 +130,7 @@ function AfendaShellHeader({
         )}
 
         {/* Mobile page title */}
-        {pageTitle && (
-          <span className="truncate text-sm font-medium md:hidden">{pageTitle}</span>
-        )}
+        {pageTitle && <span className="truncate text-sm font-medium md:hidden">{pageTitle}</span>}
       </div>
 
       {/* Right — Actions */}
@@ -149,7 +141,10 @@ function AfendaShellHeader({
             <Button
               variant="outline"
               size="sm"
-              className={cn('hidden justify-start text-sm text-muted-foreground lg:flex', SEARCH_BAR_W)}
+              className={cn(
+                'hidden justify-start text-sm text-muted-foreground lg:flex',
+                SEARCH_BAR_W
+              )}
               onClick={onOpenCommandPalette}
               aria-label={COMMAND_PALETTE_ARIA_LABEL}
             >

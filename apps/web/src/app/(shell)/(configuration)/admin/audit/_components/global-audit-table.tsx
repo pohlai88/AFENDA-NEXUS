@@ -24,7 +24,7 @@ interface AuditEntry {
 
 export function GlobalAuditTable({ entries }: { entries: AuditEntry[] }) {
   if (entries.length === 0) {
-    return <EmptyState contentKey="admin.audit" size="sm" />;
+    return <EmptyState contentKey="admin.audit" constraint="table" />;
   }
 
   return (
@@ -49,7 +49,9 @@ export function GlobalAuditTable({ entries }: { entries: AuditEntry[] }) {
             <TableCell className="font-mono text-xs">{entry.tableName}</TableCell>
             <TableCell className="font-mono text-xs">{entry.tenantId.slice(0, 8)}</TableCell>
             <TableCell className="font-mono text-xs">{entry.userId?.slice(0, 8) ?? '—'}</TableCell>
-            <TableCell className="font-mono text-xs">{entry.recordId?.slice(0, 8) ?? '—'}</TableCell>
+            <TableCell className="font-mono text-xs">
+              {entry.recordId?.slice(0, 8) ?? '—'}
+            </TableCell>
             <TableCell className="text-muted-foreground">
               {new Date(entry.occurredAt).toLocaleString()}
             </TableCell>

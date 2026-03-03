@@ -21,7 +21,7 @@
   },
   "files": [
     "dist",
-    "ARCHITECTURE.@afenda-authz.md"
+    "ARCHITECTURE_afenda-authz.md"
   ],
   "sideEffects": false,
   "scripts": {

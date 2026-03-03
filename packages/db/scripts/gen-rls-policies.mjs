@@ -16,11 +16,14 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// ─── 120 tenant-scoped tables ───────────────────────────────────────────────
+// ─── 124 tenant-scoped tables ───────────────────────────────────────────────
 const tenantTables = [
-  // platform (2)
+  // platform (5)
   'platform.company',
   'platform.user',
+  'platform.notifications',
+  'platform.notification_preferences',
+  'platform.seed_run',
   // audit (1)
   'audit.audit_log',
   // erp — Core GL & Multi-Currency (10)
@@ -241,13 +244,25 @@ lines.push(`GRANT EXECUTE ON FUNCTION erp.current_tenant_id() TO app_runtime;`);
 lines.push(`GRANT EXECUTE ON FUNCTION erp.current_user_id() TO app_runtime;`);
 lines.push(``);
 lines.push(`-- Default privileges for future objects`);
-lines.push(`ALTER DEFAULT PRIVILEGES IN SCHEMA platform GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_runtime;`);
-lines.push(`ALTER DEFAULT PRIVILEGES IN SCHEMA erp GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_runtime;`);
-lines.push(`ALTER DEFAULT PRIVILEGES IN SCHEMA audit GRANT SELECT, INSERT ON TABLES TO app_runtime;`);
+lines.push(
+  `ALTER DEFAULT PRIVILEGES IN SCHEMA platform GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_runtime;`
+);
+lines.push(
+  `ALTER DEFAULT PRIVILEGES IN SCHEMA erp GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_runtime;`
+);
+lines.push(
+  `ALTER DEFAULT PRIVILEGES IN SCHEMA audit GRANT SELECT, INSERT ON TABLES TO app_runtime;`
+);
 lines.push(``);
-lines.push(`ALTER DEFAULT PRIVILEGES IN SCHEMA platform GRANT USAGE, SELECT ON SEQUENCES TO app_runtime;`);
-lines.push(`ALTER DEFAULT PRIVILEGES IN SCHEMA erp GRANT USAGE, SELECT ON SEQUENCES TO app_runtime;`);
-lines.push(`ALTER DEFAULT PRIVILEGES IN SCHEMA audit GRANT USAGE, SELECT ON SEQUENCES TO app_runtime;`);
+lines.push(
+  `ALTER DEFAULT PRIVILEGES IN SCHEMA platform GRANT USAGE, SELECT ON SEQUENCES TO app_runtime;`
+);
+lines.push(
+  `ALTER DEFAULT PRIVILEGES IN SCHEMA erp GRANT USAGE, SELECT ON SEQUENCES TO app_runtime;`
+);
+lines.push(
+  `ALTER DEFAULT PRIVILEGES IN SCHEMA audit GRANT USAGE, SELECT ON SEQUENCES TO app_runtime;`
+);
 lines.push(``);
 
 // ─── 3. FORCE ROW LEVEL SECURITY ───────────────────────────────────────────
@@ -325,7 +340,9 @@ lines.push(``);
 // ─── Done ───────────────────────────────────────────────────────────────────
 lines.push(`-- ═══════════════════════════════════════════════════════════════════════════`);
 lines.push(`-- MIGRATION COMPLETE`);
-lines.push(`-- Total: ${tenantTables.length} tenant-isolation policies`);
+lines.push(
+  `-- Total: ${tenantTables.length} tenant-isolation policies (incl. notifications, seed_run)`
+);
 lines.push(`--        ${nonTenantTables.length} non-tenant policies`);
 lines.push(`--        ${allTables.length} FORCE ROW LEVEL SECURITY`);
 lines.push(`--        2 helper functions, 2 roles, schema/table/sequence grants`);
@@ -334,7 +351,7 @@ lines.push(`-- ═════════════════════�
 const sql = lines.join('\n') + '\n';
 
 const outPath = resolve(__dirname, '..', 'drizzle', 'custom', '0001_rls_policies_and_roles.sql');
-import('fs').then(fs => {
+import('fs').then((fs) => {
   fs.mkdirSync(resolve(__dirname, '..', 'drizzle', 'custom'), { recursive: true });
   fs.writeFileSync(outPath, sql, 'utf-8');
   console.log(`✅ Written ${sql.split('\n').length} lines to ${outPath}`);

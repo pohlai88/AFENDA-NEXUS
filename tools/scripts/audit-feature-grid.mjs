@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Feature Grid (Module Map) Configuration Audit
- * 
+ *
  * Checks:
  * 1. Domain configs have all required fields
  * 2. buildFeatureMetrics is configured and cached
@@ -76,21 +76,30 @@ if (!domainConfigsContent) {
   }
 
   // Check required fields in FINANCE_OVERVIEW_CONFIG
-  const requiredFields = [
-    'domainId',
-    'title',
-    'description',
-    'defaultKpiIds',
-    'navGroups',
-  ];
+  const requiredFields = ['domainId', 'title', 'description', 'defaultKpiIds', 'navGroups'];
 
-  const configMatch = domainConfigsContent.match(
-    /export const FINANCE_OVERVIEW_CONFIG[^}]*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}/s
-  );
+  // Extract FINANCE_OVERVIEW_CONFIG body using balanced-brace counting
+  // (the old regex could not handle deeply nested savedViewPresets)
+  const configStart = domainConfigsContent.indexOf('export const FINANCE_OVERVIEW_CONFIG');
+  let configBody = '';
+  if (configStart !== -1) {
+    const braceStart = domainConfigsContent.indexOf('{', configStart);
+    if (braceStart !== -1) {
+      let depth = 0;
+      let end = braceStart;
+      for (let i = braceStart; i < domainConfigsContent.length; i++) {
+        if (domainConfigsContent[i] === '{' || domainConfigsContent[i] === '[') depth++;
+        if (domainConfigsContent[i] === '}' || domainConfigsContent[i] === ']') depth--;
+        if (depth === 0) {
+          end = i + 1;
+          break;
+        }
+      }
+      configBody = domainConfigsContent.slice(configStart, end);
+    }
+  }
 
-  if (configMatch) {
-    const configBody = configMatch[0];
-    
+  if (configBody) {
     requiredFields.forEach((field) => {
       if (configBody.includes(`${field}:`)) {
         pass(`FINANCE_OVERVIEW_CONFIG has '${field}' field`);
@@ -102,7 +111,7 @@ if (!domainConfigsContent) {
     // Check for buildFeatureMetrics
     if (configBody.includes('buildFeatureMetrics:')) {
       pass('FINANCE_OVERVIEW_CONFIG has buildFeatureMetrics configured');
-      
+
       // Check if it references buildFinanceFeatureMetrics
       if (configBody.includes('buildFinanceFeatureMetrics')) {
         pass('buildFeatureMetrics references buildFinanceFeatureMetrics');
@@ -158,12 +167,16 @@ if (!buildMetricsContent) {
     warn('Function may not have proper return type annotation');
   }
 
-  // Check for feature ID coverage
+  // Check for feature ID coverage (supports both object-literal and dot-notation)
   const featureIds = ['gl', 'ap', 'ar', 'banking', 'assets', 'co', 'tr', 'tax'];
   let coveredFeatures = 0;
-  
+
   featureIds.forEach((id) => {
-    if (buildMetricsContent.includes(`'${id}':`)) {
+    if (
+      buildMetricsContent.includes(`'${id}':`) ||
+      buildMetricsContent.includes(`metrics.${id}`) ||
+      buildMetricsContent.includes(`"${id}":`)
+    ) {
       coveredFeatures++;
     }
   });
@@ -237,23 +250,29 @@ if (!featureGridContent) {
   pass('feature-grid.tsx exists');
 
   // Check for section headers
-  if (featureGridContent.includes('"features-available"') || 
-      featureGridContent.includes("'features-available'")) {
+  if (
+    featureGridContent.includes('"features-available"') ||
+    featureGridContent.includes("'features-available'")
+  ) {
     pass('Available features section is defined');
   } else {
     error('Available features section header is missing');
   }
 
-  if (featureGridContent.includes('"features-planned"') || 
-      featureGridContent.includes("'features-planned'")) {
+  if (
+    featureGridContent.includes('"features-planned"') ||
+    featureGridContent.includes("'features-planned'")
+  ) {
     pass('Planned features section is defined');
   } else {
     warn('Planned features section is missing (optional)');
   }
 
   // Check for metrics mapping
-  if (featureGridContent.includes('featureMetrics') && 
-      featureGridContent.includes('[card.featureId]')) {
+  if (
+    featureGridContent.includes('featureMetrics') &&
+    featureGridContent.includes('[card.featureId]')
+  ) {
     pass('Feature metrics are properly mapped by featureId');
   } else {
     warn('Feature metrics mapping may be missing or incorrect');
@@ -279,24 +298,30 @@ if (!featureCardContent) {
   pass('feature-card.tsx exists');
 
   // Check for signals rendering
-  if (featureCardContent.includes('metricPrimary') && 
-      featureCardContent.includes('metricSecondary')) {
+  if (
+    featureCardContent.includes('metricPrimary') &&
+    featureCardContent.includes('metricSecondary')
+  ) {
     pass('Feature card renders primary and secondary metrics');
   } else {
     error('Feature card may not display metrics properly');
   }
 
   // Check for attention severity styling
-  if (featureCardContent.includes('getSeverityColor') || 
-      featureCardContent.includes('getSeverityAccent')) {
+  if (
+    featureCardContent.includes('getSeverityColor') ||
+    featureCardContent.includes('getSeverityAccent')
+  ) {
     pass('Attention severity styling is implemented');
   } else {
     warn('Attention severity styling may be missing');
   }
 
-  // Check for variant support
-  if (featureCardContent.includes("variant: 'active'") && 
-      featureCardContent.includes("variant: 'planned'")) {
+  // Check for variant support (type def + runtime check)
+  if (
+    (featureCardContent.includes("'active'") && featureCardContent.includes("'planned'")) ||
+    (featureCardContent.includes('FeatureCardVariant') && featureCardContent.includes('isPlanned'))
+  ) {
     pass('Feature card supports both active and planned variants');
   } else {
     warn('Feature card may not support all variants');
@@ -315,7 +340,7 @@ if (!shellContent) {
   pass('domain-dashboard-shell.tsx exists');
 
   // Check for FeatureGrid import
-  if (shellContent.includes("import { FeatureGrid }")) {
+  if (shellContent.includes('import { FeatureGrid }')) {
     pass('FeatureGrid is imported');
   } else {
     error('FeatureGrid is not imported');
@@ -329,8 +354,10 @@ if (!shellContent) {
   }
 
   // Check if buildFeatureMetrics is called
-  if (shellContent.includes('buildFeatureMetrics') && 
-      shellContent.includes('config.buildFeatureMetrics')) {
+  if (
+    shellContent.includes('buildFeatureMetrics') &&
+    shellContent.includes('config.buildFeatureMetrics')
+  ) {
     pass('buildFeatureMetrics is called from config');
   } else {
     error('buildFeatureMetrics is not being called');
@@ -366,7 +393,7 @@ if (!layoutContent) {
   if (layoutContent.includes('<Separator') || layoutContent.includes('Separator')) {
     pass('Separator component is used');
   } else {
-    error('Separator is missing (bottom panel won\'t be visually separated)');
+    error("Separator is missing (bottom panel won't be visually separated)");
   }
 
   // Check for featureGrid prop
@@ -396,8 +423,10 @@ if (!roadmapContent) {
   pass('roadmap-registry.ts exists');
 
   // Check for getPlannedFeatures export
-  if (roadmapContent.includes('export function getPlannedFeatures') || 
-      roadmapContent.includes('export const getPlannedFeatures')) {
+  if (
+    roadmapContent.includes('export function getPlannedFeatures') ||
+    roadmapContent.includes('export const getPlannedFeatures')
+  ) {
     pass('getPlannedFeatures function is exported');
   } else {
     warn('getPlannedFeatures function not found');
@@ -432,7 +461,7 @@ if (!typesContent) {
   // Check for FeatureMetricMap type (in module-map.types.ts)
   const moduleMapTypesPath = 'apps/web/src/lib/dashboards/module-map.types.ts';
   const moduleMapTypesContent = readFile(moduleMapTypesPath);
-  
+
   if (moduleMapTypesContent) {
     if (moduleMapTypesContent.includes('FeatureMetricMap')) {
       pass('FeatureMetricMap type is defined');
@@ -468,11 +497,11 @@ if (issues.length === 0 && warnings.length === 0) {
   console.log(`${COLORS.red}╔════════════════════════════════════════════════════════════╗`);
   console.log(`║  ❌ Configuration issues found! See errors above           ║`);
   console.log(`╚════════════════════════════════════════════════════════════╝${COLORS.reset}\n`);
-  
+
   console.log('\n📋 Action Items:\n');
   issues.forEach((issue, i) => {
     console.log(`${i + 1}. ${issue}`);
   });
-  
+
   process.exit(1);
 }

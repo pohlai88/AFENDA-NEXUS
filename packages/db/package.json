@@ -21,7 +21,7 @@
   },
   "files": [
     "dist",
-    "ARCHITECTURE.@afenda-db.md"
+    "ARCHITECTURE_afenda-db.md"
   ],
   "sideEffects": false,
   "scripts": {

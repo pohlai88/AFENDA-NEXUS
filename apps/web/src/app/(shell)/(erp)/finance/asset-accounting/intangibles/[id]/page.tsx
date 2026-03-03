@@ -1,12 +1,19 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
 import { getIntangibleAssetById } from '@/features/finance/intangibles/queries/intangibles.queries';
-import { IntangibleDetailHeader, IntangibleOverview } from '@/features/finance/intangibles/blocks/intangible-detail';
-import { AmortizationSection, ImpairmentSection } from '@/features/finance/intangibles/blocks/intangible-sections';
+import {
+  IntangibleDetailHeader,
+  IntangibleOverview,
+} from '@/features/finance/intangibles/blocks/intangible-detail';
+import {
+  AmortizationSection,
+  ImpairmentSection,
+} from '@/features/finance/intangibles/blocks/intangible-sections';
 import { routes } from '@/lib/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -19,8 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${result.data.assetNumber} | Intangibles` };
 }
 
-export default async function IntangibleDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function IntangibleDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getIntangibleAssetById(ctx, id);
 
   if (!result.ok) {
@@ -65,5 +71,15 @@ export default async function IntangibleDetailPage({ params }: Props) {
         ]}
       />
     </div>
+  );
+}
+
+export default async function IntangibleDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense>
+      <IntangibleDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

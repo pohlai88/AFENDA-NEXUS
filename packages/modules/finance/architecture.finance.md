@@ -638,7 +638,7 @@ packages/modules/finance/
 ├── tsup.config.ts
 ├── vitest.config.ts
 ├── eslint.config.js
-├── ARCHITECTURE.@afenda-modules-finance.md
+├── ARCHITECTURE_afenda-modules-finance.md
 └── architecture.finance.md               # This file
 ```
 

@@ -26,12 +26,7 @@ interface PortalDocumentTableProps {
 
 export function PortalDocumentTable({ data }: PortalDocumentTableProps) {
   if (data.length === 0) {
-    return (
-      <EmptyState
-        contentKey="portal.documents"
-        icon={FolderOpen}
-      />
-    );
+    return <EmptyState contentKey="portal.documents" constraint="table" icon={FolderOpen} />;
   }
 
   return (

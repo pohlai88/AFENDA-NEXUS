@@ -48,7 +48,7 @@ function SLABadge({ status, hoursRemaining }: { status: SLAStatus; hoursRemainin
 
   return (
     <Badge variant={config.variant} className="gap-1">
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3 w-3"  aria-hidden="true" />
       {status === 'BREACHED' ? (
         <span>{Math.abs(hoursRemaining)}h overdue</span>
       ) : (
@@ -69,7 +69,7 @@ function createColumns(): ColumnDef<ApprovalItem>[] {
         const Icon = documentIconMap[row.documentType] ?? FileText;
         return (
           <div className="flex items-center gap-2">
-            <Icon className="h-4 w-4 text-muted-foreground" />
+            <Icon className="h-4 w-4 text-muted-foreground"  aria-hidden="true" />
             <span className="text-xs text-muted-foreground">
               {documentTypeLabels[row.documentType]}
             </span>

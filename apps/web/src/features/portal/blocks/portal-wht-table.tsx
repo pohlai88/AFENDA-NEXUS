@@ -22,12 +22,7 @@ interface PortalWhtTableProps {
 
 export function PortalWhtTable({ data }: PortalWhtTableProps) {
   if (data.length === 0) {
-    return (
-      <EmptyState
-        contentKey="portal.whtCerts"
-        icon={Award}
-      />
-    );
+    return <EmptyState contentKey="portal.whtCerts" constraint="table" icon={Award} />;
   }
 
   return (
@@ -58,7 +53,9 @@ export function PortalWhtTable({ data }: PortalWhtTableProps) {
                     window.location.href = detailHref;
                   }
                 }}
-                onClick={() => { window.location.href = detailHref; }}
+                onClick={() => {
+                  window.location.href = detailHref;
+                }}
               >
                 <TableCell>
                   <Link

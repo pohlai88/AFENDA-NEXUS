@@ -3,7 +3,10 @@ import { ok, err, AppError, formatMinorUnits } from '@afenda/core';
 import type { IIcAgreementRepo } from '../../../slices/ic/ports/ic-repo.js';
 import type { IAccountRepo, ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
 import type { IFiscalPeriodRepo } from '../../../shared/ports/fiscal-period-port.js';
-import type { PostingLinePreview, PostingPreviewResult } from '../../ap/services/preview-ap-posting.js';
+import type {
+  PostingLinePreview,
+  PostingPreviewResult,
+} from '../../../shared/types/posting-preview.js';
 
 export interface IcLinePreviewInput {
   readonly accountId: string;
@@ -46,7 +49,9 @@ export async function previewIcTransaction(
   }
 
   if (input.sourceLines.length < 1 || input.mirrorLines.length < 1) {
-    return err(new AppError('VALIDATION', 'IC transaction requires at least 1 source and 1 mirror line'));
+    return err(
+      new AppError('VALIDATION', 'IC transaction requires at least 1 source and 1 mirror line')
+    );
   }
 
   const warnings: string[] = [];

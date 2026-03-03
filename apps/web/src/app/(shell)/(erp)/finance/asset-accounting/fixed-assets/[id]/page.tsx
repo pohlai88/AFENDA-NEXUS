@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import type { RequestContext } from '@afenda/core';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import {
   getFixedAssetById,
@@ -17,9 +18,7 @@ interface AssetDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function AssetDetailPage({ params }: AssetDetailPageProps) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
-
+async function AssetDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const [assetResult, scheduleResult] = await Promise.all([
     getFixedAssetById(ctx, id),
     getDepreciationSchedule(ctx, id),
@@ -33,5 +32,15 @@ export default async function AssetDetailPage({ params }: AssetDetailPageProps) 
     throw new Error(scheduleResult.error);
   }
 
-  return <Suspense fallback={<LoadingSkeleton />}><AssetDetail asset={assetResult.data} schedule={scheduleResult.data} /></Suspense>;
+  return <AssetDetail asset={assetResult.data} schedule={scheduleResult.data} />;
+}
+
+export default async function AssetDetailPage({ params }: AssetDetailPageProps) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AssetDetailContent ctx={ctx} id={id} />
+    </Suspense>
+  );
 }

@@ -7,10 +7,14 @@ import { PortalDocumentUploadForm } from '@/features/portal/forms/portal-documen
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
 
-export default async function PortalDocumentsPage() {
-  const ctx = await getRequestContext();
+export const metadata: Metadata = {
+  title: 'Document Vault | Supplier Portal',
+};
 
+async function DocumentsPageContent({ ctx }: { ctx: RequestContext }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -26,7 +30,6 @@ export default async function PortalDocumentsPage() {
   const result = await getPortalDocuments(ctx, supplier.supplierId);
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Document Vault"
@@ -44,6 +47,15 @@ export default async function PortalDocumentsPage() {
 
       <PortalDocumentUploadForm supplierId={supplier.supplierId} />
     </div>
+  );
+}
+
+export default async function PortalDocumentsPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <DocumentsPageContent ctx={ctx} />
     </Suspense>
   );
 }

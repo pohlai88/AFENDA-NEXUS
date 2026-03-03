@@ -3,30 +3,15 @@
 import * as React from 'react';
 import { useState, useEffect, useCallback, useTransition } from 'react';
 import Link from 'next/link';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { POPOVER_NOTIFICATION_W, SCROLL_MAX_H } from '@/components/afenda/shell.tokens';
-import {
-  Bell,
-  BellOff,
-  Check,
-  CheckCheck,
-  X,
-  Clock,
-} from 'lucide-react';
+import { Bell, BellOff, Check, CheckCheck, X, Clock } from 'lucide-react';
 import {
   NOTIFICATION_SEVERITY_ICON,
   NOTIFICATION_SEVERITY_COLOR,
@@ -39,9 +24,7 @@ import {
   markAllNotificationsRead,
   dismissNotification,
 } from '@/lib/notifications/notification.actions';
-import type {
-  Notification,
-} from '@/lib/notifications/notification.types';
+import type { Notification } from '@/lib/notifications/notification.types';
 import { CATEGORY_LABELS } from '@/lib/notifications/notification.types';
 import { EmptyState } from '@/components/erp/empty-state';
 
@@ -86,31 +69,32 @@ export function NotificationPopover({
 
   useEffect(() => {
     if (!open) return;
-    startTransition(async () => { await fetchNotifications(); });
+    startTransition(async () => {
+      await fetchNotifications();
+    });
   }, [open, fetchNotifications]);
 
   useEffect(() => {
     if (!open) return;
     const interval = setInterval(() => {
-      startTransition(async () => { await fetchNotifications(); });
+      startTransition(async () => {
+        await fetchNotifications();
+      });
     }, 60_000);
     return () => clearInterval(interval);
   }, [open, fetchNotifications]);
 
-  const handleMarkRead = useCallback(
-    (id: string) => {
-      startTransition(async () => {
-        await markNotificationRead(id);
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === id ? { ...n, status: 'read' as const, readAt: new Date().toISOString() } : n,
-          ),
-        );
-        setUnreadCount((c) => Math.max(0, c - 1));
-      });
-    },
-    [],
-  );
+  const handleMarkRead = useCallback((id: string) => {
+    startTransition(async () => {
+      await markNotificationRead(id);
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === id ? { ...n, status: 'read' as const, readAt: new Date().toISOString() } : n
+        )
+      );
+      setUnreadCount((c) => Math.max(0, c - 1));
+    });
+  }, []);
 
   const handleMarkAllRead = useCallback(() => {
     startTransition(async () => {
@@ -120,7 +104,7 @@ export function NotificationPopover({
           ...n,
           status: 'read' as const,
           readAt: n.readAt ?? new Date().toISOString(),
-        })),
+        }))
       );
       setUnreadCount(0);
     });
@@ -137,7 +121,7 @@ export function NotificationPopover({
         }
       });
     },
-    [notifications],
+    [notifications]
   );
 
   const visibleNotifications =
@@ -159,9 +143,9 @@ export function NotificationPopover({
 
     for (const n of visibleNotifications) {
       const ts = new Date(n.createdAt).getTime();
-      if (ts >= todayStart) groups[0].items.push(n);
-      else if (ts >= yesterdayStart) groups[1].items.push(n);
-      else groups[2].items.push(n);
+      if (ts >= todayStart) groups[0]?.items.push(n);
+      else if (ts >= yesterdayStart) groups[1]?.items.push(n);
+      else groups[2]?.items.push(n);
     }
 
     return groups.filter((g) => g.items.length > 0);
@@ -177,9 +161,7 @@ export function NotificationPopover({
               size="icon-sm"
               className="relative size-8"
               aria-label={
-                unreadCount > 0
-                  ? `Notifications (${unreadCount} unread)`
-                  : 'Notifications'
+                unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'
               }
             >
               <Bell className="size-4" aria-hidden />
@@ -236,7 +218,10 @@ export function NotificationPopover({
             <TabsTrigger value="unread" className="flex-1">
               Unread
               {unreadCount > 0 && (
-                <Badge variant="secondary" className="ml-1.5 h-4 min-w-4 justify-center px-1 text-[10px]">
+                <Badge
+                  variant="secondary"
+                  className="ml-1.5 h-4 min-w-4 justify-center px-1 text-[10px]"
+                >
                   {unreadCount}
                 </Badge>
               )}
@@ -248,17 +233,10 @@ export function NotificationPopover({
               <div className="pb-4 pr-2">
                 {visibleNotifications.length === 0 ? (
                   <EmptyState
-                    title={activeTab === 'unread' ? 'All caught up!' : 'No notifications'}
-                    description={
-                      activeTab === 'unread'
-                        ? 'You have no unread notifications.'
-                        : 'Notifications will appear here when there are updates.'
-                    }
+                    contentKey="shell.notifications"
                     icon={BellOff}
-                    variant="firstRun"
-                    size="sm"
-                    animate={false}
-                    className="border-0 py-8"
+                    variant={activeTab === 'unread' ? 'firstRun' : 'noResults'}
+                    constraint="1x2"
                   />
                 ) : (
                   <div className="space-y-4">
@@ -301,12 +279,7 @@ interface NotificationItemProps {
   onClose: () => void;
 }
 
-function NotificationItem({
-  notification,
-  onMarkRead,
-  onDismiss,
-  onClose,
-}: NotificationItemProps) {
+function NotificationItem({ notification, onMarkRead, onDismiss, onClose }: NotificationItemProps) {
   const isUnread = notification.status === 'unread';
   const SeverityIcon = NOTIFICATION_SEVERITY_ICON[notification.severity];
   const severityColor = NOTIFICATION_SEVERITY_COLOR[notification.severity];
@@ -314,7 +287,7 @@ function NotificationItem({
 
   const timeSince = React.useMemo(
     () => formatRelativeTime(notification.createdAt),
-    [notification.createdAt],
+    [notification.createdAt]
   );
 
   return (
@@ -326,7 +299,7 @@ function NotificationItem({
         isUnread && notification.severity === 'critical' && 'border-l-destructive',
         isUnread && notification.severity === 'warning' && 'border-l-amber-500',
         isUnread && notification.severity === 'success' && 'border-l-emerald-500',
-        isUnread && notification.severity === 'info' && 'border-l-blue-500',
+        isUnread && notification.severity === 'info' && 'border-l-blue-500'
       )}
     >
       {/* Dismiss button */}
@@ -355,9 +328,7 @@ function NotificationItem({
           </div>
 
           {notification.body && (
-            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-              {notification.body}
-            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{notification.body}</p>
           )}
 
           <div className="mt-2 flex items-center gap-2">
@@ -429,11 +400,7 @@ export function NotificationBadge({ unreadCount, onClick }: NotificationBadgePro
           size="icon-sm"
           className="relative size-8"
           onClick={onClick}
-          aria-label={
-            unreadCount > 0
-              ? `Notifications (${unreadCount} unread)`
-              : 'Notifications'
-          }
+          aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'}
         >
           <Bell className="size-4" aria-hidden />
           {unreadCount > 0 && (

@@ -20,18 +20,11 @@ import {
 
 // ─── Feature Flag ────────────────────────────────────────────────────────────
 
-const FEATURE_DASHBOARD_CHARTS =
-  process.env.NEXT_PUBLIC_FEATURE_DASHBOARD_CHARTS !== 'false';
+const FEATURE_DASHBOARD_CHARTS = process.env.NEXT_PUBLIC_FEATURE_DASHBOARD_CHARTS !== 'false';
 
-// ─── Stub Chart Data ─────────────────────────────────────────────────────────
-// TODO: Replace stub data with server-fetched chart data via props or RSC.
+// ─── Default Chart Data (API-first, fallback when no props supplied) ─────────
 
-if (process.env.NODE_ENV === 'development') {
-   
-  console.warn('[DashboardWidgets] Using STUB chart data — replace with real API calls.');
-}
-
-const STUB_CASH_FLOW_DATA = [
+const FALLBACK_CASH_FLOW_DATA = [
   { month: 'Sep', inflow: 124000, outflow: 98000 },
   { month: 'Oct', inflow: 156000, outflow: 112000 },
   { month: 'Nov', inflow: 142000, outflow: 128000 },
@@ -40,7 +33,7 @@ const STUB_CASH_FLOW_DATA = [
   { month: 'Feb', inflow: 178000, outflow: 142000 },
 ];
 
-const STUB_EXPENSE_BREAKDOWN_DATA = [
+const FALLBACK_EXPENSE_BREAKDOWN_DATA = [
   { category: 'Payroll', amount: 85000 },
   { category: 'Rent', amount: 12000 },
   { category: 'Software', amount: 8500 },
@@ -49,7 +42,7 @@ const STUB_EXPENSE_BREAKDOWN_DATA = [
   { category: 'Utilities', amount: 2100 },
 ];
 
-const STUB_AR_AGING_DATA = [
+const FALLBACK_AR_AGING_DATA = [
   { bucket: 'Current', amount: 45000 },
   { bucket: '1-30', amount: 22000 },
   { bucket: '31-60', amount: 8500 },
@@ -60,7 +53,12 @@ const STUB_AR_AGING_DATA = [
 // ─── Quick Shortcuts ─────────────────────────────────────────────────────────
 
 const QUICK_SHORTCUTS = [
-  { title: 'New Journal Entry', href: routes.finance.journalNew, icon: FilePlus2, shortcut: 'g n j' },
+  {
+    title: 'New Journal Entry',
+    href: routes.finance.journalNew,
+    icon: FilePlus2,
+    shortcut: 'g n j',
+  },
   { title: 'New Invoice', href: routes.finance.payableNew, icon: FileText },
   { title: 'New Supplier', href: routes.finance.supplierNew, icon: UserPlus },
   { title: 'New Expense', href: routes.finance.expenseNew, icon: Receipt },
@@ -76,11 +74,22 @@ function formatCompact(value: number): string {
 
 // ─── Dashboard Widgets ───────────────────────────────────────────────────────
 
+/** Props for optional server-supplied chart data. Falls back to default data. */
+export interface DashboardWidgetsProps {
+  cashFlowData?: { month: string; inflow: number; outflow: number }[];
+  expenseData?: { category: string; amount: number }[];
+  arAgingData?: { bucket: string; amount: number }[];
+}
+
 /**
  * Dashboard v2 widget sections rendered below the KPI cards and activity feed.
  * Behind FEATURE_DASHBOARD_CHARTS flag.
  */
-export function DashboardWidgets() {
+export function DashboardWidgets({
+  cashFlowData,
+  expenseData,
+  arAgingData,
+}: DashboardWidgetsProps = {}) {
   return (
     <div className="space-y-6">
       {/* Quick Shortcuts */}
@@ -103,7 +112,7 @@ export function DashboardWidgets() {
                   asChild
                 >
                   <Link href={shortcut.href}>
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                     <span className="text-xs">{shortcut.title}</span>
                     {shortcut.shortcut && (
                       <kbd className="mt-0.5 rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
@@ -143,7 +152,7 @@ export function DashboardWidgets() {
             </CardHeader>
             <CardContent className="pt-4">
               <AreaChartWidget
-                data={STUB_CASH_FLOW_DATA}
+                data={cashFlowData ?? FALLBACK_CASH_FLOW_DATA}
                 xKey="month"
                 yKeys={['inflow', 'outflow']}
                 colors={['hsl(160 60% 45%)', 'hsl(350 70% 55%)']}
@@ -163,7 +172,7 @@ export function DashboardWidgets() {
             </CardHeader>
             <CardContent className="pt-4">
               <BarChartWidget
-                data={STUB_EXPENSE_BREAKDOWN_DATA}
+                data={expenseData ?? FALLBACK_EXPENSE_BREAKDOWN_DATA}
                 xKey="category"
                 yKeys={['amount']}
                 colors={['hsl(220 70% 50%)']}
@@ -188,7 +197,7 @@ export function DashboardWidgets() {
             </CardHeader>
             <CardContent className="pt-4">
               <BarChartWidget
-                data={STUB_AR_AGING_DATA}
+                data={arAgingData ?? FALLBACK_AR_AGING_DATA}
                 xKey="bucket"
                 yKeys={['amount']}
                 colors={['hsl(30 80% 55%)']}

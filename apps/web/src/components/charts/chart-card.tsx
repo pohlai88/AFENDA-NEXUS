@@ -4,6 +4,8 @@ import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/erp/empty-state';
+import type { EmptyStateKey, EmptyStateConstraint } from '@/components/erp/empty-state.types';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,11 +20,15 @@ interface ChartCardProps {
   compact?: boolean;
   className?: string;
   children: React.ReactNode;
+  /** Registry key for empty-state content. Falls back to generic message if omitted. */
+  emptyStateKey?: EmptyStateKey;
+  /** Constraint tier for the empty state. Defaults to `'2x2'`. */
+  emptyStateConstraint?: EmptyStateConstraint;
 }
 
 /**
  * ChartCard - Standardized wrapper for all chart widgets
- * 
+ *
  * Enforces enterprise requirements:
  * - Loading state (skeleton)
  * - Empty state
@@ -42,33 +48,38 @@ export function ChartCard({
   compact,
   className,
   children,
+  emptyStateKey,
+  emptyStateConstraint = '2x2',
 }: ChartCardProps) {
   // Error state
   if (error) {
     const errorMessage = typeof error === 'string' ? error : error.message;
     return (
-      <Card className={cn(compact && 'h-full flex flex-col', className)} data-testid="chart-card" data-state="error">
+      <Card
+        className={cn(compact && 'h-full flex flex-col', className)}
+        data-testid="chart-card"
+        data-state="error"
+      >
         <CardHeader className={compact ? 'px-3 py-2' : undefined}>
           <CardTitle className={compact ? 'text-sm font-medium' : undefined}>{title}</CardTitle>
           {description && !compact && <CardDescription>{description}</CardDescription>}
         </CardHeader>
-        <CardContent className={cn(compact && 'flex-1 px-3 pb-3', 'flex items-center justify-center')}>
-          <div className="text-center space-y-2 py-8">
-            <AlertCircle className="h-8 w-8 mx-auto text-destructive" />
-            <p className="text-sm text-destructive font-medium">Failed to load chart</p>
-            <p className="text-xs text-muted-foreground">{errorMessage}</p>
-            {onRefresh && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onRefresh}
-                className="mt-2"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            )}
-          </div>
+        <CardContent
+          className={cn(compact && 'flex-1 px-3 pb-3', 'flex items-center justify-center')}
+        >
+          <EmptyState
+            contentKey="charts.generic.error"
+            variant="error"
+            constraint={emptyStateConstraint}
+            action={
+              onRefresh ? (
+                <Button variant="outline" size="sm" onClick={onRefresh}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry
+                </Button>
+              ) : undefined
+            }
+          />
         </CardContent>
       </Card>
     );
@@ -77,16 +88,31 @@ export function ChartCard({
   // Empty state
   if (isEmpty) {
     return (
-      <Card className={cn(compact && 'h-full flex flex-col', className)} data-testid="chart-card" data-state="empty">
+      <Card
+        className={cn(compact && 'h-full flex flex-col', className)}
+        data-testid="chart-card"
+        data-state="empty"
+      >
         <CardHeader className={compact ? 'px-3 py-2' : undefined}>
           <CardTitle className={compact ? 'text-sm font-medium' : undefined}>{title}</CardTitle>
           {description && !compact && <CardDescription>{description}</CardDescription>}
         </CardHeader>
-        <CardContent className={cn(compact && 'flex-1 px-3 pb-3', 'flex items-center justify-center')}>
-          <div className="text-center space-y-2 py-8">
-            <p className="text-sm text-muted-foreground">No data available</p>
-            <p className="text-xs text-muted-foreground">Try adjusting the date range or filters</p>
-          </div>
+        <CardContent
+          className={cn(compact && 'flex-1 px-3 pb-3', 'flex items-center justify-center')}
+        >
+          {emptyStateKey ? (
+            <EmptyState
+              contentKey={emptyStateKey}
+              variant="firstRun"
+              constraint={emptyStateConstraint}
+            />
+          ) : (
+            <EmptyState
+              contentKey="charts.generic.empty"
+              variant="noResults"
+              constraint={emptyStateConstraint}
+            />
+          )}
         </CardContent>
       </Card>
     );
@@ -95,7 +121,11 @@ export function ChartCard({
   // Loading state
   if (isLoading) {
     return (
-      <Card className={cn(compact && 'h-full flex flex-col', className)} data-testid="chart-card" data-state="loading">
+      <Card
+        className={cn(compact && 'h-full flex flex-col', className)}
+        data-testid="chart-card"
+        data-state="loading"
+      >
         <CardHeader className={compact ? 'px-3 py-2' : undefined}>
           <CardTitle className={compact ? 'text-sm font-medium' : undefined}>{title}</CardTitle>
           {description && !compact && <CardDescription>{description}</CardDescription>}
@@ -109,7 +139,12 @@ export function ChartCard({
 
   // Normal state
   return (
-    <Card className={cn(compact && 'h-full flex flex-col', className)} data-testid="chart-card" data-state="loaded" aria-label={title}>
+    <Card
+      className={cn(compact && 'h-full flex flex-col', className)}
+      data-testid="chart-card"
+      data-state="loaded"
+      aria-label={title}
+    >
       <CardHeader className={compact ? 'px-3 py-2' : undefined}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">

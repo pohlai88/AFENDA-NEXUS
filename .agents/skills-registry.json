@@ -337,6 +337,30 @@
       "description": "UI design system toolkit — design tokens, component docs, responsive calculations, developer handoff",
       "path": "skills/ui-design-system",
       "source": "local"
+    },
+    {
+      "name": "turborepo",
+      "category": "monorepo",
+      "priority": "high",
+      "description": "Turborepo monorepo build system — turbo.json, task pipelines, caching, remote cache, CI optimization",
+      "path": "skills/turborepo",
+      "source": "local"
+    },
+    {
+      "name": "vercel-composition-patterns",
+      "category": "ui",
+      "priority": "medium",
+      "description": "React composition patterns that scale — compound components, render props, context providers, component architecture",
+      "path": "skills/vercel-composition-patterns",
+      "source": "local"
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "category": "ui",
+      "priority": "high",
+      "description": "React & Next.js performance optimization guidelines from Vercel Engineering — data fetching, bundle optimization",
+      "path": "skills/vercel-react-best-practices",
+      "source": "local"
     }
   ],
   "categories": {

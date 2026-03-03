@@ -28,6 +28,7 @@ export function ArInvoiceTable({ data, total }: ArInvoiceTableProps) {
     return (
       <EmptyState
         contentKey="finance.receivables"
+        constraint="table"
         icon={HandCoins}
         action={
           <Button asChild>

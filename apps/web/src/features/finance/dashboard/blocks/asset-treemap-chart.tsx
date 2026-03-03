@@ -13,10 +13,10 @@ import { useState } from 'react';
  */
 interface AssetTreemapNode {
   name: string;
-  value: number;       // Net book value
-  category?: string;   // Asset category (e.g. "Equipment", "Vehicles")
-  location?: string;   // Physical location
-  book?: string;       // Book (GAAP, IFRS, Tax)
+  value: number; // Net book value
+  category?: string; // Asset category (e.g. "Equipment", "Vehicles")
+  location?: string; // Physical location
+  book?: string; // Book (GAAP, IFRS, Tax)
   children?: AssetTreemapNode[];
 }
 
@@ -30,6 +30,9 @@ interface AssetTreemapChartProps {
   lastUpdated?: string;
   isLoading?: boolean;
   error?: Error | null;
+  _params?: unknown;
+  _gridW?: number;
+  _gridH?: number;
 }
 
 const TREEMAP_CONFIG = {
@@ -51,10 +54,15 @@ const COLORS = [
  */
 const CustomTreemapContent = (props: Record<string, unknown>) => {
   const { x, y, width, height, index, name, value } = props as {
-    x: number; y: number; width: number; height: number;
-    index: number; name: string; value: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    index: number;
+    name: string;
+    value: number;
   };
-  
+
   if (width < 40 || height < 40) return null;
 
   return (
@@ -100,12 +108,12 @@ const CustomTreemapContent = (props: Record<string, unknown>) => {
 
 /**
  * Asset Depreciation Treemap
- * 
+ *
  * Enterprise asset portfolio visualization:
  * - Net book value by asset
  * - Toggle grouping: category / location / book
  * - Color-coded by group
- * 
+ *
  * Drilldown: Fixed assets list filtered by selected node
  */
 export function AssetTreemapChart({
@@ -132,20 +140,21 @@ export function AssetTreemapChart({
     const grouped = new Map<string, AssetTreemapNode[]>();
 
     const flattenTree = (nodes: AssetTreemapNode[]): AssetTreemapNode[] => {
-      return nodes.flatMap(node => 
+      return nodes.flatMap((node) =>
         node.children ? [node, ...flattenTree(node.children)] : [node]
       );
     };
 
     const allNodes = flattenTree(data);
 
-    allNodes.forEach(node => {
-      const key = groupBy === 'category' 
-        ? node.category || 'Other'
-        : groupBy === 'location'
-        ? node.location || 'Unknown'
-        : node.book || 'Default';
-      
+    allNodes.forEach((node) => {
+      const key =
+        groupBy === 'category'
+          ? node.category || 'Other'
+          : groupBy === 'location'
+            ? node.location || 'Unknown'
+            : node.book || 'Default';
+
       if (!grouped.has(key)) {
         grouped.set(key, []);
       }
@@ -170,16 +179,12 @@ export function AssetTreemapChart({
       isEmpty={!data || data.length === 0}
       error={error}
       compact={compact}
+      emptyStateKey="finance.dashboard.assetTreemap"
     >
       {/* Group toggle */}
       {!compact && (
         <div className="mb-2 flex justify-end">
-          <ToggleGroup
-            type="single"
-            value={groupBy}
-            onValueChange={handleGroupChange}
-            size="sm"
-          >
+          <ToggleGroup type="single" value={groupBy} onValueChange={handleGroupChange} size="sm">
             <ToggleGroupItem value="category" aria-label="By Category">
               Category
             </ToggleGroupItem>
@@ -206,14 +211,15 @@ export function AssetTreemapChart({
             content={<CustomTreemapContent />}
             onClick={(node) => {
               if (onDrilldown) {
-                onDrilldown({ 
-                  kind: 'list', 
+                onDrilldown({
+                  kind: 'list',
                   entity: 'asset',
-                  preset: groupBy === 'category' 
-                    ? `category:${node.name}`
-                    : groupBy === 'location'
-                    ? `location:${node.name}`
-                    : `book:${node.name}`
+                  preset:
+                    groupBy === 'category'
+                      ? `category:${node.name}`
+                      : groupBy === 'location'
+                        ? `location:${node.name}`
+                        : `book:${node.name}`,
                 });
               }
             }}

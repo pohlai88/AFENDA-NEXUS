@@ -25,6 +25,7 @@ export function ApSupplierTable({ data }: ApSupplierTableProps) {
     return (
       <EmptyState
         contentKey="finance.payables.suppliers"
+        constraint="table"
         icon={Users}
         action={
           <Button asChild>

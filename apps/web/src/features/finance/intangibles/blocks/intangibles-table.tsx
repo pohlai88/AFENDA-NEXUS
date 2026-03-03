@@ -28,7 +28,7 @@ function TypeBadge({ type }: { type: IntangibleType }) {
   const Icon = typeIcons[type];
   return (
     <Badge variant="outline" className="gap-1">
-      <Icon className="h-3 w-3" />
+      <Icon className="h-3 w-3"  aria-hidden="true" />
       {intangibleTypeLabels[type]}
     </Badge>
   );

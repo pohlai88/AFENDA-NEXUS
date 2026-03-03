@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 import { getRequestContext } from '@/lib/auth';
@@ -13,8 +14,7 @@ export const metadata = {
   description: 'Configure PO–receipt–invoice matching tolerance rules.',
 };
 
-export default async function MatchTolerancesPage() {
-  const ctx = await getRequestContext();
+async function MatchTolerancesContent({ ctx }: { ctx: RequestContext }) {
   const result = await getMatchTolerances(ctx);
   if (!result.ok) handleApiError(result, 'Failed to load match tolerance rules');
   const rules = result.ok ? result.value : [];
@@ -39,9 +39,17 @@ export default async function MatchTolerancesPage() {
         }
       />
 
-      <Suspense fallback={<LoadingSkeleton variant="table" />}>
-        <MatchToleranceTable data={rules} />
-      </Suspense>
+      <MatchToleranceTable data={rules} />
     </div>
+  );
+}
+
+export default async function MatchTolerancesPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton variant="table" />}>
+      <MatchTolerancesContent ctx={ctx} />
+    </Suspense>
   );
 }

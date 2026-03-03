@@ -40,4 +40,6 @@ export const PERMISSION_MAP: Record<FinancePermission, PermissionMapping> = {
   'supplier:read': { resource: 'supplierPortal', action: 'read' },
   'supplier:write': { resource: 'supplierPortal', action: 'update' },
   'supplier:submit': { resource: 'supplierPortal', action: 'create' },
+  PROFILE_UPDATE: { resource: 'supplierPortal', action: 'update' },
+  USER_MANAGE: { resource: 'supplierPortal', action: 'update' },
 } as const;

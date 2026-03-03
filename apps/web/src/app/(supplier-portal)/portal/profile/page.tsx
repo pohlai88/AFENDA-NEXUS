@@ -7,17 +7,19 @@ import { StatusBadge } from '@/components/erp/status-badge';
 import { AlertTriangle } from 'lucide-react';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { RequestContext } from '@afenda/core';
 
-export default async function PortalProfilePage() {
-  const ctx = await getRequestContext();
-
+/**
+ * Async child component - enables Suspense streaming
+ */
+async function ProfileContent({ ctx }: { ctx: RequestContext }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <AlertTriangle className="h-10 w-10 text-destructive" />
         <h2 className="mt-4 text-lg font-semibold">Unable to load supplier profile</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{supplierResult.error.message}</p>
+        <p className="mt-1 text-muted-foreground">{supplierResult.error.message}</p>
       </div>
     );
   }
@@ -25,7 +27,6 @@ export default async function PortalProfilePage() {
   const supplier = supplierResult.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Profile"
@@ -36,6 +37,15 @@ export default async function PortalProfilePage() {
 
       <PortalProfileForm supplier={supplier} />
     </div>
+  );
+}
+
+export default async function PortalProfilePage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <ProfileContent ctx={ctx} />
     </Suspense>
   );
 }

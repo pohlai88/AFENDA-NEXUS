@@ -22,6 +22,7 @@
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { toTitleCase, pluralize, patchEmptyStateRegistry, readJson } from './utils.mjs';
 
 // ─── CLI Args ────────────────────────────────────────────────────────────────
 
@@ -36,12 +37,27 @@ if (!viewModelName || !viewModelName.endsWith('ListItem')) {
   process.exit(1);
 }
 
-// Parse --module and --entity flags
+// Parse --module, --entity, --spec, --displayName, --displayPlural flags
 let moduleFlag = '';
 let entityFlag = '';
+let specPath = '';
+let displayNameFlag = '';
+let displayPluralFlag = '';
 for (let i = 1; i < args.length; i++) {
   if (args[i] === '--module' && args[i + 1]) moduleFlag = args[++i];
   if (args[i] === '--entity' && args[i + 1]) entityFlag = args[++i];
+  if (args[i] === '--spec' && args[i + 1]) specPath = args[++i];
+  if (args[i] === '--displayName' && args[i + 1]) displayNameFlag = args[++i];
+  if (args[i] === '--displayPlural' && args[i + 1]) displayPluralFlag = args[++i];
+}
+
+let specData = null;
+if (specPath) {
+  try {
+    specData = readJson(specPath);
+  } catch (e) {
+    console.warn(`Warning: Could not read spec file: ${specPath}`);
+  }
 }
 
 // ─── Naming Conventions ─────────────────────────────────────────────────────
@@ -204,6 +220,28 @@ export function ${entityPascal}Table({ data, total }: ${entityPascal}TableProps)
 );
 
 console.log(`  ✓ blocks/${prefix}-table.tsx`);
+
+// ─── Auto-patch empty state registry ─────────────────────────────────────────
+
+const displayName = displayNameFlag || specData?.entity?.displayName || toTitleCase(entityPascal);
+const displayPlural =
+  displayPluralFlag || specData?.entity?.displayPlural || pluralize(displayName);
+const emptyStateDescription =
+  specData?.entity?.emptyStateDescription || `Create your first ${displayName} to get started.`;
+
+const esResult = patchEmptyStateRegistry({
+  registryKey,
+  displayName,
+  displayPlural,
+  description: emptyStateDescription,
+  root,
+});
+
+if (esResult.keysPatched)
+  console.log(`  ✓ Patched empty-state.generated-keys.ts (added "${registryKey}")`);
+if (esResult.registryPatched)
+  console.log(`  ✓ Patched empty-state.registry.ts (added "${registryKey}")`);
+
 console.log(`
 [DONE] Table ${prefix}-table.tsx scaffolded.
 
@@ -217,7 +255,5 @@ Available formatters (already imported):
 Next steps:
   1. Fill in column headers in <TableHead>
   2. Fill in column cells in <TableCell>
-  3. Add registry entry for "${registryKey}" in empty-state.registry.ts
-  4. Add "${registryKey}" to EmptyStateKey type in empty-state.types.ts
-  5. Run:  pnpm --filter @afenda/web typecheck
+  3. Run:  pnpm --filter @afenda/web typecheck
 `);

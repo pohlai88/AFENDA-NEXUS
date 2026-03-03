@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { BusinessDocument } from '@/components/erp/business-document';
 import { getRequestContext } from '@/lib/auth';
@@ -21,8 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `${result.value.invoiceNumber} | Prepayments` };
 }
 
-export default async function PrepaymentDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+async function PrepaymentDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getPrepayment(ctx, id);
 
   if (!result.ok) {
@@ -33,7 +33,6 @@ export default async function PrepaymentDetailPage({ params }: Props) {
   const prep = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title={`Prepayment ${prep.invoiceNumber}`}
@@ -48,10 +47,26 @@ export default async function PrepaymentDetailPage({ params }: Props) {
       <BusinessDocument
         header={
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div><span className="text-xs text-muted-foreground">Supplier</span><p className="font-medium">{prep.supplierName}</p></div>
-            <div><span className="text-xs text-muted-foreground">Total</span><p className="font-mono font-medium">{prep.currencyCode} {prep.totalAmount}</p></div>
-            <div><span className="text-xs text-muted-foreground">Remaining</span><p className="font-mono font-medium">{prep.remainingAmount}</p></div>
-            <div><span className="text-xs text-muted-foreground">Status</span><p><Badge variant="default">{prep.status}</Badge></p></div>
+            <div>
+              <span className="text-xs text-muted-foreground">Supplier</span>
+              <p className="font-medium">{prep.supplierName}</p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Total</span>
+              <p className="font-mono font-medium">
+                {prep.currencyCode} {prep.totalAmount}
+              </p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Remaining</span>
+              <p className="font-mono font-medium">{prep.remainingAmount}</p>
+            </div>
+            <div>
+              <span className="text-xs text-muted-foreground">Status</span>
+              <p>
+                <Badge variant="default">{prep.status}</Badge>
+              </p>
+            </div>
           </div>
         }
         tabs={[
@@ -68,6 +83,15 @@ export default async function PrepaymentDetailPage({ params }: Props) {
         ]}
       />
     </div>
-  </Suspense>
+  );
+}
+
+export default async function PrepaymentDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <PrepaymentDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

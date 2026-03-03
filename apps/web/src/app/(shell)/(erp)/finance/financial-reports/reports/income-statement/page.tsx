@@ -4,6 +4,7 @@ import { ExportMenu } from '@/components/erp/export-menu';
 import { EmptyState } from '@/components/erp/empty-state';
 import { MoneyCell } from '@/components/erp/money-cell';
 import { getRequestContext } from '@/lib/auth';
+import type { RequestContext } from '@afenda/core';
 import { handleApiError } from '@/lib/api-error.server';
 import { getIncomeStatement } from '@/features/finance/reports/queries/report.queries';
 import { buildIncomeStatementExport } from '@/features/finance/reports/actions/report-export.actions';
@@ -20,8 +21,7 @@ interface IncomeStatementPageProps {
   searchParams: Promise<{ ledgerId?: string; fromPeriodId?: string; toPeriodId?: string }>;
 }
 
-export default async function IncomeStatementPage({ searchParams }: IncomeStatementPageProps) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+async function IncomeStatementContent({ ctx, params }: { ctx: RequestContext; params: { ledgerId?: string; fromPeriodId?: string; toPeriodId?: string } }) {
   const ledgerId = params.ledgerId ?? '';
   const fromPeriodId = params.fromPeriodId ?? '';
   const toPeriodId = params.toPeriodId ?? '';
@@ -40,7 +40,11 @@ export default async function IncomeStatementPage({ searchParams }: IncomeStatem
     <div className="space-y-6">
       <PageHeader
         title="Income Statement"
-        description={data?.periodRange ? `Revenue and expenses for ${data.periodRange}.` : 'Revenue and expenses over a period.'}
+        description={
+          data?.periodRange
+            ? `Revenue and expenses for ${data.periodRange}.`
+            : 'Revenue and expenses over a period.'
+        }
         breadcrumbs={[
           { label: 'Finance', href: routes.finance.journals },
           { label: 'Reports', href: routes.finance.reports },
@@ -51,14 +55,26 @@ export default async function IncomeStatementPage({ searchParams }: IncomeStatem
 
       <div className="flex flex-wrap items-end gap-4">
         <Suspense>
-          <ReportFilterBar variant="ledger-period-range" ledgers={filterData.ledgers} periods={filterData.periods} defaults={{ ledgerId, fromPeriodId, toPeriodId }} />
+          <ReportFilterBar
+            variant="ledger-period-range"
+            ledgers={filterData.ledgers}
+            periods={filterData.periods}
+            defaults={{ ledgerId, fromPeriodId, toPeriodId }}
+          />
         </Suspense>
         <Suspense>
           <ReportSavedViews moduleKey="income-statement" />
         </Suspense>
       </div>
 
-      {(!ledgerId || !fromPeriodId || !toPeriodId) && <EmptyState contentKey="finance.reports.incomeStatement" variant="firstRun" icon={TrendingUp} />}
+      {(!ledgerId || !fromPeriodId || !toPeriodId) && (
+        <EmptyState
+          contentKey="finance.reports.incomeStatement"
+          constraint="page"
+          variant="firstRun"
+          icon={TrendingUp}
+        />
+      )}
 
       {data && (
         <div className="space-y-6">
@@ -75,3 +91,17 @@ export default async function IncomeStatementPage({ searchParams }: IncomeStatem
     </div>
   );
 }
+
+
+exp
+
+ort default async function IncomeStatementPage({ searchParams }: IncomeStatementPageProps) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<div className="h-96 animate-pulse rounded-md bg-muted" />}>
+      <IncomeStatementContent ctx={ctx} params={params} />
+    </Suspense>
+  );
+}
+

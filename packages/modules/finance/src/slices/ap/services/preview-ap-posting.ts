@@ -5,27 +5,19 @@ import type { IAccountRepo } from '../../../shared/ports/gl-read-ports.js';
 import type { ILedgerRepo } from '../../../shared/ports/gl-read-ports.js';
 import type { IFiscalPeriodRepo } from '../../../shared/ports/fiscal-period-port.js';
 
+export type {
+  PostingLinePreview,
+  PostingPreviewResult,
+} from '../../../shared/types/posting-preview.js';
+import type {
+  PostingLinePreview,
+  PostingPreviewResult,
+} from '../../../shared/types/posting-preview.js';
+
 export interface PreviewApPostingInput {
   readonly invoiceId: string;
   readonly fiscalPeriodId: string;
   readonly apAccountId: string;
-}
-
-export interface PostingLinePreview {
-  readonly accountId: string;
-  readonly accountCode: string;
-  readonly accountName: string;
-  readonly debit: string;
-  readonly credit: string;
-  readonly description: string;
-}
-
-export interface PostingPreviewResult {
-  readonly ledgerName: string;
-  readonly periodName: string;
-  readonly currency: string;
-  readonly lines: readonly PostingLinePreview[];
-  readonly warnings: readonly string[];
 }
 
 export async function previewApPosting(

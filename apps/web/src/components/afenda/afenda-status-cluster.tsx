@@ -2,19 +2,11 @@
 
 import * as React from 'react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import {
   ACTION_BTN,
@@ -67,16 +59,11 @@ export function AfendaStatusCluster({
                   size="icon-sm"
                   className={cn('relative', ACTION_BTN)}
                   aria-label={
-                    hasAttention
-                      ? ATTENTION_LABELS.items(totalAttention)
-                      : ATTENTION_LABELS.none
+                    hasAttention ? ATTENTION_LABELS.items(totalAttention) : ATTENTION_LABELS.none
                   }
                 >
                   <AlertTriangle
-                    className={cn(
-                      ICON,
-                      hasCriticalAttention ? 'text-destructive' : 'text-warning',
-                    )}
+                    className={cn(ICON, hasCriticalAttention ? 'text-destructive' : 'text-warning')}
                     aria-hidden
                   />
                   {hasAttention && (
@@ -84,7 +71,7 @@ export function AfendaStatusCluster({
                       variant={hasCriticalAttention ? 'destructive' : 'secondary'}
                       className={cn(
                         NOTIFICATION_COUNTER,
-                        !hasCriticalAttention && 'bg-warning text-warning-foreground',
+                        !hasCriticalAttention && 'bg-warning text-warning-foreground'
                       )}
                     >
                       {totalAttention > 99 ? '99+' : totalAttention}
@@ -94,9 +81,7 @@ export function AfendaStatusCluster({
               </PopoverTrigger>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {hasAttention
-                ? ATTENTION_LABELS.tooltip(totalAttention)
-                : ATTENTION_LABELS.title}
+              {hasAttention ? ATTENTION_LABELS.tooltip(totalAttention) : ATTENTION_LABELS.title}
             </TooltipContent>
           </Tooltip>
           <PopoverContent align="end" className={cn(POPOVER_ATTENTION_W, 'p-0')}>
@@ -127,9 +112,8 @@ export function AfendaStatusCluster({
                   <EmptyState
                     contentKey="shell.attention"
                     variant="firstRun"
-                    size="sm"
+                    constraint="1x2"
                     icon={CheckCircle2}
-                    animate={false}
                   />
                 )}
               </div>
@@ -138,9 +122,7 @@ export function AfendaStatusCluster({
         </Popover>
 
         {/* Notification Popover */}
-        <NotificationPopover
-          initialUnreadCount={initialUnreadCount}
-        />
+        <NotificationPopover initialUnreadCount={initialUnreadCount} />
       </div>
     </>
   );

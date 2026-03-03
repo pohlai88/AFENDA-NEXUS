@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
 import { routes } from '@/lib/constants';
@@ -10,15 +11,13 @@ import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
 
 export const metadata = { title: 'Organization Config' };
 
-export default async function OrgConfigPage() {
-  const ctx = await getRequestContext();
+async function OrgConfigContent({ ctx }: { ctx: RequestContext }) {
   const api = createApiClient(ctx);
   const result = await api.get<Record<string, unknown>>('/settings/org');
 
   const settings = TenantSettingsSchema.parse(result.ok ? result.value : {});
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Organization Configuration"
@@ -34,6 +33,15 @@ export default async function OrgConfigPage() {
         <OrgSettingsForm settings={settings} onSave={saveOrgSettingsAction} />
       </div>
     </div>
-  </Suspense>
+  );
+}
+
+export default async function OrgConfigPage() {
+  const ctx = await getRequestContext();
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <OrgConfigContent ctx={ctx} />
+    </Suspense>
   );
 }

@@ -227,12 +227,195 @@ export const ROADMAP_REGISTRY: RoadmapFeature[] = [
     status: 'planned',
     order: 1,
   },
+
+  // ─── Finance Module — AIS Benchmark Gaps ────────────────────────────────
+  {
+    id: 'accounting-hub',
+    moduleId: 'gl',
+    featureId: 'accounting-hub',
+    title: 'Accounting Hub',
+    description: 'Central accounting rule engine and subledger processing',
+    detail:
+      'Unified rule engine for subledger-to-GL postings, transformation rules, event-driven journal creation, and multi-source integration.',
+    target: 'Q3 2026',
+    status: 'planned',
+    order: 1,
+  },
+  {
+    id: 'accrual-engine',
+    moduleId: 'gl',
+    featureId: 'accrual-engine',
+    title: 'Accrual Engine',
+    description: 'Automated accrual calculation and reversal',
+    detail:
+      'Period-end accrual schedules, auto-reversal on first day of next period, configurable accrual rules, and batch processing.',
+    target: 'Q3 2026',
+    status: 'planned',
+    order: 2,
+  },
+  {
+    id: 'fx-revaluation',
+    moduleId: 'gl',
+    featureId: 'fx-revaluation',
+    title: 'FX Revaluation',
+    description: 'Foreign currency revaluation and translation adjustments',
+    detail:
+      'Period-end revaluation of open balances, unrealized gain/loss posting, CTA (Currency Translation Adjustment), and IAS 21 compliance.',
+    target: 'Q4 2026',
+    status: 'planned',
+    order: 3,
+  },
+  {
+    id: 'ic-settlement',
+    moduleId: 'intercompany',
+    featureId: 'ic-settlement',
+    title: 'IC Settlement & Netting',
+    description: 'Intercompany netting, matching, and settlement',
+    detail:
+      'Automated IC matching, multi-lateral netting runs, payment instruction generation, dispute management, and reconciliation dashboards.',
+    target: 'Q1 2027',
+    status: 'planned',
+    order: 1,
+  },
+  {
+    id: 'profitability-analysis',
+    moduleId: 'controlling',
+    featureId: 'profitability-analysis',
+    title: 'Profitability Analysis (CO-PA)',
+    description: 'Margin analysis and contribution reporting by segment',
+    detail:
+      'Multi-dimensional profitability analysis by customer, product, region, and channel. Contribution margin waterfall and real-time analytics.',
+    target: 'Q2 2027',
+    status: 'planned',
+    order: 1,
+  },
+
+  // ─── Finance Module — Competitor-Inspired Features ──────────────────────
+  {
+    id: 'e-invoicing',
+    moduleId: 'ap',
+    featureId: 'e-invoicing',
+    title: 'E-Invoicing',
+    description: 'Electronic invoicing compliance (Peppol, ZATCA, UBL)',
+    detail:
+      'Standards-based electronic invoicing with Peppol BIS, ZATCA Phase 2, UBL 2.1, and Factur-X support. Real-time validation and regulatory submission.',
+    target: 'Q3 2026',
+    status: 'planned',
+    order: 3,
+  },
+  {
+    id: 'payment-hub',
+    moduleId: 'banking',
+    featureId: 'payment-hub',
+    title: 'Payment Hub',
+    description: 'Orchestrated multi-channel payment processing',
+    detail:
+      'Centralized payment orchestration across banks, payment networks, and methods. Payment factory, format generation (ISO 20022, SWIFT), and real-time status tracking.',
+    target: 'Q4 2026',
+    status: 'planned',
+    order: 1,
+  },
+  {
+    id: 'multi-gaap',
+    moduleId: 'gl',
+    featureId: 'multi-gaap',
+    title: 'Multi-GAAP Reporting',
+    description: 'Parallel accounting under multiple standards',
+    detail:
+      'Maintain books under IFRS, US GAAP, local GAAP simultaneously. Automated adjustment entries, reconciliation, and dual reporting.',
+    target: 'Q1 2027',
+    status: 'planned',
+    order: 4,
+  },
+  {
+    id: 'statutory-reporting',
+    moduleId: 'finance',
+    featureId: 'statutory-reporting',
+    title: 'Statutory Reporting',
+    description: 'Jurisdiction-specific regulatory filings',
+    detail:
+      'Pre-built templates for XBRL, iXBRL, and jurisdiction-specific filings. Automated data extraction, validation, and electronic submission.',
+    target: 'Q1 2027',
+    status: 'planned',
+    order: 6,
+  },
+  {
+    id: 'sox-compliance',
+    moduleId: 'finance',
+    featureId: 'sox-compliance',
+    title: 'SOX Compliance Suite',
+    description: 'Internal controls and SOX 302/404 compliance',
+    detail:
+      'Control library, risk assessment matrix, testing workflows, deficiency tracking, and management certification support for SOX compliance.',
+    target: 'Q2 2027',
+    status: 'planned',
+    order: 7,
+  },
+  {
+    id: 'workflow-designer',
+    moduleId: 'finance',
+    featureId: 'workflow-designer',
+    title: 'Workflow Designer',
+    description: 'Visual approval workflow builder',
+    detail:
+      'Drag-and-drop workflow designer for approval chains, conditional routing, escalation rules, delegation, and SLA monitoring.',
+    target: 'Q2 2027',
+    status: 'planned',
+    order: 8,
+  },
+  {
+    id: 'document-management',
+    moduleId: 'finance',
+    featureId: 'document-management',
+    title: 'Document Management',
+    description: 'Financial document management system',
+    detail:
+      'Centralized DMS for invoices, contracts, receipts, and compliance documents. OCR indexing, retention policies, and full-text search.',
+    target: 'Q3 2027',
+    status: 'planned',
+    order: 9,
+  },
+  {
+    id: 'open-banking',
+    moduleId: 'banking',
+    featureId: 'open-banking',
+    title: 'Open Banking',
+    description: 'PSD2 / open banking API integration',
+    detail:
+      'Real-time bank feeds via open banking APIs, automated reconciliation, consent management, and multi-bank aggregation.',
+    target: 'Q4 2027',
+    status: 'planned',
+    order: 2,
+  },
 ];
+
+/**
+ * Resolve a dotted domainId to the base moduleId used in roadmap entries.
+ *
+ * Domain dashboard configs use dotted IDs like `finance.overview`, `finance.ap`,
+ * `finance.gl` — but roadmap entries use flat IDs like `finance`, `ap`, `gl`.
+ *
+ * Resolution strategy:
+ * 1. `finance.overview` → `finance` (overview is the parent module)
+ * 2. `finance.ap`       → `ap`      (sub-domain suffix is the moduleId)
+ * 3. `ap`               → `ap`      (already a flat moduleId)
+ */
+function resolveModuleId(domainId: string): string {
+  if (!domainId.includes('.')) return domainId;
+  const parts = domainId.split('.');
+  // "finance.overview" → the overview page shows the parent module's roadmap
+  if (parts[1] === 'overview') return parts[0]!;
+  // "finance.ap" → sub-domain dashboards use the suffix as moduleId
+  return parts[1]!;
+}
 
 /**
  * Get planned features for a module, excluding active features.
  *
- * @param moduleId - The module to filter for (e.g. 'finance', 'ap')
+ * Accepts dotted domainIds (e.g. `finance.overview`, `finance.ap`) and
+ * resolves them to the flat moduleId used in roadmap entries.
+ *
+ * @param moduleId - Module or domainId (e.g. 'finance', 'finance.overview', 'finance.ap')
  * @param activeFeatureIds - Set of featureIds already active (to dedupe)
  * @returns Sorted array of roadmap features for the module
  *
@@ -240,15 +423,16 @@ export const ROADMAP_REGISTRY: RoadmapFeature[] = [
  * ```ts
  * const shortcuts = deriveShortcuts(navGroups);
  * const activeIds = new Set(shortcuts.map(s => s.featureId));
- * const planned = getPlannedFeatures('finance', activeIds);
- * // planned will not include any features with featureId in activeIds
+ * const planned = getPlannedFeatures('finance.overview', activeIds);
+ * // Resolves to moduleId 'finance', returns 5 planned features
  * ```
  */
 export function getPlannedFeatures(
-  moduleId: ModuleId,
+  moduleId: ModuleId | string,
   activeFeatureIds: Set<string>
 ): RoadmapFeature[] {
+  const resolved = resolveModuleId(moduleId);
   return ROADMAP_REGISTRY.filter(
-    (f) => f.moduleId === moduleId && !activeFeatureIds.has(f.featureId)
+    (f) => f.moduleId === resolved && !activeFeatureIds.has(f.featureId)
   ).toSorted((a, b) => (a.order ?? 999) - (b.order ?? 999));
 }

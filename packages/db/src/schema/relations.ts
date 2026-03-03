@@ -125,6 +125,7 @@ import { sodActionLog } from './erp-sod';
 import { auditLogs } from './audit';
 import { outbox } from './outbox-table';
 import { idempotencyStore } from './idempotency-store';
+import { supplierCases, supplierCaseTimeline, portalCommunicationProof } from './portal-case';
 
 // ─── Platform Relations ─────────────────────────────────────────────────────
 
@@ -342,6 +343,7 @@ export const suppliersRelations = relations(suppliers, ({ one, many }) => ({
   diversities: many(supplierDiversities),
   contacts: many(supplierContacts),
   companyOverrides: many(supplierCompanyOverrides),
+  cases: many(supplierCases),
 }));
 
 export const supplierUsersRelations = relations(supplierUsers, ({ one }) => ({
@@ -544,14 +546,26 @@ export const supplierComplianceItemsRelations = relations(supplierComplianceItem
 
 // ─── Supplier MDM Relations ──────────────────────────────────────────────────
 
-export const supplierAccountGroupConfigsRelations = relations(supplierAccountGroupConfigs, ({ one }) => ({
-  tenant: one(tenants, { fields: [supplierAccountGroupConfigs.tenantId], references: [tenants.id] }),
-}));
+export const supplierAccountGroupConfigsRelations = relations(
+  supplierAccountGroupConfigs,
+  ({ one }) => ({
+    tenant: one(tenants, {
+      fields: [supplierAccountGroupConfigs.tenantId],
+      references: [tenants.id],
+    }),
+  })
+);
 
 export const supplierCompanyOverridesRelations = relations(supplierCompanyOverrides, ({ one }) => ({
   tenant: one(tenants, { fields: [supplierCompanyOverrides.tenantId], references: [tenants.id] }),
-  supplier: one(suppliers, { fields: [supplierCompanyOverrides.supplierId], references: [suppliers.id] }),
-  company: one(companies, { fields: [supplierCompanyOverrides.companyId], references: [companies.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierCompanyOverrides.supplierId],
+    references: [suppliers.id],
+  }),
+  company: one(companies, {
+    fields: [supplierCompanyOverrides.companyId],
+    references: [companies.id],
+  }),
 }));
 
 export const supplierBlocksRelations = relations(supplierBlocks, ({ one }) => ({
@@ -561,8 +575,14 @@ export const supplierBlocksRelations = relations(supplierBlocks, ({ one }) => ({
 
 export const supplierBlockHistoryRelations = relations(supplierBlockHistory, ({ one }) => ({
   tenant: one(tenants, { fields: [supplierBlockHistory.tenantId], references: [tenants.id] }),
-  supplier: one(suppliers, { fields: [supplierBlockHistory.supplierId], references: [suppliers.id] }),
-  block: one(supplierBlocks, { fields: [supplierBlockHistory.blockId], references: [supplierBlocks.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierBlockHistory.supplierId],
+    references: [suppliers.id],
+  }),
+  block: one(supplierBlocks, {
+    fields: [supplierBlockHistory.blockId],
+    references: [supplierBlocks.id],
+  }),
 }));
 
 export const supplierBlacklistsRelations = relations(supplierBlacklists, ({ one }) => ({
@@ -572,12 +592,18 @@ export const supplierBlacklistsRelations = relations(supplierBlacklists, ({ one 
 
 export const supplierTaxRegistrationsRelations = relations(supplierTaxRegistrations, ({ one }) => ({
   tenant: one(tenants, { fields: [supplierTaxRegistrations.tenantId], references: [tenants.id] }),
-  supplier: one(suppliers, { fields: [supplierTaxRegistrations.supplierId], references: [suppliers.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierTaxRegistrations.supplierId],
+    references: [suppliers.id],
+  }),
 }));
 
 export const supplierLegalDocumentsRelations = relations(supplierLegalDocuments, ({ one }) => ({
   tenant: one(tenants, { fields: [supplierLegalDocuments.tenantId], references: [tenants.id] }),
-  supplier: one(suppliers, { fields: [supplierLegalDocuments.supplierId], references: [suppliers.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierLegalDocuments.supplierId],
+    references: [suppliers.id],
+  }),
 }));
 
 export const supplierDocRequirementsRelations = relations(supplierDocRequirements, ({ one }) => ({
@@ -599,7 +625,10 @@ export const supplierEvalCriteriaRelations = relations(supplierEvalCriteria, ({ 
 
 export const supplierEvaluationsRelations = relations(supplierEvaluations, ({ one, many }) => ({
   tenant: one(tenants, { fields: [supplierEvaluations.tenantId], references: [tenants.id] }),
-  supplier: one(suppliers, { fields: [supplierEvaluations.supplierId], references: [suppliers.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierEvaluations.supplierId],
+    references: [suppliers.id],
+  }),
   template: one(supplierEvalTemplates, {
     fields: [supplierEvaluations.templateVersionId],
     references: [supplierEvalTemplates.id],
@@ -620,12 +649,18 @@ export const supplierEvalScoresRelations = relations(supplierEvalScores, ({ one 
 
 export const supplierRiskIndicatorsRelations = relations(supplierRiskIndicators, ({ one }) => ({
   tenant: one(tenants, { fields: [supplierRiskIndicators.tenantId], references: [tenants.id] }),
-  supplier: one(suppliers, { fields: [supplierRiskIndicators.supplierId], references: [suppliers.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierRiskIndicators.supplierId],
+    references: [suppliers.id],
+  }),
 }));
 
 export const supplierDiversitiesRelations = relations(supplierDiversities, ({ one }) => ({
   tenant: one(tenants, { fields: [supplierDiversities.tenantId], references: [tenants.id] }),
-  supplier: one(suppliers, { fields: [supplierDiversities.supplierId], references: [suppliers.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierDiversities.supplierId],
+    references: [suppliers.id],
+  }),
 }));
 
 export const supplierContactsRelations = relations(supplierContacts, ({ one }) => ({
@@ -634,19 +669,25 @@ export const supplierContactsRelations = relations(supplierContacts, ({ one }) =
   site: one(supplierSites, { fields: [supplierContacts.siteId], references: [supplierSites.id] }),
 }));
 
-export const supplierDuplicateSuspectsRelations = relations(supplierDuplicateSuspects, ({ one }) => ({
-  tenant: one(tenants, { fields: [supplierDuplicateSuspects.tenantId], references: [tenants.id] }),
-  supplierA: one(suppliers, {
-    fields: [supplierDuplicateSuspects.supplierAId],
-    references: [suppliers.id],
-    relationName: 'duplicateA',
-  }),
-  supplierB: one(suppliers, {
-    fields: [supplierDuplicateSuspects.supplierBId],
-    references: [suppliers.id],
-    relationName: 'duplicateB',
-  }),
-}));
+export const supplierDuplicateSuspectsRelations = relations(
+  supplierDuplicateSuspects,
+  ({ one }) => ({
+    tenant: one(tenants, {
+      fields: [supplierDuplicateSuspects.tenantId],
+      references: [tenants.id],
+    }),
+    supplierA: one(suppliers, {
+      fields: [supplierDuplicateSuspects.supplierAId],
+      references: [suppliers.id],
+      relationName: 'duplicateA',
+    }),
+    supplierB: one(suppliers, {
+      fields: [supplierDuplicateSuspects.supplierBId],
+      references: [suppliers.id],
+      relationName: 'duplicateB',
+    }),
+  })
+);
 
 // ─── Outbox Relations ───────────────────────────────────────────────────────
 
@@ -669,8 +710,14 @@ export const adminUsersRelations = relations(adminUsers, ({ one }) => ({
 }));
 
 export const adminActionLogsRelations = relations(adminActionLogs, ({ one }) => ({
-  admin: one(adminUsers, { fields: [adminActionLogs.adminUserId], references: [adminUsers.userId] }),
-  targetTenant: one(tenants, { fields: [adminActionLogs.targetTenantId], references: [tenants.id] }),
+  admin: one(adminUsers, {
+    fields: [adminActionLogs.adminUserId],
+    references: [adminUsers.userId],
+  }),
+  targetTenant: one(tenants, {
+    fields: [adminActionLogs.targetTenantId],
+    references: [tenants.id],
+  }),
   targetUser: one(users, { fields: [adminActionLogs.targetUserId], references: [users.id] }),
 }));
 
@@ -823,7 +870,10 @@ export const depreciationSchedulesRelations = relations(depreciationSchedules, (
     fields: [depreciationSchedules.componentId],
     references: [assetComponents.id],
   }),
-  journal: one(glJournals, { fields: [depreciationSchedules.journalId], references: [glJournals.id] }),
+  journal: one(glJournals, {
+    fields: [depreciationSchedules.journalId],
+    references: [glJournals.id],
+  }),
 }));
 
 export const assetMovementsRelations = relations(assetMovements, ({ one }) => ({
@@ -881,7 +931,10 @@ export const bankReconciliationsRelations = relations(bankReconciliations, ({ on
 
 export const creditLimitsRelations = relations(creditLimits, ({ one, many }) => ({
   tenant: one(tenants, { fields: [creditLimits.tenantId], references: [tenants.id] }),
-  customer: one(counterparties, { fields: [creditLimits.customerId], references: [counterparties.id] }),
+  customer: one(counterparties, {
+    fields: [creditLimits.customerId],
+    references: [counterparties.id],
+  }),
   company: one(companies, { fields: [creditLimits.companyId], references: [companies.id] }),
   reviews: many(creditReviews),
 }));
@@ -892,7 +945,10 @@ export const creditReviewsRelations = relations(creditReviews, ({ one }) => ({
     fields: [creditReviews.creditLimitId],
     references: [creditLimits.id],
   }),
-  customer: one(counterparties, { fields: [creditReviews.customerId], references: [counterparties.id] }),
+  customer: one(counterparties, {
+    fields: [creditReviews.customerId],
+    references: [counterparties.id],
+  }),
 }));
 
 // ─── Expenses — Missing Relations ──────────────────────────────────────────
@@ -907,9 +963,15 @@ export const expenseClaimsRelations = relations(expenseClaims, ({ one, many }) =
 
 export const expenseClaimLinesRelations = relations(expenseClaimLines, ({ one }) => ({
   tenant: one(tenants, { fields: [expenseClaimLines.tenantId], references: [tenants.id] }),
-  claim: one(expenseClaims, { fields: [expenseClaimLines.claimId], references: [expenseClaims.id] }),
+  claim: one(expenseClaims, {
+    fields: [expenseClaimLines.claimId],
+    references: [expenseClaims.id],
+  }),
   glAccount: one(accounts, { fields: [expenseClaimLines.glAccountId], references: [accounts.id] }),
-  costCenter: one(costCenters, { fields: [expenseClaimLines.costCenterId], references: [costCenters.id] }),
+  costCenter: one(costCenters, {
+    fields: [expenseClaimLines.costCenterId],
+    references: [costCenters.id],
+  }),
   project: one(projects, { fields: [expenseClaimLines.projectId], references: [projects.id] }),
 }));
 
@@ -940,7 +1002,10 @@ export const projectCostLinesRelations = relations(projectCostLines, ({ one }) =
 export const projectBillingsRelations = relations(projectBillings, ({ one }) => ({
   tenant: one(tenants, { fields: [projectBillings.tenantId], references: [tenants.id] }),
   project: one(projects, { fields: [projectBillings.projectId], references: [projects.id] }),
-  arInvoice: one(arInvoices, { fields: [projectBillings.arInvoiceId], references: [arInvoices.id] }),
+  arInvoice: one(arInvoices, {
+    fields: [projectBillings.arInvoiceId],
+    references: [arInvoices.id],
+  }),
 }));
 
 // ─── Lease Accounting — Missing Relations ──────────────────────────────────
@@ -1051,13 +1116,19 @@ export const costDriverValuesRelations = relations(costDriverValues, ({ one }) =
     fields: [costDriverValues.costCenterId],
     references: [costCenters.id],
   }),
-  period: one(fiscalPeriods, { fields: [costDriverValues.periodId], references: [fiscalPeriods.id] }),
+  period: one(fiscalPeriods, {
+    fields: [costDriverValues.periodId],
+    references: [fiscalPeriods.id],
+  }),
 }));
 
 export const costAllocationRunsRelations = relations(costAllocationRuns, ({ one, many }) => ({
   tenant: one(tenants, { fields: [costAllocationRuns.tenantId], references: [tenants.id] }),
   company: one(companies, { fields: [costAllocationRuns.companyId], references: [companies.id] }),
-  period: one(fiscalPeriods, { fields: [costAllocationRuns.periodId], references: [fiscalPeriods.id] }),
+  period: one(fiscalPeriods, {
+    fields: [costAllocationRuns.periodId],
+    references: [fiscalPeriods.id],
+  }),
   lines: many(costAllocationLines),
 }));
 
@@ -1077,7 +1148,10 @@ export const costAllocationLinesRelations = relations(costAllocationLines, ({ on
     references: [costCenters.id],
     relationName: 'allocLineToCc',
   }),
-  driver: one(costDrivers, { fields: [costAllocationLines.driverId], references: [costDrivers.id] }),
+  driver: one(costDrivers, {
+    fields: [costAllocationLines.driverId],
+    references: [costDrivers.id],
+  }),
 }));
 
 // ─── Consolidation — Missing Relations ─────────────────────────────────────
@@ -1183,7 +1257,10 @@ export const hedgeEffectivenessTestsRelations = relations(hedgeEffectivenessTest
 export const deferredTaxItemsRelations = relations(deferredTaxItems, ({ one }) => ({
   tenant: one(tenants, { fields: [deferredTaxItems.tenantId], references: [tenants.id] }),
   company: one(companies, { fields: [deferredTaxItems.companyId], references: [companies.id] }),
-  period: one(fiscalPeriods, { fields: [deferredTaxItems.periodId], references: [fiscalPeriods.id] }),
+  period: one(fiscalPeriods, {
+    fields: [deferredTaxItems.periodId],
+    references: [fiscalPeriods.id],
+  }),
 }));
 
 export const fairValueMeasurementsRelations = relations(fairValueMeasurements, ({ one }) => ({
@@ -1231,7 +1308,10 @@ export const mappingRulesRelations = relations(mappingRules, ({ one, many }) => 
 export const mappingRuleVersionsRelations = relations(mappingRuleVersions, ({ one }) => ({
   tenant: one(tenants, { fields: [mappingRuleVersions.tenantId], references: [tenants.id] }),
   rule: one(mappingRules, { fields: [mappingRuleVersions.ruleId], references: [mappingRules.id] }),
-  publishedByUser: one(users, { fields: [mappingRuleVersions.publishedBy], references: [users.id] }),
+  publishedByUser: one(users, {
+    fields: [mappingRuleVersions.publishedBy],
+    references: [users.id],
+  }),
 }));
 
 // ─── OCR Jobs — Missing Relations ──────────────────────────────────────────
@@ -1239,4 +1319,33 @@ export const mappingRuleVersionsRelations = relations(mappingRuleVersions, ({ on
 export const ocrJobsRelations = relations(ocrJobs, ({ one }) => ({
   tenant: one(tenants, { fields: [ocrJobs.tenantId], references: [tenants.id] }),
   invoice: one(apInvoices, { fields: [ocrJobs.invoiceId], references: [apInvoices.id] }),
+}));
+
+// ─── Portal Case Management — Relations ────────────────────────────────────
+
+export const supplierCasesRelations = relations(supplierCases, ({ one, many }) => ({
+  tenant: one(tenants, { fields: [supplierCases.tenantId], references: [tenants.id] }),
+  supplier: one(suppliers, {
+    fields: [supplierCases.supplierId],
+    references: [suppliers.id],
+  }),
+  timeline: many(supplierCaseTimeline),
+}));
+
+export const supplierCaseTimelineRelations = relations(supplierCaseTimeline, ({ one }) => ({
+  case: one(supplierCases, {
+    fields: [supplierCaseTimeline.caseId],
+    references: [supplierCases.id],
+  }),
+  tenant: one(tenants, {
+    fields: [supplierCaseTimeline.tenantId],
+    references: [tenants.id],
+  }),
+}));
+
+export const portalCommunicationProofRelations = relations(portalCommunicationProof, ({ one }) => ({
+  tenant: one(tenants, {
+    fields: [portalCommunicationProof.tenantId],
+    references: [tenants.id],
+  }),
 }));

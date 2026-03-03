@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import type { RequestContext } from '@afenda/core';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error.server';
@@ -17,12 +18,16 @@ interface Props {
   searchParams: Promise<{ page?: string; limit?: string }>;
 }
 
-export default async function RevenueRecognitionPage({ searchParams }: Props) {
-  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
-  const result = await getRevenueContracts(ctx, {
-    page: params.page ?? '1',
-    limit: params.limit ?? '20',
-  });
+async function RevenueRecognitionContent({
+  ctx,
+  page,
+  limit,
+}: {
+  ctx: RequestContext;
+  page: string;
+  limit: string;
+}) {
+  const result = await getRevenueContracts(ctx, { page, limit });
 
   if (!result.ok) {
     handleApiError(result, 'Failed to load revenue contracts');
@@ -31,15 +36,11 @@ export default async function RevenueRecognitionPage({ searchParams }: Props) {
   const contracts = result.value.data;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Revenue Recognition"
         description="IFRS 15 revenue contracts and recognition schedules."
-        breadcrumbs={[
-          { label: 'Finance' },
-          { label: 'Revenue Recognition' },
-        ]}
+        breadcrumbs={[{ label: 'Finance' }, { label: 'Revenue Recognition' }]}
         actions={
           <Button asChild>
             <Link href={routes.finance.revenueContractNew}>
@@ -51,11 +52,26 @@ export default async function RevenueRecognitionPage({ searchParams }: Props) {
       />
 
       {contracts.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No revenue contracts. Click &ldquo;New Contract&rdquo; to get started.</CardContent></Card>
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            No revenue contracts. Click &ldquo;New Contract&rdquo; to get started.
+          </CardContent>
+        </Card>
       ) : (
         <RevenueContractsTable contracts={contracts} />
       )}
     </div>
-  </Suspense>
+  );
+}
+
+export default async function RevenueRecognitionPage({ searchParams }: Props) {
+  const [params, ctx] = await Promise.all([searchParams, getRequestContext()]);
+  const page = params.page ?? '1';
+  const limit = params.limit ?? '20';
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <RevenueRecognitionContent ctx={ctx} page={page} limit={limit} />
+    </Suspense>
   );
 }

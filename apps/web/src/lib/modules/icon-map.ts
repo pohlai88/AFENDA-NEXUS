@@ -70,6 +70,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  UserCircle,
+  Factory,
 } from 'lucide-react';
 
 /**
@@ -139,6 +141,10 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   Sun,
   Moon,
   Monitor,
+
+  // Portal icons
+  UserCircle,
+  Factory,
 };
 
 /**

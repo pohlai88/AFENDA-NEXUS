@@ -11,11 +11,17 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
+    },
+    "./portal": {
+      "source": "./src/portal/index.ts",
+      "import": "./dist/portal/index.js",
+      "types": "./dist/portal/index.d.ts",
+      "default": "./src/portal/index.ts"
     }
   },
   "files": [
     "dist",
-    "ARCHITECTURE.@afenda-contracts.md"
+    "ARCHITECTURE_afenda-contracts.md"
   ],
   "sideEffects": false,
   "scripts": {

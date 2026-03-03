@@ -46,7 +46,7 @@ export function ApCloseChecklistView({ checklist }: ApCloseChecklistViewProps) {
           return (
             <Card key={item.id}>
               <CardContent className="flex items-start gap-3 py-3">
-                <Icon className={cn('mt-0.5 h-5 w-5 shrink-0', config.color)} />
+                <Icon className={cn('mt-0.5 h-5 w-5 shrink-0', config.color)}  aria-hidden="true" />
                 <div className="flex-1 space-y-0.5">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium">{item.label}</p>

@@ -7,14 +7,13 @@ import { AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { RequestContext } from '@afenda/core';
 
 interface Props {
   params: Promise<{ runId: string }>;
 }
 
-export default async function PortalRemittancePage({ params }: Props) {
-  const [{ runId }, ctx] = await Promise.all([params, getRequestContext()]);
-
+async function RemittancePageContent({ ctx, runId }: { ctx: RequestContext; runId: string }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -41,7 +40,6 @@ export default async function PortalRemittancePage({ params }: Props) {
   }
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title="Remittance Advice"
@@ -56,6 +54,15 @@ export default async function PortalRemittancePage({ params }: Props) {
 
       <PortalRemittanceView remittance={result.value} />
     </div>
+  );
+}
+
+export default async function PortalRemittancePage({ params }: Props) {
+  const [{ runId }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <RemittancePageContent ctx={ctx} runId={runId} />
     </Suspense>
   );
 }

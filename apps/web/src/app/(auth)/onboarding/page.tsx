@@ -16,13 +16,18 @@ export const metadata = {
  * I-KRN-08: If the user has a lastActiveOrgId in preferences,
  * pass it as a hint so the client can auto-activate.
  */
-export default async function OrgOnboardingPage() {
+
+async function OnboardingContent() {
   const session = await getServerSession();
   const lastActiveOrgId = session ? await getLastActiveOrgId(session) : null;
 
+  return <OrgOnboardingForm lastActiveOrgId={lastActiveOrgId} />;
+}
+
+export default async function OrgOnboardingPage() {
   return (
     <Suspense>
-      <OrgOnboardingForm lastActiveOrgId={lastActiveOrgId} />
+      <OnboardingContent />
     </Suspense>
   );
 }

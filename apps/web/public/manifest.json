@@ -6,8 +6,10 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0a0a0a",
-  "orientation": "portrait-primary",
+  "orientation": "natural",
   "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -25,17 +27,31 @@
   "categories": ["business", "finance", "productivity"],
   "shortcuts": [
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "View finance dashboard",
-      "url": "/finance",
+      "name": "Supplier Portal",
+      "short_name": "Portal",
+      "description": "Manage invoices, payments, and cases",
+      "url": "/portal",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Journals",
-      "short_name": "Journals",
-      "description": "Manage journal entries",
-      "url": "/finance/journals",
+      "name": "Portal Invoices",
+      "short_name": "Invoices",
+      "description": "View and submit invoices",
+      "url": "/portal/invoices",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Portal Cases",
+      "short_name": "Cases",
+      "description": "Track support cases",
+      "url": "/portal/cases",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Finance Dashboard",
+      "short_name": "Finance",
+      "description": "View finance dashboard",
+      "url": "/finance",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]

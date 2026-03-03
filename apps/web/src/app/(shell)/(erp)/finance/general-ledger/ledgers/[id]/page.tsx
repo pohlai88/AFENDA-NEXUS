@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { PageHeader } from '@/components/erp/page-header';
 import { getRequestContext } from '@/lib/auth';
+import type { RequestContext } from '@afenda/core';
 import { handleApiError } from '@/lib/api-error.server';
 import { getLedger } from '@/features/finance/ledgers/queries/ledger.queries';
 import { routes } from '@/lib/constants';
@@ -15,9 +16,7 @@ interface LedgerDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function LedgerDetailPage({ params }: LedgerDetailPageProps) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
-
+async function LedgerDetailContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const result = await getLedger(ctx, id);
 
   if (!result.ok) {
@@ -28,7 +27,6 @@ export default async function LedgerDetailPage({ params }: LedgerDetailPageProps
   const ledger = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         title={ledger.name}
@@ -58,6 +56,15 @@ export default async function LedgerDetailPage({ params }: LedgerDetailPageProps
         </div>
       </div>
     </div>
-  </Suspense>
+  );
+}
+
+export default async function LedgerDetailPage({ params }: LedgerDetailPageProps) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <LedgerDetailContent ctx={ctx} id={id} />
+    </Suspense>
   );
 }

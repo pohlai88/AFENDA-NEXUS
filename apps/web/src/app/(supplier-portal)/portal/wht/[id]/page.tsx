@@ -12,14 +12,13 @@ import { AlertTriangle } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { routes } from '@/lib/constants';
 import { LoadingSkeleton } from '@/components/erp/loading-skeleton';
+import type { RequestContext } from '@afenda/core';
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function PortalWhtDetailPage({ params }: Props) {
-  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
-
+async function WhtDetailPageContent({ ctx, id }: { ctx: RequestContext; id: string }) {
   const supplierResult = await getPortalSupplier(ctx);
   if (!supplierResult.ok) {
     return (
@@ -48,7 +47,6 @@ export default async function PortalWhtDetailPage({ params }: Props) {
   const cert = result.value;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
     <div className="space-y-6">
       <PageHeader
         breadcrumbs={[
@@ -84,6 +82,15 @@ export default async function PortalWhtDetailPage({ params }: Props) {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default async function PortalWhtDetailPage({ params }: Props) {
+  const [{ id }, ctx] = await Promise.all([params, getRequestContext()]);
+
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <WhtDetailPageContent ctx={ctx} id={id} />
     </Suspense>
   );
 }

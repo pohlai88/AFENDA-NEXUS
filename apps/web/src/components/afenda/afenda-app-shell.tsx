@@ -43,7 +43,7 @@ const AfendaCommandPaletteLazy = dynamic(
     import('./afenda-command-palette').then((m) => ({
       default: m.AfendaCommandPalette,
     })),
-  { ssr: false },
+  { ssr: false }
 );
 
 // ─── Config-Driven Navigation Shortcuts ──────────────────────────────────────
@@ -55,7 +55,7 @@ const AfendaCommandPaletteLazy = dynamic(
 function useAfendaNavigationShortcuts(
   shortcuts: ShellShortcut[],
   router: ReturnType<typeof useRouter>,
-  overrides?: Record<string, string> | null,
+  overrides?: Record<string, string> | null
 ): void {
   const ctx = useContext(ShortcutContext);
   const routerRef = useRef(router);
@@ -172,7 +172,13 @@ function AfendaAppShellInner({
   shortcuts: shortcutsProp,
 }: Pick<
   AfendaAppShellProps,
-  'children' | 'user' | 'logoutAction' | 'modules' | 'onSwitchCompany' | 'attentionSummary' | 'shortcuts'
+  | 'children'
+  | 'user'
+  | 'logoutAction'
+  | 'modules'
+  | 'onSwitchCompany'
+  | 'attentionSummary'
+  | 'shortcuts'
 >) {
   const router = useRouter();
   const pathname = usePathname();
@@ -194,7 +200,7 @@ function AfendaAppShellInner({
       }
       router.refresh();
     },
-    [onSwitchCompany, router],
+    [onSwitchCompany, router]
   );
 
   // Track recently visited pages
@@ -207,23 +213,23 @@ function AfendaAppShellInner({
 
   useRegisterShortcut(
     'afenda-shortcut-dialog',
-    resolveShortcutKeys('afenda-shortcut-dialog', 'ctrl+shift+?', overrides),
+    resolveShortcutKeys('afenda-shortcut-dialog', 'mod+/', overrides),
     'Show keyboard shortcuts',
-    useCallback(() => setShortcutPopoverOpen(true), []),
+    useCallback(() => setShortcutPopoverOpen(true), [])
   );
 
   useRegisterShortcut(
     'afenda-command-palette',
     resolveShortcutKeys('afenda-command-palette', 'mod+k', overrides),
     'Open command palette',
-    useCallback(() => setCommandPaletteOpen((o) => !o), []),
+    useCallback(() => setCommandPaletteOpen((o) => !o), [])
   );
 
   useRegisterShortcut(
     'afenda-calculator',
     resolveShortcutKeys('afenda-calculator', 'mod+=', overrides),
     'Open calculator',
-    useCallback(() => setCalculatorOpen((o) => !o), []),
+    useCallback(() => setCalculatorOpen((o) => !o), [])
   );
 
   // Register calculator action with handler for command palette
@@ -251,7 +257,7 @@ function AfendaAppShellInner({
       const href = resolveNewHref(pathname ?? '');
       if (href) router.push(href);
     }, [pathname, router]),
-    'global',
+    'global'
   );
 
   return (
@@ -283,20 +289,25 @@ function AfendaAppShellInner({
             user={user}
             logoutAction={logoutAction}
             onOpenCommandPalette={openCommandPalette}
-            commandPaletteShortcutKeys={resolveShortcutKeys('afenda-command-palette', 'mod+k', overrides)}
+            commandPaletteShortcutKeys={resolveShortcutKeys(
+              'afenda-command-palette',
+              'mod+k',
+              overrides
+            )}
             modules={modules}
             statusCluster={<AfendaStatusCluster attentionSummary={attentionSummary} />}
             calculatorSlot={
-              <CalculatorPopover
-                open={calculatorOpen}
-                onOpenChange={setCalculatorOpen}
-              />
+              <CalculatorPopover open={calculatorOpen} onOpenChange={setCalculatorOpen} />
             }
             shortcutSlot={
               <ShortcutPopover
                 open={shortcutPopoverOpen}
                 onOpenChange={setShortcutPopoverOpen}
-                shortcutTriggerKeys={resolveShortcutKeys('afenda-shortcut-dialog', 'ctrl+shift+?', overrides)}
+                shortcutTriggerKeys={resolveShortcutKeys(
+                  'afenda-shortcut-dialog',
+                  'mod+/',
+                  overrides
+                )}
               />
             }
           />
@@ -322,7 +333,6 @@ function AfendaAppShellInner({
         onOpenChange={setCommandPaletteOpen}
         onOpenShortcuts={() => setShortcutPopoverOpen(true)}
       />
-
     </>
   );
 }
