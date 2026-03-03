@@ -47,7 +47,7 @@ export class ApprovalWorkflowService implements IApprovalWorkflow {
       if (!reqResult.ok) return reqResult;
 
       const approved = await this.requestRepo.updateRequestStatus(reqResult.value.id, 'APPROVED');
-      
+
       // Emit audit event for transparency when no policy matched
       await this.outboxWriter.write({
         tenantId: input.tenantId,
