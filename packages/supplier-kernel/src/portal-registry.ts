@@ -844,7 +844,7 @@ export const PORTAL_REGISTRY = {
   'SP-8029': {
     cap: 'CAP-COMPL',
     title: 'Compliance Workflow E2E Tests',
-    status: 'planned',
+    status: 'done',
     phase: '1.1',
   },
   'SP-8030': {
