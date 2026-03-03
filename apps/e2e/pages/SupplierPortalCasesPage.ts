@@ -2,7 +2,7 @@
  * SupplierPortalCasesPage POM
  *
  * Page Object Model for Supplier Portal Case Management
- * 
+ *
  * Routes:
  *  - List:  /portal/cases
  *  - New:   /portal/cases/new
@@ -14,12 +14,12 @@
  *  - apps/web/src/app/(supplier-portal)/portal/cases/[id]/page.tsx
  *  - apps/web/src/features/portal/forms/portal-case-form.tsx
  *
- * Case statuses: SUBMITTED | IN_PROGRESS | AWAITING_INFO | ESCALATED | 
+ * Case statuses: SUBMITTED | IN_PROGRESS | AWAITING_INFO | ESCALATED |
  *                RESOLVED | CLOSED | REOPENED | CANCELLED
- * 
- * Categories: PAYMENT_INQUIRY | INVOICE_DISPUTE | ACCOUNT_ISSUE | 
+ *
+ * Categories: PAYMENT_INQUIRY | INVOICE_DISPUTE | ACCOUNT_ISSUE |
  *             DOCUMENT_REQUEST | GENERAL_INQUIRY | TECHNICAL_ISSUE
- * 
+ *
  * Priorities: LOW | MEDIUM | HIGH | CRITICAL
  */
 
@@ -128,7 +128,9 @@ export class SupplierPortalCasesPage {
   }
 
   get commentTextarea(): Locator {
-    return this.page.locator('#comment, textarea[name="comment"], textarea[placeholder*="Add a comment"]');
+    return this.page.locator(
+      '#comment, textarea[name="comment"], textarea[placeholder*="Add a comment"]'
+    );
   }
 
   get submitCommentButton(): Locator {
@@ -162,11 +164,11 @@ export class SupplierPortalCasesPage {
   }): Promise<void> {
     await this.subjectInput.fill(data.subject);
     await this.descriptionInput.fill(data.description);
-    
+
     if (data.category) {
       await this.categorySelect.selectOption({ label: data.category });
     }
-    
+
     if (data.priority) {
       await this.prioritySelect.selectOption({ label: data.priority });
     }
@@ -187,17 +189,17 @@ export class SupplierPortalCasesPage {
     await this.gotoNew();
     await this.fillNewCaseForm(data);
     await this.submitNewCase();
-    
+
     // Extract case ID from URL
     const url = this.page.url();
     const match = url.match(/\/portal\/cases\/([^/?]+)/);
-    return match ? match[1] : '';
+    return match?.[1] ?? '';
   }
 
   async addComment(comment: string): Promise<void> {
     await this.commentTextarea.fill(comment);
     await this.submitCommentButton.click();
-    
+
     // Wait for comment to appear in timeline
     await this.page.waitForTimeout(1000);
   }
@@ -220,15 +222,15 @@ export class SupplierPortalCasesPage {
 
   async transitionStatus(targetStatus: string): Promise<void> {
     await this.statusTransitionButton(targetStatus).click();
-    
+
     // Confirm in dialog if present
     const confirmButton = this.page.getByRole('button', { name: /confirm|yes|continue/i });
     const isVisible = await confirmButton.isVisible({ timeout: 2000 }).catch(() => false);
-    
+
     if (isVisible) {
       await confirmButton.click();
     }
-    
+
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -248,5 +250,27 @@ export class SupplierPortalCasesPage {
 
   async expectCommentInTimeline(comment: string): Promise<void> {
     await this.expectTimelineEntryExists(comment);
+  }
+
+  /**
+   * Get the number of cases currently displayed.
+   */
+  async getCaseCount(): Promise<number> {
+    const cards = this.page.locator('[href*="/portal/cases/"]:not([href$="/new"])');
+    const count = await cards.count();
+
+    // Check if empty state is visible
+    const isEmpty = await this.emptyStateMessage.isVisible().catch(() => false);
+    return isEmpty ? 0 : count;
+  }
+
+  /**
+   * Get the ID of the first case in the list.
+   */
+  async getFirstCaseId(): Promise<string> {
+    const firstCard = this.page.locator('[href*="/portal/cases/"]:not([href$="/new"])').first();
+    const href = await firstCard.getAttribute('href');
+    const match = href?.match(/\/portal\/cases\/([a-f0-9-]+)/);
+    return match?.[1] ?? '';
   }
 }
