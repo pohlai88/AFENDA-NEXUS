@@ -104,11 +104,11 @@
     ]
   },
   "devDependencies": {
-    "@adobe/css-tools": "^4.4.4",
+    "@adobe/css-tools": "^4.5.0",
     "@asamuzakjp/css-color": "3.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.8.1",
+    "prettier": "^3.8.3",
     "turbo": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:",
